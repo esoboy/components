@@ -13,3 +13,4 @@ Route::livewire('/display', 'pages::display');
 Route::livewire('/controls', 'pages::controls');
 Route::livewire('/admin', 'pages::admin');
 Route::livewire('/more', 'pages::more');
+Route::livewire('/chat', 'pages::chat');

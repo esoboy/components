@@ -20,6 +20,7 @@ import { initDropdownMenus } from './dropdown-menu.js'
 import { initHoverCards } from './hover-card.js'
 import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
+import { defineMessageScroller } from './message-scroller.js'
 import { initNavigationMenus } from './navigation-menu.js'
 import { defineRadioGroup } from './radio-group.js'
 import { defineResizable } from './resizable.js'
@@ -46,6 +47,7 @@ defineCollapsible()
 defineScrollArea()
 defineResizable()
 defineCarousel()
+defineMessageScroller()
 initAvatars()
 initConfirm()
 initDialogs()
