@@ -5,6 +5,7 @@ namespace Esoboy\Ui;
 use Esoboy\Ui\Livewire\DialogHandle;
 use Esoboy\Ui\Support\FieldContext;
 use Esoboy\Ui\Support\Overlay;
+use Esoboy\Ui\Support\PendingControl;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Component;
@@ -16,6 +17,7 @@ class UiServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(Overlay::class);
+        $this->app->scoped(PendingControl::class);
     }
 
     public function boot(): void

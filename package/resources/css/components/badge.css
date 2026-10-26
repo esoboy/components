@@ -1,0 +1,65 @@
+@layer components {
+    :where([data-slot="badge"]) {
+        @apply inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all;
+        @apply focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+        @apply has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
+
+        & > svg {
+            @apply pointer-events-none size-3!;
+        }
+
+        &[aria-invalid="true"] {
+            @apply border-destructive;
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
+    }
+
+    :where([data-slot="badge"][data-variant="default"]) {
+        @apply bg-primary text-primary-foreground;
+    }
+
+    :where(a[data-slot="badge"][data-variant="default"]) {
+        @apply hover:bg-primary/80;
+    }
+
+    :where([data-slot="badge"][data-variant="secondary"]) {
+        @apply bg-secondary text-secondary-foreground;
+    }
+
+    :where(a[data-slot="badge"][data-variant="secondary"]) {
+        @apply hover:bg-secondary/80;
+    }
+
+    :where([data-slot="badge"][data-variant="destructive"]) {
+        @apply text-destructive;
+        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+
+        &:focus-visible {
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
+    }
+
+    :where(a[data-slot="badge"][data-variant="destructive"]) {
+        @apply hover:bg-destructive/20;
+    }
+
+    :where([data-slot="badge"][data-variant="outline"]) {
+        @apply border-border text-foreground;
+    }
+
+    :where(a[data-slot="badge"][data-variant="outline"]) {
+        @apply hover:bg-muted hover:text-muted-foreground;
+    }
+
+    :where([data-slot="badge"][data-variant="ghost"]) {
+        @apply hover:text-muted-foreground;
+
+        &:hover {
+            background-color: light-dark(var(--color-muted), color-mix(in oklab, var(--color-muted) 50%, transparent));
+        }
+    }
+
+    :where([data-slot="badge"][data-variant="link"]) {
+        @apply text-primary underline-offset-4 hover:underline;
+    }
+}
