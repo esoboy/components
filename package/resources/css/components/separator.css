@@ -8,6 +8,6 @@
     }
 
     :where([data-slot="separator"][data-orientation="vertical"]) {
-        @apply h-full w-px;
+        @apply w-px self-stretch;
     }
 }

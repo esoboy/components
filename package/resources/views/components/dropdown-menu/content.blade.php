@@ -2,7 +2,7 @@
 
 @props([
     'side' => 'bottom',
-    'align' => 'center',
+    'align' => 'start',
     'sideOffset' => 4,
 ])
 

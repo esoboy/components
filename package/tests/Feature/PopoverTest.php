@@ -59,7 +59,7 @@ it('renders a tooltip shown on hover', function () {
     [$id] = idsOf($html, 'data-tooltip');
 
     expect($html)->toContain("style=\"anchor-name: --{$id};\" data-slot=\"button\" data-variant=\"outline\" data-size=\"default\" data-tooltip=\"{$id}\" aria-describedby=\"{$id}\">Hover</button>")
-        ->and($html)->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"tooltip\" data-slot=\"tooltip-content\" data-side=\"top\" data-align=\"center\" style=\"position-anchor: --{$id}; --side-offset: 0px\">Add to library</div>");
+        ->and($html)->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"tooltip\" data-slot=\"tooltip-content\" data-side=\"top\" data-align=\"center\" style=\"position-anchor: --{$id}; --side-offset: 4px\">Add to library</div>");
 });
 
 it('renders a dropdown menu whose items close the root menu', function () {

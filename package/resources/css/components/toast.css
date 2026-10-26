@@ -33,7 +33,7 @@
     }
 
     :where([data-slot="toast"]) {
-        @apply pointer-events-auto flex w-full items-center gap-1.5 rounded-lg border bg-popover p-4 text-[13px] text-popover-foreground shadow-[0_4px_12px_rgb(0_0_0/0.1)];
+        @apply pointer-events-auto flex w-full items-center gap-1.5 rounded-2xl border bg-popover p-4 text-[13px] text-popover-foreground shadow-[0_4px_12px_rgb(0_0_0/0.1)];
         transition: opacity 400ms, translate 400ms;
 
         @starting-style {

@@ -41,16 +41,22 @@ new class extends Component
         <div class="flex flex-wrap gap-3">
             <x-ui::dialog name="edit-profile">
                 <x-ui::dialog.trigger variant="outline">Edit profile</x-ui::dialog.trigger>
-                <x-ui::dialog.content class="sm:max-w-[425px]">
+                <x-ui::dialog.content>
                     <form wire:submit="save" class="grid gap-4">
                         <x-ui::dialog.header>
                             <x-ui::dialog.title>Edit profile</x-ui::dialog.title>
                             <x-ui::dialog.description>Make changes to your profile here. Click save when you're done.</x-ui::dialog.description>
                         </x-ui::dialog.header>
-                        <x-ui::field>
-                            <x-ui::field.label for="name">Name</x-ui::field.label>
-                            <x-ui::input id="name" wire:model="name" />
-                        </x-ui::field>
+                        <x-ui::field.group>
+                            <x-ui::field>
+                                <x-ui::label for="name">Name</x-ui::label>
+                                <x-ui::input id="name" wire:model="name" />
+                            </x-ui::field>
+                            <x-ui::field>
+                                <x-ui::label for="username">Username</x-ui::label>
+                                <x-ui::input id="username" value="@peduarte" />
+                            </x-ui::field>
+                        </x-ui::field.group>
                         <x-ui::dialog.footer>
                             <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
                             <x-ui::button type="submit">Save changes</x-ui::button>
@@ -129,7 +135,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Dropdown Menu</h2>
         <x-ui::dropdown-menu>
             <x-ui::dropdown-menu.trigger variant="outline">Open</x-ui::dropdown-menu.trigger>
-            <x-ui::dropdown-menu.content class="w-56" align="start">
+            <x-ui::dropdown-menu.content class="w-40">
                 <x-ui::dropdown-menu.label>My Account</x-ui::dropdown-menu.label>
                 <x-ui::dropdown-menu.group>
                     <x-ui::dropdown-menu.item>Profile <x-ui::dropdown-menu.shortcut>⇧⌘P</x-ui::dropdown-menu.shortcut></x-ui::dropdown-menu.item>

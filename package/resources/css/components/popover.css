@@ -11,7 +11,7 @@
         opacity: 0;
         scale: 0.95;
         transition-property: opacity, scale, translate, display, overlay;
-        transition-duration: 150ms;
+        transition-duration: 100ms;
         transition-behavior: allow-discrete;
 
         &:popover-open {
@@ -73,12 +73,16 @@
         }
     }
 
+    :where([data-slot="popover-content"]):popover-open {
+        @apply flex;
+    }
+
     :where([data-slot="popover-content"]) {
-        @apply w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden;
+        @apply w-72 flex-col gap-2.5 rounded-lg border-0 bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden;
     }
 
     :where([data-slot="popover-header"]) {
-        @apply flex flex-col gap-1 text-sm;
+        @apply flex flex-col gap-0.5 text-sm;
     }
 
     :where([data-slot="popover-title"]) {

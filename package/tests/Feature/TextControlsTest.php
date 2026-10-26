@@ -28,7 +28,7 @@ it('renders a native select whose wrapper takes the class', function () {
         BLADE);
 
     $view->assertSee('<div data-slot="native-select-wrapper" data-size="sm" class="w-full">', false)
-        ->assertSee('<select data-slot="native-select" wire:model="role">', false)
+        ->assertSee('<select data-slot="native-select" data-size="sm" wire:model="role">', false)
         ->assertSee('<optgroup data-slot="native-select-optgroup" label="Staff">', false)
         ->assertSee('<option data-slot="native-select-option" value="admin">Admin</option>', false)
         ->assertSee('data-slot="native-select-icon"', false);
@@ -37,7 +37,7 @@ it('renders a native select whose wrapper takes the class', function () {
 dataset('text controls', [
     'input' => ['<x-ui::input id="email" wire:model="email" />', '<input type="text" data-slot="input"'],
     'textarea' => ['<x-ui::textarea id="email" wire:model="email" />', '<textarea data-slot="textarea"'],
-    'native select' => ['<x-ui::native-select id="email" wire:model="email" />', '<select data-slot="native-select"'],
+    'native select' => ['<x-ui::native-select id="email" wire:model="email" />', '<select data-slot="native-select" data-size="default"'],
 ]);
 
 it('shows the validation error inside a field', function (string $control, string $opening) {

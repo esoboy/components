@@ -1,10 +1,16 @@
 @layer components {
     :where([data-slot="button"]) {
-        @apply inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none;
-        @apply focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
-        @apply aria-invalid:border-destructive aria-invalid:ring-destructive/20;
+        @apply inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none;
+        @apply focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50;
+        @apply active:not-aria-[haspopup]:translate-y-px;
         @apply disabled:pointer-events-none disabled:opacity-50;
         @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+
+        &[aria-invalid="true"] {
+            @apply ring-3;
+            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
 
         /* Livewire v4 marks the element that triggered a request with data-loading. */
         &[data-loading] {
@@ -13,61 +19,82 @@
     }
 
     :where([data-slot="button"][data-variant="default"]) {
-        @apply bg-primary text-primary-foreground hover:bg-primary/90;
-    }
-
-    :where([data-slot="button"][data-variant="destructive"]) {
-        @apply text-white hover:bg-destructive/90 focus-visible:ring-destructive/20;
-        background-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 60%, transparent));
+        @apply bg-primary text-primary-foreground hover:bg-primary/80;
     }
 
     :where([data-slot="button"][data-variant="outline"]) {
-        @apply border shadow-xs hover:bg-accent hover:text-accent-foreground;
+        @apply hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground;
         border-color: light-dark(var(--color-border), var(--color-input));
         background-color: light-dark(var(--color-background), color-mix(in oklab, var(--color-input) 30%, transparent));
+
+        &:hover {
+            background-color: light-dark(var(--color-muted), color-mix(in oklab, var(--color-input) 50%, transparent));
+        }
     }
 
     :where([data-slot="button"][data-variant="secondary"]) {
-        @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+        @apply bg-secondary text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground;
+
+        &:hover {
+            background-color: color-mix(in oklch, var(--color-secondary), var(--color-foreground) 5%);
+        }
     }
 
     :where([data-slot="button"][data-variant="ghost"]) {
-        @apply hover:bg-accent hover:text-accent-foreground;
+        @apply hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground;
+
+        &:hover {
+            background-color: light-dark(var(--color-muted), color-mix(in oklab, var(--color-muted) 50%, transparent));
+        }
+    }
+
+    :where([data-slot="button"][data-variant="destructive"]) {
+        @apply text-destructive focus-visible:border-destructive/40;
+        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+
+        &:hover {
+            background-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 30%, transparent));
+        }
+
+        &:focus-visible {
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
     }
 
     :where([data-slot="button"][data-variant="link"]) {
         @apply text-primary underline-offset-4 hover:underline;
     }
 
+    /* Sizes. Icons marked data-icon="inline-start|inline-end" tighten the padding on their side. */
     :where([data-slot="button"][data-size="default"]) {
-        @apply h-9 px-4 py-2 has-[>svg]:px-3;
+        @apply h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
     }
 
     :where([data-slot="button"][data-size="xs"]) {
-        @apply h-6 gap-1 px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3;
+        @apply h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3;
     }
 
     :where([data-slot="button"][data-size="sm"]) {
-        @apply h-8 gap-1.5 px-3 has-[>svg]:px-2.5;
+        @apply h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5;
     }
 
     :where([data-slot="button"][data-size="lg"]) {
-        @apply h-10 px-6 has-[>svg]:px-4;
+        @apply h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
     }
 
     :where([data-slot="button"][data-size="icon"]) {
-        @apply size-9;
-    }
-
-    :where([data-slot="button"][data-size="icon-xs"]) {
-        @apply size-6 [&_svg:not([class*='size-'])]:size-3;
-    }
-
-    :where([data-slot="button"][data-size="icon-sm"]) {
         @apply size-8;
     }
 
+    :where([data-slot="button"][data-size="icon-xs"]) {
+        @apply size-6 rounded-[min(var(--radius-md),10px)] [&_svg:not([class*='size-'])]:size-3;
+    }
+
+    :where([data-slot="button"][data-size="icon-sm"]) {
+        @apply size-7 rounded-[min(var(--radius-md),12px)];
+    }
+
     :where([data-slot="button"][data-size="icon-lg"]) {
-        @apply size-10;
+        @apply size-9;
     }
 }

@@ -1,6 +1,6 @@
 @layer components {
     :where([data-slot="field-set"]) {
-        @apply flex flex-col gap-6;
+        @apply flex flex-col gap-4;
 
         &:has(> [data-slot="radio-group"], > [data-slot="checkbox-group"]) {
             @apply gap-3;
@@ -8,7 +8,7 @@
     }
 
     :where([data-slot="field-legend"]) {
-        @apply mb-3 font-medium;
+        @apply mb-1.5 font-medium;
     }
 
     :where([data-slot="field-legend"][data-variant="legend"]) {
@@ -20,7 +20,7 @@
     }
 
     :where([data-slot="field-group"]) {
-        @apply @container/field-group flex w-full flex-col gap-7;
+        @apply @container/field-group flex w-full flex-col gap-5;
 
         & > [data-slot="field-group"] {
             @apply gap-4;
@@ -28,7 +28,7 @@
     }
 
     :where([data-slot="field"]) {
-        @apply flex w-full gap-3;
+        @apply flex w-full gap-2;
 
         /* Auto-rendered errors always close the field, wherever the control sits. */
         & > [data-slot="field-error"] {
@@ -109,28 +109,49 @@
     }
 
     :where([data-slot="field-content"]) {
-        @apply flex flex-1 flex-col gap-1.5 leading-snug;
+        @apply flex flex-1 flex-col gap-0.5 leading-snug;
     }
 
     :where([data-slot="field-label"]) {
-        @apply w-fit leading-snug;
-
-        &:has(> [data-slot="field"]) {
-            @apply w-full flex-col rounded-md border;
-
-            & > [data-slot="field"] {
-                @apply p-4;
-            }
-        }
+        @apply w-fit gap-2 leading-snug;
 
         &:has(:checked) {
-            @apply border-primary;
+            border-color: light-dark(color-mix(in oklab, var(--color-primary) 30%, transparent), color-mix(in oklab, var(--color-primary) 20%, transparent));
             background-color: light-dark(color-mix(in oklab, var(--color-primary) 5%, transparent), color-mix(in oklab, var(--color-primary) 10%, transparent));
+        }
+
+        /* A label wrapping a whole field is a choice card. */
+        &:has(> [data-slot="field"]) {
+            @apply w-full flex-col rounded-lg border;
+
+            & > [data-slot="field"] {
+                @apply p-2.5;
+            }
+
+            &:not(:has(:disabled)):hover {
+                @apply bg-muted/50;
+            }
+
+            &:has(:focus-visible) {
+                @apply border-ring ring-3 ring-ring/50;
+
+                & :is([data-slot="checkbox"], [data-slot="radio-group-item"], [data-slot="switch"]) {
+                    @apply ring-0;
+                }
+
+                & :is([data-slot="checkbox"], [data-slot="radio-group-item"]):not(:checked) {
+                    @apply border-input;
+                }
+
+                & :is([data-slot="checkbox"], [data-slot="radio-group-item"]):checked {
+                    @apply border-primary;
+                }
+            }
         }
     }
 
     :where([data-slot="field-title"]) {
-        @apply flex w-fit items-center gap-2 text-sm leading-snug font-medium;
+        @apply flex w-fit items-center gap-2 text-sm font-medium;
     }
 
     :where([data-slot="field"][data-disabled="true"]) :where([data-slot="field-label"], [data-slot="field-title"]) {
@@ -138,7 +159,11 @@
     }
 
     :where([data-slot="field-description"]) {
-        @apply text-sm leading-normal font-normal text-muted-foreground;
+        @apply text-left text-sm leading-normal font-normal text-muted-foreground;
+
+        [data-variant="legend"] + & {
+            @apply -mt-1.5;
+        }
 
         &:last-child {
             @apply mt-0;
@@ -146,10 +171,6 @@
 
         &:nth-last-child(2) {
             @apply -mt-1;
-        }
-
-        [data-variant="legend"] + & {
-            @apply -mt-1.5;
         }
 
         & > a {

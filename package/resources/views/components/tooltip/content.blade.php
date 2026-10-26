@@ -3,7 +3,7 @@
 @props([
     'side' => 'top',
     'align' => 'center',
-    'sideOffset' => 0,
+    'sideOffset' => 4,
 ])
 
 @php
