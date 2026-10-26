@@ -1,17 +1,19 @@
 /*
- * <ui-radio-group>
+ * <ui-radio-group> and <ui-checkbox-group>
  *
- * Exposes the checked radio as .value and re-dispatches its radios' input/change
- * events from the group itself, so wire:model / x-model bind on the group the way
- * shadcn puts value on RadioGroup. (Livewire v4 models only listen to events whose
- * target is the bound element.) Radios without a name get the group's, which keeps
- * native keyboard grouping.
+ * Expose their inputs' state as .value (one value, or an array for checkboxes) and
+ * re-dispatch the inputs' input/change events from the group itself, so wire:model /
+ * x-model bind on the group the way shadcn puts value on RadioGroup or ToggleGroup.
+ * (Livewire v4 models only listen to events whose target is the bound element.)
+ * Inputs without a name get the group's, which keeps native keyboard grouping.
  */
 
 let groups = 0
 
-export class RadioGroupElement extends HTMLElement {
-    #fallbackName = `ui-radio-group-${++groups}`
+class ChoiceGroupElement extends HTMLElement {
+    static inputType = 'radio'
+
+    #fallbackName = `ui-${this.constructor.inputType}-group-${++groups}`
     #observer = null
 
     constructor() {
@@ -19,18 +21,16 @@ export class RadioGroupElement extends HTMLElement {
 
         for (const type of ['input', 'change']) {
             this.addEventListener(type, event => {
-                if (event.target !== this && this.radios.includes(event.target)) {
-                    this.dispatchEvent(new Event(type, { bubbles: true }))
-                }
+                if (event.target !== this && this.inputs.includes(event.target)) this.announce(type)
             })
         }
     }
 
     connectedCallback() {
-        this.#nameRadios()
+        this.#nameInputs()
 
-        // Livewire morphs can add radios or strip the names we assigned.
-        this.#observer = new MutationObserver(() => this.#nameRadios())
+        // Livewire morphs can add inputs or strip the names we assigned.
+        this.#observer = new MutationObserver(() => this.#nameInputs())
         this.#observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['name'] })
     }
 
@@ -38,27 +38,79 @@ export class RadioGroupElement extends HTMLElement {
         this.#observer?.disconnect()
     }
 
-    get radios() {
-        return [...this.querySelectorAll('input[type="radio"]')].filter(radio => radio.closest('ui-radio-group') === this)
+    get inputs() {
+        return [...this.querySelectorAll(`input[type="${this.constructor.inputType}"]`)]
+            .filter(input => input.closest('ui-radio-group, ui-checkbox-group') === this)
+    }
+
+    announce(type) {
+        this.dispatchEvent(new Event(type, { bubbles: true }))
+    }
+
+    #nameInputs() {
+        const name = this.getAttribute('name') || this.#fallbackName
+
+        this.inputs.forEach(input => input.name || (input.name = name))
+    }
+}
+
+export class RadioGroupElement extends ChoiceGroupElement {
+    static inputType = 'radio'
+
+    #value = null
+
+    constructor() {
+        super()
+
+        // A deselectable group (single Toggle Group) unchecks its pressed item when clicked again.
+        this.addEventListener('click', event => {
+            const radio = event.target
+
+            if (! this.hasAttribute('data-deselectable') || ! this.inputs.includes(radio)) return
+
+            if (radio.value === this.#value) {
+                radio.checked = false
+                this.#value = null
+                this.announce('input')
+                this.announce('change')
+            }
+        })
+
+        this.addEventListener('change', () => (this.#value = this.value))
+    }
+
+    connectedCallback() {
+        super.connectedCallback()
+        this.#value = this.value
     }
 
     get value() {
-        return this.radios.find(radio => radio.checked)?.value ?? null
+        return this.inputs.find(radio => radio.checked)?.value ?? null
     }
 
     set value(value) {
         const target = value === null || value === undefined ? null : String(value)
 
-        this.radios.forEach(radio => (radio.checked = radio.value === target))
+        this.inputs.forEach(radio => (radio.checked = radio.value === target))
+        this.#value = this.value
+    }
+}
+
+export class CheckboxGroupElement extends ChoiceGroupElement {
+    static inputType = 'checkbox'
+
+    get value() {
+        return this.inputs.filter(checkbox => checkbox.checked).map(checkbox => checkbox.value)
     }
 
-    #nameRadios() {
-        const name = this.getAttribute('name') || this.#fallbackName
+    set value(value) {
+        const values = (Array.isArray(value) ? value : []).map(String)
 
-        this.radios.forEach(radio => radio.name || (radio.name = name))
+        this.inputs.forEach(checkbox => (checkbox.checked = values.includes(checkbox.value)))
     }
 }
 
 export function defineRadioGroup(registry = window.customElements) {
     if (! registry.get('ui-radio-group')) registry.define('ui-radio-group', RadioGroupElement)
+    if (! registry.get('ui-checkbox-group')) registry.define('ui-checkbox-group', CheckboxGroupElement)
 }

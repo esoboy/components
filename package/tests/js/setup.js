@@ -22,6 +22,8 @@ const toggle = (element, open) => {
     element.dispatchEvent(Object.assign(new Event('toggle'), { newState: open ? 'open' : 'closed' }))
 }
 
+Element.prototype.scrollIntoView ||= function () {}
+
 HTMLElement.prototype.showPopover = function () { toggle(this, true) }
 HTMLElement.prototype.hidePopover = function () { toggle(this, false) }
 

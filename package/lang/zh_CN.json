@@ -1,7 +1,15 @@
 {
+    "ui.calendar.month": "选择月份",
+    "ui.calendar.next": "下个月",
+    "ui.calendar.previous": "上个月",
+    "ui.calendar.year": "选择年份",
     "ui.cancel": "取消",
+    "ui.clear": "清除",
     "ui.close": "关闭",
+    "ui.command.description": "搜索要执行的命令…",
+    "ui.command.title": "命令面板",
     "ui.confirm": "确定要继续吗？",
     "ui.continue": "继续",
-    "ui.loading": "加载中"
+    "ui.loading": "加载中",
+    "ui.remove": "移除"
 }

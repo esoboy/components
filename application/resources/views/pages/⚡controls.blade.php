@@ -1,0 +1,270 @@
+<?php
+
+use Livewire\Attributes\Validate;
+use Livewire\Component;
+
+new class extends Component
+{
+    public bool $bold = false;
+
+    public ?string $align = 'left';
+
+    public array $styles = ['bold'];
+
+    public int $volume = 50;
+
+    public array $price = [25, 75];
+
+    #[Validate('required|digits:6')]
+    public string $code = '';
+
+    #[Validate('required|in:apple,banana,blueberry')]
+    public ?string $fruit = null;
+
+    public string $timezone = 'cst';
+
+    public ?string $framework = null;
+
+    public array $frameworks = ['next'];
+
+    public string $ran = '';
+
+    public ?string $date = '2026-10-26';
+
+    public array $range = ['from' => '2026-10-20', 'to' => '2026-11-03'];
+
+    #[Validate('required|date')]
+    public ?string $birthday = null;
+
+    public function saveBirthday(): void
+    {
+        $this->validate(['birthday' => 'required|date']);
+    }
+
+    public function run(string $command): void
+    {
+        $this->ran = $command;
+        $this->dialog('command-menu')->close();
+    }
+
+    public function verify(): void
+    {
+        $this->validate(['code' => 'required|digits:6']);
+    }
+
+    public function pick(): void
+    {
+        $this->validate(['fruit' => 'required|in:apple,banana,blueberry']);
+    }
+};
+?>
+
+@php
+$svg = fn (string $paths, string $class = '') => '<svg class="'.$class.'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
+$boldIcon = $svg('<path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/>');
+$italicIcon = $svg('<line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/>');
+$underlineIcon = $svg('<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/>');
+@endphp
+
+<div class="mx-auto max-w-3xl space-y-12 p-10">
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Calendar</h2>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::calendar id="demo-calendar" wire:model.live="date" caption-layout="dropdown" class="rounded-lg border" />
+            <x-ui::calendar id="demo-range" mode="range" wire:model.live="range" :number-of-months="2" class="rounded-lg border" />
+        </div>
+        <p class="text-sm text-muted-foreground">date: <span id="date">{{ $date ?? 'none' }}</span>, range: <span id="range">{{ ($range['from'] ?? '').' → '.($range['to'] ?? '') }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Date Picker</h2>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::date-picker id="demo-picker" wire:model.live="date" placeholder="Pick a date" />
+            <x-ui::date-picker mode="range" wire:model.live="range" placeholder="Pick a date range" :number-of-months="2" class="w-[300px]" />
+        </div>
+        <form wire:submit="saveBirthday" class="flex items-start gap-3">
+            <x-ui::field class="w-fit">
+                <x-ui::label for="birthday">Date of birth</x-ui::label>
+                <x-ui::date-picker id="birthday" wire:model="birthday" placeholder="Select date" caption-layout="dropdown" />
+            </x-ui::field>
+            <x-ui::button type="submit" class="mt-6">Save</x-ui::button>
+        </form>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Select</h2>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::select id="demo-select" wire:model.live="timezone">
+                <x-ui::select.trigger class="w-full max-w-48">
+                    <x-ui::select.value placeholder="Select a timezone" />
+                </x-ui::select.trigger>
+                <x-ui::select.content>
+                    <x-ui::select.group>
+                        <x-ui::select.label>North America</x-ui::select.label>
+                        <x-ui::select.item value="est">Eastern Standard Time</x-ui::select.item>
+                        <x-ui::select.item value="cst">Central Standard Time</x-ui::select.item>
+                        <x-ui::select.item value="mst">Mountain Standard Time</x-ui::select.item>
+                        <x-ui::select.item value="pst" disabled>Pacific Standard Time</x-ui::select.item>
+                    </x-ui::select.group>
+                    <x-ui::select.separator />
+                    <x-ui::select.group>
+                        <x-ui::select.label>Europe &amp; Africa</x-ui::select.label>
+                        <x-ui::select.item value="gmt">Greenwich Mean Time</x-ui::select.item>
+                        <x-ui::select.item value="cet">Central European Time</x-ui::select.item>
+                    </x-ui::select.group>
+                </x-ui::select.content>
+            </x-ui::select>
+            <span class="text-sm text-muted-foreground">timezone: <span id="timezone">{{ $timezone }}</span></span>
+        </div>
+        <form wire:submit="pick" class="flex items-start gap-3">
+            <x-ui::field class="w-48">
+                <x-ui::select id="fruit" wire:model="fruit">
+                    <x-ui::select.trigger class="w-full">
+                        <x-ui::select.value placeholder="Select a fruit" />
+                    </x-ui::select.trigger>
+                    <x-ui::select.content>
+                        <x-ui::select.group>
+                            <x-ui::select.label>Fruits</x-ui::select.label>
+                            <x-ui::select.item value="apple">Apple</x-ui::select.item>
+                            <x-ui::select.item value="banana">Banana</x-ui::select.item>
+                            <x-ui::select.item value="blueberry">Blueberry</x-ui::select.item>
+                            <x-ui::select.item value="grapes">Grapes (fails)</x-ui::select.item>
+                        </x-ui::select.group>
+                    </x-ui::select.content>
+                </x-ui::select>
+            </x-ui::field>
+            <x-ui::button type="submit">Pick</x-ui::button>
+        </form>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Combobox</h2>
+        @php $options = ['next' => 'Next.js', 'sveltekit' => 'SvelteKit', 'nuxt' => 'Nuxt.js', 'remix' => 'Remix', 'astro' => 'Astro']; @endphp
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::combobox id="demo-combobox" wire:model.live="framework">
+                <x-ui::combobox.input placeholder="Select a framework" show-clear />
+                <x-ui::combobox.content>
+                    <x-ui::combobox.empty>No items found.</x-ui::combobox.empty>
+                    <x-ui::combobox.list>
+                        @foreach ($options as $value => $label)
+                            <x-ui::combobox.item :value="$value">{{ $label }}</x-ui::combobox.item>
+                        @endforeach
+                    </x-ui::combobox.list>
+                </x-ui::combobox.content>
+            </x-ui::combobox>
+            <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks">
+                <x-ui::combobox.chips class="w-full max-w-xs">
+                    <x-ui::combobox.chips-input placeholder="Add framework" />
+                </x-ui::combobox.chips>
+                <x-ui::combobox.content>
+                    <x-ui::combobox.empty>No items found.</x-ui::combobox.empty>
+                    <x-ui::combobox.list>
+                        @foreach ($options as $value => $label)
+                            <x-ui::combobox.item :value="$value">{{ $label }}</x-ui::combobox.item>
+                        @endforeach
+                    </x-ui::combobox.list>
+                </x-ui::combobox.content>
+            </x-ui::combobox>
+        </div>
+        <p class="text-sm text-muted-foreground">framework: <span id="framework">{{ $framework ?? 'none' }}</span>, frameworks: <span id="frameworks">{{ implode(',', $frameworks) }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Command</h2>
+        <x-ui::command id="demo-command" class="max-w-sm rounded-lg border">
+            <x-ui::command.input placeholder="Type a command or search..." />
+            <x-ui::command.list>
+                <x-ui::command.empty>No results found.</x-ui::command.empty>
+                <x-ui::command.group heading="Suggestions">
+                    <x-ui::command.item wire:click="run('calendar')">Calendar</x-ui::command.item>
+                    <x-ui::command.item wire:click="run('emoji')">Search Emoji</x-ui::command.item>
+                    <x-ui::command.item disabled>Calculator</x-ui::command.item>
+                </x-ui::command.group>
+                <x-ui::command.separator />
+                <x-ui::command.group heading="Settings">
+                    <x-ui::command.item wire:click="run('profile')">Profile <x-ui::command.shortcut>⌘P</x-ui::command.shortcut></x-ui::command.item>
+                    <x-ui::command.item wire:click="run('billing')">Billing <x-ui::command.shortcut>⌘B</x-ui::command.shortcut></x-ui::command.item>
+                    <x-ui::command.item wire:click="run('settings')" :keywords="['preferences']">Settings <x-ui::command.shortcut>⌘S</x-ui::command.shortcut></x-ui::command.item>
+                </x-ui::command.group>
+            </x-ui::command.list>
+        </x-ui::command>
+        <div class="flex items-center gap-3">
+            <x-ui::button variant="outline" commandfor="command-menu" command="show-modal">Open command menu</x-ui::button>
+            <span class="text-sm text-muted-foreground">ran: <span id="ran">{{ $ran ?: 'nothing' }}</span></span>
+        </div>
+        <x-ui::command.dialog name="command-menu">
+            <x-ui::command.input placeholder="Type a command or search..." />
+            <x-ui::command.list>
+                <x-ui::command.empty>No results found.</x-ui::command.empty>
+                <x-ui::command.group heading="Suggestions">
+                    <x-ui::command.item wire:click="run('calendar')">Calendar</x-ui::command.item>
+                    <x-ui::command.item wire:click="run('emoji')">Search Emoji</x-ui::command.item>
+                </x-ui::command.group>
+            </x-ui::command.list>
+        </x-ui::command.dialog>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Toggle</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui::toggle aria-label="Toggle bold" wire:model.live="bold">{!! $boldIcon !!}</x-ui::toggle>
+            <x-ui::toggle variant="outline" aria-label="Toggle italic" default-pressed>{!! $italicIcon !!} Italic</x-ui::toggle>
+            <x-ui::toggle size="sm" disabled>{!! $underlineIcon !!}</x-ui::toggle>
+            <span class="text-sm text-muted-foreground">bold: <span id="bold">{{ $bold ? 'on' : 'off' }}</span></span>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Toggle Group</h2>
+        <div class="flex flex-wrap items-center gap-6">
+            <x-ui::toggle-group variant="outline" wire:model.live="align">
+                <x-ui::toggle-group.item value="left">Left</x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="center">Center</x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="right">Right</x-ui::toggle-group.item>
+            </x-ui::toggle-group>
+            <x-ui::toggle-group type="multiple" variant="outline" spacing="0" size="sm" wire:model.live="styles">
+                <x-ui::toggle-group.item value="bold" aria-label="Bold">{!! $boldIcon !!}</x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="italic" aria-label="Italic">{!! $italicIcon !!}</x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="underline" aria-label="Underline">{!! $underlineIcon !!}</x-ui::toggle-group.item>
+            </x-ui::toggle-group>
+        </div>
+        <p class="text-sm text-muted-foreground">align: <span id="align">{{ $align ?? 'none' }}</span>, styles: <span id="styles">{{ implode(',', $styles) }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Slider</h2>
+        <div class="grid max-w-xs gap-6">
+            <x-ui::slider wire:model.live="volume" :max="100" :step="1" />
+            <x-ui::slider wire:model.live="price" :max="100" :step="5" />
+            <x-ui::slider :default-value="[33]" disabled />
+        </div>
+        <p class="text-sm text-muted-foreground">volume: <span id="volume">{{ $volume }}</span>, price: <span id="price">{{ implode('-', $price) }}</span></p>
+        <div class="flex h-40 gap-6">
+            <x-ui::slider :default-value="[50]" orientation="vertical" />
+            <x-ui::slider :default-value="[25, 75]" orientation="vertical" />
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Input OTP</h2>
+        <form wire:submit="verify" class="space-y-3">
+            <x-ui::field>
+                <x-ui::label for="code">Verification code</x-ui::label>
+                <x-ui::input-otp id="code" maxlength="6" inputmode="numeric" wire:model="code">
+                    <x-ui::input-otp.group>
+                        <x-ui::input-otp.slot :index="0" />
+                        <x-ui::input-otp.slot :index="1" />
+                        <x-ui::input-otp.slot :index="2" />
+                    </x-ui::input-otp.group>
+                    <x-ui::input-otp.separator />
+                    <x-ui::input-otp.group>
+                        <x-ui::input-otp.slot :index="3" />
+                        <x-ui::input-otp.slot :index="4" />
+                        <x-ui::input-otp.slot :index="5" />
+                    </x-ui::input-otp.group>
+                </x-ui::input-otp>
+            </x-ui::field>
+            <x-ui::button type="submit">Verify</x-ui::button>
+        </form>
+    </section>
+</div>

@@ -69,7 +69,7 @@ describe('events', () => {
         outer.addEventListener('input', event => event.target === outer && fromOuter.push(event))
         outer.querySelector('[value="x"]').click()
 
-        expect(outer.radios).toHaveLength(0)
+        expect(outer.inputs).toHaveLength(0)
         expect(fromOuter).toHaveLength(0)
     })
 })
@@ -77,7 +77,7 @@ describe('events', () => {
 describe('names', () => {
     it('gives unnamed radios a shared name', () => {
         const group = mount(`<ui-radio-group>${items}</ui-radio-group>`)
-        const names = group.radios.map(radio => radio.name)
+        const names = group.inputs.map(radio => radio.name)
 
         expect(names[0]).toMatch(/^ui-radio-group-\d+$/)
         expect(new Set(names).size).toBe(1)
@@ -86,21 +86,21 @@ describe('names', () => {
     it('uses the group name for classic form posts', () => {
         const group = mount(`<ui-radio-group name="plan">${items}</ui-radio-group>`)
 
-        expect(group.radios.map(radio => radio.name)).toEqual(['plan', 'plan'])
+        expect(group.inputs.map(radio => radio.name)).toEqual(['plan', 'plan'])
     })
 
     it('keeps names the radios already have', () => {
         const group = mount(`<ui-radio-group name="plan"><input type="radio" name="custom" value="a"></ui-radio-group>`)
 
-        expect(group.radios[0].name).toBe('custom')
+        expect(group.inputs[0].name).toBe('custom')
     })
 
     it('names radios added or stripped by a later morph', async () => {
         const group = mount(`<ui-radio-group name="plan">${items}</ui-radio-group>`)
 
         group.insertAdjacentHTML('beforeend', '<input type="radio" value="team">')
-        group.radios[0].removeAttribute('name')
+        group.inputs[0].removeAttribute('name')
 
-        await vi.waitFor(() => expect(group.radios.map(radio => radio.name)).toEqual(['plan', 'plan', 'plan']))
+        await vi.waitFor(() => expect(group.inputs.map(radio => radio.name)).toEqual(['plan', 'plan', 'plan']))
     })
 })

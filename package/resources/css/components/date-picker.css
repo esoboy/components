@@ -1,0 +1,24 @@
+@layer components {
+    :where([data-slot="date-picker"]) {
+        @apply contents;
+    }
+
+    /* The trigger as in shadcn's date picker example. */
+    [data-slot="date-picker"] :where([data-date-picker-trigger]) {
+        @apply w-[212px] justify-between text-left font-normal;
+
+        &[data-empty="true"] {
+            @apply text-muted-foreground;
+        }
+
+        &[aria-invalid="true"] {
+            @apply ring-3;
+            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
+    }
+
+    [data-slot="date-picker"] :where([data-date-picker-content]) {
+        @apply w-auto p-0;
+    }
+}

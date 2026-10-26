@@ -1,7 +1,15 @@
 {
+    "ui.calendar.month": "Choose the Month",
+    "ui.calendar.next": "Go to the Next Month",
+    "ui.calendar.previous": "Go to the Previous Month",
+    "ui.calendar.year": "Choose the Year",
     "ui.cancel": "Cancel",
+    "ui.clear": "Clear",
     "ui.close": "Close",
+    "ui.command.description": "Search for a command to run...",
+    "ui.command.title": "Command Palette",
     "ui.confirm": "Are you sure?",
     "ui.continue": "Continue",
-    "ui.loading": "Loading"
+    "ui.loading": "Loading",
+    "ui.remove": "Remove"
 }
