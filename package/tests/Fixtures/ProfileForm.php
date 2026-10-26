@@ -30,12 +30,16 @@ class ProfileForm extends Component
                     <x-ui::input id="email" wire:model="email" />
                 </x-ui::field>
 
-                <x-ui::radio-group wire:model="plan">
-                    <x-ui::radio-group.item value="starter" />
-                    <x-ui::radio-group.item value="pro" />
-                </x-ui::radio-group>
+                <x-ui::field.set>
+                    <x-ui::radio-group wire:model="plan">
+                        <x-ui::radio-group.item value="starter" />
+                        <x-ui::radio-group.item value="pro" />
+                    </x-ui::radio-group>
+                </x-ui::field.set>
 
-                <x-ui::checkbox wire:model="terms" :show-error="false" />
+                <x-ui::field orientation="horizontal" :show-error="false">
+                    <x-ui::checkbox wire:model="terms" />
+                </x-ui::field>
             </form>
             BLADE;
     }

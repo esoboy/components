@@ -1,12 +1,16 @@
 @blaze
 
-@props([
-    'type' => 'text',
+@aware([
+    'uiField' => false,
     'showError' => true,
 ])
 
+@props([
+    'type' => 'text',
+])
+
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors, $showError);
+$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 <input {{ $attributes->merge(['type' => $type, 'data-slot' => 'input', ...$state->attributes()]) }}>

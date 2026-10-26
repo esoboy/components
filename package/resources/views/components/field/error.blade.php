@@ -7,7 +7,7 @@
 ])
 
 @php
-$messages ??= \Esoboy\Ui\Support\ControlState::messages($errors, $name, $bag);
+$messages ??= \Esoboy\Ui\Support\ControlState::messages($errors ?? null, $name, $bag);
 $custom = $slot->hasActualContent();
 @endphp
 

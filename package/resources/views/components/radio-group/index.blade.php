@@ -1,12 +1,16 @@
 @blaze
 
-@props([
-    'defaultValue' => null,
+@aware([
+    'uiField' => false,
     'showError' => true,
 ])
 
+@props([
+    'defaultValue' => null,
+])
+
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors, $showError);
+$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 {{-- <ui-radio-group> exposes the checked radio as .value, so wire:model binds on the group itself. --}}

@@ -63,8 +63,15 @@ it('bases the error id on the control id', function () {
 });
 
 it('stays invalid but undescribed when errors are hidden', function () {
-    $state = ControlState::for(new ComponentAttributeBag(['name' => 'email']), errorBag(['email' => ['Required.']]), showError: false);
+    $state = ControlState::for(new ComponentAttributeBag(['name' => 'email']), errorBag(['email' => ['Required.']]), inField: true, showError: false);
 
     expect($state->showsError())->toBeFalse()
         ->and($state->attributes())->toBe(['aria-invalid' => 'true']);
+});
+
+it('ignores errors outside a field', function () {
+    $state = ControlState::for(new ComponentAttributeBag(['name' => 'email']), errorBag(['email' => ['Required.']]), inField: false);
+
+    expect($state->invalid())->toBeFalse()
+        ->and($state->attributes())->toBe([]);
 });

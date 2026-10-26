@@ -1,11 +1,12 @@
 @blaze
 
-@props([
+@aware([
+    'uiField' => false,
     'showError' => true,
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors, $showError);
+$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 
 // A checkbox with its own value is one option of a set; the set's error belongs to <x-ui::field.error>.
 $ownsError = $state->showsError() && ! $attributes->has('value');

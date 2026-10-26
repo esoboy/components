@@ -45,8 +45,8 @@ new class extends Component
             <x-ui::field.group>
                 <x-ui::field>
                     <x-ui::field.label for="email">Email</x-ui::field.label>
-                    <x-ui::input id="email" type="email" wire:model="email" placeholder="you@example.com" />
-                    <x-ui::field.description>We never share it.</x-ui::field.description>
+                    <x-ui::input id="email" type="email" wire:model.live.blur="email" placeholder="you@example.com" />
+                    <x-ui::field.description>wire:model.live.blur: validated as soon as you leave the field.</x-ui::field.description>
                 </x-ui::field>
 
                 <x-ui::field>
@@ -112,4 +112,9 @@ new class extends Component
             </x-ui::field.group>
         </x-ui::field.set>
     </form>
+
+    <div class="mt-10 space-y-2">
+        <p class="text-sm text-muted-foreground">Outside any field: bound to the same email, never validated.</p>
+        <x-ui::input id="email-standalone" wire:model="email" placeholder="standalone" />
+    </div>
 </div>

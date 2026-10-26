@@ -4,6 +4,7 @@ namespace Esoboy\Ui;
 
 use Esoboy\Ui\Appearance\Appearance;
 use Esoboy\Ui\Appearance\InjectAppearance;
+use Esoboy\Ui\Support\FieldContext;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Blade;
@@ -18,6 +19,18 @@ class UiServiceProvider extends ServiceProvider
 
         $this->bootTranslations();
         $this->bootAppearance();
+        $this->bootFieldContext();
+    }
+
+    /**
+     * Mark field tags before Blaze compiles them; see FieldContext. Blaze hooks the
+     * same pipeline from an app()->booted() callback, so registering here runs first.
+     */
+    protected function bootFieldContext(): void
+    {
+        $this->app['blade.compiler']->prepareStringsForCompilationUsing(
+            fn (string $template) => FieldContext::mark($template),
+        );
     }
 
     /**

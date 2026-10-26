@@ -34,32 +34,37 @@ it('renders a native select whose wrapper takes the class', function () {
         ->assertSee('data-slot="native-select-icon"', false);
 });
 
-it('shows the validation error under the control', function (string $blade, string $control) {
-    $this->withViewErrors(['email' => 'The email field is required.'])
-        ->blade($blade)
-        ->assertSee($control.' aria-invalid="true" aria-describedby="email-error" id="email" wire:model="email"', false)
-        ->assertSeeInOrder([$control, '<div role="alert" data-slot="field-error" id="email-error">', 'The email field is required.'], false);
-})->with([
+dataset('text controls', [
     'input' => ['<x-ui::input id="email" wire:model="email" />', '<input type="text" data-slot="input"'],
     'textarea' => ['<x-ui::textarea id="email" wire:model="email" />', '<textarea data-slot="textarea"'],
     'native select' => ['<x-ui::native-select id="email" wire:model="email" />', '<select data-slot="native-select"'],
 ]);
 
-it('keeps the control invalid but hides the message with show-error off', function (string $blade) {
+it('shows the validation error inside a field', function (string $control, string $opening) {
     $this->withViewErrors(['email' => 'The email field is required.'])
-        ->blade($blade)
+        ->blade("<x-ui::field>{$control}</x-ui::field>")
+        ->assertSee($opening.' aria-invalid="true" aria-describedby="email-error" id="email" wire:model="email"', false)
+        ->assertSeeInOrder([$opening, '<div role="alert" data-slot="field-error" id="email-error">', 'The email field is required.'], false);
+})->with('text controls');
+
+it('does not validate a control used on its own', function (string $control) {
+    $this->withViewErrors(['email' => 'The email field is required.'])
+        ->blade($control)
+        ->assertDontSee('aria-invalid', false)
+        ->assertDontSee('The email field is required.');
+})->with('text controls');
+
+it('keeps the control invalid but hides the message when the field says so', function (string $control) {
+    $this->withViewErrors(['email' => 'The email field is required.'])
+        ->blade("<x-ui::field :show-error=\"false\">{$control}</x-ui::field>")
         ->assertSee('aria-invalid="true"', false)
         ->assertDontSee('aria-describedby', false)
         ->assertDontSee('The email field is required.');
-})->with([
-    'input' => ['<x-ui::input wire:model="email" :show-error="false" />'],
-    'textarea' => ['<x-ui::textarea wire:model="email" :show-error="false" />'],
-    'native select' => ['<x-ui::native-select wire:model="email" :show-error="false" />'],
-]);
+})->with('text controls');
 
 it('stays clean without errors', function () {
     $this->withViewErrors(['other' => 'Nope.'])
-        ->blade('<x-ui::input wire:model="email" />')
+        ->blade('<x-ui::field><x-ui::input wire:model="email" /></x-ui::field>')
         ->assertDontSee('aria-invalid', false)
         ->assertDontSee('field-error', false);
 });

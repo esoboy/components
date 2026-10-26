@@ -1,11 +1,12 @@
 @blaze
 
-@props([
+@aware([
+    'uiField' => false,
     'showError' => true,
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors, $showError);
+$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 <textarea {{ $attributes->merge(['data-slot' => 'textarea', ...$state->attributes()]) }}>{{ $slot }}</textarea>

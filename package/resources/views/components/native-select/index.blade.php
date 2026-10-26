@@ -1,12 +1,16 @@
 @blaze
 
-@props([
-    'size' => 'default',
+@aware([
+    'uiField' => false,
     'showError' => true,
 ])
 
+@props([
+    'size' => 'default',
+])
+
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors, $showError);
+$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 {{-- The wrapper draws the box and takes class/style; every other attribute belongs to the <select>. --}}

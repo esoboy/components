@@ -22,16 +22,27 @@ final class ControlState
         public readonly bool $showError,
     ) {}
 
-    public static function for(ComponentAttributeBag $attributes, ViewErrorBag|MessageBag|null $errors, bool $showError = true): self
+    /**
+     * Controls only validate inside a field or field set; the nearest one decides whether messages show.
+     */
+    public static function for(ComponentAttributeBag $attributes, ViewErrorBag|MessageBag|null $errors, mixed $inField = true, mixed $showError = true): self
     {
         $key = self::key($attributes);
-        $messages = self::messages($errors, $key);
+        $messages = self::boolean($inField) ? self::messages($errors, $key) : [];
 
         $errorId = $messages
             ? ($attributes->get('id') ?? 'ui-'.str_replace('.', '-', $key)).'-error'
             : null;
 
-        return new self($key, $messages, $errorId, $showError);
+        return new self($key, $messages, $errorId, self::boolean($showError));
+    }
+
+    /**
+     * Attribute values arrive as written: show-error="false" is a string.
+     */
+    private static function boolean(mixed $value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? (bool) $value;
     }
 
     /**
