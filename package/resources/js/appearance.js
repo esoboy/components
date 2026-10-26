@@ -6,7 +6,6 @@
  */
 
 const COOKIE = 'ui_appearance'
-const CHANNEL = 'ui-appearance'
 const VALUES = ['light', 'dark', 'system']
 
 export function createAppearance(win = window) {
@@ -14,24 +13,10 @@ export function createAppearance(win = window) {
     const root = doc.documentElement
     const media = win.matchMedia('(prefers-color-scheme: dark)')
     const motion = win.matchMedia('(prefers-reduced-motion: reduce)')
-    const channel = win.BroadcastChannel ? new win.BroadcastChannel(CHANNEL) : null
     const listeners = new Set()
 
-    let current = initial()
+    let current = VALUES.includes(root.getAttribute('data-appearance')) ? root.getAttribute('data-appearance') : 'system'
     let transition = null
-
-    function initial() {
-        const stamped = root.getAttribute('data-appearance')
-
-        if (VALUES.includes(stamped)) return stamped
-
-        // A cached or static page may lack the server stamp; fall back to the cookie.
-        const cookie = doc.cookie.match(new RegExp(`(?:^|; )${COOKIE}=(light|dark)`))?.[1]
-
-        if (cookie) root.setAttribute('data-appearance', cookie)
-
-        return cookie ?? 'system'
-    }
 
     function resolve(value) {
         return value === 'system' ? (media.matches ? 'dark' : 'light') : value
@@ -65,11 +50,6 @@ export function createAppearance(win = window) {
 
         transition = doc.startViewTransition(commit)
 
-        // A page that stops rendering never captures the old state; skipping still commits.
-        const stalled = win.setTimeout(() => transition?.skipTransition(), 1000)
-
-        transition.updateCallbackDone.finally(() => win.clearTimeout(stalled))
-
         transition.finished.finally(() => {
             transition = null
             root.removeAttribute('data-appearance-transition')
@@ -85,31 +65,23 @@ export function createAppearance(win = window) {
         win.dispatchEvent(new win.CustomEvent('ui-appearance-changed', { detail }))
     }
 
-    function change(value, { broadcast }) {
+    function set(value) {
         if (! VALUES.includes(value) || value === current) return
 
         const changesScheme = resolve(value) !== resolve(current)
 
         current = value
+        persist(value)
         render(changesScheme)
         notify()
-
-        if (broadcast) {
-            persist(value)
-            channel?.postMessage(value)
-        }
     }
-
-    // Other tabs already persisted the value; only mirror it here.
-    const onMessage = ({ data }) => change(data, { broadcast: false })
 
     // The OS flipped while following the system: CSS already switched, keep state in sync.
     const onSystemChange = () => current === 'system' && notify()
 
     // Livewire: $this->dispatch('ui-set-appearance', value: 'dark')
-    const onSetEvent = ({ detail }) => change(detail?.value ?? detail, { broadcast: true })
+    const onSetEvent = ({ detail }) => set(detail?.value ?? detail)
 
-    channel?.addEventListener('message', onMessage)
     media.addEventListener('change', onSystemChange)
     win.addEventListener('ui-set-appearance', onSetEvent)
 
@@ -122,12 +94,10 @@ export function createAppearance(win = window) {
             return resolve(current)
         },
 
-        set(value) {
-            change(value, { broadcast: true })
-        },
+        set,
 
         toggle() {
-            this.set(this.resolved === 'dark' ? 'light' : 'dark')
+            set(resolve(current) === 'dark' ? 'light' : 'dark')
         },
 
         subscribe(listener) {
@@ -137,7 +107,6 @@ export function createAppearance(win = window) {
         },
 
         destroy() {
-            channel?.close()
             media.removeEventListener('change', onSystemChange)
             win.removeEventListener('ui-set-appearance', onSetEvent)
             listeners.clear()

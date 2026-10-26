@@ -34,7 +34,6 @@ function mockViewTransition({ settle = true } = {}) {
             update,
             duringUpdate: null,
             finished: new Promise(resolve => (finish = resolve)),
-            updateCallbackDone: Promise.resolve(),
             skipTransition: vi.fn(() => transition.run()),
             run() {
                 transition.duringUpdate = root.hasAttribute('data-appearance-transition')
@@ -75,7 +74,6 @@ beforeEach(() => {
 afterEach(() => {
     instance?.destroy()
     instance = null
-    vi.useRealTimers()
 })
 
 describe('initial state', () => {
@@ -93,13 +91,6 @@ describe('initial state', () => {
         root.setAttribute('data-appearance', 'dark')
 
         expect(create().value).toBe('dark')
-    })
-
-    it('falls back to the cookie when the page was not stamped', () => {
-        document.cookie = 'ui_appearance=dark; path=/'
-
-        expect(create().value).toBe('dark')
-        expect(root.getAttribute('data-appearance')).toBe('dark')
     })
 })
 
@@ -124,6 +115,7 @@ describe('changing the appearance', () => {
 
     it('forgets the choice when going back to system', () => {
         document.cookie = 'ui_appearance=dark; path=/'
+        root.setAttribute('data-appearance', 'dark')
         const appearance = create()
 
         appearance.set('system')
@@ -225,40 +217,5 @@ describe('transition', () => {
         expect(transitions).toHaveLength(1)
         expect(transitions[0].skipTransition).toHaveBeenCalled()
         expect(root.getAttribute('data-appearance')).toBe('light')
-    })
-
-    it('skips a crossfade that never starts', () => {
-        vi.useFakeTimers()
-        const transitions = mockViewTransition({ settle: false })
-        transitions.length = 0
-        document.startViewTransition.mockImplementation(update => {
-            const transition = {
-                finished: new Promise(() => {}),
-                updateCallbackDone: new Promise(() => {}),
-                skipTransition: vi.fn(update),
-            }
-            transitions.push(transition)
-
-            return transition
-        })
-
-        create().set('dark')
-        vi.advanceTimersByTime(1000)
-
-        expect(transitions[0].skipTransition).toHaveBeenCalled()
-        expect(root.getAttribute('data-appearance')).toBe('dark')
-    })
-})
-
-describe('other tabs', () => {
-    it('mirrors a change made elsewhere without persisting it again', async () => {
-        const appearance = create()
-        const otherTab = new BroadcastChannel('ui-appearance')
-
-        otherTab.postMessage('dark')
-        await vi.waitFor(() => expect(appearance.value).toBe('dark'))
-
-        expect(cookie()).toBeNull()
-        otherTab.close()
     })
 })
