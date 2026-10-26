@@ -1,4 +1,7 @@
 {
+    "ui.cancel": "Cancel",
     "ui.close": "Close",
+    "ui.confirm": "Are you sure?",
+    "ui.continue": "Continue",
     "ui.loading": "Loading"
 }

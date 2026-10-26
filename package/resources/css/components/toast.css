@@ -1,0 +1,71 @@
+/*
+ * Toaster and toasts, matching shadcn's Sonner (expanded, rich colors off).
+ */
+@layer components {
+    :where([data-slot="toaster"]) {
+        @apply fixed m-0 w-[356px] gap-3.5 overflow-visible border-0 bg-transparent p-0 max-sm:inset-x-4 max-sm:w-auto;
+        inset: auto;
+        pointer-events: none;
+
+        &:popover-open {
+            @apply flex;
+        }
+
+        &[data-position^="bottom"] {
+            @apply bottom-8 flex-col max-sm:bottom-4;
+        }
+
+        &[data-position^="top"] {
+            @apply top-8 flex-col-reverse max-sm:top-4;
+        }
+
+        &[data-position$="right"] {
+            @apply right-8;
+        }
+
+        &[data-position$="left"] {
+            @apply left-8;
+        }
+
+        &[data-position$="center"] {
+            @apply left-1/2 -translate-x-1/2 max-sm:translate-x-0;
+        }
+    }
+
+    :where([data-slot="toast"]) {
+        @apply pointer-events-auto flex w-full items-center gap-1.5 rounded-lg border bg-popover p-4 text-[13px] text-popover-foreground shadow-[0_4px_12px_rgb(0_0_0/0.1)];
+        transition: opacity 400ms, translate 400ms;
+
+        @starting-style {
+            opacity: 0;
+            translate: 0 100%;
+        }
+
+        &[data-removed] {
+            opacity: 0;
+            transition-duration: 200ms;
+        }
+    }
+
+    :where([data-slot="toaster"][data-position^="top"] [data-slot="toast"]) {
+        @starting-style {
+            translate: 0 -100%;
+        }
+    }
+
+    :where([data-slot="toast-icon"]) {
+        @apply -ml-[3px] mr-1 flex size-4 shrink-0 items-center justify-center [&_svg]:size-4;
+    }
+
+    :where([data-slot="toast-content"]) {
+        @apply flex flex-col gap-0.5;
+    }
+
+    :where([data-slot="toast-title"]) {
+        @apply leading-normal font-medium;
+    }
+
+    :where([data-slot="toast-description"]) {
+        @apply leading-snug text-muted-foreground;
+    }
+}

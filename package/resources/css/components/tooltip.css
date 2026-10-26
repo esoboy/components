@@ -1,0 +1,42 @@
+@layer components {
+    :where([data-slot="tooltip-content"]) {
+        @apply w-fit overflow-visible rounded-md border-0 bg-foreground px-3 py-1.5 text-xs text-balance text-background;
+
+        /* The arrow is drawn below, so the gap leaves room for it. */
+        --side-offset-total: calc(var(--side-offset) + 5px);
+
+        &::after {
+            @apply absolute size-2.5 rotate-45 rounded-[2px] bg-foreground;
+            content: "";
+        }
+
+        /* Tooltips stay on their side: the arrow can't follow a flip. */
+        &[data-side] {
+            position-try-fallbacks: none;
+        }
+
+        &[data-side="top"] {
+            margin-bottom: var(--side-offset-total);
+
+            &::after { bottom: 2px; left: 50%; translate: -50% 50%; }
+        }
+
+        &[data-side="bottom"] {
+            margin-top: var(--side-offset-total);
+
+            &::after { top: 2px; left: 50%; translate: -50% -50%; }
+        }
+
+        &[data-side="right"] {
+            margin-left: var(--side-offset-total);
+
+            &::after { left: 2px; top: 50%; translate: -50% -50%; }
+        }
+
+        &[data-side="left"] {
+            margin-right: var(--side-offset-total);
+
+            &::after { right: 2px; top: 50%; translate: 50% -50%; }
+        }
+    }
+}

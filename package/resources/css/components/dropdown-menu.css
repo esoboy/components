@@ -1,0 +1,88 @@
+@layer components {
+    :where([data-slot="dropdown-menu-content"]) {
+        @apply min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none;
+    }
+
+    :where([data-slot="dropdown-menu-sub-content"]) {
+        @apply min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg outline-none;
+    }
+
+    :where([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-sub-trigger"], [data-slot="dropdown-menu-checkbox-item"], [data-slot="dropdown-menu-radio-item"]) {
+        @apply relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-start text-sm outline-hidden select-none;
+        @apply focus:bg-accent focus:text-accent-foreground;
+        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+
+        &:is(:disabled, [aria-disabled="true"]) {
+            @apply pointer-events-none opacity-50;
+        }
+
+        &[data-inset] {
+            @apply pl-8;
+        }
+    }
+
+    :where([data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-sub-trigger"]) {
+        @apply [&_svg:not([class*='text-'])]:text-muted-foreground;
+    }
+
+    :where([data-slot="dropdown-menu-item"][data-variant="destructive"]) {
+        @apply text-destructive focus:text-destructive *:[svg]:text-destructive;
+
+        &:focus {
+            background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+        }
+    }
+
+    /* Checkbox and radio items: a hidden native input, the row is its label. */
+    :where([data-slot="dropdown-menu-checkbox-item"], [data-slot="dropdown-menu-radio-item"]) {
+        @apply pr-2 pl-8;
+
+        & > input {
+            @apply sr-only;
+        }
+
+        &:has(> input:focus) {
+            @apply bg-accent text-accent-foreground;
+        }
+
+        &:has(> input:disabled) {
+            @apply pointer-events-none opacity-50;
+        }
+    }
+
+    :where([data-slot="dropdown-menu-item-indicator"]) {
+        @apply pointer-events-none invisible absolute left-2 flex size-3.5 items-center justify-center;
+    }
+
+    :where(:checked + [data-slot="dropdown-menu-item-indicator"]) {
+        @apply visible;
+    }
+
+    :where([data-slot="dropdown-menu-radio-item"] [data-slot="dropdown-menu-item-indicator"] svg) {
+        @apply size-2;
+    }
+
+    :where([data-slot="dropdown-menu-sub-trigger"]:has(+ :popover-open)) {
+        @apply bg-accent text-accent-foreground;
+    }
+
+    :where([data-slot="dropdown-menu-sub-trigger-icon"]) {
+        @apply ml-auto size-4;
+    }
+
+    :where([data-slot="dropdown-menu-label"]) {
+        @apply px-2 py-1.5 text-sm font-medium;
+
+        &[data-inset] {
+            @apply pl-8;
+        }
+    }
+
+    :where([data-slot="dropdown-menu-separator"]) {
+        @apply -mx-1 my-1 h-px bg-border;
+    }
+
+    :where([data-slot="dropdown-menu-shortcut"]) {
+        @apply ml-auto text-xs tracking-widest text-muted-foreground;
+    }
+}

@@ -8,3 +8,4 @@ Route::get('/', function () {
 
 Route::livewire('/button', 'pages::button');
 Route::livewire('/forms', 'pages::forms');
+Route::livewire('/overlays', 'pages::overlays');

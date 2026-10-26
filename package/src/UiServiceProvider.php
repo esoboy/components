@@ -2,18 +2,47 @@
 
 namespace Esoboy\Ui;
 
+use Esoboy\Ui\Livewire\DialogHandle;
 use Esoboy\Ui\Support\FieldContext;
+use Esoboy\Ui\Support\Overlay;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Component;
+
+use function Livewire\on;
 
 class UiServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->scoped(Overlay::class);
+    }
+
     public function boot(): void
     {
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
 
         $this->bootTranslations();
         $this->bootFieldContext();
+        $this->bootLivewire();
+    }
+
+    /**
+     * $this->toast(...) and $this->dialog('name') on every Livewire component.
+     */
+    protected function bootLivewire(): void
+    {
+        Component::macro('toast', function (string $message, ?string $description = null, string $type = 'default', ?int $duration = null) {
+            /** @var Component $this */
+            $this->dispatch('ui-toast', message: $message, description: $description, type: $type, duration: $duration);
+        });
+
+        Component::macro('dialog', function (string $name) {
+            /** @var Component $this */
+            return new DialogHandle($this, $name);
+        });
+
+        on('render', fn (Component $component) => app(Overlay::class)->restart($component->getId()));
     }
 
     /**

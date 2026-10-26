@@ -1,0 +1,181 @@
+/*
+ * Dialog, Alert Dialog and Sheet are native <dialog> elements in the top layer.
+ * Entry and exit animate with @starting-style; display/overlay transition discretely.
+ */
+@layer components {
+    :where([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"]) {
+        @apply max-h-none max-w-none border bg-background text-foreground shadow-lg outline-none;
+        transition-property: opacity, scale, translate, display, overlay;
+        transition-behavior: allow-discrete;
+
+        &::backdrop {
+            background-color: transparent;
+            transition-property: background-color, display, overlay;
+            transition-duration: 200ms;
+            transition-behavior: allow-discrete;
+        }
+
+        &[open]::backdrop {
+            @apply bg-black/50;
+        }
+    }
+
+    @starting-style {
+        :where([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"])[open]::backdrop {
+            background-color: transparent;
+        }
+    }
+
+    :where(html:has(dialog:modal)) {
+        @apply overflow-hidden;
+    }
+
+    /* Dialog and Alert Dialog: centered, fade and zoom. Display is only set while
+       open, so a closed <dialog> keeps the browser's display: none. */
+    :where([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
+        @apply inset-0 m-auto h-fit w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg p-6 opacity-0 duration-200;
+        scale: 0.95;
+
+        &[open] {
+            @apply grid opacity-100;
+            scale: 1;
+
+            @starting-style {
+                @apply opacity-0;
+                scale: 0.95;
+            }
+        }
+    }
+
+    :where([data-slot="dialog-content"]) {
+        @apply sm:max-w-lg;
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="default"]) {
+        @apply sm:max-w-lg;
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="sm"]) {
+        @apply max-w-xs;
+    }
+
+    :where([data-slot="dialog-close"], [data-slot="sheet-close"]) {
+        @apply absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity outline-hidden;
+        @apply hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none;
+        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+    }
+
+    :where([data-slot="dialog-close"]) {
+        @apply bg-accent text-muted-foreground;
+    }
+
+    :where([data-slot="sheet-close"]) {
+        @apply bg-secondary;
+    }
+
+    :where([data-slot="dialog-header"]) {
+        @apply flex flex-col gap-2 text-center sm:text-left;
+    }
+
+    :where([data-slot="dialog-footer"]) {
+        @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
+    }
+
+    :where([data-slot="dialog-title"]) {
+        @apply text-lg leading-none font-semibold;
+    }
+
+    :where([data-slot="dialog-description"], [data-slot="alert-dialog-description"], [data-slot="sheet-description"]) {
+        @apply text-sm text-muted-foreground;
+    }
+
+    /* Alert Dialog */
+    :where([data-slot="alert-dialog-header"]) {
+        @apply grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center;
+
+        &:has([data-slot="alert-dialog-media"]) {
+            @apply grid-rows-[auto_auto_1fr] gap-x-6;
+        }
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="default"] [data-slot="alert-dialog-header"]) {
+        @apply sm:place-items-start sm:text-left;
+
+        &:has([data-slot="alert-dialog-media"]) {
+            @apply sm:grid-rows-[auto_1fr];
+        }
+    }
+
+    :where([data-slot="alert-dialog-footer"]) {
+        @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="sm"] [data-slot="alert-dialog-footer"]) {
+        @apply grid grid-cols-2;
+    }
+
+    :where([data-slot="alert-dialog-title"]) {
+        @apply text-lg font-semibold;
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="default"]:has([data-slot="alert-dialog-media"]) [data-slot="alert-dialog-title"]) {
+        @apply sm:col-start-2;
+    }
+
+    :where([data-slot="alert-dialog-media"]) {
+        @apply mb-2 inline-flex size-16 items-center justify-center rounded-md bg-muted *:[svg:not([class*='size-'])]:size-8;
+    }
+
+    :where([data-slot="alert-dialog-content"][data-size="default"] [data-slot="alert-dialog-media"]) {
+        @apply sm:row-span-2;
+    }
+
+    /* Sheet: pinned to a side, slides in. */
+    :where([data-slot="sheet-content"]) {
+        @apply m-0 flex-col gap-4 p-0 duration-300 ease-in-out;
+
+        &[open] {
+            @apply flex duration-500;
+            translate: 0 0;
+        }
+    }
+
+    :where([data-slot="sheet-content"][data-side="right"]) {
+        @apply inset-y-0 right-0 left-auto h-full w-3/4 border-y-0 border-r-0 sm:max-w-sm;
+        translate: 100% 0;
+    }
+
+    :where([data-slot="sheet-content"][data-side="left"]) {
+        @apply inset-y-0 right-auto left-0 h-full w-3/4 border-y-0 border-l-0 sm:max-w-sm;
+        translate: -100% 0;
+    }
+
+    :where([data-slot="sheet-content"][data-side="top"]) {
+        @apply inset-x-0 top-0 bottom-auto h-auto w-full border-x-0 border-t-0;
+        translate: 0 -100%;
+    }
+
+    :where([data-slot="sheet-content"][data-side="bottom"]) {
+        @apply inset-x-0 top-auto bottom-0 h-auto w-full border-x-0 border-b-0;
+        translate: 0 100%;
+    }
+
+    @starting-style {
+        :where([data-slot="sheet-content"][data-side="right"])[open] { translate: 100% 0; }
+        :where([data-slot="sheet-content"][data-side="left"])[open] { translate: -100% 0; }
+        :where([data-slot="sheet-content"][data-side="top"])[open] { translate: 0 -100%; }
+        :where([data-slot="sheet-content"][data-side="bottom"])[open] { translate: 0 100%; }
+    }
+
+    :where([data-slot="sheet-header"]) {
+        @apply flex flex-col gap-1.5 p-4;
+    }
+
+    :where([data-slot="sheet-footer"]) {
+        @apply mt-auto flex flex-col gap-2 p-4;
+    }
+
+    :where([data-slot="sheet-title"]) {
+        @apply font-semibold text-foreground;
+    }
+}

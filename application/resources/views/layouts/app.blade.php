@@ -10,5 +10,8 @@
     </head>
     <body class="min-h-screen antialiased">
         {{ $slot }}
+
+        <x-ui::toaster />
+        <x-ui::confirm />
     </body>
 </html>

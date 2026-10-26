@@ -1,4 +1,7 @@
 {
+    "ui.cancel": "取消",
     "ui.close": "关闭",
+    "ui.confirm": "确定要继续吗？",
+    "ui.continue": "继续",
     "ui.loading": "加载中"
 }
