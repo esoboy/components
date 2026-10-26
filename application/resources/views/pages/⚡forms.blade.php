@@ -117,4 +117,10 @@ new class extends Component
         <p class="text-sm text-muted-foreground">Outside any field: bound to the same email, never validated.</p>
         <x-ui::input id="email-standalone" wire:model="email" placeholder="standalone" />
     </div>
+
+    <div id="island" class="scheme-dark mt-10 space-y-3 rounded-lg bg-background p-4 text-foreground">
+        <p class="text-sm">scheme-dark: always dark, whatever the system uses.</p>
+        <x-ui::button>Primary</x-ui::button>
+        <x-ui::input placeholder="Input" />
+    </div>
 </div>

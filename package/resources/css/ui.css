@@ -6,11 +6,11 @@
  *   @import '../../vendor/esoboy/ui/resources/css/ui.css';
  *
  * Every token below lives in @theme, so a later @theme block in the app overrides it.
- * Light and dark values are paired with light-dark(); the active value follows the
- * inherited color-scheme, which is the only thing dark mode ever changes.
+ * Light and dark values are paired with light-dark() and follow the system through
+ * color-scheme. To force a scheme, put Tailwind's scheme-light / scheme-dark on <html>
+ * or on any element to scope it.
  */
 
-@import './appearance.css';
 @import './components/button.css';
 @import './components/checkbox.css';
 @import './components/field.css';
@@ -59,6 +59,10 @@
 }
 
 @layer base {
+    :root {
+        color-scheme: light dark;
+    }
+
     *,
     ::before,
     ::after {

@@ -2,13 +2,8 @@
 
 namespace Esoboy\Ui;
 
-use Esoboy\Ui\Appearance\Appearance;
-use Esoboy\Ui\Appearance\InjectAppearance;
 use Esoboy\Ui\Support\FieldContext;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class UiServiceProvider extends ServiceProvider
@@ -18,7 +13,6 @@ class UiServiceProvider extends ServiceProvider
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
 
         $this->bootTranslations();
-        $this->bootAppearance();
         $this->bootFieldContext();
     }
 
@@ -47,16 +41,5 @@ class UiServiceProvider extends ServiceProvider
                 __DIR__.'/../lang' => $this->app->langPath('vendor/ui'),
             ], 'ui-lang');
         }
-    }
-
-    /**
-     * The browser writes the chosen appearance to a plain cookie, and every HTML
-     * response gets it stamped on <html> so the first paint is already correct.
-     */
-    protected function bootAppearance(): void
-    {
-        EncryptCookies::except(Appearance::COOKIE);
-
-        Event::listen(RequestHandled::class, InjectAppearance::class);
     }
 }

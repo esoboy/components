@@ -7,5 +7,4 @@ Route::get('/', function () {
 });
 
 Route::livewire('/button', 'pages::button');
-Route::livewire('/appearance', 'pages::appearance');
 Route::livewire('/forms', 'pages::forms');
