@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\View\ViewException;
+
 it('renders the field family with shadcn slots', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::field.set>
@@ -24,6 +26,36 @@ it('renders the field family with shadcn slots', function () {
         ->assertSee('<div data-slot="field-title">Title</div>', false)
         ->assertSee('<label data-slot="field-label" for="name">Name</label>', false)
         ->assertSee('<p data-slot="field-description">Help</p>', false);
+});
+
+it('refuses a field inside another field', function (string $blade) {
+    expect(fn () => (string) $this->blade($blade))
+        ->toThrow(ViewException::class, '<x-ui::field> cannot contain another <x-ui::field>.');
+})->with([
+    'direct child' => ['<x-ui::field><x-ui::field>x</x-ui::field></x-ui::field>'],
+    'inside field content' => ['<x-ui::field><x-ui::field.content><x-ui::field>x</x-ui::field></x-ui::field.content></x-ui::field>'],
+    'inside a field set' => ['<x-ui::field><x-ui::field.set><x-ui::field>x</x-ui::field></x-ui::field.set></x-ui::field>'],
+    'inside a field label' => ['<x-ui::field><x-ui::field.label><x-ui::field>x</x-ui::field></x-ui::field.label></x-ui::field>'],
+]);
+
+it('allows fields side by side and grouped', function (string $blade) {
+    expect(substr_count((string) $this->blade($blade), 'data-slot="field"'))->toBe(2);
+})->with([
+    'siblings' => ['<x-ui::field>a</x-ui::field><x-ui::field>b</x-ui::field>'],
+    'field group' => ['<x-ui::field.group><x-ui::field>a</x-ui::field><x-ui::field>b</x-ui::field></x-ui::field.group>'],
+    'field set' => ['<x-ui::field.set><x-ui::field>a</x-ui::field><x-ui::field>b</x-ui::field></x-ui::field.set>'],
+    'choice cards' => ['<x-ui::field.label><x-ui::field>a</x-ui::field></x-ui::field.label><x-ui::field.label><x-ui::field>b</x-ui::field></x-ui::field.label>'],
+]);
+
+it('allows field-like slots inside a field', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::field>
+            <x-ui::field.label>Name</x-ui::field.label>
+            <x-ui::field.content><x-ui::field.title>T</x-ui::field.title></x-ui::field.content>
+            <x-ui::field.description>data-slot="field"</x-ui::field.description>
+            <x-ui::field.error :messages="['x']" />
+        </x-ui::field>
+        BLADE)->assertSee('data-slot="field-error"', false);
 });
 
 it('defaults to a vertical field', function () {
