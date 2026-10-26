@@ -16,7 +16,7 @@ it('does not hardcode user facing text in any component', function (string $path
         '/@php\b.*?@endphp/s',         // php blocks
         '/<\?php.*?\?>/s',              // raw php
         '/\{\{.*?\}\}|\{!!.*?!!\}/s',   // echoes, where translated text belongs
-        '/<[^>]*>/s',                   // html tags and their attributes
+        '/<(?:[^>"\']|"[^"]*"|\'[^\']*\')*>/s', // html tags, with quoted attributes that may hold "->"
         '/@\w+(\s*\((?:[^()]|(?1))*\))?/', // directives and their arguments
     ], '', $source);
 

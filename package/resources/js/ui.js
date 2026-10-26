@@ -6,6 +6,9 @@
  */
 
 import { createAppearance } from './appearance.js'
+import { defineRadioGroup } from './radio-group.js'
+
+defineRadioGroup()
 
 const appearance = createAppearance()
 

@@ -1,0 +1,26 @@
+@layer components {
+    :where([data-slot="radio-group"]) {
+        @apply grid gap-3;
+    }
+
+    :where([data-slot="radio-group-item"]) {
+        @apply inline-grid aspect-square size-4 shrink-0 appearance-none place-content-center rounded-full border border-input text-primary shadow-xs transition-[color,box-shadow] outline-none;
+        @apply focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50;
+        background-color: light-dark(transparent, color-mix(in oklab, var(--color-input) 30%, transparent));
+
+        &::before {
+            @apply size-2 rounded-full bg-primary;
+            content: "";
+            visibility: hidden;
+        }
+
+        &:checked::before {
+            visibility: visible;
+        }
+    }
+
+    :where([data-slot="radio-group-item"][aria-invalid="true"], [data-slot="radio-group"][aria-invalid="true"] [data-slot="radio-group-item"]) {
+        @apply border-destructive;
+        --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+    }
+}
