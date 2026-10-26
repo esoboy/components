@@ -1,0 +1,73 @@
+@layer components {
+    :where([data-slot="button"]) {
+        @apply inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all outline-none;
+        @apply focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
+        @apply aria-invalid:border-destructive aria-invalid:ring-destructive/20;
+        @apply disabled:pointer-events-none disabled:opacity-50;
+        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+
+        /* Livewire v4 marks the element that triggered a request with data-loading. */
+        &[data-loading] {
+            @apply pointer-events-none opacity-50;
+        }
+    }
+
+    :where([data-slot="button"][data-variant="default"]) {
+        @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    }
+
+    :where([data-slot="button"][data-variant="destructive"]) {
+        @apply text-white hover:bg-destructive/90 focus-visible:ring-destructive/20;
+        background-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 60%, transparent));
+    }
+
+    :where([data-slot="button"][data-variant="outline"]) {
+        @apply border shadow-xs hover:bg-accent hover:text-accent-foreground;
+        border-color: light-dark(var(--color-border), var(--color-input));
+        background-color: light-dark(var(--color-background), color-mix(in oklab, var(--color-input) 30%, transparent));
+    }
+
+    :where([data-slot="button"][data-variant="secondary"]) {
+        @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    }
+
+    :where([data-slot="button"][data-variant="ghost"]) {
+        @apply hover:bg-accent hover:text-accent-foreground;
+    }
+
+    :where([data-slot="button"][data-variant="link"]) {
+        @apply text-primary underline-offset-4 hover:underline;
+    }
+
+    :where([data-slot="button"][data-size="default"]) {
+        @apply h-9 px-4 py-2 has-[>svg]:px-3;
+    }
+
+    :where([data-slot="button"][data-size="xs"]) {
+        @apply h-6 gap-1 px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3;
+    }
+
+    :where([data-slot="button"][data-size="sm"]) {
+        @apply h-8 gap-1.5 px-3 has-[>svg]:px-2.5;
+    }
+
+    :where([data-slot="button"][data-size="lg"]) {
+        @apply h-10 px-6 has-[>svg]:px-4;
+    }
+
+    :where([data-slot="button"][data-size="icon"]) {
+        @apply size-9;
+    }
+
+    :where([data-slot="button"][data-size="icon-xs"]) {
+        @apply size-6 [&_svg:not([class*='size-'])]:size-3;
+    }
+
+    :where([data-slot="button"][data-size="icon-sm"]) {
+        @apply size-8;
+    }
+
+    :where([data-slot="button"][data-size="icon-lg"]) {
+        @apply size-10;
+    }
+}
