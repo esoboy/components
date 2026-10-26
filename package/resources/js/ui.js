@@ -5,17 +5,25 @@
  *   import '../../vendor/esoboy/ui/resources/js/ui.js'
  */
 
+import { defineAccordion } from './accordion.js'
 import { initAvatars } from './avatar.js'
 import { defineCalendar } from './calendar.js'
+import { defineCarousel } from './carousel.js'
+import { defineCollapsible } from './collapsible.js'
 import { defineCombobox } from './combobox.js'
 import { defineCommand } from './command.js'
 import { initConfirm } from './confirm.js'
 import { defineDatePicker } from './date-picker.js'
 import { initDialogs } from './dialog.js'
+import { initDrawers } from './drawer.js'
 import { initDropdownMenus } from './dropdown-menu.js'
+import { initHoverCards } from './hover-card.js'
 import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
+import { initNavigationMenus } from './navigation-menu.js'
 import { defineRadioGroup } from './radio-group.js'
+import { defineResizable } from './resizable.js'
+import { defineScrollArea } from './scroll-area.js'
 import { defineSelect } from './select.js'
 import { defineSidebar } from './sidebar.js'
 import { defineSlider } from './slider.js'
@@ -33,10 +41,18 @@ defineSlider()
 defineInputOtp()
 defineTabs()
 defineSidebar()
+defineAccordion()
+defineCollapsible()
+defineScrollArea()
+defineResizable()
+defineCarousel()
 initAvatars()
 initConfirm()
 initDialogs()
+initDrawers()
 initDropdownMenus()
+initHoverCards()
 initInputGroups()
+initNavigationMenus()
 initToasts()
 initTooltips()

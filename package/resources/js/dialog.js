@@ -1,12 +1,12 @@
 /*
- * Dialog and Sheet open and close natively through invoker commands. Two gaps remain:
+ * Dialog, Sheet and Drawer open and close natively through invoker commands. Two gaps remain:
  * closing on a backdrop click (Safari has no closedby="any" yet) and Livewire's
  * $this->dialog('name')->open() / ->close().
  */
 
 export function initDialogs(win = window) {
     win.document.addEventListener('click', ({ target, clientX, clientY }) => {
-        if (! target.matches?.('dialog[open]:is([data-slot="dialog-content"], [data-slot="sheet-content"])')) return
+        if (! target.matches?.('dialog[open]:is([data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="drawer-popup"])')) return
 
         // A click on the <dialog> itself outside its box landed on the backdrop.
         const box = target.getBoundingClientRect()

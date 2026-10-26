@@ -1,5 +1,5 @@
 /*
- * jsdom has neither the Popover API, :modal nor matchMedia. Just enough for the tests:
+ * jsdom has neither the Popover API, :modal, matchMedia nor ResizeObserver. Just enough for the tests:
  * open popovers carry data-popover-open, modal dialogs data-modal.
  */
 
@@ -41,3 +41,6 @@ HTMLDialogElement.prototype.close = function (value) {
 
 // Desktop unless a test swaps it.
 window.matchMedia ||= query => ({ media: query, matches: false, addEventListener() {}, removeEventListener() {} })
+
+// jsdom does no layout, so there is nothing to observe.
+window.ResizeObserver ||= class { observe() {} unobserve() {} disconnect() {} }

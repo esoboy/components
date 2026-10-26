@@ -1,9 +1,11 @@
 /*
  * Dropdown menus open, close and dismiss natively as popovers. This adds what menus
- * need on top: arrow-key navigation, hover highlighting and submenus.
+ * need on top: arrow-key navigation, hover highlighting and submenus. Context Menu and
+ * Menubar share the items; they add opening at the pointer, and moving along the bar.
  */
 
-const MENU = '[data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"]'
+const ROOT_MENU = '[data-slot="dropdown-menu-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"]'
+const MENU = `${ROOT_MENU}, [data-slot="dropdown-menu-sub-content"]`
 const ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]'
 const ROW = '[data-slot="dropdown-menu-item"], [data-slot="dropdown-menu-checkbox-item"], [data-slot="dropdown-menu-radio-item"], [data-slot="dropdown-menu-sub-trigger"]'
 
@@ -21,12 +23,14 @@ export function initDropdownMenus(win = window) {
 
     // A freshly opened menu takes focus so arrow keys work right away.
     doc.addEventListener('toggle', ({ target, newState }) => {
-        if (newState === 'open' && target.matches?.('[data-slot="dropdown-menu-content"]') && ! target.contains(doc.activeElement)) {
+        if (newState === 'open' && target.matches?.(ROOT_MENU) && ! target.contains(doc.activeElement)) {
             target.focus()
         }
     }, true)
 
     doc.addEventListener('keydown', event => {
+        if (moveAlongMenubar(event)) return
+
         const menu = event.target.closest?.(MENU)
 
         if (! menu) return
@@ -63,8 +67,68 @@ export function initDropdownMenus(win = window) {
         }
     })
 
-    // The highlight follows the pointer, and hovering a sub trigger opens its submenu.
+    // Context menus open where the pointer is (4px lower, shadcn's alignOffset), flipping to stay on screen.
+    doc.addEventListener('contextmenu', event => {
+        const trigger = event.target.closest?.('[data-context-menu]')
+        const menu = trigger && doc.getElementById(trigger.dataset.contextMenu)
+
+        if (! menu) return
+
+        event.preventDefault()
+        close(menu)
+        menu.style.left = `${event.clientX}px`
+        menu.style.top = `${event.clientY + 4}px`
+        open(menu)
+
+        const { width, height } = menu.getBoundingClientRect()
+
+        if (event.clientX + width > win.innerWidth) menu.style.left = `${Math.max(0, event.clientX - width)}px`
+        if (event.clientY + 4 + height > win.innerHeight) menu.style.top = `${Math.max(0, event.clientY - height)}px`
+    })
+
+    // Menubar: ArrowLeft/Right move between its menus, opening the next one if one was open.
+    const moveAlongMenubar = event => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return false
+
+        const menubar = event.target.closest?.('[data-slot="menubar"]')
+        const menu = event.target.closest?.('[data-slot="menubar-content"]')
+
+        // Inside a menu, Left/Right belong to sub triggers and submenus.
+        if (! menubar || event.target.closest('[data-slot="dropdown-menu-sub-content"]') || (event.key === 'ArrowRight' && event.target.matches('[data-slot="dropdown-menu-sub-trigger"]'))) return false
+
+        const triggers = [...menubar.querySelectorAll('[data-slot="menubar-trigger"]')].filter(trigger => ! trigger.disabled)
+        const current = menu ? doc.querySelector(`[commandfor="${menu.id}"]`) : event.target
+        const index = triggers.indexOf(current)
+
+        if (index < 0) return false
+
+        const next = triggers.at((index + (event.key === 'ArrowRight' ? 1 : -1)) % triggers.length)
+
+        event.preventDefault()
+        next.focus()
+
+        if (menu?.matches(':popover-open')) open(submenuOf(next))
+
+        return true
+    }
+
+    // The highlight follows the pointer, hovering a sub trigger opens its submenu, and
+    // hovering another menubar trigger while a menu is open switches to its menu.
     doc.addEventListener('pointerover', ({ target }) => {
+        const trigger = target.closest?.('[data-slot="menubar-trigger"]')
+
+        if (trigger) {
+            const menubar = trigger.closest('[data-slot="menubar"]')
+            const anyOpen = [...menubar.querySelectorAll('[data-slot="menubar-content"]')].some(menu => menu.matches(':popover-open'))
+
+            if (anyOpen) {
+                open(submenuOf(trigger))
+                trigger.focus()
+            }
+
+            return
+        }
+
         const row = target.closest?.(ROW)
         const menu = row?.closest('[role="menu"]')
 

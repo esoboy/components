@@ -1,10 +1,10 @@
 /*
- * Popover, Dropdown Menu and Tooltip content: native popovers in the top layer,
+ * Popover, menu, Tooltip and Hover Card content: native popovers in the top layer,
  * placed against their trigger with CSS anchor positioning. data-side picks the
  * side (flipping when it doesn't fit), data-align the edge, --side-offset the gap.
  */
 @layer components {
-    :where([data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="tooltip-content"]) {
+    :where([data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="tooltip-content"], [data-slot="hover-card-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"], [data-slot="navigation-menu-content"]) {
         position: fixed;
         inset: auto;
         margin: 0;
