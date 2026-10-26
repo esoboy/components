@@ -14,6 +14,7 @@
 @import './components/alert.css';
 @import './components/avatar.css';
 @import './components/badge.css';
+@import './components/breadcrumb.css';
 @import './components/button.css';
 @import './components/button-group.css';
 @import './components/calendar.css';
@@ -33,14 +34,18 @@
 @import './components/kbd.css';
 @import './components/label.css';
 @import './components/native-select.css';
+@import './components/pagination.css';
 @import './components/popover.css';
 @import './components/radio-group.css';
 @import './components/select.css';
 @import './components/separator.css';
+@import './components/sidebar.css';
 @import './components/skeleton.css';
 @import './components/slider.css';
 @import './components/spinner.css';
 @import './components/switch.css';
+@import './components/table.css';
+@import './components/tabs.css';
 @import './components/toast.css';
 @import './components/toggle.css';
 @import './components/tooltip.css';

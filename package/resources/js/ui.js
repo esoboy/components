@@ -17,7 +17,9 @@ import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
 import { defineRadioGroup } from './radio-group.js'
 import { defineSelect } from './select.js'
+import { defineSidebar } from './sidebar.js'
 import { defineSlider } from './slider.js'
+import { defineTabs } from './tabs.js'
 import { initToasts } from './toast.js'
 import { initTooltips } from './tooltip.js'
 
@@ -29,6 +31,8 @@ defineCalendar()
 defineDatePicker()
 defineSlider()
 defineInputOtp()
+defineTabs()
+defineSidebar()
 initAvatars()
 initConfirm()
 initDialogs()

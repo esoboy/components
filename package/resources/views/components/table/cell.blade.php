@@ -1,0 +1,3 @@
+@blaze(fold: true)
+
+<td {{ $attributes->merge(['data-slot' => 'table-cell']) }}>{{ $slot }}</td>

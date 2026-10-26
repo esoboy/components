@@ -11,3 +11,4 @@ Route::livewire('/forms', 'pages::forms');
 Route::livewire('/overlays', 'pages::overlays');
 Route::livewire('/display', 'pages::display');
 Route::livewire('/controls', 'pages::controls');
+Route::livewire('/admin', 'pages::admin');

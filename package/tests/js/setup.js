@@ -1,5 +1,5 @@
 /*
- * jsdom has neither the Popover API nor :modal. Just enough of both for the tests:
+ * jsdom has neither the Popover API, :modal nor matchMedia. Just enough for the tests:
  * open popovers carry data-popover-open, modal dialogs data-modal.
  */
 
@@ -38,3 +38,6 @@ HTMLDialogElement.prototype.close = function (value) {
     this.removeAttribute('data-modal')
     this.dispatchEvent(new Event('close'))
 }
+
+// Desktop unless a test swaps it.
+window.matchMedia ||= query => ({ media: query, matches: false, addEventListener() {}, removeEventListener() {} })

@@ -1,4 +1,5 @@
 {
+    "ui.breadcrumb": "breadcrumb",
     "ui.calendar.month": "Choose the Month",
     "ui.calendar.next": "Go to the Next Month",
     "ui.calendar.previous": "Go to the Previous Month",
@@ -11,5 +12,13 @@
     "ui.confirm": "Are you sure?",
     "ui.continue": "Continue",
     "ui.loading": "Loading",
-    "ui.remove": "Remove"
+    "ui.more": "More",
+    "ui.pagination.label": "pagination",
+    "ui.pagination.more": "More pages",
+    "ui.pagination.next": "Next",
+    "ui.pagination.next_page": "Go to next page",
+    "ui.pagination.previous": "Previous",
+    "ui.pagination.previous_page": "Go to previous page",
+    "ui.remove": "Remove",
+    "ui.sidebar.toggle": "Toggle Sidebar"
 }
