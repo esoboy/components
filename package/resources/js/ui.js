@@ -36,6 +36,7 @@ import { defineSlider } from './slider.js'
 import { defineTabs } from './tabs.js'
 import { initToasts } from './toast.js'
 import { initTooltips } from './tooltip.js'
+import { defineTree } from './tree.js'
 
 defineRadioGroup()
 defineSelect()
@@ -56,6 +57,7 @@ defineMessageScroller()
 defineFileUpload()
 defineDataTable()
 defineCascader()
+defineTree()
 initAvatars()
 initCodeBlocks()
 initConfirm()

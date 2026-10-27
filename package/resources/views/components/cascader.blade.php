@@ -25,7 +25,7 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
 @endphp
 
 {{-- <ui-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
-<ui-cascader {{ $attributes->except('name')->merge([
+<ui-cascader {{ $attributes->except(['name', 'class', 'style'])->merge([
     'data-slot' => 'cascader',
     'data-value' => json_encode($labels ? $value : []),
     'data-separator' => $separator,
@@ -34,7 +34,7 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
     'data-name' => $attributes->get('name') ?? false,
 ]) }}>
     <script type="application/json" data-cascader-options>@json(\Esoboy\Ui\Support\CascaderOptions::normalize($options))</script>
-    <button type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ $id }}" style="anchor-name: --{{ $id }}" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
+    <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ $id }}" style="anchor-name: --{{ $id }}" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
         <span data-slot="select-value">{{ $labels ? implode(" {$separator} ", $labels) : $placeholder }}</span>
         <svg data-slot="select-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
     </button>

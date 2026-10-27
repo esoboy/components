@@ -26,6 +26,7 @@ Element.prototype.scrollIntoView ||= function () {}
 
 HTMLElement.prototype.showPopover = function () { toggle(this, true) }
 HTMLElement.prototype.hidePopover = function () { toggle(this, false) }
+HTMLElement.prototype.togglePopover = function (force) { toggle(this, force ?? ! this.hasAttribute('data-popover-open')) }
 
 HTMLDialogElement.prototype.showModal = function () {
     this.setAttribute('open', '')

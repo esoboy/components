@@ -3,7 +3,7 @@
 namespace Esoboy\Ui\Support;
 
 /**
- * Cascader options: a tree of ['value' => ..., 'label' => ..., 'children' => [...],
+ * Cascader and Tree options: a tree of ['value' => ..., 'label' => ..., 'children' => [...],
  * 'disabled' => bool]. Values compare as strings, as they do in the browser.
  */
 final class CascaderOptions
@@ -27,6 +27,29 @@ final class CascaderOptions
 
             $labels[] = (string) ($option['label'] ?? $option['value']);
             $options = $option['children'] ?? [];
+        }
+
+        return $labels;
+    }
+
+    /**
+     * The labels of the given values anywhere in the tree, in tree order (Tree Select).
+     *
+     * @param  list<array<string, mixed>>  $options
+     * @param  array<int|string>  $values
+     * @return list<string>
+     */
+    public static function find(array $options, array $values): array
+    {
+        $wanted = array_map('strval', $values);
+        $labels = [];
+
+        foreach ($options as $option) {
+            if (in_array((string) ($option['value'] ?? ''), $wanted, true)) {
+                $labels[] = (string) ($option['label'] ?? $option['value']);
+            }
+
+            array_push($labels, ...self::find($option['children'] ?? [], $values));
         }
 
         return $labels;
