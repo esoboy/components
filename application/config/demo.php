@@ -6,7 +6,7 @@
 
 return [
     'Components' => [
-        'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Item, Button Group, Input Group, status colours'],
+        'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Item, Button Group, Input Group, QR Code, status colours'],
         'forms' => ['Forms', 'Field, Input, Textarea, Native Select, Radio Group, Checkbox, Switch, validation'],
         'controls' => ['Controls', 'Calendar, Date Picker, Time Picker, Select, Combobox, Command, Toggle, Toggle Group, Slider, Input OTP'],
         'inputs' => ['Inputs', 'Cascader, Tree, Tree Select, Tags Input, Number Input, Password Input, Verification Code Button, Color Picker, Rating, Transfer'],

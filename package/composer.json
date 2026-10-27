@@ -6,10 +6,11 @@
     "license": "proprietary",
     "require": {
         "php": "^8.3",
+        "bacon/bacon-qr-code": "^3.1",
         "illuminate/support": "^13.0",
         "illuminate/view": "^13.0",
-        "livewire/livewire": "^4.4",
-        "livewire/blaze": "^1.0"
+        "livewire/blaze": "^1.0",
+        "livewire/livewire": "^4.4"
     },
     "require-dev": {
         "larastan/larastan": "^3.13",

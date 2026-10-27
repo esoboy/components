@@ -62,6 +62,7 @@
 @import './components/password-input.css';
 @import './components/popover.css';
 @import './components/progress.css';
+@import './components/qr-code.css';
 @import './components/questionnaire.css';
 @import './components/radio-group.css';
 @import './components/rating.css';

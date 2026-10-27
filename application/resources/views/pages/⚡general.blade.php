@@ -7,6 +7,8 @@ new class extends Component
 {
     public int $count = 0;
 
+    public string $link = 'https://esoboy.com/orders/1024';
+
     #[Validate('required|url')]
     public string $website = '';
 
@@ -62,6 +64,16 @@ PHP;
                 </x-ui::dropdown-menu.content>
             </x-ui::dropdown-menu>
             <span data-dark-sample class="rounded-md bg-amber-100 px-2 py-1 text-xs text-amber-900 dark:bg-indigo-950 dark:text-indigo-200">dark: utilities follow the choice</span>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">QR Code</h2>
+        <x-ui::input wire:model.live.debounce.300ms="link" class="max-w-sm" />
+        <div class="flex flex-wrap items-end gap-6">
+            <x-ui::qr-code :value="$link" />
+            <x-ui::qr-code :value="$link" icon="/demo/photo-2.svg" :size="120" />
+            <x-ui::qr-code value="扫码登录 esoboy 管理后台" :size="96" level="L" />
         </div>
     </section>
 
