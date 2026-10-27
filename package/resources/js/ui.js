@@ -22,6 +22,7 @@ import { initDrawers } from './drawer.js'
 import { initDropdownMenus } from './dropdown-menu.js'
 import { defineFileUpload } from './file-upload.js'
 import { initHoverCards } from './hover-card.js'
+import { defineImagePreview } from './image-preview.js'
 import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
 import { defineInputs } from './inputs.js'
@@ -60,6 +61,7 @@ defineDataTable()
 defineCascader()
 defineTree()
 defineInputs()
+defineImagePreview()
 initAvatars()
 initCodeBlocks()
 initConfirm()

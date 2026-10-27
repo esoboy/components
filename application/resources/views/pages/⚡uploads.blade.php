@@ -57,4 +57,16 @@ new class extends Component
         <x-ui::button type="submit">Save</x-ui::button>
         <p class="text-sm text-muted-foreground">Saved: <span id="saved">{{ $saved ?? '—' }}</span></p>
     </form>
+
+    <section class="space-y-3">
+        <h2 class="text-sm font-medium">Image preview</h2>
+        <x-ui::image-preview id="gallery-preview" class="flex flex-wrap gap-2">
+            @foreach (range(1, 4) as $photo)
+                <x-ui::image-preview.item class="size-20" src="/demo/photo-{{ $photo }}.svg" alt="Photo {{ $photo }}" />
+            @endforeach
+        </x-ui::image-preview>
+        <x-ui::image-preview id="single-preview">
+            <x-ui::image-preview.item class="h-24 w-40" src="/demo/photo-4.svg" />
+        </x-ui::image-preview>
+    </section>
 </div>
