@@ -32,6 +32,10 @@ new class extends Component
 
     public int $sent = 0;
 
+    public ?string $color = '#2563eb';
+
+    public ?int $score = 3;
+
     public function sendCode(): void
     {
         $this->validate(['phone' => 'required|digits:11']);
@@ -175,6 +179,26 @@ new class extends Component
                 </div>
                 <x-ui::field.description>Sent: <span id="sent">{{ $sent }}</span></x-ui::field.description>
             </x-ui::field>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Color Picker &amp; Rating</h2>
+        <div class="grid max-w-sm gap-6">
+            <x-ui::field>
+                <x-ui::field.label>Brand color</x-ui::field.label>
+                <x-ui::color-picker id="brand-color" wire:model.live="color" placeholder="Pick a color" :swatches="['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#2563eb', '#8b5cf6', '#ec4899', '#0a0a0a', '#525252', '#a3a3a3', '#ffffff']" />
+                <x-ui::field.description>Color: <span id="color">{{ $color ?? 'none' }}</span></x-ui::field.description>
+            </x-ui::field>
+            <x-ui::field>
+                <x-ui::field.label>Score</x-ui::field.label>
+                <x-ui::rating id="score" wire:model.live="score" />
+                <x-ui::field.description>Score: <span id="score-value">{{ $score ?? 'none' }}</span></x-ui::field.description>
+            </x-ui::field>
+            <div class="flex items-center gap-2 text-sm">
+                <x-ui::rating readonly :default-value="4.5" size="sm" />
+                <span class="text-muted-foreground">4.5 (128 reviews)</span>
+            </div>
         </div>
     </section>
 </div>

@@ -11,6 +11,7 @@ import { defineCalendar } from './calendar.js'
 import { defineCarousel } from './carousel.js'
 import { defineCascader } from './cascader.js'
 import { defineCollapsible } from './collapsible.js'
+import { defineColorPicker } from './color-picker.js'
 import { defineCombobox } from './combobox.js'
 import { initCodeBlocks } from './code-block.js'
 import { defineCommand } from './command.js'
@@ -30,6 +31,7 @@ import { defineMessageScroller } from './message-scroller.js'
 import { initNavigationMenus } from './navigation-menu.js'
 import { initQuestionnaires } from './questionnaire.js'
 import { defineRadioGroup } from './radio-group.js'
+import { defineRating } from './rating.js'
 import { defineResizable } from './resizable.js'
 import { defineScrollArea } from './scroll-area.js'
 import { defineSelect } from './select.js'
@@ -61,6 +63,8 @@ defineDataTable()
 defineCascader()
 defineTree()
 defineInputs()
+defineColorPicker()
+defineRating()
 initVerificationCodes()
 defineImagePreview()
 initAvatars()

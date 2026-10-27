@@ -29,6 +29,7 @@
 @import './components/checkbox.css';
 @import './components/code-block.css';
 @import './components/collapsible.css';
+@import './components/color-picker.css';
 @import './components/combobox.css';
 @import './components/command.css';
 @import './components/context-menu.css';
@@ -62,6 +63,7 @@
 @import './components/progress.css';
 @import './components/questionnaire.css';
 @import './components/radio-group.css';
+@import './components/rating.css';
 @import './components/resizable.css';
 @import './components/scroll-area.css';
 @import './components/select.css';
