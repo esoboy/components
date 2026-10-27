@@ -52,14 +52,6 @@ new class extends Component
 };
 ?>
 
-@php
-$icon = fn (string $paths) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
-$image = $icon('<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>');
-$file = $icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>');
-$x = $icon('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>');
-$clock = $icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
-@endphp
-
 <div class="mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-2xl flex-col gap-4 p-6">
     <div class="flex items-center gap-3 border-b pb-4">
         <x-ui::avatar><x-ui::avatar.fallback>MS</x-ui::avatar.fallback></x-ui::avatar>
@@ -82,7 +74,7 @@ $clock = $icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 
                     <x-ui::message-scroller.item wire:key="{{ $message['id'] }}" :message-id="$message['id']" :scroll-anchor="$message['role'] === 'user'">
                         @if ($message['role'] === 'marker')
                         <x-ui::marker variant="separator">
-                            <x-ui::marker.icon>{!! $clock !!}</x-ui::marker.icon>
+                            <x-ui::marker.icon><x-ui::icon name="clock" /></x-ui::marker.icon>
                             <x-ui::marker.content>{{ $message['text'] }}</x-ui::marker.content>
                         </x-ui::marker>
                         @elseif ($message['role'] === 'agent')
@@ -100,7 +92,7 @@ $clock = $icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 
                             <x-ui::message.content>
                                 @isset ($message['attachment'])
                                 <x-ui::attachment>
-                                    <x-ui::attachment.media>{!! $image !!}</x-ui::attachment.media>
+                                    <x-ui::attachment.media><x-ui::icon name="image" /></x-ui::attachment.media>
                                     <x-ui::attachment.content>
                                         <x-ui::attachment.title>{{ $message['attachment']['name'] }}</x-ui::attachment.title>
                                         <x-ui::attachment.description>{{ $message['attachment']['size'] }}</x-ui::attachment.description>
@@ -144,10 +136,10 @@ $clock = $icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 
                 <x-ui::attachment.title>receipt.pdf</x-ui::attachment.title>
                 <x-ui::attachment.description>Uploading… 48%</x-ui::attachment.description>
             </x-ui::attachment.content>
-            <x-ui::attachment.actions><x-ui::attachment.action aria-label="Cancel">{!! $x !!}</x-ui::attachment.action></x-ui::attachment.actions>
+            <x-ui::attachment.actions><x-ui::attachment.action aria-label="Cancel"><x-ui::icon name="x" /></x-ui::attachment.action></x-ui::attachment.actions>
         </x-ui::attachment>
         <x-ui::attachment state="error" size="sm">
-            <x-ui::attachment.media>{!! $file !!}</x-ui::attachment.media>
+            <x-ui::attachment.media><x-ui::icon name="file" /></x-ui::attachment.media>
             <x-ui::attachment.content>
                 <x-ui::attachment.title>video.mov</x-ui::attachment.title>
                 <x-ui::attachment.description>File is too large</x-ui::attachment.description>

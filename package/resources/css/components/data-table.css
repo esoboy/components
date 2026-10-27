@@ -23,7 +23,7 @@
         }
     }
 
-    :where([data-slot="data-table-view-options"]) {
+    :where([data-data-table-view-options]) {
         @apply ml-auto hidden h-8 lg:flex;
     }
 

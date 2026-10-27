@@ -63,7 +63,7 @@ final class Overlay
 
     private function next(string $prefix): string
     {
-        $scope = app('view')->shared('__livewire')?->getId() ?? 'page';
+        $scope = Model::component()?->getId() ?? 'page';
 
         $this->counts[$scope] = ($this->counts[$scope] ?? 0) + 1;
 

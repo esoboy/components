@@ -33,7 +33,7 @@ $files = UploadedFiles::of(Model::value($attributes));
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'multiple' => (bool) $multiple, 'accept' => $accept ?? false, 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
         @if ($slot->isEmpty())
         <span data-slot="file-upload-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg>
+            <x-ui::icon name="cloud-upload" />
         </span>
         <span data-slot="file-upload-title">{{ $title ?? __('ui::file-upload.title') }}</span>
         @if ($description)
@@ -56,7 +56,7 @@ $files = UploadedFiles::of(Model::value($attributes));
                 @if ($file['url'])
                 <img src="{{ $file['url'] }}" alt="">
                 @else
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <x-ui::icon name="file" />
                 @endif
             </x-ui::attachment.media>
             <x-ui::attachment.content>
@@ -66,7 +66,7 @@ $files = UploadedFiles::of(Model::value($attributes));
             @if ($model && ! $disabled)
             <x-ui::attachment.actions>
                 <x-ui::attachment.action :aria-label="__('ui::common.remove')" wire:click="$removeUpload('{{ $model }}', '{{ $file['filename'] }}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <x-ui::icon name="x" />
                 </x-ui::attachment.action>
             </x-ui::attachment.actions>
             @endif

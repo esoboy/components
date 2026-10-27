@@ -38,7 +38,7 @@ it('leads a range picker with a calendar icon and shows two months', function ()
     $html = (string) $this->blade('<x-ui::date-picker mode="range" placeholder="Pick a range" />');
 
     expect($html)
-        ->toMatch('/data-date-picker-trigger="data-date-picker-trigger">\s*<svg data-icon="inline-start"/')
+        ->toMatch('/data-date-picker-trigger="data-date-picker-trigger">\s*<svg [^>]*data-icon="inline-start"/')
         ->not->toContain('data-icon="inline-end"')
         ->toContain('data-number-of-months="2"');
 });

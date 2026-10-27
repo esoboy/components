@@ -79,8 +79,13 @@ it('renders kbd, skeleton and a translated spinner', function () {
 
     app()->setLocale('zh_CN');
 
-    $this->blade('<x-ui::spinner class="size-6" />')
-        ->assertSee('<svg data-slot="spinner" role="status" aria-label="加载中" class="size-6"', false);
+    $spinner = (string) $this->blade('<x-ui::spinner class="size-6" />');
+
+    expect($spinner)
+        ->toContain('role="status"')
+        ->toContain('class="size-6" data-slot="spinner" aria-label="加载中"')
+        ->toContain('<path d="M21 12a9 9 0 1 1-6.219-8.56"/>')
+        ->not->toContain('aria-hidden');
 });
 
 it('renders an empty state', function () {

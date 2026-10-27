@@ -1,18 +1,20 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 {{-- columns: ['email' => 'Email', ...], the hideable columns and their labels. --}}
 @props([
     'columns' => [],
 ])
 
 @php
-$table = app('view')->shared('__livewire');
+$table = Model::component();
 $hidden = $table && property_exists($table, 'hiddenColumns') ? $table->hiddenColumns : [];
 @endphp
 
 <x-ui::dropdown-menu>
-    <x-ui::dropdown-menu.trigger variant="outline" size="sm" :attributes="$attributes->merge(['data-slot' => 'data-table-view-options'])">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 17H5"/><path d="M19 7h-9"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+    <x-ui::dropdown-menu.trigger variant="outline" size="sm" :attributes="$attributes->merge(['data-data-table-view-options' => true])">
+        <x-ui::icon name="settings-2" />
         {{ __('ui::data-table.view') }}
     </x-ui::dropdown-menu.trigger>
     <x-ui::dropdown-menu.content align="end" class="w-[150px]">

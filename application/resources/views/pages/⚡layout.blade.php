@@ -40,7 +40,7 @@ new class extends Component
             <div class="flex items-center justify-between gap-4 px-4">
                 <h4 class="text-sm font-semibold">Order #4189 ({{ $details ? 'open' : 'closed' }})</h4>
                 <x-ui::button variant="ghost" size="icon" class="size-8" data-collapsible-trigger>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                    <x-ui::icon name="chevrons-up-down" />
                     <span class="sr-only">Toggle details</span>
                 </x-ui::button>
             </div>

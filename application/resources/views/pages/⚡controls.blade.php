@@ -64,13 +64,6 @@ new class extends Component
 };
 ?>
 
-@php
-$svg = fn (string $paths, string $class = '') => '<svg class="'.$class.'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
-$boldIcon = $svg('<path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/>');
-$italicIcon = $svg('<line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/>');
-$underlineIcon = $svg('<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/>');
-@endphp
-
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Calendar</h2>
@@ -230,9 +223,9 @@ $underlineIcon = $svg('<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Toggle</h2>
         <div class="flex flex-wrap items-center gap-3">
-            <x-ui::toggle aria-label="Toggle bold" wire:model.live="bold">{!! $boldIcon !!}</x-ui::toggle>
-            <x-ui::toggle variant="outline" aria-label="Toggle italic" default-pressed>{!! $italicIcon !!} Italic</x-ui::toggle>
-            <x-ui::toggle size="sm" disabled>{!! $underlineIcon !!}</x-ui::toggle>
+            <x-ui::toggle aria-label="Toggle bold" wire:model.live="bold"><x-ui::icon name="bold" /></x-ui::toggle>
+            <x-ui::toggle variant="outline" aria-label="Toggle italic" default-pressed><x-ui::icon name="italic" /> Italic</x-ui::toggle>
+            <x-ui::toggle size="sm" disabled><x-ui::icon name="underline" /></x-ui::toggle>
             <span class="text-sm text-muted-foreground">bold: <span id="bold">{{ $bold ? 'on' : 'off' }}</span></span>
         </div>
     </section>
@@ -246,9 +239,9 @@ $underlineIcon = $svg('<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y
                 <x-ui::toggle-group.item value="right">Right</x-ui::toggle-group.item>
             </x-ui::toggle-group>
             <x-ui::toggle-group type="multiple" variant="outline" spacing="0" size="sm" wire:model.live="styles">
-                <x-ui::toggle-group.item value="bold" aria-label="Bold">{!! $boldIcon !!}</x-ui::toggle-group.item>
-                <x-ui::toggle-group.item value="italic" aria-label="Italic">{!! $italicIcon !!}</x-ui::toggle-group.item>
-                <x-ui::toggle-group.item value="underline" aria-label="Underline">{!! $underlineIcon !!}</x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="bold" aria-label="Bold"><x-ui::icon name="bold" /></x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="italic" aria-label="Italic"><x-ui::icon name="italic" /></x-ui::toggle-group.item>
+                <x-ui::toggle-group.item value="underline" aria-label="Underline"><x-ui::icon name="underline" /></x-ui::toggle-group.item>
             </x-ui::toggle-group>
         </div>
         <p class="text-sm text-muted-foreground">align: <span id="align">{{ $align ?? 'none' }}</span>, styles: <span id="styles">{{ implode(',', $styles) }}</span></p>

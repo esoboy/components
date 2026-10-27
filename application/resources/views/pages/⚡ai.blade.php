@@ -41,14 +41,6 @@ class Counter extends Component
     }
 }
 PHP;
-$icon = fn (string $paths) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
-$check = $icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>');
-$alert = $icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>');
-$info = $icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');
-$x = $icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>');
-$search = $icon('<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>');
-$file = $icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>');
-$terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
 @endphp
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
@@ -56,7 +48,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         <h2 class="text-lg font-semibold">Code Block</h2>
         <x-ui::code-block>
             <x-ui::code-block.header>
-                <x-ui::code-block.title>{!! $file !!}app/Livewire/Counter.php</x-ui::code-block.title>
+                <x-ui::code-block.title><x-ui::icon name="file" />app/Livewire/Counter.php</x-ui::code-block.title>
                 <x-ui::code-block.actions><x-ui::code-block.copy-button /></x-ui::code-block.actions>
             </x-ui::code-block.header>
             <x-ui::code-block.content language="php" line-numbers :code="$code" />
@@ -74,7 +66,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         </x-ui::code-block>
 
         <x-ui::code-block variant="destructive">
-            <x-ui::code-block.header><x-ui::code-block.title>{!! $terminal !!}php artisan test</x-ui::code-block.title></x-ui::code-block.header>
+            <x-ui::code-block.header><x-ui::code-block.title><x-ui::icon name="terminal" />php artisan test</x-ui::code-block.title></x-ui::code-block.header>
             <x-ui::code-block.content wrap code="FAILED  Tests\Feature\CheckoutTest > it charges the card&#10;Expected status code 200 but received 500." />
             <x-ui::code-block.footer>Exited with code 1</x-ui::code-block.footer>
         </x-ui::code-block>
@@ -84,13 +76,13 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         <h2 class="text-lg font-semibold">Trace</h2>
         <x-ui::trace>
             <x-ui::trace.line>
-                <x-ui::trace.icon>{!! $search !!}</x-ui::trace.icon>
+                <x-ui::trace.icon><x-ui::icon name="search" /></x-ui::trace.icon>
                 <x-ui::trace.title>Searched orders for #4189</x-ui::trace.title>
                 <x-ui::trace.description>0.4s</x-ui::trace.description>
             </x-ui::trace.line>
             <x-ui::trace.collapsible default-open>
                 <x-ui::trace.collapsible-trigger>
-                    <x-ui::trace.line><x-ui::trace.icon>{!! $file !!}</x-ui::trace.icon><x-ui::trace.title>Read 3 files</x-ui::trace.title></x-ui::trace.line>
+                    <x-ui::trace.line><x-ui::trace.icon><x-ui::icon name="file" /></x-ui::trace.icon><x-ui::trace.title>Read 3 files</x-ui::trace.title></x-ui::trace.line>
                 </x-ui::trace.collapsible-trigger>
                 <x-ui::trace.collapsible-content>
                     <div>app/Models/Order.php</div>
@@ -98,7 +90,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
                     <div>config/payments.php</div>
                 </x-ui::trace.collapsible-content>
             </x-ui::trace.collapsible>
-            <button type="button"><x-ui::trace.line status="error"><x-ui::trace.icon>{!! $x !!}</x-ui::trace.icon><x-ui::trace.title>Refund API returned 502</x-ui::trace.title></x-ui::trace.line></button>
+            <button type="button"><x-ui::trace.line status="error"><x-ui::trace.icon><x-ui::icon name="circle-x" /></x-ui::trace.icon><x-ui::trace.title>Refund API returned 502</x-ui::trace.title></x-ui::trace.line></button>
             <x-ui::trace.line status="running"><x-ui::trace.title>Retrying the refund</x-ui::trace.title></x-ui::trace.line>
             <x-ui::trace.line status="pending"><x-ui::trace.title>Email the customer</x-ui::trace.title></x-ui::trace.line>
         </x-ui::trace>

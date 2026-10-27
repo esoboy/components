@@ -12,7 +12,7 @@ $id = Overlay::open('combobox');
         <div data-slot="combobox-chip">
             <span data-combobox-chip-label></span>
             <x-ui::button variant="ghost" size="icon-xs" data-combobox-chip-remove :aria-label="__('ui::common.remove')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <x-ui::icon name="x" />
             </x-ui::button>
         </div>
     </template>

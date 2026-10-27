@@ -35,7 +35,7 @@ $expanded = $parent && ($expandAll || in_array((string) $value, array_map('strva
     'aria-disabled' => $disabled ? 'true' : false,
 ]) }}>
     <div data-slot="tree-item-row">
-        <span data-slot="tree-item-toggle" aria-hidden="true">@if ($parent)<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>@endif</span>
+        <span data-slot="tree-item-toggle" aria-hidden="true">@if ($parent)<x-ui::icon name="chevron-right" />@endif</span>
         @if ($checkable)
         <input type="checkbox" data-slot="checkbox" data-tree-check tabindex="-1" aria-hidden="true" @if ($disabled) disabled @endif>
         @endif

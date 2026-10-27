@@ -43,7 +43,7 @@ $lists = [
             <div role="group" data-slot="input-group">
                 <input type="search" data-slot="input-group-control" data-transfer-search placeholder="{{ __('ui::transfer.search') }}" aria-label="{{ __('ui::transfer.search') }}" autocomplete="off">
                 <div role="group" data-slot="input-group-addon" data-align="inline-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <x-ui::icon name="search" />
                 </div>
             </div>
         </div>
@@ -61,10 +61,10 @@ $lists = [
     @if ($list === 'source')
     <div data-slot="transfer-actions">
         <x-ui::button variant="outline" size="icon-sm" data-transfer-move="target" :aria-label="__('ui::transfer.to_target')" disabled>
-            <svg class="rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            <x-ui::icon name="chevron-right" class="rtl:rotate-180" />
         </x-ui::button>
         <x-ui::button variant="outline" size="icon-sm" data-transfer-move="source" :aria-label="__('ui::transfer.to_source')" disabled>
-            <svg class="rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            <x-ui::icon name="chevron-left" class="rtl:rotate-180" />
         </x-ui::button>
     </div>
     @endif

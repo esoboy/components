@@ -110,9 +110,9 @@ final class PaginationLinks
      */
     private static function action(Paginator|LengthAwarePaginator|CursorPaginator $paginator, int|string|null $target, ?string $url): array
     {
-        $component = app('livewire')->current();
+        $component = Model::component();
 
-        if (! $component || ! method_exists($component, 'setPage')) {
+        if ($component === null || ! method_exists($component, 'setPage')) {
             return ['href' => (string) $url];
         }
 

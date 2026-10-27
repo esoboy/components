@@ -25,16 +25,6 @@ new class extends Component
 ?>
 
 @php
-$icon = fn (string $paths) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
-$circleCheck = $icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>');
-$alertCircle = $icon('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>');
-$search = $icon('<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>');
-$folder = $icon('<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>');
-$chevronRight = $icon('<path d="m9 18 6-6-6-6"/>');
-$badgeCheck = $icon('<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>');
-@endphp
-
-@php
 $code = <<<'PHP'
 <?php
 
@@ -52,14 +42,6 @@ class Counter extends Component
     }
 }
 PHP;
-$icon = fn (string $paths) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
-$check = $icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>');
-$alert = $icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>');
-$info = $icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');
-$x = $icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>');
-$search = $icon('<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>');
-$file = $icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>');
-$terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
 @endphp
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
@@ -116,10 +98,10 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
             @endforeach
         </div>
         <div class="grid gap-3">
-            <x-ui::alert variant="success">{!! $check !!}<x-ui::alert.title>Payment received</x-ui::alert.title><x-ui::alert.description>Order #4189 has been paid and will ship today.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="warning">{!! $alert !!}<x-ui::alert.title>Low stock</x-ui::alert.title><x-ui::alert.description>Only 3 units of Studio Headphones are left.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="info">{!! $info !!}<x-ui::alert.title>Maintenance</x-ui::alert.title><x-ui::alert.description>The dashboard will be read-only on Sunday from 2:00 to 3:00.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="destructive">{!! $x !!}<x-ui::alert.title>Payment failed</x-ui::alert.title><x-ui::alert.description>The card was declined. Ask the customer for another method.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="success"><x-ui::icon name="circle-check" /><x-ui::alert.title>Payment received</x-ui::alert.title><x-ui::alert.description>Order #4189 has been paid and will ship today.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="warning"><x-ui::icon name="triangle-alert" /><x-ui::alert.title>Low stock</x-ui::alert.title><x-ui::alert.description>Only 3 units of Studio Headphones are left.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="info"><x-ui::icon name="info" /><x-ui::alert.title>Maintenance</x-ui::alert.title><x-ui::alert.description>The dashboard will be read-only on Sunday from 2:00 to 3:00.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="destructive"><x-ui::icon name="circle-x" /><x-ui::alert.title>Payment failed</x-ui::alert.title><x-ui::alert.description>The card was declined. Ask the customer for another method.</x-ui::alert.description></x-ui::alert>
         </div>
         <x-ui::bubble.group>
             @foreach (['success' => 'Refund approved', 'warning' => 'Waiting for the courier', 'info' => 'Mia joined the chat', 'destructive' => 'Message failed to send'] as $variant => $text)
@@ -140,7 +122,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
             <x-ui::badge variant="secondary">Secondary</x-ui::badge>
             <x-ui::badge variant="destructive">Destructive</x-ui::badge>
             <x-ui::badge variant="outline">Outline</x-ui::badge>
-            <x-ui::badge variant="secondary" class="bg-blue-500 text-white dark:bg-blue-600">{!! $badgeCheck !!} Verified</x-ui::badge>
+            <x-ui::badge variant="secondary" class="bg-blue-500 text-white dark:bg-blue-600"><x-ui::icon name="badge-check" /> Verified</x-ui::badge>
             <x-ui::badge class="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">8</x-ui::badge>
             <x-ui::badge href="#" variant="outline">Link</x-ui::badge>
         </div>
@@ -207,12 +189,12 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         <h2 class="text-lg font-semibold">Alert</h2>
         <div class="grid w-full max-w-xl gap-4">
             <x-ui::alert>
-                {!! $circleCheck !!}
+                <x-ui::icon name="circle-check" />
                 <x-ui::alert.title>Payment successful</x-ui::alert.title>
                 <x-ui::alert.description>Your payment of $29.99 has been processed. A receipt has been sent to your email address.</x-ui::alert.description>
             </x-ui::alert>
             <x-ui::alert variant="destructive">
-                {!! $alertCircle !!}
+                <x-ui::icon name="circle-alert" />
                 <x-ui::alert.title>Payment failed</x-ui::alert.title>
                 <x-ui::alert.description>Your payment could not be processed. Please check your payment method and try again.</x-ui::alert.description>
                 <x-ui::alert.action><x-ui::button size="xs" variant="outline">Retry</x-ui::button></x-ui::alert.action>
@@ -250,7 +232,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         <h2 class="text-lg font-semibold">Empty</h2>
         <x-ui::empty class="border">
             <x-ui::empty.header>
-                <x-ui::empty.media variant="icon">{!! $folder !!}</x-ui::empty.media>
+                <x-ui::empty.media variant="icon"><x-ui::icon name="folder" /></x-ui::empty.media>
                 <x-ui::empty.title>No Projects Yet</x-ui::empty.title>
                 <x-ui::empty.description>You haven't created any projects yet. Get started by creating your first project.</x-ui::empty.description>
             </x-ui::empty.header>
@@ -276,11 +258,11 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
                 </x-ui::item.actions>
             </x-ui::item>
             <x-ui::item variant="outline" size="sm" href="#">
-                <x-ui::item.media>{!! str_replace("<svg ", "<svg class=\"size-5\" ", $badgeCheck) !!}</x-ui::item.media>
+                <x-ui::item.media><x-ui::icon name="badge-check" class="size-5" /></x-ui::item.media>
                 <x-ui::item.content>
                     <x-ui::item.title>Your profile has been verified.</x-ui::item.title>
                 </x-ui::item.content>
-                <x-ui::item.actions>{!! str_replace("<svg ", "<svg class=\"size-4\" ", $chevronRight) !!}</x-ui::item.actions>
+                <x-ui::item.actions><x-ui::icon name="chevron-right" class="size-4" /></x-ui::item.actions>
             </x-ui::item>
         </div>
     </section>
@@ -314,7 +296,7 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
         <div class="grid w-full max-w-sm gap-6">
             <x-ui::input-group>
                 <x-ui::input-group.input placeholder="Search..." />
-                <x-ui::input-group.addon>{!! $search !!}</x-ui::input-group.addon>
+                <x-ui::input-group.addon><x-ui::icon name="search" /></x-ui::input-group.addon>
                 <x-ui::input-group.addon align="inline-end">12 results</x-ui::input-group.addon>
             </x-ui::input-group>
             <x-ui::input-group>

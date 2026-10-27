@@ -3,6 +3,7 @@
 namespace Esoboy\Ui\Support;
 
 use Illuminate\View\ComponentAttributeBag;
+use Livewire\Component;
 
 /**
  * What a control's wire:model is bound to.
@@ -15,14 +16,22 @@ final class Model
      */
     public static function value(ComponentAttributeBag $attributes, mixed $default = null): mixed
     {
-        $component = app('livewire')->current();
+        $component = self::component();
         $key = self::key($attributes);
 
-        if (! $component || $key === null) {
+        if ($component === null || $key === null) {
             return $default;
         }
 
         return data_get($component, $key, $default);
+    }
+
+    /**
+     * The Livewire component being rendered or handled, if any.
+     */
+    public static function component(): ?Component
+    {
+        return app('livewire')->current() ?: null;
     }
 
     /**
