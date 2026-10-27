@@ -1,0 +1,61 @@
+/*
+ * Data Table: shadcn's data table pattern (a Table in a bordered frame, a toolbar, and
+ * its DataTableColumnHeader, DataTableViewOptions and DataTablePagination parts).
+ */
+@layer components {
+    :where([data-slot="data-table"]) {
+        @apply block w-full;
+    }
+
+    :where([data-slot="data-table-toolbar"]) {
+        @apply flex items-center gap-2 py-4;
+    }
+
+    :where([data-slot="data-table-content"]) {
+        @apply overflow-hidden rounded-md border;
+    }
+
+    :where([data-slot="data-table-column-header"]) {
+        @apply flex items-center gap-2;
+
+        & [data-slot="button"] {
+            @apply -ml-3 h-8;
+        }
+    }
+
+    :where([data-slot="data-table-view-options"]) {
+        @apply ml-auto hidden h-8 lg:flex;
+    }
+
+    :where([data-data-table-empty]) {
+        @apply h-24 text-center;
+    }
+
+    :where([data-slot="data-table-pagination"]) {
+        @apply flex items-center justify-between px-2 py-4;
+    }
+
+    :where([data-slot="data-table-selection"]) {
+        @apply flex-1 text-sm text-muted-foreground;
+    }
+
+    :where([data-slot="data-table-pagination-controls"]) {
+        @apply flex items-center space-x-6 lg:space-x-8;
+    }
+
+    :where([data-slot="data-table-page-size"]) {
+        @apply flex items-center space-x-2;
+
+        & > p {
+            @apply text-sm font-medium;
+        }
+    }
+
+    :where([data-slot="data-table-page"]) {
+        @apply flex w-[100px] items-center justify-center text-sm font-medium;
+    }
+
+    :where([data-slot="data-table-page-buttons"]) {
+        @apply flex items-center space-x-2;
+    }
+}

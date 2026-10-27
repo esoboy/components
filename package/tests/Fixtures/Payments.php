@@ -1,0 +1,55 @@
+<?php
+
+namespace Esoboy\Ui\Tests\Fixtures;
+
+use Esoboy\Ui\Livewire\WithDataTable;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Component;
+
+/**
+ * A Data Table over a fixed page of payments.
+ */
+class Payments extends Component
+{
+    use WithDataTable;
+
+    public function sortedSql(): string
+    {
+        return $this->sortQuery(app('db')->table('payments'), ['email'])->toSql();
+    }
+
+    public function rows(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator([['id' => 1], ['id' => 2]], 42, $this->perPage, $this->getPage());
+    }
+
+    public function render(): string
+    {
+        return <<<'BLADE'
+            <div>
+                @php($paginator = $this->rows())
+                <x-ui::data-table>
+                    <x-ui::data-table.toolbar>
+                        <x-ui::data-table.view-options :columns="['email' => 'Email', 'amount' => 'Amount']" />
+                    </x-ui::data-table.toolbar>
+                    <x-ui::data-table.content>
+                        <x-ui::table.header>
+                            <x-ui::table.row>
+                                <x-ui::table.head><x-ui::data-table.select-all /></x-ui::table.head>
+                                <x-ui::table.head><x-ui::data-table.column-header column="email" title="Email" /></x-ui::table.head>
+                                <x-ui::table.head><x-ui::data-table.column-header column="status" title="Status" :sortable="false" /></x-ui::table.head>
+                            </x-ui::table.row>
+                        </x-ui::table.header>
+                        <x-ui::table.body>
+                            @foreach ($paginator as $row)
+                            <x-ui::table.row><x-ui::table.cell><x-ui::data-table.select-row :value="$row['id']" /></x-ui::table.cell></x-ui::table.row>
+                            @endforeach
+                            <x-ui::data-table.empty colspan="3" />
+                        </x-ui::table.body>
+                    </x-ui::data-table.content>
+                    <x-ui::data-table.pagination :paginator="$paginator" />
+                </x-ui::data-table>
+            </div>
+            BLADE;
+    }
+}

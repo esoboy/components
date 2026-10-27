@@ -16,3 +16,4 @@ Route::livewire('/more', 'pages::more');
 Route::livewire('/chat', 'pages::chat');
 Route::livewire('/extras', 'pages::extras');
 Route::livewire('/uploads', 'pages::uploads');
+Route::livewire('/table', 'pages::table');

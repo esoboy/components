@@ -15,6 +15,7 @@ import { initCodeBlocks } from './code-block.js'
 import { defineCommand } from './command.js'
 import { initConfirm } from './confirm.js'
 import { defineDatePicker } from './date-picker.js'
+import { defineDataTable } from './data-table.js'
 import { initDialogs } from './dialog.js'
 import { initDrawers } from './drawer.js'
 import { initDropdownMenus } from './dropdown-menu.js'
@@ -52,6 +53,7 @@ defineResizable()
 defineCarousel()
 defineMessageScroller()
 defineFileUpload()
+defineDataTable()
 initAvatars()
 initCodeBlocks()
 initConfirm()
