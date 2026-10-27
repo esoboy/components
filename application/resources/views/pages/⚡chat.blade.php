@@ -60,7 +60,7 @@ $x = $icon('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>');
 $clock = $icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>');
 @endphp
 
-<div class="mx-auto flex h-screen max-w-2xl flex-col gap-4 p-6">
+<div class="mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-2xl flex-col gap-4 p-6">
     <div class="flex items-center gap-3 border-b pb-4">
         <x-ui::avatar><x-ui::avatar.fallback>MS</x-ui::avatar.fallback></x-ui::avatar>
         <div class="text-sm"><div class="font-medium">Mia · Support</div><div class="text-muted-foreground">Usually replies in a few minutes</div></div>

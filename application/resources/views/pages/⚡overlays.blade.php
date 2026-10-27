@@ -1,7 +1,7 @@
 <?php
 
-use Livewire\Attributes\Validate;
 use Esoboy\Ui\Facades\Ui;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new class extends Component
@@ -12,6 +12,10 @@ new class extends Component
     public bool $statusBar = true;
 
     public string $position = 'bottom';
+
+    public bool $bookmarks = true;
+
+    public string $person = 'pedro';
 
     public int $deleted = 0;
 
@@ -48,7 +52,7 @@ new class extends Component
 };
 ?>
 
-<div class="mx-auto max-w-3xl space-y-10 p-10">
+<div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Dialog</h2>
         <div class="flex flex-wrap gap-3">
@@ -125,6 +129,40 @@ new class extends Component
     </section>
 
     <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Drawer</h2>
+        <div class="flex gap-2">
+            <x-ui::drawer name="goal" show-swipe-handle>
+                <x-ui::drawer.trigger variant="outline">Open Drawer</x-ui::drawer.trigger>
+                <x-ui::drawer.content>
+                    <div class="mx-auto w-full max-w-sm">
+                        <x-ui::drawer.header>
+                            <x-ui::drawer.title>Move Goal</x-ui::drawer.title>
+                            <x-ui::drawer.description>Set your daily activity goal.</x-ui::drawer.description>
+                        </x-ui::drawer.header>
+                        <div class="p-4 text-center text-6xl font-bold tracking-tighter">350</div>
+                        <x-ui::drawer.footer>
+                            <x-ui::button>Submit</x-ui::button>
+                            <x-ui::drawer.close variant="outline">Cancel</x-ui::drawer.close>
+                        </x-ui::drawer.footer>
+                    </div>
+                </x-ui::drawer.content>
+            </x-ui::drawer>
+            <x-ui::drawer name="side" swipe-direction="right">
+                <x-ui::drawer.trigger variant="outline">Right Drawer</x-ui::drawer.trigger>
+                <x-ui::drawer.content>
+                    <x-ui::drawer.header>
+                        <x-ui::drawer.title>Settings</x-ui::drawer.title>
+                        <x-ui::drawer.description>Swipe right to close.</x-ui::drawer.description>
+                    </x-ui::drawer.header>
+                    <x-ui::drawer.footer>
+                        <x-ui::drawer.close variant="outline">Close</x-ui::drawer.close>
+                    </x-ui::drawer.footer>
+                </x-ui::drawer.content>
+            </x-ui::drawer>
+        </div>
+    </section>
+
+    <section class="space-y-4">
         <h2 class="text-lg font-semibold">Popover &amp; Tooltip</h2>
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::popover>
@@ -142,6 +180,18 @@ new class extends Component
                 <x-ui::tooltip.content>Add to library</x-ui::tooltip.content>
             </x-ui::tooltip>
         </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Hover Card</h2>
+        <x-ui::hover-card>
+            <x-ui::hover-card.trigger variant="link" href="#" :delay="10" :close-delay="100">Hover Here</x-ui::hover-card.trigger>
+            <x-ui::hover-card.content class="flex w-64 flex-col gap-0.5">
+                <div class="font-semibold">@nextjs</div>
+                <div>The React Framework – created and maintained by @vercel.</div>
+                <div class="mt-1 text-xs text-muted-foreground">Joined December 2021</div>
+            </x-ui::hover-card.content>
+        </x-ui::hover-card>
     </section>
 
     <section class="space-y-4">
@@ -175,6 +225,78 @@ new class extends Component
             </x-ui::dropdown-menu.content>
         </x-ui::dropdown-menu>
         <p class="text-sm text-muted-foreground">status bar: <span id="status-bar">{{ $statusBar ? 'on' : 'off' }}</span>, position: <span id="position">{{ $position }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Context Menu</h2>
+        <x-ui::context-menu>
+            <x-ui::context-menu.trigger class="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">Right click here</x-ui::context-menu.trigger>
+            <x-ui::context-menu.content class="w-48">
+                <x-ui::context-menu.group>
+                    <x-ui::context-menu.item>Back <x-ui::context-menu.shortcut>⌘[</x-ui::context-menu.shortcut></x-ui::context-menu.item>
+                    <x-ui::context-menu.item disabled>Forward <x-ui::context-menu.shortcut>⌘]</x-ui::context-menu.shortcut></x-ui::context-menu.item>
+                    <x-ui::context-menu.item>Reload <x-ui::context-menu.shortcut>⌘R</x-ui::context-menu.shortcut></x-ui::context-menu.item>
+                    <x-ui::context-menu.sub>
+                        <x-ui::context-menu.sub-trigger>More Tools</x-ui::context-menu.sub-trigger>
+                        <x-ui::context-menu.sub-content>
+                            <x-ui::context-menu.item>Save Page...</x-ui::context-menu.item>
+                            <x-ui::context-menu.item>Create Shortcut...</x-ui::context-menu.item>
+                            <x-ui::context-menu.separator />
+                            <x-ui::context-menu.item variant="destructive">Delete</x-ui::context-menu.item>
+                        </x-ui::context-menu.sub-content>
+                    </x-ui::context-menu.sub>
+                </x-ui::context-menu.group>
+                <x-ui::context-menu.separator />
+                <x-ui::context-menu.checkbox-item wire:model.live="bookmarks">Show Bookmarks</x-ui::context-menu.checkbox-item>
+                <x-ui::context-menu.separator />
+                <x-ui::context-menu.radio-group wire:model.live="person">
+                    <x-ui::context-menu.label inset>People</x-ui::context-menu.label>
+                    <x-ui::context-menu.radio-item value="pedro">Pedro Duarte</x-ui::context-menu.radio-item>
+                    <x-ui::context-menu.radio-item value="colm">Colm Tuite</x-ui::context-menu.radio-item>
+                </x-ui::context-menu.radio-group>
+            </x-ui::context-menu.content>
+        </x-ui::context-menu>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Menubar</h2>
+        <x-ui::menubar class="w-fit">
+            <x-ui::menubar.menu>
+                <x-ui::menubar.trigger>File</x-ui::menubar.trigger>
+                <x-ui::menubar.content>
+                    <x-ui::menubar.item>New Tab <x-ui::menubar.shortcut>⌘T</x-ui::menubar.shortcut></x-ui::menubar.item>
+                    <x-ui::menubar.item>New Window <x-ui::menubar.shortcut>⌘N</x-ui::menubar.shortcut></x-ui::menubar.item>
+                    <x-ui::menubar.item disabled>New Incognito Window</x-ui::menubar.item>
+                    <x-ui::menubar.separator />
+                    <x-ui::menubar.sub>
+                        <x-ui::menubar.sub-trigger>Share</x-ui::menubar.sub-trigger>
+                        <x-ui::menubar.sub-content>
+                            <x-ui::menubar.item>Email link</x-ui::menubar.item>
+                            <x-ui::menubar.item>Messages</x-ui::menubar.item>
+                        </x-ui::menubar.sub-content>
+                    </x-ui::menubar.sub>
+                    <x-ui::menubar.separator />
+                    <x-ui::menubar.item>Print... <x-ui::menubar.shortcut>⌘P</x-ui::menubar.shortcut></x-ui::menubar.item>
+                </x-ui::menubar.content>
+            </x-ui::menubar.menu>
+            <x-ui::menubar.menu>
+                <x-ui::menubar.trigger>View</x-ui::menubar.trigger>
+                <x-ui::menubar.content class="w-64">
+                    <x-ui::menubar.checkbox-item wire:model.live="bookmarks">Always Show Bookmarks Bar</x-ui::menubar.checkbox-item>
+                    <x-ui::menubar.separator />
+                    <x-ui::menubar.item inset>Reload <x-ui::menubar.shortcut>⌘R</x-ui::menubar.shortcut></x-ui::menubar.item>
+                </x-ui::menubar.content>
+            </x-ui::menubar.menu>
+            <x-ui::menubar.menu>
+                <x-ui::menubar.trigger>Profiles</x-ui::menubar.trigger>
+                <x-ui::menubar.content>
+                    <x-ui::menubar.radio-group wire:model.live="person">
+                        <x-ui::menubar.radio-item value="pedro">Pedro</x-ui::menubar.radio-item>
+                        <x-ui::menubar.radio-item value="colm">Colm</x-ui::menubar.radio-item>
+                    </x-ui::menubar.radio-group>
+                </x-ui::menubar.content>
+            </x-ui::menubar.menu>
+        </x-ui::menubar>
     </section>
 
     <section class="space-y-4">

@@ -5,8 +5,17 @@ use Livewire\Component;
 
 new class extends Component
 {
+    public int $count = 0;
+
     #[Validate('required|url')]
     public string $website = '';
+
+    public function increment(): void
+    {
+        usleep(600_000);
+
+        $this->count++;
+    }
 
     public function check(): void
     {
@@ -25,7 +34,105 @@ $chevronRight = $icon('<path d="m9 18 6-6-6-6"/>');
 $badgeCheck = $icon('<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>');
 @endphp
 
+@php
+$code = <<<'PHP'
+<?php
+
+namespace App\Livewire;
+
+use Livewire\Component;
+
+class Counter extends Component
+{
+    public int $count = 0;
+
+    public function increment(): void
+    {
+        $this->count++;
+    }
+}
+PHP;
+$icon = fn (string $paths) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$paths.'</svg>';
+$check = $icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>');
+$alert = $icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>');
+$info = $icon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');
+$x = $icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>');
+$search = $icon('<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>');
+$file = $icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>');
+$terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
+@endphp
+
 <div class="mx-auto max-w-3xl space-y-12 p-10">
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Variants</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui::button>Default</x-ui::button>
+            <x-ui::button variant="secondary">Secondary</x-ui::button>
+            <x-ui::button variant="outline">Outline</x-ui::button>
+            <x-ui::button variant="ghost">Ghost</x-ui::button>
+            <x-ui::button variant="destructive">Destructive</x-ui::button>
+            <x-ui::button variant="link">Link</x-ui::button>
+            <x-ui::button href="#" variant="outline">Anchor</x-ui::button>
+            <x-ui::button disabled>Disabled</x-ui::button>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Sizes</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui::button size="xs">Extra small</x-ui::button>
+            <x-ui::button size="sm">Small</x-ui::button>
+            <x-ui::button>Default</x-ui::button>
+            <x-ui::button size="lg">Large</x-ui::button>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Utility overrides</h2>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui::button class="bg-rose-600 hover:bg-rose-700 rounded-full px-8">bg-rose-600 rounded-full px-8</x-ui::button>
+            <x-ui::button variant="outline" class="h-12 border-dashed text-base">h-12 border-dashed</x-ui::button>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Livewire loading</h2>
+        <div class="flex items-center gap-3">
+            <x-ui::button wire:click="increment">Increment</x-ui::button>
+            <span class="text-muted-foreground">{{ $count }}</span>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Status colours</h2>
+        <div class="flex flex-wrap gap-2">
+            @foreach (['default', 'destructive', 'success', 'warning', 'info'] as $variant)
+            <x-ui::button :variant="$variant">{{ ucfirst($variant) }}</x-ui::button>
+            @endforeach
+        </div>
+        <div class="flex flex-wrap gap-2">
+            @foreach (['default', 'destructive', 'success', 'warning', 'info'] as $variant)
+            <x-ui::badge :variant="$variant">{{ ucfirst($variant) }}</x-ui::badge>
+            @endforeach
+        </div>
+        <div class="grid gap-3">
+            <x-ui::alert variant="success">{!! $check !!}<x-ui::alert.title>Payment received</x-ui::alert.title><x-ui::alert.description>Order #4189 has been paid and will ship today.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="warning">{!! $alert !!}<x-ui::alert.title>Low stock</x-ui::alert.title><x-ui::alert.description>Only 3 units of Studio Headphones are left.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="info">{!! $info !!}<x-ui::alert.title>Maintenance</x-ui::alert.title><x-ui::alert.description>The dashboard will be read-only on Sunday from 2:00 to 3:00.</x-ui::alert.description></x-ui::alert>
+            <x-ui::alert variant="destructive">{!! $x !!}<x-ui::alert.title>Payment failed</x-ui::alert.title><x-ui::alert.description>The card was declined. Ask the customer for another method.</x-ui::alert.description></x-ui::alert>
+        </div>
+        <x-ui::bubble.group>
+            @foreach (['success' => 'Refund approved', 'warning' => 'Waiting for the courier', 'info' => 'Mia joined the chat', 'destructive' => 'Message failed to send'] as $variant => $text)
+            <x-ui::bubble :variant="$variant"><x-ui::bubble.content>{{ $text }}</x-ui::bubble.content></x-ui::bubble>
+            @endforeach
+        </x-ui::bubble.group>
+        <div class="flex flex-wrap gap-2">
+            @foreach (['default', 'success', 'info', 'warning', 'error', 'loading'] as $type)
+            <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { message: '{{ ucfirst($type) }} toast', description: 'Sunday, December 03, 2023 at 9:00 AM', type: '{{ $type }}' })">{{ ucfirst($type) }} toast</x-ui::button>
+            @endforeach
+        </div>
+    </section>
+
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Badge</h2>
         <div class="flex flex-wrap items-center gap-2">

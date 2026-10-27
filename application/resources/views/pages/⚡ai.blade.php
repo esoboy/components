@@ -53,36 +53,6 @@ $terminal = $icon('<path d="M12 19h8"/><path d="m4 17 6-6-6-6"/>');
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
-        <h2 class="text-lg font-semibold">Status colours</h2>
-        <div class="flex flex-wrap gap-2">
-            @foreach (['default', 'destructive', 'success', 'warning', 'info'] as $variant)
-            <x-ui::button :variant="$variant">{{ ucfirst($variant) }}</x-ui::button>
-            @endforeach
-        </div>
-        <div class="flex flex-wrap gap-2">
-            @foreach (['default', 'destructive', 'success', 'warning', 'info'] as $variant)
-            <x-ui::badge :variant="$variant">{{ ucfirst($variant) }}</x-ui::badge>
-            @endforeach
-        </div>
-        <div class="grid gap-3">
-            <x-ui::alert variant="success">{!! $check !!}<x-ui::alert.title>Payment received</x-ui::alert.title><x-ui::alert.description>Order #4189 has been paid and will ship today.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="warning">{!! $alert !!}<x-ui::alert.title>Low stock</x-ui::alert.title><x-ui::alert.description>Only 3 units of Studio Headphones are left.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="info">{!! $info !!}<x-ui::alert.title>Maintenance</x-ui::alert.title><x-ui::alert.description>The dashboard will be read-only on Sunday from 2:00 to 3:00.</x-ui::alert.description></x-ui::alert>
-            <x-ui::alert variant="destructive">{!! $x !!}<x-ui::alert.title>Payment failed</x-ui::alert.title><x-ui::alert.description>The card was declined. Ask the customer for another method.</x-ui::alert.description></x-ui::alert>
-        </div>
-        <x-ui::bubble.group>
-            @foreach (['success' => 'Refund approved', 'warning' => 'Waiting for the courier', 'info' => 'Mia joined the chat', 'destructive' => 'Message failed to send'] as $variant => $text)
-            <x-ui::bubble :variant="$variant"><x-ui::bubble.content>{{ $text }}</x-ui::bubble.content></x-ui::bubble>
-            @endforeach
-        </x-ui::bubble.group>
-        <div class="flex flex-wrap gap-2">
-            @foreach (['default', 'success', 'info', 'warning', 'error', 'loading'] as $type)
-            <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { message: '{{ ucfirst($type) }} toast', description: 'Sunday, December 03, 2023 at 9:00 AM', type: '{{ $type }}' })">{{ ucfirst($type) }} toast</x-ui::button>
-            @endforeach
-        </div>
-    </section>
-
-    <section class="space-y-4">
         <h2 class="text-lg font-semibold">Code Block</h2>
         <x-ui::code-block>
             <x-ui::code-block.header>
