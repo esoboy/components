@@ -2,6 +2,7 @@
 
 namespace Esoboy\Ui\Tests;
 
+use Esoboy\Ui\Assets;
 use Esoboy\Ui\UiServiceProvider;
 use Livewire\Blaze\BlazeServiceProvider;
 use Livewire\LivewireServiceProvider;
@@ -26,6 +27,9 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        // dist/ is a build output; tests read a fixed one.
+        $this->app->instance(Assets::class, new Assets(__DIR__.'/Fixtures/dist'));
 
         $this->artisan('view:clear');
     }

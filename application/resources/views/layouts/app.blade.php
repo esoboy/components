@@ -16,5 +16,7 @@
 
         <x-ui::toaster />
         <x-ui::confirm />
+
+        @uiScripts
     </body>
 </html>

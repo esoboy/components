@@ -19,6 +19,7 @@ class UiServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(Assets::class, fn () => new Assets(__DIR__.'/../dist'));
         $this->app->scoped(Overlay::class);
         $this->app->scoped(PendingControl::class);
         $this->app->scoped(Sequence::class);
@@ -28,12 +29,30 @@ class UiServiceProvider extends ServiceProvider
     {
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
 
+        $this->bootAssets();
         $this->bootTranslations();
         $this->bootFieldContext();
         $this->bootLivewire();
 
         // The browser writes the sidebar state cookie, so it can't be encrypted.
         EncryptCookies::except(SidebarState::COOKIE);
+    }
+
+    /**
+     * @uiScripts loads the bundled JavaScript; the asset route serves it until it is
+     * published. laravel-assets is the group new Laravel apps republish on composer update.
+     */
+    protected function bootAssets(): void
+    {
+        $this->loadRoutesFrom(__DIR__.'/../routes/assets.php');
+
+        Blade::directive('uiScripts', fn (string $expression) => "<?php echo app(\Esoboy\Ui\Assets::class)->scripts({$expression}); ?>");
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../dist' => public_path('vendor/ui'),
+            ], ['ui-assets', 'laravel-assets']);
+        }
     }
 
     /**
