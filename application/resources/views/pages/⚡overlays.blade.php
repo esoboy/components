@@ -56,6 +56,16 @@ new class extends Component
 
         $this->redirect('/general', navigate: true);
     }
+
+    public function startTour(): void
+    {
+        Ui::tour('overlays-tour')->start(1);
+    }
+
+    public function tourClosed(bool $finished): void
+    {
+        Ui::toast($finished ? 'Tour finished' : 'Tour skipped', type: $finished ? 'success' : 'info');
+    }
 };
 ?>
 
@@ -64,7 +74,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Dialog</h2>
         <div class="flex flex-wrap gap-3">
             <x-ui::dialog name="edit-profile">
-                <x-ui::dialog.trigger variant="outline">Edit profile</x-ui::dialog.trigger>
+                <x-ui::dialog.trigger id="tour-dialog" variant="outline">Edit profile</x-ui::dialog.trigger>
                 <x-ui::dialog.content>
                     <form wire:submit="save" class="grid gap-4">
                         <x-ui::dialog.header>
@@ -204,7 +214,7 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Dropdown Menu</h2>
         <x-ui::dropdown-menu>
-            <x-ui::dropdown-menu.trigger variant="outline">Open</x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.trigger id="tour-dropdown" variant="outline">Open</x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content class="w-40">
                 <x-ui::dropdown-menu.label>My Account</x-ui::dropdown-menu.label>
                 <x-ui::dropdown-menu.group>
@@ -308,7 +318,7 @@ new class extends Component
 
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Toast</h2>
-        <div class="flex flex-wrap gap-3">
+        <div id="tour-toast" class="flex flex-wrap gap-3">
             <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { message: 'Event has been created', description: 'Sunday, December 03, 2023 at 9:00 AM' })">Default</x-ui::button>
             @foreach (['success', 'info', 'warning', 'error'] as $type)
                 <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { message: '{{ ucfirst($type) }} toast', type: '{{ $type }}' })">{{ ucfirst($type) }}</x-ui::button>
@@ -317,5 +327,19 @@ new class extends Component
             <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { id: 'event', message: 'Creating event…', type: 'loading' }); $wire.createEvent()">Create event (loading)</x-ui::button>
             <x-ui::button variant="outline" wire:click="saveAndLeave">Save and go to General</x-ui::button>
         </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Tour</h2>
+        <div class="flex flex-wrap gap-3">
+            <x-ui::button commandfor="overlays-tour" command="--start">Start tour</x-ui::button>
+            <x-ui::button variant="outline" wire:click="startTour">Start at step 2 from server</x-ui::button>
+        </div>
+        <x-ui::tour name="overlays-tour" wire:tour-close="tourClosed($event.detail.finished)">
+            <x-ui::tour.step target="#tour-dialog" title="Dialogs" align="start">Open a dialog from its trigger, or from the server with Ui::dialog('name')->open().</x-ui::tour.step>
+            <x-ui::tour.step target="#tour-dropdown" title="Menus" side="right" align="start">Menus keep their own anchor while the tour points at them.</x-ui::tour.step>
+            <x-ui::tour.step target="#tour-toast" title="Toasts" side="top">Ui::toast() reaches the browser from any Livewire action.</x-ui::tour.step>
+            <x-ui::tour.step title="That's all">Close the tour or press Escape at any step; the page hears tour-change and tour-close.</x-ui::tour.step>
+        </x-ui::tour>
     </section>
 </div>

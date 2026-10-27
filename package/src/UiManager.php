@@ -3,12 +3,13 @@
 namespace Esoboy\Ui;
 
 use Esoboy\Ui\Livewire\DialogHandle;
+use Esoboy\Ui\Livewire\TourHandle;
 use Esoboy\Ui\Support\Theme;
 use Livewire\Component;
 use LogicException;
 
 /**
- * What Ui:: offers server code. toast(), dialog() and countdown() reach the browser
+ * What Ui:: offers server code. toast(), dialog(), tour() and countdown() reach the browser
  * through the Livewire component being handled, so they work from its methods, Form
  * objects and actions alike.
  */
@@ -42,6 +43,14 @@ final class UiManager
     public function dialog(string $name): DialogHandle
     {
         return new DialogHandle($this->component(__FUNCTION__), $name);
+    }
+
+    /**
+     * Starts or closes the tour with that name.
+     */
+    public function tour(string $name): TourHandle
+    {
+        return new TourHandle($this->component(__FUNCTION__), $name);
     }
 
     /**

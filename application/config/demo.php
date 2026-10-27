@@ -13,7 +13,7 @@ return [
         'uploads' => ['Uploads', 'File Upload, Image Upload, Image Preview'],
     ],
     'Structure' => [
-        'overlays' => ['Overlays', 'Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Toast'],
+        'overlays' => ['Overlays', 'Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Toast, Tour'],
         'navigation' => ['Navigation', 'Sidebar, Breadcrumb, Tabs, Pagination, Navigation Menu'],
         'layout' => ['Layout', 'Watermark, Accordion, Collapsible, Progress, Aspect Ratio, Scroll Area, Resizable, Carousel'],
         'data' => ['Data', 'Data Table, Description List, Steps, Timeline'],

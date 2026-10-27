@@ -34,6 +34,21 @@ class Notifier extends Component
         Ui::dialog('edit')->close();
     }
 
+    public function welcome(): void
+    {
+        Ui::tour('onboarding')->start();
+    }
+
+    public function resume(): void
+    {
+        Ui::tour('onboarding')->start(2);
+    }
+
+    public function skip(): void
+    {
+        Ui::tour('onboarding')->close();
+    }
+
     public function render(): string
     {
         return '<div></div>';
