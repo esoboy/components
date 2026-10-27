@@ -24,6 +24,7 @@ import { defineFileUpload } from './file-upload.js'
 import { initHoverCards } from './hover-card.js'
 import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
+import { defineInputs } from './inputs.js'
 import { defineMessageScroller } from './message-scroller.js'
 import { initNavigationMenus } from './navigation-menu.js'
 import { initQuestionnaires } from './questionnaire.js'
@@ -58,6 +59,7 @@ defineFileUpload()
 defineDataTable()
 defineCascader()
 defineTree()
+defineInputs()
 initAvatars()
 initCodeBlocks()
 initConfirm()

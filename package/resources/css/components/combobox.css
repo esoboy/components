@@ -70,9 +70,9 @@
     }
 
     /* Multiple: chips in front of the input, inside one box. */
-    :where([data-slot="combobox-chips"]) {
+    :where([data-slot="combobox-chips"], [data-slot="tags-input"]) {
         @apply flex min-h-8 flex-wrap items-center gap-1 rounded-lg border border-input bg-clip-padding px-2.5 py-1 text-sm transition-colors;
-        @apply focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 has-data-[slot=combobox-chip]:px-1;
+        @apply focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 has-data-[slot=combobox-chip]:px-1 has-data-[slot=tags-input-tag]:px-1;
         background-color: light-dark(transparent, color-mix(in oklab, var(--color-input) 30%, transparent));
 
         &:has([aria-invalid="true"]) {
@@ -82,16 +82,17 @@
         }
     }
 
-    :where([data-slot="combobox-chip"]) {
+    :where([data-slot="combobox-chip"], [data-slot="tags-input-tag"]) {
         @apply flex h-[calc(var(--spacing)*5.25)] w-fit items-center justify-center gap-1 rounded-sm bg-muted px-1.5 text-xs font-medium whitespace-nowrap text-foreground;
-        @apply has-data-[combobox-chip-remove]:pr-0;
+        @apply has-data-[combobox-chip-remove]:pr-0 has-data-[tags-input-remove]:pr-0;
     }
 
-    [data-slot="combobox-chip"] > [data-combobox-chip-remove] {
+    [data-slot="combobox-chip"] > [data-combobox-chip-remove],
+    [data-slot="tags-input-tag"] > [data-tags-input-remove] {
         @apply -ml-1 opacity-50 hover:opacity-100;
     }
 
-    :where([data-slot="combobox-chip-input"]) {
+    :where([data-slot="combobox-chip-input"], [data-slot="tags-input-input"]) {
         @apply min-w-16 flex-1 border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground;
     }
 }

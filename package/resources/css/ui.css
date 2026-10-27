@@ -54,6 +54,7 @@
 @import './components/message-scroller.css';
 @import './components/native-select.css';
 @import './components/navigation-menu.css';
+@import './components/number-input.css';
 @import './components/pagination.css';
 @import './components/popover.css';
 @import './components/progress.css';
@@ -71,6 +72,7 @@
 @import './components/switch.css';
 @import './components/table.css';
 @import './components/tabs.css';
+@import './components/tags-input.css';
 @import './components/timeline.css';
 @import './components/toast.css';
 @import './components/toggle.css';

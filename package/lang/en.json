@@ -38,6 +38,8 @@
     "ui.message_scroller.label": "Messages",
     "ui.message_scroller.start": "Scroll to start",
     "ui.more": "More",
+    "ui.number_input.decrement": "Decrease",
+    "ui.number_input.increment": "Increase",
     "ui.pagination.label": "pagination",
     "ui.pagination.more": "More pages",
     "ui.pagination.next": "Next",

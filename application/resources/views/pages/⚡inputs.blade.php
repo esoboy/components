@@ -20,6 +20,12 @@ new class extends Component
 
     public array $depts = [];
 
+    public array $tags = ['laravel', 'livewire'];
+
+    public ?int $quantity = 2;
+
+    public ?float $price = 9.9;
+
     public function mount(): void
     {
         $this->regions = [
@@ -115,5 +121,26 @@ new class extends Component
             <x-ui::tree-select wire:model.live="departments" :items="$depts" checkable placeholder="Departments" expand-all class="w-72" />
         </div>
         <p class="text-xs text-muted-foreground">Single: <span id="department">{{ $department }}</span> · Multiple: <span id="departments">{{ implode(', ', $departments) }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Tags Input &amp; Number Input</h2>
+        <x-ui::field>
+            <x-ui::field.label>Tags</x-ui::field.label>
+            <x-ui::tags-input wire:model.live="tags" placeholder="Add a tag…" :max="5" />
+            <x-ui::field.description>Tags: <span id="tags">{{ implode(', ', $tags) }}</span></x-ui::field.description>
+        </x-ui::field>
+        <div class="grid gap-4 sm:grid-cols-2">
+            <x-ui::field>
+                <x-ui::field.label>Quantity</x-ui::field.label>
+                <x-ui::number-input wire:model.live="quantity" :min="1" :max="10" />
+                <x-ui::field.description>Quantity: <span id="quantity">{{ $quantity }}</span></x-ui::field.description>
+            </x-ui::field>
+            <x-ui::field>
+                <x-ui::field.label>Price</x-ui::field.label>
+                <x-ui::number-input wire:model.live="price" :min="0" step="0.1" />
+                <x-ui::field.description>Price: <span id="price">{{ $price }}</span></x-ui::field.description>
+            </x-ui::field>
+        </div>
     </section>
 </div>

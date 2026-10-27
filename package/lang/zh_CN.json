@@ -38,6 +38,8 @@
     "ui.message_scroller.label": "消息",
     "ui.message_scroller.start": "滚动到顶部",
     "ui.more": "更多",
+    "ui.number_input.decrement": "减少",
+    "ui.number_input.increment": "增加",
     "ui.pagination.label": "分页",
     "ui.pagination.more": "更多页",
     "ui.pagination.next": "下一页",
