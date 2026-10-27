@@ -19,7 +19,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">{{ $group }}</h2>
         <div class="grid gap-4 sm:grid-cols-2">
             @foreach ($pages as $path => [$label, $components])
-            <a href="/{{ $path }}" class="block">
+            <a href="/{{ $path }}" class="block" wire:navigate>
                 <x-ui::card class="h-full transition-colors hover:bg-accent/50">
                     <x-ui::card.header>
                         <x-ui::card.title>{{ $label }}</x-ui::card.title>

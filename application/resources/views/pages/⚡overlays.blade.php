@@ -49,6 +49,13 @@ new class extends Component
         usleep(800_000);
         Ui::toast('Event created', description: 'Sunday, December 03, 2023 at 9:00 AM', type: 'success', id: 'event');
     }
+
+    public function saveAndLeave(): void
+    {
+        Ui::toast('Saved', description: 'Back on the General page.', type: 'success');
+
+        $this->redirect('/general', navigate: true);
+    }
 };
 ?>
 
@@ -308,6 +315,7 @@ new class extends Component
             @endforeach
             <x-ui::button variant="outline" wire:click="delete">Delete (with Undo)</x-ui::button>
             <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { id: 'event', message: 'Creating event…', type: 'loading' }); $wire.createEvent()">Create event (loading)</x-ui::button>
+            <x-ui::button variant="outline" wire:click="saveAndLeave">Save and go to General</x-ui::button>
         </div>
     </section>
 </div>

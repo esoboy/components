@@ -82,6 +82,9 @@ Ui::dialog('edit-profile')->close();
 Ui::countdown('sms');
 ```
 
+The toaster is kept across `wire:navigate`, so a toast shown before
+`$this->redirect('/orders', navigate: true)` stays on the next page.
+
 ## Light and dark
 
 Colors follow the system until a user picks a theme. Name the app on `<html>`; each app on

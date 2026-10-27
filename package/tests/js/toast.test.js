@@ -176,3 +176,19 @@ it('does nothing without a viewport or any text', () => {
     document.body.innerHTML = ''
     expect(() => toast({ message: 'x' })).not.toThrow()
 })
+
+it('shows the toasts it kept after wire:navigate moved the toaster into the new page', () => {
+    toast({ message: 'Saved', duration: 0 })
+    viewport.hidePopover()
+
+    document.dispatchEvent(new Event('livewire:navigated'))
+
+    expect(viewport.matches(':popover-open')).toBe(true)
+    expect(live()).toHaveLength(1)
+})
+
+it('stays closed after wire:navigate when no toast is left', () => {
+    document.dispatchEvent(new Event('livewire:navigated'))
+
+    expect(viewport.matches(':popover-open')).toBe(false)
+})

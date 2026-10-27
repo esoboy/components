@@ -6,6 +6,8 @@
     'timeout' => 5000,
 ])
 
+{{-- Kept across wire:navigate, so toasts shown before a page change stay, as sonner's do in a layout. --}}
+@persist('ui-toaster')
 <div {{ $attributes->merge([
     'role' => 'region',
     'aria-live' => 'polite',
@@ -39,3 +41,4 @@
     <template data-template="icon-error"><x-ui::icon name="octagon-x" /></template>
     <template data-template="icon-loading"><x-ui::icon name="loader-circle" data-spin /></template>
 </div>
+@endpersist

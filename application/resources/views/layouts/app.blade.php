@@ -21,7 +21,7 @@ $page = collect(config('demo'))->collapse()->get($current);
                 <x-ui::sidebar.header>
                     <x-ui::sidebar.menu>
                         <x-ui::sidebar.menu-item>
-                            <x-ui::sidebar.menu-button size="lg" href="/">
+                            <x-ui::sidebar.menu-button size="lg" href="/" wire:navigate>
                                 <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">ui</div>
                                 <div class="grid flex-1 text-left text-sm leading-tight">
                                     <span class="truncate font-medium">esoboy/ui</span>
@@ -39,7 +39,7 @@ $page = collect(config('demo'))->collapse()->get($current);
                             <x-ui::sidebar.menu>
                                 @foreach ($pages as $path => [$label, $components])
                                 <x-ui::sidebar.menu-item>
-                                    <x-ui::sidebar.menu-button :href="'/'.$path" :is-active="$current === $path">{{ $label }}</x-ui::sidebar.menu-button>
+                                    <x-ui::sidebar.menu-button :href="'/'.$path" :is-active="$current === $path" wire:navigate>{{ $label }}</x-ui::sidebar.menu-button>
                                     <x-ui::sidebar.menu-badge>{{ count(explode(', ', $components)) }}</x-ui::sidebar.menu-badge>
                                 </x-ui::sidebar.menu-item>
                                 @endforeach
@@ -59,7 +59,7 @@ $page = collect(config('demo'))->collapse()->get($current);
                         <x-ui::breadcrumb.list>
                             @if ($page)
                             <x-ui::breadcrumb.item>
-                                <x-ui::breadcrumb.link href="/">Components</x-ui::breadcrumb.link>
+                                <x-ui::breadcrumb.link href="/" wire:navigate>Components</x-ui::breadcrumb.link>
                             </x-ui::breadcrumb.item>
                             <x-ui::breadcrumb.separator />
                             <x-ui::breadcrumb.item>

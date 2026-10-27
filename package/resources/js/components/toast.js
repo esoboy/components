@@ -240,4 +240,14 @@ export function register() {
     })
 
     window.addEventListener('ui-toast', ({ detail }) => show(detail ?? {}))
+
+    // The toaster is persisted across wire:navigate; moving it into the new page closes its popover.
+    document.addEventListener('livewire:navigated', () => {
+        const root = viewport()
+
+        if (! root || ! live().length) return
+
+        if (! root.matches(':popover-open')) root.showPopover()
+        layout()
+    })
 }

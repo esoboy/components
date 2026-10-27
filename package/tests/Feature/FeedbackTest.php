@@ -68,6 +68,7 @@ it('renders the toaster as the toast viewport, with what toasts are cloned from'
     $html = (string) $this->blade('<x-ui::toaster />');
 
     expect($html)
+        ->toContain('<div x-persist="ui-toaster">')
         ->toContain('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" wire:ignore>')
         ->toContain('<template data-template="toast">')
         ->toMatch('/<div data-slot="toast" aria-modal="false" tabindex="0">\s*<div data-slot="toast-content">\s*<span data-slot="toast-icon"><\/span>/')
