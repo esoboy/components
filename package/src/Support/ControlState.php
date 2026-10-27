@@ -84,6 +84,19 @@ final class ControlState
         ));
     }
 
+    /**
+     * The same state keeping only some of its messages, e.g. a file list that shows
+     * each file's errors on the file and only the list's own above it.
+     *
+     * @param  list<string>  $messages
+     */
+    public function only(array $messages): self
+    {
+        $kept = array_values(array_intersect($this->messages, $messages));
+
+        return new self($this->key, $kept, $kept ? $this->errorId : null, $this->showError);
+    }
+
     public function invalid(): bool
     {
         return $this->messages !== [];

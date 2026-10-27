@@ -18,6 +18,7 @@ import { defineDatePicker } from './date-picker.js'
 import { initDialogs } from './dialog.js'
 import { initDrawers } from './drawer.js'
 import { initDropdownMenus } from './dropdown-menu.js'
+import { defineFileUpload } from './file-upload.js'
 import { initHoverCards } from './hover-card.js'
 import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
@@ -50,6 +51,7 @@ defineScrollArea()
 defineResizable()
 defineCarousel()
 defineMessageScroller()
+defineFileUpload()
 initAvatars()
 initCodeBlocks()
 initConfirm()
