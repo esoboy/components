@@ -334,12 +334,16 @@ new class extends Component
         <div class="flex flex-wrap gap-3">
             <x-ui::button commandfor="overlays-tour" command="--start">Start tour</x-ui::button>
             <x-ui::button variant="outline" wire:click="startTour">Start at step 2 from server</x-ui::button>
+            <x-ui::button variant="outline" commandfor="overlays-tour-open" command="--start">Start without blocking</x-ui::button>
         </div>
         <x-ui::tour name="overlays-tour" wire:tour-close="tourClosed($event.detail.finished)">
             <x-ui::tour.step target="#tour-dialog" title="Dialogs" align="start">Open a dialog from its trigger, or from the server with Ui::dialog('name')->open().</x-ui::tour.step>
             <x-ui::tour.step target="#tour-dropdown" title="Menus" side="right" align="start">Menus keep their own anchor while the tour points at them.</x-ui::tour.step>
             <x-ui::tour.step target="#tour-toast" title="Toasts" side="top">Ui::toast() reaches the browser from any Livewire action.</x-ui::tour.step>
             <x-ui::tour.step title="That's all">Close the tour or press Escape at any step; the page hears tour-change and tour-close.</x-ui::tour.step>
+        </x-ui::tour>
+        <x-ui::tour name="overlays-tour-open" :blocking="false">
+            <x-ui::tour.step target="#tour-toast" title="Not blocking" side="bottom">The mask lets clicks through: the Menubar above works while this step is open.</x-ui::tour.step>
         </x-ui::tour>
     </section>
 </div>

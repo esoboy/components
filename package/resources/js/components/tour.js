@@ -153,7 +153,8 @@ export class TourElement extends HTMLElement {
         target.style.setProperty('anchor-name', [...this.#names(target), ANCHOR].join(', '))
         target.setAttribute('data-tour-target', '')
 
-        if (scroll) target.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        // At once, so the panel picks its place with the target in view (as Chrome keeps the place that fit last).
+        if (scroll) target.scrollIntoView({ block: 'center' })
     }
 
     #names(element) {

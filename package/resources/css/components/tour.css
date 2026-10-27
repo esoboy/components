@@ -30,6 +30,15 @@
         &[data-empty] {
             --tour-padding: 0px;
         }
+
+        /* Blocking: a frame reaching past the screen's edges catches the clicks around the hole. */
+        &[data-blocking]::before {
+            content: "";
+            position: absolute;
+            inset: -100vmax;
+            pointer-events: auto;
+            clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 100vmax 100vmax, 100vmax calc(100% - 100vmax), calc(100% - 100vmax) calc(100% - 100vmax), calc(100% - 100vmax) 100vmax, 100vmax 100vmax);
+        }
     }
 
     :where([data-slot="tour-content"]) {

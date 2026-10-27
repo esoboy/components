@@ -23,7 +23,7 @@ it('renders the steps as templates beside a spotlight and a panel', function () 
         ->toContain('<div data-slot="tour-description">Find anything.</div>')
         ->toContain('<template data-tour-step="data-tour-step" data-target="#profile" data-side="left" data-align="start">')
         ->toContain('<template data-tour-step="data-tour-step" data-side="bottom" data-align="center">')
-        ->toContain('<div popover="manual" data-slot="tour-spotlight" aria-hidden="true" wire:ignore></div>')
+        ->toContain('<div popover="manual" data-slot="tour-spotlight" aria-hidden="true" wire:ignore  data-blocking ></div>')
         ->toContain('<div popover="manual" role="dialog" aria-modal="false" data-slot="tour-content" wire:ignore>')
         ->toContain('data-variant="ghost" data-size="icon-sm" data-tour-action="close" aria-label="Close"><svg')
         ->toContain('<span data-slot="tour-counter" data-format=":current / :total"></span>')
@@ -31,6 +31,12 @@ it('renders the steps as templates beside a spotlight and a panel', function () 
         ->toContain('data-variant="default" data-size="sm" data-tour-action="next">Next</button>')
         ->toContain('data-variant="default" data-size="sm" data-tour-action="finish">Finish</button>')
         ->and(substr_count($html, 'data-slot="tour-title"'))->toBe(2);
+});
+
+it('can leave the page clickable around the target', function () {
+    $this->blade('<x-ui::tour name="t" :blocking="false"><x-ui::tour.step>x</x-ui::tour.step></x-ui::tour>')
+        ->assertSee('<div popover="manual" data-slot="tour-spotlight" aria-hidden="true" wire:ignore ></div>', false)
+        ->assertDontSee('data-blocking', false);
 });
 
 it('translates its buttons and counter', function () {
