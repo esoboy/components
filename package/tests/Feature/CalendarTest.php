@@ -26,12 +26,39 @@ it('renders a date picker around a popover and a calendar', function () {
     [$id] = idsOf($html, 'commandfor');
 
     expect($html)
-        ->toContain('<ui-date-picker data-slot="date-picker" data-placeholder="Pick a date" data-locale="en" wire:model="date">')
+        ->toContain('<ui-date-picker data-slot="date-picker" data-mode="single" data-placeholder="Pick a date" data-locale="en" wire:model="date">')
         ->toContain("data-variant=\"outline\" data-size=\"default\" commandfor=\"{$id}\" command=\"toggle-popover\" data-date-picker-trigger=\"data-date-picker-trigger\"")
         ->toContain('class="w-64"')
         ->toContain('<span data-slot="date-picker-value">Pick a date</span>')
         ->toContain('data-date-picker-content')
         ->toContain('<ui-calendar data-slot="calendar" data-mode="single" data-value="&quot;2026-01-05&quot;"');
+});
+
+it('leads a range picker with a calendar icon and shows two months', function () {
+    $html = (string) $this->blade('<x-ui::date-picker mode="range" placeholder="Pick a range" />');
+
+    expect($html)
+        ->toMatch('/data-date-picker-trigger="data-date-picker-trigger">\s*<svg data-icon="inline-start"/')
+        ->not->toContain('data-icon="inline-end"')
+        ->toContain('data-number-of-months="2"');
+});
+
+it('renders presets under the calendar as calendar values', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::date-picker mode="range" :presets="['Last 7 days' => [\Illuminate\Support\Carbon::parse('2026-10-21'), '2026-10-27 12:00:00'], 'Fixed' => ['from' => '2026-01-01', 'to' => '2026-01-31']]" />
+        <x-ui::date-picker :presets="['Today' => \Illuminate\Support\Carbon::parse('2026-10-27')]" />
+        BLADE);
+
+    expect($html)
+        ->toContain('<div data-slot="date-picker-presets">')
+        ->toContain('data-variant="outline" data-size="sm" data-date-picker-preset="{&quot;from&quot;:&quot;2026-10-21&quot;,&quot;to&quot;:&quot;2026-10-27&quot;}">Last 7 days</button>')
+        ->toContain('data-date-picker-preset="{&quot;from&quot;:&quot;2026-01-01&quot;,&quot;to&quot;:&quot;2026-01-31&quot;}">Fixed</button>')
+        ->toContain('data-date-picker-preset="&quot;2026-10-27&quot;">Today</button>');
+});
+
+it('renders a time picker as a time input', function () {
+    $this->blade('<x-ui::time-picker wire:model="time" step="1" />')
+        ->assertSee('<input type="time" data-slot="input" data-time-picker="data-time-picker" wire:model="time" step="1">', false);
 });
 
 it('validates a date picker inside a field', function () {

@@ -18,7 +18,24 @@
         }
     }
 
+    :where([data-slot="date-picker-value"]) {
+        @apply min-w-0 truncate;
+    }
+
+    /* The range trigger leads with a calendar icon, as in shadcn's range example. */
+    [data-slot="date-picker"][data-mode="range"] :where([data-date-picker-trigger]) {
+        @apply w-auto justify-start;
+    }
+
     [data-slot="date-picker"] :where([data-date-picker-content]) {
         @apply w-auto p-0;
+    }
+
+    :where([data-slot="date-picker-presets"]) {
+        @apply flex flex-wrap gap-2 rounded-b-[inherit] border-t bg-muted/50 p-3;
+
+        & > [data-slot="button"] {
+            @apply flex-1;
+        }
     }
 }

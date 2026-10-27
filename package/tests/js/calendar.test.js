@@ -207,6 +207,19 @@ describe('date picker', () => {
         expect(text(element)).toBe('Oct 20, 2026 - Nov 03, 2026')
     })
 
+    it('applies a preset, showing its month', () => {
+        const element = picker('range')
+        const seen = []
+
+        element.querySelector('ui-calendar').insertAdjacentHTML('afterend', `<button data-date-picker-preset='{"from":"2026-12-01","to":"2026-12-07"}'></button>`)
+        element.addEventListener('change', event => event.target === element && seen.push(element.value))
+        element.querySelector('[data-date-picker-preset]').click()
+
+        expect(seen).toEqual([{ from: '2026-12-01', to: '2026-12-07' }])
+        expect(element.calendar.month).toBe('2026-12')
+        expect(text(element)).toBe('Dec 01, 2026 - Dec 07, 2026')
+    })
+
     it('proxies values set by Livewire to the calendar', () => {
         const element = picker()
 

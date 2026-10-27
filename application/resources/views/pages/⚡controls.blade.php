@@ -33,6 +33,10 @@ new class extends Component
 
     public array $range = ['from' => '2026-10-20', 'to' => '2026-11-03'];
 
+    public array $period = ['from' => null, 'to' => null];
+
+    public ?string $time = '10:30:00';
+
     #[Validate('required|date')]
     public ?string $birthday = null;
 
@@ -80,8 +84,26 @@ $underlineIcon = $svg('<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y
         <h2 class="text-lg font-semibold">Date Picker</h2>
         <div class="flex flex-wrap items-start gap-6">
             <x-ui::date-picker id="demo-picker" wire:model.live="date" placeholder="Pick a date" />
-            <x-ui::date-picker mode="range" wire:model.live="range" placeholder="Pick a date range" :number-of-months="2" class="w-[300px]" />
+            <x-ui::date-picker mode="range" wire:model.live="range" placeholder="Pick a date range" />
+            <x-ui::date-picker id="demo-presets" mode="range" wire:model.live="period" placeholder="Pick a period" :presets="[
+                'Today' => [today(), today()],
+                'Last 7 days' => [today()->subDays(6), today()],
+                'Last 30 days' => [today()->subDays(29), today()],
+                'This month' => [today()->startOfMonth(), today()->endOfMonth()],
+            ]" />
         </div>
+        <p class="text-sm text-muted-foreground">period: <span id="period">{{ ($period['from'] ?? '').' → '.($period['to'] ?? '') }}</span></p>
+        <div class="flex items-start gap-4">
+            <x-ui::field class="w-fit">
+                <x-ui::label for="demo-date-time">Date</x-ui::label>
+                <x-ui::date-picker id="demo-date-time" wire:model.live="date" placeholder="Select date" class="w-44" />
+            </x-ui::field>
+            <x-ui::field class="w-32">
+                <x-ui::label for="demo-time">Time</x-ui::label>
+                <x-ui::time-picker id="demo-time" step="1" wire:model.live="time" />
+            </x-ui::field>
+        </div>
+        <p class="text-sm text-muted-foreground">time: <span id="time">{{ $time ?? 'none' }}</span></p>
         <form wire:submit="saveBirthday" class="flex items-start gap-3">
             <x-ui::field class="w-fit">
                 <x-ui::label for="birthday">Date of birth</x-ui::label>

@@ -15,6 +15,18 @@ export class DatePickerElement extends HTMLElement {
         this.addEventListener('input', event => event.target === this.calendar && this.#announce(event, 'input'))
         this.addEventListener('change', event => event.target === this.calendar && this.#announce(event, 'change'))
 
+        // A preset sets the calendar and shows its month.
+        this.addEventListener('click', event => {
+            const preset = event.target.closest?.('[data-date-picker-preset]')
+
+            if (! preset || ! this.calendar) return
+
+            this.calendar.value = JSON.parse(preset.dataset.datePickerPreset)
+            this.render()
+            this.dispatchEvent(new Event('input', { bubbles: true }))
+            this.dispatchEvent(new Event('change', { bubbles: true }))
+        })
+
         this.render()
 
         // Livewire morphs reset the trigger to the server's placeholder: put the date back.
