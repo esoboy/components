@@ -45,6 +45,10 @@ new class extends Component
 
     public string $who = '';
 
+    public string $mood = '';
+
+    public string $reaction = '';
+
     /**
      * People a server search would return for what follows the @.
      *
@@ -244,6 +248,29 @@ new class extends Component
                 @endforeach
             </x-ui::mentions>
         </x-ui::field>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Emoji Picker</h2>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::emoji-picker id="mood-picker" class="h-[326px] rounded-lg border shadow-md" wire:emoji-select="$set('mood', $event.detail.emoji)">
+                <x-ui::emoji-picker.search />
+                <x-ui::emoji-picker.content />
+            </x-ui::emoji-picker>
+            <div class="space-y-3">
+                <p class="text-sm text-muted-foreground">Mood: <span id="mood">{{ $mood ?: '—' }}</span></p>
+                <x-ui::popover>
+                    <x-ui::popover.trigger id="reaction-trigger" variant="outline">{{ $reaction ?: 'Open emoji picker' }}</x-ui::popover.trigger>
+                    <x-ui::popover.content class="w-fit p-0">
+                        <x-ui::emoji-picker class="h-[342px]" wire:emoji-select="$set('reaction', $event.detail.emoji)">
+                            <x-ui::emoji-picker.search />
+                            <x-ui::emoji-picker.content />
+                            <x-ui::emoji-picker.footer />
+                        </x-ui::emoji-picker>
+                    </x-ui::popover.content>
+                </x-ui::popover>
+            </div>
+        </div>
     </section>
 
     <section class="space-y-4">

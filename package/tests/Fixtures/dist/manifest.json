@@ -1,4 +1,6 @@
 {
     "code-block.js": "cdef01234567",
+    "emoji/en.json": "1111aaaa2222",
+    "emoji/zh.json": "3333bbbb4444",
     "ui.js": "0123456789ab"
 }

@@ -8,6 +8,7 @@
         "test": "vitest run"
     },
     "devDependencies": {
+        "emojibase-data": "18.0.0",
         "esbuild": "^0.28.2",
         "jsdom": "^26.1.0",
         "lucide-static": "1.62.0",

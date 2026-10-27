@@ -2,7 +2,7 @@
  * Bundles the package's JavaScript into dist/, which the asset route serves and
  * vendor:publish --tag=ui-assets copies to public/vendor/ui.
  *
- *   npm run build   minified bundles, their .gz/.br, and manifest.json
+ *   npm run build   minified bundles, the Emoji Picker's data, their .gz/.br, and manifest.json
  *   npm run dev     unminified, rebuilt on every change
  */
 
@@ -31,19 +31,25 @@ const bundles = [
     },
 ]
 
-// Writes a build's files with their compressed copies, then lists every dist file with its version.
+// The Emoji Picker's data: Emojibase's emojis in these languages.
+const emojiLocales = ['en', 'zh']
+
+// Writes a file with its compressed copies.
+async function write(path, contents) {
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, contents)
+    await writeFile(`${path}.gz`, gzipSync(contents, { level: 9 }))
+    await writeFile(`${path}.br`, brotliCompressSync(contents, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }))
+}
+
+// Writes a build's files, then lists every dist file with its version.
 const output = {
     name: 'dist',
     setup(build) {
         build.onEnd(async result => {
             if (result.errors.length) return
 
-            await Promise.all(result.outputFiles.map(async ({ path, contents }) => {
-                await mkdir(dirname(path), { recursive: true })
-                await writeFile(path, contents)
-                await writeFile(`${path}.gz`, gzipSync(contents, { level: 9 }))
-                await writeFile(`${path}.br`, brotliCompressSync(contents, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }))
-            }))
+            await Promise.all(result.outputFiles.map(({ path, contents }) => write(path, contents)))
 
             await writeManifest()
 
@@ -67,7 +73,31 @@ async function writeManifest() {
     await writeFile(join(dist, 'manifest.json'), `${JSON.stringify(manifest, null, 4)}\n`)
 }
 
+/*
+ * dist/emoji/<locale>.json: { category: [[emoji, label, keywords, Emoji version], …] } in
+ * Emojibase's order, without the skin tone and hair components. Keywords are joined with |,
+ * as some hold spaces.
+ */
+async function writeEmoji() {
+    for (const locale of emojiLocales) {
+        const source = join(root, 'node_modules/emojibase-data', locale)
+        const emojis = JSON.parse(await readFile(join(source, 'data.json'), 'utf8'))
+        const { groups } = JSON.parse(await readFile(join(source, 'messages.json'), 'utf8'))
+        const data = {}
+
+        for (const { key, order } of groups.filter(group => group.key !== 'component')) {
+            data[key] = emojis
+                .filter(emoji => emoji.group === order)
+                .sort((a, b) => a.order - b.order)
+                .map(({ emoji, label, tags = [], version }) => [emoji, label.charAt(0).toUpperCase() + label.slice(1), tags.join('|'), version])
+        }
+
+        await write(join(dist, 'emoji', `${locale}.json`), JSON.stringify(data))
+    }
+}
+
 await rm(dist, { recursive: true, force: true })
+await writeEmoji()
 
 for (const bundle of bundles) {
     const options = {
