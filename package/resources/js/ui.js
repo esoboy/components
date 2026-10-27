@@ -9,6 +9,7 @@ import { defineAccordion } from './accordion.js'
 import { initAvatars } from './avatar.js'
 import { defineCalendar } from './calendar.js'
 import { defineCarousel } from './carousel.js'
+import { defineCascader } from './cascader.js'
 import { defineCollapsible } from './collapsible.js'
 import { defineCombobox } from './combobox.js'
 import { initCodeBlocks } from './code-block.js'
@@ -54,6 +55,7 @@ defineCarousel()
 defineMessageScroller()
 defineFileUpload()
 defineDataTable()
+defineCascader()
 initAvatars()
 initCodeBlocks()
 initConfirm()
