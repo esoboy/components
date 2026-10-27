@@ -1,5 +1,10 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Options')
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+@use('Esoboy\Ui\Support\Overlay')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -17,11 +22,12 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = array_values(array_map('strval', (array) ($defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes) ?? [])));
-$labels = \Esoboy\Ui\Support\CascaderOptions::labels($options, $value);
-$id = \Esoboy\Ui\Support\Overlay::open('cascader');
-\Esoboy\Ui\Support\Overlay::close('cascader');
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = array_values(array_map('strval', (array) ($defaultValue ?? Model::value($attributes) ?? [])));
+$options = Options::normalize($options);
+$labels = Options::labels($options, $value);
+$id = Overlay::open('cascader');
+Overlay::close('cascader');
 @endphp
 
 {{-- <eso-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
@@ -33,7 +39,7 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
     'data-change-on-select' => (bool) $changeOnSelect,
     'data-name' => $attributes->get('name') ?? false,
 ]) }}>
-    <script type="application/json" data-cascader-options>@json(\Esoboy\Ui\Support\CascaderOptions::normalize($options))</script>
+    <script type="application/json" data-cascader-options>@json($options)</script>
     <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ $id }}" style="anchor-name: --{{ $id }}" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
         <span data-slot="select-value">{{ $labels ? implode(" {$separator} ", $labels) : $placeholder }}</span>
         <svg data-slot="select-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -45,6 +51,4 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
         @endforeach
     @endif
 </eso-cascader>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

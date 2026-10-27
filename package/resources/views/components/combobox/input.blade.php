@@ -1,12 +1,14 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'showTrigger' => true,
     'showClear' => false,
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('combobox');
+$id = Overlay::open('combobox');
 @endphp
 
 <div {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'input-group', 'role' => 'group', 'data-combobox-anchor' => true, 'style' => 'anchor-name: --'.$id]) }}>

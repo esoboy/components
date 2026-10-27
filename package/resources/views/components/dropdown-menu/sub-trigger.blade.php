@@ -1,11 +1,13 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'inset' => false,
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('dropdown-menu-sub');
+$id = Overlay::open('dropdown-menu-sub');
 @endphp
 
 <button {{ $attributes->merge([

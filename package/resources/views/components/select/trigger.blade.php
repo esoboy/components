@@ -1,11 +1,13 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'size' => 'default',
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('select');
+$id = Overlay::open('select');
 @endphp
 
 <button {{ $attributes->merge([

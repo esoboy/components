@@ -3,10 +3,10 @@
 namespace Esoboy\Ui\Support;
 
 /**
- * Cascader and Tree options: a tree of ['value' => ..., 'label' => ..., 'children' => [...],
+ * Cascader, Tree Select and Transfer options: a tree of ['value' => ..., 'label' => ..., 'children' => [...],
  * 'disabled' => bool]. Values compare as strings, as they do in the browser.
  */
-final class CascaderOptions
+final class Options
 {
     /**
      * The labels along a value path, or [] when the path isn't in the tree.
@@ -57,17 +57,26 @@ final class CascaderOptions
 
     /**
      * The tree with only the keys the browser needs.
+     * Options may also be given as value => label pairs.
      *
-     * @param  list<array<string, mixed>>  $options
+     * @param  array<array-key, array<string, mixed>|string>  $options
      * @return list<array<string, mixed>>
      */
     public static function normalize(array $options): array
     {
-        return array_values(array_map(fn (array $option) => array_filter([
-            'value' => (string) $option['value'],
-            'label' => (string) ($option['label'] ?? $option['value']),
-            'disabled' => ! empty($option['disabled']) ?: null,
-            'children' => ! empty($option['children']) ? self::normalize($option['children']) : null,
-        ], fn ($value) => $value !== null), $options));
+        $normalized = [];
+
+        foreach ($options as $key => $option) {
+            $option = is_array($option) ? $option : ['value' => $key, 'label' => $option];
+
+            $normalized[] = array_filter([
+                'value' => (string) $option['value'],
+                'label' => (string) ($option['label'] ?? $option['value']),
+                'disabled' => ! empty($option['disabled']) ?: null,
+                'children' => ! empty($option['children']) ? self::normalize($option['children']) : null,
+            ], fn ($value) => $value !== null);
+        }
+
+        return $normalized;
     }
 }

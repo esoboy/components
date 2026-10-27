@@ -1,12 +1,14 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'delay' => 600,
     'closeDelay' => 300,
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('hover-card');
+$id = Overlay::open('hover-card');
 @endphp
 
 {{-- A Button (a link with href); hovering or focusing it opens the card after the delay. --}}

@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -16,8 +19,8 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
 $value = is_numeric($value) ? $value + 0 : null;
 $name = $attributes->get('name');
 @endphp
@@ -43,6 +46,4 @@ $name = $attributes->get('name');
         </div>
     </div>
 </eso-number-input>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

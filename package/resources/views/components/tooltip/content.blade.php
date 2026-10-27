@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'side' => 'top',
     'align' => 'center',
@@ -7,7 +9,7 @@
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::close('tooltip');
+$id = Overlay::close('tooltip');
 @endphp
 
 <div {{ $attributes->merge([

@@ -1,5 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+@use('Esoboy\Ui\Support\UploadedFiles')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -15,12 +19,12 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 // Errors of single files (key.0, key.1...) show on those files, not on the whole upload.
 $state = $state->only($state->key ? ($errors ?? null)?->get($state->key) ?? [] : []);
 $invalid = $state->invalid();
 $model = collect($attributes->getAttributes())->first(fn ($value, $name) => str_starts_with($name, 'wire:model'));
-$files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($attributes));
+$files = UploadedFiles::of(Model::value($attributes));
 @endphp
 
 {{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
@@ -69,7 +73,5 @@ $files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($a
         </x-ui::attachment>
         @endforeach
     </div>
-    @if ($state->showsError())
-    <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-    @endif
+    <x-ui::field.error :state="$state" />
 </eso-file-upload>

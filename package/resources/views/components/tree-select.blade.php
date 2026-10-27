@@ -1,5 +1,10 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Options')
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+@use('Esoboy\Ui\Support\Overlay')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -18,11 +23,11 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
-$labels = \Esoboy\Ui\Support\CascaderOptions::find($items, $checkable ? (array) ($value ?? []) : ($value === null ? [] : [$value]));
-$id = \Esoboy\Ui\Support\Overlay::open('tree-select');
-\Esoboy\Ui\Support\Overlay::close('tree-select');
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
+$labels = Options::find($items, $checkable ? (array) ($value ?? []) : ($value === null ? [] : [$value]));
+$id = Overlay::open('tree-select');
+Overlay::close('tree-select');
 @endphp
 
 {{-- <eso-tree-select> proxies its tree's .value, so wire:model binds on it. --}}
@@ -35,6 +40,4 @@ $id = \Esoboy\Ui\Support\Overlay::open('tree-select');
         <x-ui::tree :items="$items" :checkable="$checkable" :default-value="$value" :default-expanded="$defaultExpanded" :expand-all="$expandAll" />
     </div>
 </eso-tree-select>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

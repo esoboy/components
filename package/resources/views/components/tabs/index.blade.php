@@ -1,12 +1,14 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 @props([
     'defaultValue' => null,
     'orientation' => 'horizontal',
 ])
 
 @php
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$value = $defaultValue ?? Model::value($attributes);
 @endphp
 
 {{-- <eso-tabs> exposes the active tab as .value, so wire:model binds on the tabs themselves. --}}

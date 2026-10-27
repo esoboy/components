@@ -1,7 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('combobox');
+$id = Overlay::open('combobox');
 @endphp
 
 {{-- ui.js renders a chip per chosen item from the template, in front of the input. --}}

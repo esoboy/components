@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 @props([
     'mode' => 'single',
     'defaultValue' => null,
@@ -16,7 +18,7 @@
 ])
 
 @php
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$value = $defaultValue ?? Model::value($attributes);
 @endphp
 
 {{-- <eso-calendar> renders the month grid in the app's locale and exposes the selection as .value (Y-m-d). --}}

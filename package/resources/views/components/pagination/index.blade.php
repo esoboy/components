@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\PaginationLinks')
+
 @props([
     'paginator' => null,
 ])
@@ -11,7 +13,7 @@
     {{ $slot }}
     @else
     <x-ui::pagination.content>
-        @foreach (\Esoboy\Ui\Support\PaginationLinks::for($paginator) as $link)
+        @foreach (PaginationLinks::for($paginator) as $link)
         <x-ui::pagination.item>
             @if ($link['type'] === 'previous')
             <x-ui::pagination.previous :disabled="$link['disabled']" :attributes="new \Illuminate\View\ComponentAttributeBag($link['attributes'])" />

@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -14,8 +17,8 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$hex = strtolower(ltrim((string) ($defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes)), '#'));
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$hex = strtolower(ltrim((string) ($defaultValue ?? Model::value($attributes)), '#'));
 $hex = strlen($hex) === 3 ? preg_replace('/(.)/', '$1$1', $hex) : $hex;
 $value = preg_match('/^[0-9a-f]{6}$/', $hex) ? "#{$hex}" : null;
 $name = $attributes->get('name');
@@ -52,6 +55,4 @@ $name = $attributes->get('name');
     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
     @endif
 </eso-color-picker>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

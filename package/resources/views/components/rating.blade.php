@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -15,8 +18,8 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
 $value = is_numeric($value) ? $value + 0 : null;
 $name = $attributes->get('name');
 $focusable = min($max, max(1, (int) round($value ?? 1)));
@@ -40,6 +43,4 @@ $star = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="curre
     @endif
 </eso-rating>
 @endif
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

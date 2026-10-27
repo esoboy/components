@@ -1,7 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('dropdown-menu');
+$id = Overlay::open('dropdown-menu');
 @endphp
 
 {{-- Right-clicking the area opens the menu at the pointer. --}}

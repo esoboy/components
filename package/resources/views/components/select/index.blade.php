@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -10,8 +13,8 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
 @endphp
 
 {{-- <eso-select> exposes the chosen item as .value, so wire:model binds on the select itself. --}}
@@ -21,6 +24,4 @@ $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
         <input type="hidden" name="{{ $attributes->get('name') }}" value="{{ is_scalar($value) ? $value : '' }}">
     @endif
 </eso-select>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

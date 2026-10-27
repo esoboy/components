@@ -1,11 +1,13 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @aware([
     'align' => 'start',
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::close('navigation-menu');
+$id = Overlay::close('navigation-menu');
 @endphp
 
 <div {{ $attributes->merge([

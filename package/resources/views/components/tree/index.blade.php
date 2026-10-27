@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 {{-- items: [['value' => ..., 'label' => ..., 'children' => [...], 'disabled' => bool], ...], or nested <x-ui::tree.item> tags. --}}
 @props([
     'items' => null,
@@ -10,7 +12,7 @@
 ])
 
 @php
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$value = $defaultValue ?? Model::value($attributes);
 $value = $checkable ? array_values(array_map('strval', (array) ($value ?? []))) : ($value === null || $value === '' ? null : (string) $value);
 @endphp
 

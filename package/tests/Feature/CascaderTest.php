@@ -1,6 +1,6 @@
 <?php
 
-use Esoboy\Ui\Support\CascaderOptions;
+use Esoboy\Ui\Support\Options;
 
 $options = [
     ['value' => 'zj', 'label' => 'Zhejiang', 'children' => [
@@ -10,17 +10,24 @@ $options = [
 ];
 
 it('finds the labels along a path', function () use ($options) {
-    expect(CascaderOptions::labels($options, ['zj', 'hz', '1']))->toBe(['Zhejiang', 'Hangzhou', 'Xihu'])
-        ->and(CascaderOptions::labels($options, ['zj', 'nope']))->toBe([])
-        ->and(CascaderOptions::labels($options, []))->toBe([]);
+    expect(Options::labels($options, ['zj', 'hz', '1']))->toBe(['Zhejiang', 'Hangzhou', 'Xihu'])
+        ->and(Options::labels($options, ['zj', 'nope']))->toBe([])
+        ->and(Options::labels($options, []))->toBe([]);
 });
 
 it('keeps only what the browser needs, with string values', function () use ($options) {
-    expect(CascaderOptions::normalize($options))->toBe([
+    expect(Options::normalize($options))->toBe([
         ['value' => 'zj', 'label' => 'Zhejiang', 'children' => [
             ['value' => 'hz', 'label' => 'Hangzhou', 'children' => [['value' => '1', 'label' => 'Xihu']]],
         ]],
         ['value' => 'bj', 'label' => 'Beijing', 'disabled' => true],
+    ]);
+});
+
+it('takes options as value => label pairs too, children included', function () {
+    expect(Options::normalize(['a' => 'Alpha', ['value' => 'b', 'label' => 'Beta', 'children' => [7 => 'Seven']]]))->toBe([
+        ['value' => 'a', 'label' => 'Alpha'],
+        ['value' => 'b', 'label' => 'Beta', 'children' => [['value' => '7', 'label' => 'Seven']]],
     ]);
 });
 

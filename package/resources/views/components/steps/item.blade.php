@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Sequence')
+
 @aware([
     'current' => 1,
 ])
@@ -12,7 +14,7 @@
 ])
 
 @php
-$step = \Esoboy\Ui\Support\Sequence::next('steps');
+$step = Sequence::next('steps');
 $status ??= $step < (int) $current ? 'complete' : ($step === (int) $current ? 'current' : 'upcoming');
 @endphp
 

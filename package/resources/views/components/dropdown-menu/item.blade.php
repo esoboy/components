@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'variant' => 'default',
     'inset' => false,
@@ -7,7 +9,7 @@
 
 @php
 // Choosing an item closes the whole menu, submenus included.
-$menu = \Esoboy\Ui\Support\Overlay::current('dropdown-menu');
+$menu = Overlay::current('dropdown-menu');
 
 $attributes = $attributes->merge([
     'role' => 'menuitem',

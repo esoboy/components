@@ -1,11 +1,13 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 @props([
     'defaultOpen' => false,
 ])
 
 @php
-$open = (bool) ($defaultOpen ?: \Esoboy\Ui\Support\Model::value($attributes));
+$open = (bool) ($defaultOpen ?: Model::value($attributes));
 @endphp
 
 {{-- <eso-collapsible> exposes the open state as .value, so wire:model binds on it. --}}

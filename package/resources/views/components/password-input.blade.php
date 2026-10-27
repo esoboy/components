@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -11,7 +13,7 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 <eso-password-input {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
@@ -25,6 +27,4 @@ $state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiF
         </div>
     </div>
 </eso-password-input>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

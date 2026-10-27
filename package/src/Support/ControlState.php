@@ -50,10 +50,8 @@ final class ControlState
      */
     public static function key(ComponentAttributeBag $attributes): ?string
     {
-        foreach ($attributes->getAttributes() as $attribute => $value) {
-            if (str_starts_with($attribute, 'wire:model') && is_string($value) && $value !== '') {
-                return $value;
-            }
+        if ($model = Model::key($attributes)) {
+            return $model;
         }
 
         $name = $attributes->get('name');

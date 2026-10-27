@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Assets')
+
 @props([
     'code' => null,
     'language' => null,
@@ -30,6 +32,6 @@ $rows = $code === null ? null : implode('', array_map(
 {{-- Livewire loads this once per page, also when the block arrives in a later update. --}}
 @if ($language)
 @assets
-{!! app(\Esoboy\Ui\Assets::class)->module('code-block.js') !!}
+{!! app(Assets::class)->module('code-block.js') !!}
 @endassets
 @endif

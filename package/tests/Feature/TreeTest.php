@@ -1,6 +1,6 @@
 <?php
 
-use Esoboy\Ui\Support\CascaderOptions;
+use Esoboy\Ui\Support\Options;
 
 $items = [
     ['value' => 'orders', 'label' => 'Orders', 'children' => [
@@ -51,5 +51,5 @@ it('renders a tree select with the chosen labels', function () use ($items) {
         ->toContain('popover="auto" data-slot="tree-select-content"')
         ->toContain('<eso-tree role="tree"');
 
-    expect(CascaderOptions::find($items, ['settings', 'orders.view']))->toBe(['View', 'Settings']);
+    expect(Options::find($items, ['settings', 'orders.view']))->toBe(['View', 'Settings']);
 });

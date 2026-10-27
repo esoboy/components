@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'side' => 'bottom',
     'align' => 'start',
@@ -7,7 +9,7 @@
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::close('combobox');
+$id = Overlay::close('combobox');
 @endphp
 
 <div {{ $attributes->merge([

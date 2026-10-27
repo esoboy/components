@@ -1,5 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+@use('Esoboy\Ui\Support\UploadedFiles')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -14,10 +18,10 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $invalid = $state->invalid();
 $model = collect($attributes->getAttributes())->first(fn ($value, $name) => str_starts_with($name, 'wire:model'));
-$upload = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($attributes))[0] ?? null;
+$upload = UploadedFiles::of(Model::value($attributes))[0] ?? null;
 $image = $upload['url'] ?? $src;
 @endphp
 
@@ -39,7 +43,5 @@ $image = $upload['url'] ?? $src;
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </x-ui::button>
     @endif
-    @if ($state->showsError())
-    <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-    @endif
+    <x-ui::field.error :state="$state" />
 </eso-file-upload>

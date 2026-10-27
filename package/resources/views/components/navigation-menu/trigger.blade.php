@@ -1,7 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @php
-$id = \Esoboy\Ui\Support\Overlay::open('navigation-menu');
+$id = Overlay::open('navigation-menu');
 @endphp
 
 <button {{ $attributes->merge([

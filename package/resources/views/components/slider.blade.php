@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Model')
+
 @props([
     'defaultValue' => null,
     'min' => 0,
@@ -10,7 +12,7 @@
 
 @php
 // One thumb per value: an array is a range. Without a default, the bound Livewire value decides.
-$values = array_values((array) ($defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes) ?? $min));
+$values = array_values((array) ($defaultValue ?? Model::value($attributes) ?? $min));
 $percent = fn ($value) => $max == $min ? 0 : round(((float) $value - $min) / ($max - $min) * 100, 4);
 $start = count($values) > 1 ? $percent(min($values)) : 0;
 $end = $percent(max($values));

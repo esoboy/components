@@ -1,13 +1,22 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+
 @props([
     'name' => null,
     'messages' => null,
     'bag' => 'default',
+    'state' => null,
 ])
 
 @php
-$messages ??= \Esoboy\Ui\Support\ControlState::messages($errors ?? null, $name, $bag);
+// A control passes its ControlState: the message shows when the field around the control lets it.
+if ($state !== null) {
+    $messages = $state->showsError() ? $state->messages : [];
+    $attributes = $attributes->merge(['id' => $state->errorId]);
+}
+
+$messages ??= ControlState::messages($errors ?? null, $name, $bag);
 $custom = $slot->hasActualContent();
 @endphp
 

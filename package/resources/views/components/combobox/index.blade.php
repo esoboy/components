@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -12,8 +15,8 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
 @endphp
 
 {{-- <eso-combobox> exposes the chosen item (or items) as .value, so wire:model binds on the combobox itself. --}}
@@ -25,6 +28,4 @@ $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
     'data-name' => $attributes->get('name') ?? false,
     ...$state->attributes(),
 ]) }}>{{ $slot }}</eso-combobox>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

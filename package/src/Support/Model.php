@@ -5,24 +5,30 @@ namespace Esoboy\Ui\Support;
 use Illuminate\View\ComponentAttributeBag;
 
 /**
- * The current value behind a control's wire:model, read from the Livewire component
- * being rendered, so a control can paint its initial state on the server.
+ * What a control's wire:model is bound to.
  */
 final class Model
 {
+    /**
+     * The current value behind wire:model, read from the Livewire component being
+     * rendered, so a control can paint its initial state on the server.
+     */
     public static function value(ComponentAttributeBag $attributes, mixed $default = null): mixed
     {
-        $component = app('view')->shared('__livewire');
+        $component = app('livewire')->current();
         $key = self::key($attributes);
 
-        if ($component === null || $key === null) {
+        if (! $component || $key === null) {
             return $default;
         }
 
         return data_get($component, $key, $default);
     }
 
-    private static function key(ComponentAttributeBag $attributes): ?string
+    /**
+     * The property wire:model (with any modifiers) points at.
+     */
+    public static function key(ComponentAttributeBag $attributes): ?string
     {
         foreach ($attributes->getAttributes() as $attribute => $value) {
             if (str_starts_with($attribute, 'wire:model') && is_string($value) && $value !== '') {

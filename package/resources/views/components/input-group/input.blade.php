@@ -1,5 +1,8 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\PendingControl')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -10,9 +13,9 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 
-\Esoboy\Ui\Support\PendingControl::put($state);
+PendingControl::put($state);
 @endphp
 
 <input {{ $attributes->merge(['type' => $type, 'data-slot' => 'input-group-control', ...$state->attributes()]) }}>

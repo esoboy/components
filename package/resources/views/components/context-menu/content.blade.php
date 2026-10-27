@@ -1,7 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @php
-$id = \Esoboy\Ui\Support\Overlay::close('dropdown-menu');
+$id = Overlay::close('dropdown-menu');
 @endphp
 
 <div {{ $attributes->merge([

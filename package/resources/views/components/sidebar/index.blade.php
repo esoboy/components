@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\SidebarState')
+
 @aware([
     'defaultOpen' => true,
 ])
@@ -11,7 +13,7 @@
 ])
 
 @php
-$open = \Esoboy\Ui\Support\SidebarState::open($defaultOpen);
+$open = SidebarState::open($defaultOpen);
 @endphp
 
 @if ($collapsible === 'none')

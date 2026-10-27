@@ -1,5 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Options')
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -15,9 +19,9 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$options = \Esoboy\Ui\Support\CascaderOptions::normalize(collect($options)->map(fn ($option, $key) => is_array($option) ? $option : ['value' => $key, 'label' => $option])->values()->all());
-$value = array_values(array_map('strval', (array) ($defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes) ?? [])));
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$options = Options::normalize($options);
+$value = array_values(array_map('strval', (array) ($defaultValue ?? Model::value($attributes) ?? [])));
 $name = $attributes->get('name');
 $lists = [
     'source' => ['title' => $titles[0] ?? __('ui::transfer.source'), 'options' => array_filter($options, fn ($option) => ! in_array($option['value'], $value, true))],
@@ -71,6 +75,4 @@ $lists = [
         @endforeach
     @endif
 </eso-transfer>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

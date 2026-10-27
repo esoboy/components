@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\QuestionnaireSteps')
+
 @aware([
     'items' => [],
     'defaultItem' => null,
@@ -11,7 +13,7 @@
 ])
 
 @php
-$visible = \Esoboy\Ui\Support\QuestionnaireSteps::visible('submit', $items, $defaultItem);
+$visible = QuestionnaireSteps::visible('submit', $items, $defaultItem);
 @endphp
 
 {{-- A Button the questionnaire shows only when it applies to the active item. --}}

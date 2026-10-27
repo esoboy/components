@@ -1,5 +1,9 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\DatePresets')
+@use('Esoboy\Ui\Support\Model')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -20,10 +24,10 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = $defaultValue ?? Model::value($attributes);
 $range = $mode === 'range';
-$presets = \Esoboy\Ui\Support\DatePresets::normalize($presets, $mode);
+$presets = DatePresets::normalize($presets, $mode);
 @endphp
 
 {{-- shadcn's date picker examples as one control: wire:model binds on the picker, class styles the trigger. --}}
@@ -61,6 +65,4 @@ $presets = \Esoboy\Ui\Support\DatePresets::normalize($presets, $mode);
         </x-ui::popover.content>
     </x-ui::popover>
 </eso-date-picker>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

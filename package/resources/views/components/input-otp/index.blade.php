@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\ControlState')
+
 @aware([
     'uiField' => false,
     'showError' => true,
@@ -10,7 +12,7 @@
 ])
 
 @php
-$state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 {{-- One real input laid over the slots; ui.js mirrors its characters into them. class styles the container. --}}
@@ -25,6 +27,4 @@ $state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiF
         ...$state->attributes(),
     ]) }}>
 </eso-input-otp>
-@if ($state->showsError())
-<x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
-@endif
+<x-ui::field.error :state="$state" />

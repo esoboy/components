@@ -1,5 +1,7 @@
 @blaze
 
+@use('Esoboy\Ui\Support\Overlay')
+
 @props([
     'side' => 'bottom',
     'align' => 'center',
@@ -8,7 +10,7 @@
 ])
 
 @php
-$id = \Esoboy\Ui\Support\Overlay::close('select');
+$id = Overlay::close('select');
 @endphp
 
 <div {{ $attributes->merge([
