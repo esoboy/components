@@ -1,0 +1,58 @@
+<?php
+
+namespace Esoboy\Ui;
+
+use Esoboy\Ui\Livewire\DialogHandle;
+use LogicException;
+use Livewire\Component;
+
+/**
+ * What Ui:: offers server code. Each call reaches the browser through the Livewire
+ * component being handled, so it works from its methods, Form objects and actions alike.
+ */
+final class UiManager
+{
+    /**
+     * Shows a toast. type: default, success, info, warning, error or loading. An action
+     * button calls a method on the same component; a toast with the id of a shown one
+     * replaces it.
+     *
+     * @param  array{label: string, method: string, params?: list<mixed>}|null  $action
+     */
+    public function toast(string $message, ?string $description = null, string $type = 'default', ?int $duration = null, ?array $action = null, ?string $id = null): void
+    {
+        $component = $this->component(__FUNCTION__);
+
+        $component->dispatch(
+            'ui-toast',
+            message: $message,
+            description: $description,
+            type: $type,
+            duration: $duration,
+            action: $action === null ? null : ['component' => $component->getId(), 'params' => [], ...$action],
+            id: $id,
+        );
+    }
+
+    /**
+     * Opens or closes the dialog, sheet or drawer with that name.
+     */
+    public function dialog(string $name): DialogHandle
+    {
+        return new DialogHandle($this->component(__FUNCTION__), $name);
+    }
+
+    /**
+     * Starts the Verification Code Buttons of that name; seconds defaults to theirs.
+     */
+    public function countdown(string $name = 'verification-code', ?int $seconds = null): void
+    {
+        $this->component(__FUNCTION__)->dispatch('ui-countdown', name: $name, seconds: $seconds);
+    }
+
+    private function component(string $method): Component
+    {
+        return app('livewire')->current()
+            ?: throw new LogicException("Ui::{$method}() reaches the browser through Livewire; call it while a Livewire component is handled.");
+    }
+}

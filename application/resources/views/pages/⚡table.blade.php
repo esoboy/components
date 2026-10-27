@@ -4,6 +4,7 @@ use App\Models\User;
 use Esoboy\Ui\Livewire\WithDataTable;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 
 new class extends Component
@@ -30,7 +31,7 @@ new class extends Component
     {
         $count = count($this->selected);
         $this->selected = [];
-        $this->toast("{$count} users would be deleted", type: 'warning');
+        Ui::toast("{$count} users would be deleted", type: 'warning');
     }
 };
 ?>

@@ -5,7 +5,7 @@ namespace Esoboy\Ui\Livewire;
 use Livewire\Component;
 
 /**
- * $this->dialog('edit')->open() / ->close() from a Livewire component.
+ * Ui::dialog('edit')->open() / ->close().
  */
 final class DialogHandle
 {

@@ -1,7 +1,7 @@
 /*
  * Dialog, Sheet and Drawer open and close natively through invoker commands. Two gaps remain:
  * closing on a backdrop click (Safari has no closedby="any" yet) and Livewire's
- * $this->dialog('name')->open() / ->close().
+ * Ui::dialog('name')->open() / ->close().
  */
 
 export function register() {

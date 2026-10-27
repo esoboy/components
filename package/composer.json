@@ -30,7 +30,10 @@
         "laravel": {
             "providers": [
                 "Esoboy\\Ui\\UiServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Ui": "Esoboy\\Ui\\Facades\\Ui"
+            }
         }
     },
     "scripts": {

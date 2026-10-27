@@ -1,6 +1,7 @@
 <?php
 
 use Livewire\Attributes\Validate;
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 
 new class extends Component
@@ -48,7 +49,7 @@ new class extends Component
     public function run(string $command): void
     {
         $this->ran = $command;
-        $this->dialog('command-menu')->close();
+        Ui::dialog('command-menu')->close();
     }
 
     public function verify(): void

@@ -1,6 +1,7 @@
 <?php
 
 use Livewire\Attributes\Validate;
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 
 new class extends Component
@@ -18,31 +19,31 @@ new class extends Component
     {
         $this->validate();
 
-        $this->dialog('edit-profile')->close();
-        $this->toast('Profile saved', description: "Name is now {$this->name}.", type: 'success');
+        Ui::dialog('edit-profile')->close();
+        Ui::toast('Profile saved', description: "Name is now {$this->name}.", type: 'success');
     }
 
     public function openFromServer(): void
     {
-        $this->dialog('edit-profile')->open();
+        Ui::dialog('edit-profile')->open();
     }
 
     public function delete(): void
     {
         $this->deleted++;
-        $this->toast('Deleted', type: 'error', action: ['label' => 'Undo', 'method' => 'undo']);
+        Ui::toast('Deleted', type: 'error', action: ['label' => 'Undo', 'method' => 'undo']);
     }
 
     public function undo(): void
     {
         $this->deleted--;
-        $this->toast('Restored', type: 'success');
+        Ui::toast('Restored', type: 'success');
     }
 
     public function createEvent(): void
     {
         usleep(800_000);
-        $this->toast('Event created', description: 'Sunday, December 03, 2023 at 9:00 AM', type: 'success', id: 'event');
+        Ui::toast('Event created', description: 'Sunday, December 03, 2023 at 9:00 AM', type: 'success', id: 'event');
     }
 };
 ?>

@@ -1,6 +1,7 @@
 <?php
 
 use Livewire\Attributes\Validate;
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -29,7 +30,7 @@ new class extends Component
         $this->validate();
 
         $this->saved = count($this->attachments).' files, '.count($this->gallery).' images, avatar: '.($this->avatar ? 'new' : 'unchanged');
-        $this->toast('Saved', description: $this->saved, type: 'success');
+        Ui::toast('Saved', description: $this->saved, type: 'success');
     }
 };
 ?>

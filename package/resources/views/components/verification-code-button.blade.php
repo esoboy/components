@@ -1,6 +1,6 @@
 @blaze
 
-{{-- A Button that counts down once the server sends the code and calls $this->countdown($name). --}}
+{{-- A Button that counts down once the server sends the code and calls Ui::countdown($name). --}}
 @props([
     'name' => 'verification-code',
     'seconds' => 60,

@@ -1,6 +1,9 @@
 <?php
 
+use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Tests\Fixtures\Notifier;
+use Livewire\Component;
+use Livewire\Form;
 use Livewire\Livewire;
 
 it('dispatches a toast from a Livewire component', function () {
@@ -29,6 +32,37 @@ it('opens and closes a dialog by name', function () {
         ->call('done')
         ->assertDispatched('ui-dialog', name: 'edit', open: false);
 });
+
+it('reaches the browser from a Livewire form object', function () {
+    Livewire::test(new class extends Component
+    {
+        public NotifyingForm $form;
+
+        public function save(): void
+        {
+            $this->form->save();
+        }
+
+        public function render(): string
+        {
+            return '<div></div>';
+        }
+    })
+        ->call('save')
+        ->assertDispatched('ui-toast', message: 'Saved from the form');
+});
+
+it('says so when called outside a Livewire request', function () {
+    Ui::toast('Nobody hears this');
+})->throws(LogicException::class, 'Ui::toast() reaches the browser through Livewire');
+
+class NotifyingForm extends Form
+{
+    public function save(): void
+    {
+        Ui::toast('Saved from the form');
+    }
+}
 
 it('renders the toaster as the toast viewport', function () {
     $this->blade('<x-ui::toaster />')

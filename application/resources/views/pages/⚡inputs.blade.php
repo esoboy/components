@@ -1,5 +1,6 @@
 <?php
 
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 
 new class extends Component
@@ -43,8 +44,8 @@ new class extends Component
         $this->validate(['phone' => 'required|digits:11']);
 
         $this->sent++;
-        $this->countdown('sms', 5);
-        $this->toast('Code sent', type: 'success');
+        Ui::countdown('sms', 5);
+        Ui::toast('Code sent', type: 'success');
     }
 
     public function mount(): void

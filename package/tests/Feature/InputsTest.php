@@ -1,5 +1,7 @@
 <?php
 
+use Esoboy\Ui\Facades\Ui;
+
 /*
  * Tags Input and Number Input.
  */
@@ -65,7 +67,7 @@ it('starts countdowns from Livewire', function () {
     Livewire\Livewire::test(new class extends Livewire\Component {
         public function send(): void
         {
-            $this->countdown('sms', 30);
+            Ui::countdown('sms', 30);
         }
 
         public function render(): string

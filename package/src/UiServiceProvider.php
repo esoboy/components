@@ -2,7 +2,6 @@
 
 namespace Esoboy\Ui;
 
-use Esoboy\Ui\Livewire\DialogHandle;
 use Esoboy\Ui\Support\FieldContext;
 use Esoboy\Ui\Support\Overlay;
 use Esoboy\Ui\Support\PendingControl;
@@ -20,6 +19,7 @@ class UiServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Assets::class, fn () => new Assets(__DIR__.'/../dist'));
+        $this->app->singleton(UiManager::class);
         $this->app->scoped(Overlay::class);
         $this->app->scoped(PendingControl::class);
         $this->app->scoped(Sequence::class);
@@ -56,36 +56,10 @@ class UiServiceProvider extends ServiceProvider
     }
 
     /**
-     * $this->toast(...), $this->dialog('name') and $this->countdown('name') on every Livewire component.
+     * Overlay ids restart with every render of a component, so a morph keeps them.
      */
     protected function bootLivewire(): void
     {
-        // type: default, success, info, warning, error or loading. An action button calls
-        // a method on this component; a toast with the id of a shown one replaces it.
-        Component::macro('toast', function (string $message, ?string $description = null, string $type = 'default', ?int $duration = null, ?array $action = null, ?string $id = null) {
-            /** @var Component $this */
-            $this->dispatch(
-                'ui-toast',
-                message: $message,
-                description: $description,
-                type: $type,
-                duration: $duration,
-                action: $action === null ? null : ['component' => $this->getId(), 'params' => [], ...$action],
-                id: $id,
-            );
-        });
-
-        Component::macro('dialog', function (string $name) {
-            /** @var Component $this */
-            return new DialogHandle($this, $name);
-        });
-
-        // Starts the Verification Code Buttons of that name; seconds defaults to theirs.
-        Component::macro('countdown', function (string $name = 'verification-code', ?int $seconds = null) {
-            /** @var Component $this */
-            $this->dispatch('ui-countdown', name: $name, seconds: $seconds);
-        });
-
         on('render', fn (Component $component) => app(Overlay::class)->restart($component->getId()));
     }
 

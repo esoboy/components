@@ -4,7 +4,7 @@
  * (paused while the stack is spread or the window is in the background), by its close
  * button, or by a swipe down or right. Past the limit, the oldest leave.
  *
- * Livewire: $this->toast('Saved', type: 'success').
+ * Livewire: Ui::toast('Saved', type: 'success').
  * Blade: wire:click="$dispatch('ui-toast', { message: 'Saved' })".
  * A toast with the id of a shown one updates it in place (e.g. loading, then success).
  */

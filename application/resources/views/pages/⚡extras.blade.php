@@ -1,5 +1,6 @@
 <?php
 
+use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
 
 new class extends Component
@@ -17,7 +18,7 @@ new class extends Component
     public function finish(): void
     {
         $this->result = json_encode(['direction' => $this->direction, 'other' => $this->other, 'sources' => $this->sources, 'depth' => $this->depth]);
-        $this->toast('Thanks for the answers', description: $this->result, type: 'success');
+        Ui::toast('Thanks for the answers', description: $this->result, type: 'success');
     }
 };
 ?>

@@ -1,6 +1,6 @@
 @blaze
 
-{{-- Place once in the layout; $this->toast(...) and $dispatch('ui-toast', ...) show toasts here. --}}
+{{-- Place once in the layout; Ui::toast(...) and $dispatch('ui-toast', ...) show toasts here. --}}
 @props([
     'limit' => 3,
     'timeout' => 5000,
