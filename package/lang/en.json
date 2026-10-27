@@ -11,6 +11,8 @@
     "ui.carousel.slide": "slide",
     "ui.clear": "Clear",
     "ui.close": "Close",
+    "ui.code_block.copied": "Copied",
+    "ui.code_block.copy": "Copy",
     "ui.command.description": "Search for a command to run...",
     "ui.command.title": "Command Palette",
     "ui.confirm": "Are you sure?",
@@ -26,6 +28,16 @@
     "ui.pagination.next_page": "Go to next page",
     "ui.pagination.previous": "Previous",
     "ui.pagination.previous_page": "Go to previous page",
+    "ui.questionnaire.next": "Next",
+    "ui.questionnaire.optional": "Choose an answer or skip this question.",
+    "ui.questionnaire.previous": "Previous",
+    "ui.questionnaire.progress": "Question :current of :total",
+    "ui.questionnaire.progress_label": "Questionnaire progress",
+    "ui.questionnaire.required": "Choose an answer to continue.",
+    "ui.questionnaire.skip": "Skip",
+    "ui.questionnaire.submit": "Submit",
     "ui.remove": "Remove",
-    "ui.sidebar.toggle": "Toggle Sidebar"
+    "ui.sidebar.toggle": "Toggle Sidebar",
+    "ui.toast.close": "Close toast",
+    "ui.toast.label": "Notifications"
 }

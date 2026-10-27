@@ -85,13 +85,14 @@
         background-color: light-dark(var(--color-muted), color-mix(in oklab, var(--color-muted) 50%, transparent));
     }
 
-    :where([data-slot="bubble"][data-variant="destructive"] > [data-slot="bubble-content"]) {
-        @apply text-destructive;
-        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+    /* shadcn's destructive look, shared by the library's success, warning and info. */
+    :where([data-slot="bubble"]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"]) > [data-slot="bubble-content"]) {
+        color: var(--tone);
+        background-color: light-dark(color-mix(in oklab, var(--tone) 10%, transparent), color-mix(in oklab, var(--tone) 20%, transparent));
     }
 
-    :where([data-slot="bubble"][data-variant="destructive"] > :is(button, a)[data-slot="bubble-content"]:hover) {
-        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 30%, transparent));
+    :where([data-slot="bubble"]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"]) > :is(button, a)[data-slot="bubble-content"]:hover) {
+        background-color: light-dark(color-mix(in oklab, var(--tone) 20%, transparent), color-mix(in oklab, var(--tone) 30%, transparent));
     }
 
     :where([data-slot="bubble-reactions"]) {

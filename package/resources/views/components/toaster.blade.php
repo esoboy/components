@@ -1,8 +1,21 @@
-@blaze(fold: true)
+@blaze
 
 {{-- Place once in the layout; $this->toast(...) and $dispatch('ui-toast', ...) show toasts here. --}}
 @props([
-    'position' => 'bottom-right',
+    'limit' => 3,
+    'timeout' => 5000,
 ])
 
-<ol {{ $attributes->merge(['data-slot' => 'toaster', 'data-position' => $position, 'popover' => 'manual', 'aria-live' => 'polite']) }}></ol>
+<div {{ $attributes->merge([
+    'role' => 'region',
+    'aria-live' => 'polite',
+    'aria-atomic' => 'false',
+    'aria-relevant' => 'additions text',
+    'aria-label' => __('ui.toast.label'),
+    'tabindex' => '-1',
+    'popover' => 'manual',
+    'data-slot' => 'toast-viewport',
+    'data-limit' => $limit,
+    'data-timeout' => $timeout,
+    'data-close-label' => __('ui.toast.close'),
+]) }} wire:ignore></div>

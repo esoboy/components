@@ -48,16 +48,18 @@
         }
     }
 
-    :where([data-slot="button"][data-variant="destructive"]) {
-        @apply text-destructive focus-visible:border-destructive/40;
-        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+    /* shadcn's destructive look, shared by the library's success, warning and info. */
+    :where([data-slot="button"]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"])) {
+        color: var(--tone);
+        background-color: light-dark(color-mix(in oklab, var(--tone) 10%, transparent), color-mix(in oklab, var(--tone) 20%, transparent));
 
         &:hover {
-            background-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 30%, transparent));
+            background-color: light-dark(color-mix(in oklab, var(--tone) 20%, transparent), color-mix(in oklab, var(--tone) 30%, transparent));
         }
 
         &:focus-visible {
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+            border-color: color-mix(in oklab, var(--tone) 40%, transparent);
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--tone) 20%, transparent), color-mix(in oklab, var(--tone) 40%, transparent));
         }
     }
 

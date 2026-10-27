@@ -6,13 +6,20 @@ use Livewire\Livewire;
 it('dispatches a toast from a Livewire component', function () {
     Livewire::test(Notifier::class)
         ->call('saved')
-        ->assertDispatched('ui-toast', message: 'Saved', description: null, type: 'default', duration: null);
+        ->assertDispatched('ui-toast', message: 'Saved', description: null, type: 'default', duration: null, action: null, id: null);
 });
 
 it('passes toast options through', function () {
     Livewire::test(Notifier::class)
         ->call('failed')
-        ->assertDispatched('ui-toast', message: 'Failed', description: 'Try again.', type: 'error', duration: 8000);
+        ->assertDispatched('ui-toast', message: 'Failed', description: 'Try again.', type: 'error', duration: 8000, action: null, id: null);
+});
+
+it('sends an action that calls back the component, and an id to update the toast by', function () {
+    $component = Livewire::test(Notifier::class);
+
+    $component->call('deleted')->assertDispatched('ui-toast', fn (string $event, array $params) => $params['id'] === 'delete-7'
+        && $params['action'] === ['component' => $component->id(), 'params' => [7], 'label' => 'Undo', 'method' => 'restore']);
 });
 
 it('opens and closes a dialog by name', function () {
@@ -23,12 +30,12 @@ it('opens and closes a dialog by name', function () {
         ->assertDispatched('ui-dialog', name: 'edit', open: false);
 });
 
-it('renders the toaster', function () {
+it('renders the toaster as the toast viewport', function () {
     $this->blade('<x-ui::toaster />')
-        ->assertSee('<ol data-slot="toaster" data-position="bottom-right" popover="manual" aria-live="polite"></ol>', false);
+        ->assertSee('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" data-close-label="Close toast" wire:ignore></div>', false);
 
-    $this->blade('<x-ui::toaster position="top-center" />')
-        ->assertSee('data-position="top-center"', false);
+    $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')
+        ->assertSee('data-limit="5" data-timeout="8000"', false);
 });
 
 it('renders the confirm dialog with translated labels', function () {

@@ -6,9 +6,16 @@
     },
     "devDependencies": {
         "jsdom": "^26.1.0",
+        "shiki": "^3.23.0",
         "vitest": "^3.2.4"
     },
     "peerDependencies": {
-        "tailwindcss": "^4.3.3"
+        "tailwindcss": "^4.3.3",
+        "shiki": "^3.0.0"
+    },
+    "peerDependenciesMeta": {
+        "shiki": {
+            "optional": true
+        }
     }
 }

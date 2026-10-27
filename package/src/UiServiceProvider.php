@@ -39,9 +39,19 @@ class UiServiceProvider extends ServiceProvider
      */
     protected function bootLivewire(): void
     {
-        Component::macro('toast', function (string $message, ?string $description = null, string $type = 'default', ?int $duration = null) {
+        // type: default, success, info, warning, error or loading. An action button calls
+        // a method on this component; a toast with the id of a shown one replaces it.
+        Component::macro('toast', function (string $message, ?string $description = null, string $type = 'default', ?int $duration = null, ?array $action = null, ?string $id = null) {
             /** @var Component $this */
-            $this->dispatch('ui-toast', message: $message, description: $description, type: $type, duration: $duration);
+            $this->dispatch(
+                'ui-toast',
+                message: $message,
+                description: $description,
+                type: $type,
+                duration: $duration,
+                action: $action === null ? null : ['component' => $this->getId(), 'params' => [], ...$action],
+                id: $id,
+            );
         });
 
         Component::macro('dialog', function (string $name) {

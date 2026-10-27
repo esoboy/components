@@ -2,12 +2,12 @@
  * <ui-collapsible>
  *
  * Its trigger, or any element inside marked data-collapsible-trigger, shows and hides
- * the content. .value is the open state and input/change are dispatched from the
+ * the content (or elements marked data-collapsible-content, as Trace's). .value is the open state and input/change are dispatched from the
  * collapsible itself, so wire:model binds on it.
  */
 
 const TRIGGER = '[data-slot="collapsible-trigger"], [data-collapsible-trigger]'
-const CONTENT = '[data-slot="collapsible-content"]'
+const CONTENT = '[data-slot="collapsible-content"], [data-collapsible-content]'
 
 let collapsibles = 0
 

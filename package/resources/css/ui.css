@@ -26,6 +26,7 @@
 @import './components/card.css';
 @import './components/carousel.css';
 @import './components/checkbox.css';
+@import './components/code-block.css';
 @import './components/collapsible.css';
 @import './components/combobox.css';
 @import './components/command.css';
@@ -52,6 +53,7 @@
 @import './components/pagination.css';
 @import './components/popover.css';
 @import './components/progress.css';
+@import './components/questionnaire.css';
 @import './components/radio-group.css';
 @import './components/resizable.css';
 @import './components/scroll-area.css';
@@ -67,6 +69,7 @@
 @import './components/toast.css';
 @import './components/toggle.css';
 @import './components/tooltip.css';
+@import './components/trace.css';
 
 @source '../views';
 
@@ -98,6 +101,11 @@
     --color-accent: light-dark(oklch(0.97 0 0), oklch(0.269 0 0));
     --color-accent-foreground: light-dark(oklch(0.205 0 0), oklch(0.985 0 0));
     --color-destructive: light-dark(oklch(0.577 0.245 27.325), oklch(0.704 0.191 22.216));
+
+    /* Not in shadcn: status colours beside destructive, at the same lightness (600 light, 400 dark). */
+    --color-success: light-dark(oklch(0.627 0.194 149.214), oklch(0.792 0.209 151.711));
+    --color-warning: light-dark(oklch(0.666 0.179 58.318), oklch(0.828 0.189 84.429));
+    --color-info: light-dark(oklch(0.546 0.245 262.881), oklch(0.707 0.165 254.624));
     --color-border: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 10%));
     --color-input: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 15%));
     --color-ring: light-dark(oklch(0.708 0 0), oklch(0.556 0 0));
@@ -110,6 +118,17 @@
     --color-sidebar-accent-foreground: light-dark(oklch(0.205 0 0), oklch(0.985 0 0));
     --color-sidebar-border: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 10%));
     --color-sidebar-ring: light-dark(oklch(0.708 0 0), oklch(0.556 0 0));
+}
+
+/*
+ * Status variants (destructive, success, warning, info) of Button, Badge, Alert, Bubble
+ * and Toast share one look, tinted with --tone.
+ */
+@layer components {
+    :where([data-variant="destructive"], [data-type="error"]) { --tone: var(--color-destructive); }
+    :where([data-variant="success"], [data-type="success"]) { --tone: var(--color-success); }
+    :where([data-variant="warning"], [data-type="warning"]) { --tone: var(--color-warning); }
+    :where([data-variant="info"], [data-type="info"]) { --tone: var(--color-info); }
 }
 
 @layer base {

@@ -11,6 +11,7 @@ import { defineCalendar } from './calendar.js'
 import { defineCarousel } from './carousel.js'
 import { defineCollapsible } from './collapsible.js'
 import { defineCombobox } from './combobox.js'
+import { initCodeBlocks } from './code-block.js'
 import { defineCommand } from './command.js'
 import { initConfirm } from './confirm.js'
 import { defineDatePicker } from './date-picker.js'
@@ -22,6 +23,7 @@ import { initInputGroups } from './input-group.js'
 import { defineInputOtp } from './input-otp.js'
 import { defineMessageScroller } from './message-scroller.js'
 import { initNavigationMenus } from './navigation-menu.js'
+import { initQuestionnaires } from './questionnaire.js'
 import { defineRadioGroup } from './radio-group.js'
 import { defineResizable } from './resizable.js'
 import { defineScrollArea } from './scroll-area.js'
@@ -49,6 +51,7 @@ defineResizable()
 defineCarousel()
 defineMessageScroller()
 initAvatars()
+initCodeBlocks()
 initConfirm()
 initDialogs()
 initDrawers()
@@ -56,5 +59,6 @@ initDropdownMenus()
 initHoverCards()
 initInputGroups()
 initNavigationMenus()
+initQuestionnaires()
 initToasts()
 initTooltips()

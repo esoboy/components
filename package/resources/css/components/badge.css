@@ -30,17 +30,18 @@
         @apply hover:bg-secondary/80;
     }
 
-    :where([data-slot="badge"][data-variant="destructive"]) {
-        @apply text-destructive;
-        background-color: light-dark(color-mix(in oklab, var(--color-destructive) 10%, transparent), color-mix(in oklab, var(--color-destructive) 20%, transparent));
+    /* shadcn's destructive look, shared by the library's success, warning and info. */
+    :where([data-slot="badge"]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"])) {
+        color: var(--tone);
+        background-color: light-dark(color-mix(in oklab, var(--tone) 10%, transparent), color-mix(in oklab, var(--tone) 20%, transparent));
 
         &:focus-visible {
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--tone) 20%, transparent), color-mix(in oklab, var(--tone) 40%, transparent));
         }
     }
 
-    :where(a[data-slot="badge"][data-variant="destructive"]) {
-        @apply hover:bg-destructive/20;
+    :where(a[data-slot="badge"]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"])):hover {
+        background-color: color-mix(in oklab, var(--tone) 20%, transparent);
     }
 
     :where([data-slot="badge"][data-variant="outline"]) {

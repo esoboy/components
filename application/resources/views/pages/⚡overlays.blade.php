@@ -30,7 +30,19 @@ new class extends Component
     public function delete(): void
     {
         $this->deleted++;
-        $this->toast('Deleted', type: 'error');
+        $this->toast('Deleted', type: 'error', action: ['label' => 'Undo', 'method' => 'undo']);
+    }
+
+    public function undo(): void
+    {
+        $this->deleted--;
+        $this->toast('Restored', type: 'success');
+    }
+
+    public function createEvent(): void
+    {
+        usleep(800_000);
+        $this->toast('Event created', description: 'Sunday, December 03, 2023 at 9:00 AM', type: 'success', id: 'event');
     }
 };
 ?>
@@ -171,6 +183,8 @@ new class extends Component
             @foreach (['success', 'info', 'warning', 'error'] as $type)
                 <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { message: '{{ ucfirst($type) }} toast', type: '{{ $type }}' })">{{ ucfirst($type) }}</x-ui::button>
             @endforeach
+            <x-ui::button variant="outline" wire:click="delete">Delete (with Undo)</x-ui::button>
+            <x-ui::button variant="outline" wire:click="$dispatch('ui-toast', { id: 'event', message: 'Creating event…', type: 'loading' }); $wire.createEvent()">Create event (loading)</x-ui::button>
         </div>
     </section>
 </div>

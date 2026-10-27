@@ -11,6 +11,8 @@
     "ui.carousel.slide": "幻灯片",
     "ui.clear": "清除",
     "ui.close": "关闭",
+    "ui.code_block.copied": "已复制",
+    "ui.code_block.copy": "复制",
     "ui.command.description": "搜索要执行的命令…",
     "ui.command.title": "命令面板",
     "ui.confirm": "确定要继续吗？",
@@ -26,6 +28,16 @@
     "ui.pagination.next_page": "前往下一页",
     "ui.pagination.previous": "上一页",
     "ui.pagination.previous_page": "前往上一页",
+    "ui.questionnaire.next": "下一题",
+    "ui.questionnaire.optional": "请选择一个答案，或跳过此题。",
+    "ui.questionnaire.previous": "上一题",
+    "ui.questionnaire.progress": "第 :current 题，共 :total 题",
+    "ui.questionnaire.progress_label": "问卷进度",
+    "ui.questionnaire.required": "请选择一个答案后继续。",
+    "ui.questionnaire.skip": "跳过",
+    "ui.questionnaire.submit": "提交",
     "ui.remove": "移除",
-    "ui.sidebar.toggle": "切换侧边栏"
+    "ui.sidebar.toggle": "切换侧边栏",
+    "ui.toast.close": "关闭通知",
+    "ui.toast.label": "通知"
 }

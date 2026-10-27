@@ -16,6 +16,13 @@ class Notifier extends Component
         $this->toast('Failed', description: 'Try again.', type: 'error', duration: 8000);
     }
 
+    public function deleted(): void
+    {
+        $this->toast('Deleted', type: 'error', action: ['label' => 'Undo', 'method' => 'restore', 'params' => [7]], id: 'delete-7');
+    }
+
+    public function restore(int $id): void {}
+
     public function edit(): void
     {
         $this->dialog('edit')->open();
