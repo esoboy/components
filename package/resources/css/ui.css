@@ -87,6 +87,7 @@
 @import './components/transfer.css';
 @import './components/tree.css';
 @import './components/verification-code-button.css';
+@import './components/watermark.css';
 
 @source '../views';
 

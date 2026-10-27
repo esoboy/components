@@ -15,7 +15,7 @@ return [
     'Structure' => [
         'overlays' => ['Overlays', 'Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Toast'],
         'navigation' => ['Navigation', 'Sidebar, Breadcrumb, Tabs, Pagination, Navigation Menu'],
-        'layout' => ['Layout', 'Accordion, Collapsible, Progress, Aspect Ratio, Scroll Area, Resizable, Carousel'],
+        'layout' => ['Layout', 'Watermark, Accordion, Collapsible, Progress, Aspect Ratio, Scroll Area, Resizable, Carousel'],
         'data' => ['Data', 'Data Table, Description List, Steps, Timeline'],
     ],
     'Conversation' => [

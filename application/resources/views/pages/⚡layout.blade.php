@@ -8,6 +8,8 @@ new class extends Component
 
     public bool $details = false;
 
+    public string $viewer = 'Pedro Duarte';
+
     public function advance(): void
     {
         $this->progress = min(100, $this->progress + 10);
@@ -16,6 +18,24 @@ new class extends Component
 ?>
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Watermark</h2>
+        <x-ui::input wire:model.live.debounce.300ms="viewer" class="max-w-xs" />
+        <x-ui::watermark :content="[$viewer, '2026-10-27']">
+            <x-ui::card>
+                <x-ui::card.header>
+                    <x-ui::card.title>Quarterly report</x-ui::card.title>
+                    <x-ui::card.description>Confidential: every page carries the viewer's name.</x-ui::card.description>
+                </x-ui::card.header>
+                <x-ui::card.content class="space-y-2 text-sm text-muted-foreground">
+                    <p>Revenue grew 18% over the quarter, led by the enterprise plan.</p>
+                    <p>Churn fell to 2.1%, its lowest since the product launched.</p>
+                    <p>Support resolved 94% of tickets within a day.</p>
+                </x-ui::card.content>
+            </x-ui::card>
+        </x-ui::watermark>
+    </section>
+
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Accordion</h2>
         <x-ui::accordion default-value="shipping" class="max-w-lg">

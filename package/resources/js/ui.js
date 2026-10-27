@@ -48,12 +48,13 @@ import * as tooltip from './components/tooltip.js'
 import * as transfer from './components/transfer.js'
 import * as tree from './components/tree.js'
 import * as verificationCodeButton from './components/verification-code-button.js'
+import * as watermark from './components/watermark.js'
 
 const components = [
     radioGroup, select, command, combobox, calendar, datePicker, slider, inputOtp,
     tabs, sidebar, accordion, collapsible, scrollArea, resizable, carousel,
     messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
-    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview,
+    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview, watermark,
     avatar, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
     navigationMenu, questionnaire, theme, toast, tooltip,
 ]
