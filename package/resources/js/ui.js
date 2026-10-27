@@ -28,6 +28,7 @@ import * as hoverCard from './components/hover-card.js'
 import * as imagePreview from './components/image-preview.js'
 import * as inputGroup from './components/input-group.js'
 import * as inputOtp from './components/input-otp.js'
+import * as mentions from './components/mentions.js'
 import * as messageScroller from './components/message-scroller.js'
 import * as navigationMenu from './components/navigation-menu.js'
 import * as numberInput from './components/number-input.js'
@@ -51,7 +52,7 @@ import * as verificationCodeButton from './components/verification-code-button.j
 import * as watermark from './components/watermark.js'
 
 const components = [
-    radioGroup, select, command, combobox, calendar, datePicker, slider, inputOtp,
+    radioGroup, select, command, combobox, mentions, calendar, datePicker, slider, inputOtp,
     tabs, sidebar, accordion, collapsible, scrollArea, resizable, carousel,
     messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
     passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview, watermark,

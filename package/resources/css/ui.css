@@ -52,6 +52,7 @@
 @import './components/kbd.css';
 @import './components/label.css';
 @import './components/marker.css';
+@import './components/mentions.css';
 @import './components/menubar.css';
 @import './components/message.css';
 @import './components/message-scroller.css';

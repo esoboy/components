@@ -39,6 +39,24 @@ new class extends Component
 
     public array $roles = ['editor'];
 
+    public string $comment = '';
+
+    public string $reply = '';
+
+    public string $who = '';
+
+    /**
+     * People a server search would return for what follows the @.
+     *
+     * @return list<string>
+     */
+    public function people(): array
+    {
+        $everyone = ['Ana Lima', 'Bea Costa', 'Caio Reis', 'Davi Melo', 'Eva Rocha', 'Fabio Nunes', 'Gabi Souza', 'Hugo Alves'];
+
+        return array_values(array_filter($everyone, fn (string $name) => $this->who === '' || str_contains(strtolower($name), strtolower($this->who))));
+    }
+
     public function sendCode(): void
     {
         $this->validate(['phone' => 'required|digits:11']);
@@ -203,6 +221,29 @@ new class extends Component
                 <span class="text-muted-foreground">4.5 (128 reviews)</span>
             </div>
         </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Mentions</h2>
+        <x-ui::field class="max-w-md">
+            <x-ui::field.label for="comment">Comment</x-ui::field.label>
+            <x-ui::mentions id="comment" wire:model.live="comment" :prefix="['@', '#']" rows="3" placeholder="Type @ to mention someone, # for a topic">
+                <x-ui::mentions.item value="zhangsan">张三</x-ui::mentions.item>
+                <x-ui::mentions.item value="lisi">李四</x-ui::mentions.item>
+                <x-ui::mentions.item value="wangwu" disabled>王五 (away)</x-ui::mentions.item>
+                <x-ui::mentions.item value="design" prefix="#">Design</x-ui::mentions.item>
+                <x-ui::mentions.item value="release" prefix="#">Release</x-ui::mentions.item>
+            </x-ui::mentions>
+            <x-ui::field.description>Value: {{ $comment ?: '—' }}</x-ui::field.description>
+        </x-ui::field>
+        <x-ui::field class="max-w-md">
+            <x-ui::field.label for="reply">Searched on the server</x-ui::field.label>
+            <x-ui::mentions id="reply" wire:model="reply" wire:mentions-search.debounce.200ms="$set('who', $event.detail.query)" rows="2" placeholder="Type @ and a name">
+                @foreach ($this->people() as $person)
+                <x-ui::mentions.item :value="str_replace(' ', '', $person)" wire:key="person-{{ $person }}">{{ $person }}</x-ui::mentions.item>
+                @endforeach
+            </x-ui::mentions>
+        </x-ui::field>
     </section>
 
     <section class="space-y-4">
