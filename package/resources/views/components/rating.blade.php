@@ -24,7 +24,7 @@ $star = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="curre
 @endphp
 
 @if ($readonly)
-<span {{ $attributes->except('name')->merge(['role' => 'img', 'data-slot' => 'rating', 'data-size' => $size, 'data-readonly' => true, 'aria-label' => __('ui.rating.label', ['value' => $value ?? 0, 'max' => $max])]) }}>
+<span {{ $attributes->except('name')->merge(['role' => 'img', 'data-slot' => 'rating', 'data-size' => $size, 'data-readonly' => true, 'aria-label' => __('ui::rating.label', ['value' => $value ?? 0, 'max' => $max])]) }}>
     @foreach (range(1, $max) as $i)
     <span data-slot="rating-item" style="--rating-fill: {{ round(max(0, min(1, ($value ?? 0) - $i + 1)) * 100) }}%">{!! $star !!}{!! $star !!}</span>
     @endforeach
@@ -33,7 +33,7 @@ $star = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="curre
 {{-- <eso-rating> exposes the stars as .value (null when cleared), so wire:model binds on it. --}}
 <eso-rating {{ $attributes->except('name')->merge(['role' => 'radiogroup', 'data-slot' => 'rating', 'data-size' => $size, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
     @foreach (range(1, $max) as $i)
-    <button type="button" role="radio" data-slot="rating-item" data-value="{{ $i }}" aria-checked="{{ $value !== null && (int) round($value) === $i ? 'true' : 'false' }}" aria-label="{{ __('ui.rating.label', ['value' => $i, 'max' => $max]) }}" tabindex="{{ $i === $focusable ? 0 : -1 }}" style="--rating-fill: {{ $value !== null && $i <= $value ? 100 : 0 }}%" @disabled($disabled)>{!! $star !!}{!! $star !!}</button>
+    <button type="button" role="radio" data-slot="rating-item" data-value="{{ $i }}" aria-checked="{{ $value !== null && (int) round($value) === $i ? 'true' : 'false' }}" aria-label="{{ __('ui::rating.label', ['value' => $i, 'max' => $max]) }}" tabindex="{{ $i === $focusable ? 0 : -1 }}" style="--rating-fill: {{ $value !== null && $i <= $value ? 100 : 0 }}%" @disabled($disabled)>{!! $star !!}{!! $star !!}</button>
     @endforeach
     @if ($name)
     <input type="hidden" name="{{ $name }}" value="{{ $value }}">

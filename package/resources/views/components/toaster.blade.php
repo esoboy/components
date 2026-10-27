@@ -11,11 +11,11 @@
     'aria-live' => 'polite',
     'aria-atomic' => 'false',
     'aria-relevant' => 'additions text',
-    'aria-label' => __('ui.toast.label'),
+    'aria-label' => __('ui::toast.label'),
     'tabindex' => '-1',
     'popover' => 'manual',
     'data-slot' => 'toast-viewport',
     'data-limit' => $limit,
     'data-timeout' => $timeout,
-    'data-close-label' => __('ui.toast.close'),
+    'data-close-label' => __('ui::toast.close'),
 ]) }} wire:ignore></div>

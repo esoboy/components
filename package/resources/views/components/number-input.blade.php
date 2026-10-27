@@ -31,13 +31,13 @@ $name = $attributes->get('name');
 ]) }}>
     <div role="group" data-slot="input-group">
         <div role="group" data-slot="input-group-addon" data-align="inline-start">
-            <x-ui::button variant="ghost" size="icon-xs" data-number-input="decrement" :aria-label="__('ui.number_input.decrement')" tabindex="-1" :disabled="$disabled || ($min !== null && $value !== null && $value <= $min)">
+            <x-ui::button variant="ghost" size="icon-xs" data-number-input="decrement" :aria-label="__('ui::number-input.decrement')" tabindex="-1" :disabled="$disabled || ($min !== null && $value !== null && $value <= $min)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg>
             </x-ui::button>
         </div>
         <input type="text" inputmode="decimal" role="spinbutton" data-slot="input-group-control" value="{{ $value }}" placeholder="{{ $placeholder }}" autocomplete="off" @if ($name) name="{{ $name }}" @endif @if ($min !== null) aria-valuemin="{{ $min }}" @endif @if ($max !== null) aria-valuemax="{{ $max }}" @endif @if ($value !== null) aria-valuenow="{{ $value }}" @endif {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if ($disabled) disabled @endif>
         <div role="group" data-slot="input-group-addon" data-align="inline-end">
-            <x-ui::button variant="ghost" size="icon-xs" data-number-input="increment" :aria-label="__('ui.number_input.increment')" tabindex="-1" :disabled="$disabled || ($max !== null && $value !== null && $value >= $max)">
+            <x-ui::button variant="ghost" size="icon-xs" data-number-input="increment" :aria-label="__('ui::number-input.increment')" tabindex="-1" :disabled="$disabled || ($max !== null && $value !== null && $value >= $max)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             </x-ui::button>
         </div>

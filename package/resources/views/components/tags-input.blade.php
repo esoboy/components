@@ -30,7 +30,7 @@ $name = $attributes->get('name');
     <template data-tags-input-template>
         <span data-slot="tags-input-tag">
             <span data-tags-input-label></span>
-            <x-ui::button variant="ghost" size="icon-xs" data-tags-input-remove :aria-label="__('ui.remove')" tabindex="-1">
+            <x-ui::button variant="ghost" size="icon-xs" data-tags-input-remove :aria-label="__('ui::common.remove')" tabindex="-1">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </x-ui::button>
         </span>

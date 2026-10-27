@@ -8,7 +8,7 @@
     'size' => 'default',
 ])
 
-<eso-verification-code-button data-slot="verification-code-button" data-name="{{ $name }}" data-seconds="{{ $seconds }}" data-label-countdown="{{ __('ui.verification_code.countdown') }}" data-label-resend="{{ __('ui.verification_code.resend') }}">
+<eso-verification-code-button data-slot="verification-code-button" data-name="{{ $name }}" data-seconds="{{ $seconds }}" data-label-countdown="{{ __('ui::verification-code-button.countdown') }}" data-label-resend="{{ __('ui::verification-code-button.resend') }}">
     <x-ui::button :variant="$variant" :size="$size" :attributes="$attributes">
         <span data-verification-code-label>{{ $slot }}</span>
     </x-ui::button>

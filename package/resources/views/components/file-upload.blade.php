@@ -24,14 +24,14 @@ $files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($a
 @endphp
 
 {{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
-<eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui.file_upload.uploading')]) }}>
+<eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui::file-upload.uploading')]) }}>
     <label data-slot="file-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'multiple' => (bool) $multiple, 'accept' => $accept ?? false, 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
         @if ($slot->isEmpty())
         <span data-slot="file-upload-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/></svg>
         </span>
-        <span data-slot="file-upload-title">{{ $title ?? __('ui.file_upload.title') }}</span>
+        <span data-slot="file-upload-title">{{ $title ?? __('ui::file-upload.title') }}</span>
         @if ($description)
         <span data-slot="file-upload-description">{{ $description }}</span>
         @endif
@@ -61,7 +61,7 @@ $files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($a
             </x-ui::attachment.content>
             @if ($model && ! $disabled)
             <x-ui::attachment.actions>
-                <x-ui::attachment.action :aria-label="__('ui.remove')" wire:click="$removeUpload('{{ $model }}', '{{ $file['filename'] }}')">
+                <x-ui::attachment.action :aria-label="__('ui::common.remove')" wire:click="$removeUpload('{{ $model }}', '{{ $file['filename'] }}')">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </x-ui::attachment.action>
             </x-ui::attachment.actions>

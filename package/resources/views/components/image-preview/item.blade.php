@@ -12,7 +12,7 @@
     'data-src' => $previewSrc ?? $src,
     'data-alt' => $alt,
     'aria-haspopup' => 'dialog',
-    'aria-label' => $alt === '' ? __('ui.image_preview.open') : false,
+    'aria-label' => $alt === '' ? __('ui::image-preview.open') : false,
 ]) }}>
     @if ($slot->isEmpty())
         <img src="{{ $src }}" alt="{{ $alt }}" loading="lazy">

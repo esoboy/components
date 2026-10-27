@@ -35,8 +35,8 @@ $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
     'data-start-month' => $startMonth,
     'data-end-month' => $endMonth,
     'data-locale' => str_replace('_', '-', app()->getLocale()),
-    'data-label-previous' => __('ui.calendar.previous'),
-    'data-label-next' => __('ui.calendar.next'),
-    'data-label-month' => __('ui.calendar.month'),
-    'data-label-year' => __('ui.calendar.year'),
+    'data-label-previous' => __('ui::calendar.previous'),
+    'data-label-next' => __('ui::calendar.next'),
+    'data-label-month' => __('ui::calendar.month'),
+    'data-label-year' => __('ui::calendar.year'),
 ]) }} wire:ignore></eso-calendar>

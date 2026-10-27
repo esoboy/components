@@ -29,16 +29,16 @@ $name = $attributes->get('name');
             <span data-slot="color-picker-value">{{ $value ?? $placeholder }}</span>
         </x-ui::popover.trigger>
         <x-ui::popover.content align="start" data-color-picker-content>
-            <div data-slot="color-picker-area" role="slider" tabindex="0" aria-label="{{ __('ui.color_picker.area') }}">
+            <div data-slot="color-picker-area" role="slider" tabindex="0" aria-label="{{ __('ui::color-picker.area') }}">
                 <span data-slot="color-picker-thumb"></span>
             </div>
             <div data-slot="color-picker-controls">
-                <x-ui::button variant="outline" size="icon-sm" data-color-picker-eyedropper :aria-label="__('ui.color_picker.eyedropper')" hidden>
+                <x-ui::button variant="outline" size="icon-sm" data-color-picker-eyedropper :aria-label="__('ui::color-picker.eyedropper')" hidden>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 9-8.414 8.414A2 2 0 0 0 3 18.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 3.828 21h1.344a2 2 0 0 0 1.414-.586L15 12"/><path d="m18 9 .4.4a1 1 0 1 1-3 3l-3.8-3.8a1 1 0 1 1 3-3l.4.4 3.4-3.4a1 1 0 1 1 3 3z"/><path d="m2 22 .414-.414"/></svg>
                 </x-ui::button>
-                <input type="range" data-slot="color-picker-hue" min="0" max="360" step="1" aria-label="{{ __('ui.color_picker.hue') }}">
+                <input type="range" data-slot="color-picker-hue" min="0" max="360" step="1" aria-label="{{ __('ui::color-picker.hue') }}">
             </div>
-            <input type="text" data-slot="input" data-color-picker-input value="{{ $value }}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="{{ __('ui.color_picker.hex') }}">
+            <input type="text" data-slot="input" data-color-picker-input value="{{ $value }}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="{{ __('ui::color-picker.hex') }}">
             @if ($swatches)
             <div data-slot="color-picker-swatches">
                 @foreach ($swatches as $swatch)

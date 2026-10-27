@@ -20,8 +20,8 @@ $options = \Esoboy\Ui\Support\CascaderOptions::normalize(collect($options)->map(
 $value = array_values(array_map('strval', (array) ($defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes) ?? [])));
 $name = $attributes->get('name');
 $lists = [
-    'source' => ['title' => $titles[0] ?? __('ui.transfer.source'), 'options' => array_filter($options, fn ($option) => ! in_array($option['value'], $value, true))],
-    'target' => ['title' => $titles[1] ?? __('ui.transfer.target'), 'options' => array_filter($options, fn ($option) => in_array($option['value'], $value, true))],
+    'source' => ['title' => $titles[0] ?? __('ui::transfer.source'), 'options' => array_filter($options, fn ($option) => ! in_array($option['value'], $value, true))],
+    'target' => ['title' => $titles[1] ?? __('ui::transfer.target'), 'options' => array_filter($options, fn ($option) => in_array($option['value'], $value, true))],
 ];
 @endphp
 
@@ -37,7 +37,7 @@ $lists = [
         @if ($searchable)
         <div data-slot="transfer-search">
             <div role="group" data-slot="input-group">
-                <input type="search" data-slot="input-group-control" data-transfer-search placeholder="{{ __('ui.transfer.search') }}" aria-label="{{ __('ui.transfer.search') }}" autocomplete="off">
+                <input type="search" data-slot="input-group-control" data-transfer-search placeholder="{{ __('ui::transfer.search') }}" aria-label="{{ __('ui::transfer.search') }}" autocomplete="off">
                 <div role="group" data-slot="input-group-addon" data-align="inline-start">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
@@ -52,14 +52,14 @@ $lists = [
             </label>
             @endforeach
         </div>
-        <div data-slot="transfer-empty">{{ __('ui.transfer.empty') }}</div>
+        <div data-slot="transfer-empty">{{ __('ui::transfer.empty') }}</div>
     </div>
     @if ($list === 'source')
     <div data-slot="transfer-actions">
-        <x-ui::button variant="outline" size="icon-sm" data-transfer-move="target" :aria-label="__('ui.transfer.to_target')" disabled>
+        <x-ui::button variant="outline" size="icon-sm" data-transfer-move="target" :aria-label="__('ui::transfer.to_target')" disabled>
             <svg class="rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
         </x-ui::button>
-        <x-ui::button variant="outline" size="icon-sm" data-transfer-move="source" :aria-label="__('ui.transfer.to_source')" disabled>
+        <x-ui::button variant="outline" size="icon-sm" data-transfer-move="source" :aria-label="__('ui::transfer.to_source')" disabled>
             <svg class="rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
         </x-ui::button>
     </div>

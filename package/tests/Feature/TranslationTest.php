@@ -2,10 +2,17 @@
 
 use Illuminate\Support\Facades\File;
 
+/**
+ * Every package string, as "group.key" => line, per locale.
+ *
+ * @return array<string, array<string, string>>
+ */
 function packageLocales(): array
 {
-    return collect(glob(__DIR__.'/../../lang/*.json'))
-        ->mapWithKeys(fn (string $file) => [basename($file, '.json') => json_decode(file_get_contents($file), true, flags: JSON_THROW_ON_ERROR)])
+    return collect(glob(__DIR__.'/../../lang/*', GLOB_ONLYDIR))
+        ->mapWithKeys(fn (string $locale) => [basename($locale) => collect(glob($locale.'/*.php'))
+            ->flatMap(fn (string $file) => collect(require $file)->mapWithKeys(fn (string $line, string $key) => [basename($file, '.php').'.'.$key => $line]))
+            ->all()])
         ->all();
 }
 
@@ -21,47 +28,39 @@ it('keeps every locale in sync with english', function () {
     }
 });
 
-it('prefixes every key with ui.', function () {
-    foreach (packageLocales() as $lines) {
-        foreach (array_keys($lines) as $key) {
-            expect($key)->toStartWith('ui.');
-        }
-    }
-});
-
-it('only references keys that exist', function () {
+it('only references keys that exist, through the ui namespace', function () {
     $keys = array_keys(packageLocales()['en']);
 
-    $missing = collect(componentViews())
-        ->flatMap(function (string $path, string $name) {
-            preg_match_all('/__\(\s*[\'"](ui\.[^\'"]+)[\'"]/', file_get_contents($path), $matches);
+    $usages = collect(componentViews())->flatMap(function (string $path, string $name) {
+        preg_match_all('/__\(\s*[\'"]([^\'"]+)[\'"]/', file_get_contents($path), $matches);
 
-            return array_map(fn (string $key) => "{$name}: {$key}", $matches[1]);
-        })
-        ->reject(fn (string $usage) => in_array(substr($usage, strpos($usage, ': ') + 2), $keys, true));
+        return array_map(fn (string $key) => [$name, $key], $matches[1]);
+    });
 
-    expect($missing->all())->toBe([]);
+    expect($usages->reject(fn (array $usage) => str_starts_with($usage[1], 'ui::'))->all())->toBe([])
+        ->and($usages->reject(fn (array $usage) => in_array(substr($usage[1], 4), $keys, true))->all())->toBe([]);
 });
 
 it('resolves package strings per locale', function () {
     app()->setLocale('zh_CN');
-    expect(__('ui.close'))->toBe('关闭');
+    expect(__('ui::common.close'))->toBe('关闭');
 
     app()->setLocale('en');
-    expect(__('ui.close'))->toBe('Close');
+    expect(__('ui::common.close'))->toBe('Close');
 });
 
 it('lets the app override strings in lang/vendor/ui', function () {
-    $override = lang_path('vendor/ui/zh_CN.json');
+    $override = lang_path('vendor/ui/zh_CN/common.php');
 
     File::ensureDirectoryExists(dirname($override));
-    File::put($override, json_encode(['ui.close' => '关掉'], JSON_UNESCAPED_UNICODE));
+    File::put($override, "<?php\n\nreturn ['close' => '关掉'];\n");
 
     try {
         app()->setLocale('zh_CN');
 
-        expect(__('ui.close'))->toBe('关掉')
-            ->and(__('ui.loading'))->toBe('加载中');
+        expect(__('ui::common.close'))->toBe('关掉')
+            ->and(__('ui::common.remove'))->toBe('移除')
+            ->and(__('ui::spinner.label'))->toBe('加载中');
     } finally {
         File::deleteDirectory(lang_path('vendor/ui'));
     }

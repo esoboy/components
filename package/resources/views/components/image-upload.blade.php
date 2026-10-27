@@ -24,7 +24,7 @@ $image = $upload['url'] ?? $src;
 {{-- One image: the new upload, else src. Click or drop to replace; the new image shows before the upload ends. --}}
 <eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'image-upload', 'data-shape' => $shape]) }}>
     <label data-slot="image-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
-        <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'accept' => $accept, 'disabled' => (bool) $disabled, 'aria-label' => __('ui.image_upload.label'), ...$state->attributes()]) }}>
+        <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'accept' => $accept, 'disabled' => (bool) $disabled, 'aria-label' => __('ui::image-upload.label'), ...$state->attributes()]) }}>
         <img data-slot="image-upload-image" src="{{ $image }}" alt="{{ $alt }}" @if (! $image) hidden @endif>
         <span data-slot="image-upload-placeholder" @if ($image) hidden @endif>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
@@ -35,7 +35,7 @@ $image = $upload['url'] ?? $src;
         </span>
     </label>
     @if ($upload && $model && ! $disabled)
-    <x-ui::button variant="secondary" size="icon-xs" data-image-upload-remove :aria-label="__('ui.remove')" wire:click="$removeUpload('{{ $model }}', '{{ $upload['filename'] }}')">
+    <x-ui::button variant="secondary" size="icon-xs" data-image-upload-remove :aria-label="__('ui::common.remove')" wire:click="$removeUpload('{{ $model }}', '{{ $upload['filename'] }}')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </x-ui::button>
     @endif

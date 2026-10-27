@@ -6,7 +6,7 @@
 
 {{-- With a Laravel paginator the links render themselves, and nothing renders for a single page. --}}
 @if ($paginator === null || $paginator->hasPages())
-<nav {{ $attributes->merge(['role' => 'navigation', 'aria-label' => __('ui.pagination.label'), 'data-slot' => 'pagination']) }}>
+<nav {{ $attributes->merge(['role' => 'navigation', 'aria-label' => __('ui::pagination.label'), 'data-slot' => 'pagination']) }}>
     @if ($paginator === null)
     {{ $slot }}
     @else

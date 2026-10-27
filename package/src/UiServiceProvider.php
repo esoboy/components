@@ -75,13 +75,12 @@ class UiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Package strings live in lang/{locale}.json under "ui.*" keys. An app overrides
-     * them in lang/vendor/ui/{locale}.json, which loads after the package's own files.
+     * Package strings are __('ui::component.key'), one file per component in
+     * lang/{locale}. Laravel merges an app's lang/vendor/ui/{locale}/{component}.php over them.
      */
     protected function bootTranslations(): void
     {
-        $this->loadJsonTranslationsFrom(__DIR__.'/../lang');
-        $this->loadJsonTranslationsFrom($this->app->langPath('vendor/ui'));
+        $this->loadTranslationsFrom(__DIR__.'/../lang', 'ui');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
