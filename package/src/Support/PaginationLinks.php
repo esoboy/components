@@ -2,9 +2,9 @@
 
 namespace Esoboy\Ui\Support;
 
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Pagination\UrlWindow;
 
 /**
@@ -13,13 +13,17 @@ use Illuminate\Pagination\UrlWindow;
  *
  * Inside a Livewire component using WithPagination the links call its page methods
  * with wire:click; anywhere else they are plain hrefs.
+ *
+ * @phpstan-type Link array{type: 'previous'|'page'|'ellipsis'|'next', page?: int, active?: bool, disabled?: bool, attributes?: array<string, string>}
+ * @phpstan-type AnyPaginator Paginator<array-key, mixed>|LengthAwarePaginator<array-key, mixed>|CursorPaginator<array-key, mixed>
  */
 final class PaginationLinks
 {
     /**
-     * @return list<array{type: 'previous'|'page'|'ellipsis'|'next', page?: int, active?: bool, disabled?: bool, attributes?: array<string, string>}>
+     * @param  AnyPaginator  $paginator
+     * @return list<Link>
      */
-    public static function for(Paginator|CursorPaginator $paginator): array
+    public static function for(Paginator|LengthAwarePaginator|CursorPaginator $paginator): array
     {
         $links = [self::previous($paginator)];
 
@@ -47,7 +51,11 @@ final class PaginationLinks
         return $links;
     }
 
-    private static function previous(Paginator|CursorPaginator $paginator): array
+    /**
+     * @param  AnyPaginator  $paginator
+     * @return Link
+     */
+    private static function previous(Paginator|LengthAwarePaginator|CursorPaginator $paginator): array
     {
         if ($paginator->onFirstPage()) {
             return ['type' => 'previous', 'disabled' => true, 'attributes' => []];
@@ -60,7 +68,11 @@ final class PaginationLinks
         return ['type' => 'previous', 'disabled' => false, 'attributes' => self::action($paginator, $target, $paginator->previousPageUrl())];
     }
 
-    private static function next(Paginator|CursorPaginator $paginator): array
+    /**
+     * @param  AnyPaginator  $paginator
+     * @return Link
+     */
+    private static function next(Paginator|LengthAwarePaginator|CursorPaginator $paginator): array
     {
         if (! $paginator->hasMorePages()) {
             return ['type' => 'next', 'disabled' => true, 'attributes' => []];
@@ -76,6 +88,7 @@ final class PaginationLinks
     /**
      * Laravel's own window, as its paginator views see it.
      *
+     * @param  LengthAwarePaginator<array-key, mixed>  $paginator
      * @return list<array<int, string>|'...'>
      */
     private static function elements(LengthAwarePaginator $paginator): array
@@ -92,13 +105,14 @@ final class PaginationLinks
     }
 
     /**
+     * @param  AnyPaginator  $paginator
      * @return array<string, string>
      */
-    private static function action(Paginator|CursorPaginator $paginator, int|string|null $target, ?string $url): array
+    private static function action(Paginator|LengthAwarePaginator|CursorPaginator $paginator, int|string|null $target, ?string $url): array
     {
-        $component = app('view')->shared('__livewire');
+        $component = app('livewire')->current();
 
-        if ($component === null || ! method_exists($component, 'setPage')) {
+        if (! $component || ! method_exists($component, 'setPage')) {
             return ['href' => (string) $url];
         }
 

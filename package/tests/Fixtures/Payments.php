@@ -18,6 +18,9 @@ class Payments extends Component
         return $this->sortQuery(app('db')->table('payments'), ['email'])->toSql();
     }
 
+    /**
+     * @return LengthAwarePaginator<int, array{id: int}>
+     */
     public function rows(): LengthAwarePaginator
     {
         return new LengthAwarePaginator([['id' => 1], ['id' => 2]], 42, $this->perPage, $this->getPage());

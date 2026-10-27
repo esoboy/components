@@ -69,9 +69,7 @@ class UiServiceProvider extends ServiceProvider
      */
     protected function bootFieldContext(): void
     {
-        $this->app['blade.compiler']->prepareStringsForCompilationUsing(
-            fn (string $template) => FieldContext::mark($template),
-        );
+        Blade::prepareStringsForCompilationUsing(fn (string $template) => FieldContext::mark($template));
     }
 
     /**

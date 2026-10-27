@@ -20,6 +20,6 @@ final class FieldContext
             return $template;
         }
 
-        return preg_replace('/<x-ui::field(?:\.set)?(?=[\s\/>])/', '$0 '.self::MARKER, $template);
+        return preg_replace('/<x-ui::field(?:\.set)?(?=[\s\/>])/', '$0 '.self::MARKER, $template) ?? $template;
     }
 }

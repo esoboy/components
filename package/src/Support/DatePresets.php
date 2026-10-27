@@ -11,6 +11,10 @@ use DateTimeInterface;
  */
 final class DatePresets
 {
+    /**
+     * @param  array<string, mixed>  $presets
+     * @return array<string, string|list<string|null>|array{from: string|null, to: string|null}|null>
+     */
     public static function normalize(array $presets, string $mode): array
     {
         return array_map(fn ($value) => match ($mode) {
@@ -25,7 +29,9 @@ final class DatePresets
 
     private static function key(mixed $date): ?string
     {
-        if ($date instanceof DateTimeInterface) return $date->format('Y-m-d');
+        if ($date instanceof DateTimeInterface) {
+            return $date->format('Y-m-d');
+        }
 
         return $date === null || $date === '' ? null : substr((string) $date, 0, 10);
     }

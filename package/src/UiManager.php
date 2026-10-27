@@ -3,8 +3,8 @@
 namespace Esoboy\Ui;
 
 use Esoboy\Ui\Livewire\DialogHandle;
-use LogicException;
 use Livewire\Component;
+use LogicException;
 
 /**
  * What Ui:: offers server code. Each call reaches the browser through the Livewire

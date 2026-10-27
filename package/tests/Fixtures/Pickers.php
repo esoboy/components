@@ -11,10 +11,12 @@ class Pickers extends Component
 {
     public int $volume = 40;
 
+    /** @var list<int> */
     public array $price = [20, 80];
 
     public string $fruit = 'banana';
 
+    /** @var array{from: string, to: string} */
     public array $range = ['from' => '2026-01-05', 'to' => '2026-01-09'];
 
     public function render(): string

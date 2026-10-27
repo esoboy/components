@@ -3,6 +3,7 @@
 namespace Esoboy\Ui\Tests\Fixtures;
 
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 /**
@@ -12,9 +13,10 @@ class Uploader extends Component
 {
     use WithFileUploads;
 
+    /** @var list<TemporaryUploadedFile> */
     public array $files = [];
 
-    public $avatar;
+    public ?TemporaryUploadedFile $avatar = null;
 
     public function check(): void
     {

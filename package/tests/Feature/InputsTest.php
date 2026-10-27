@@ -1,6 +1,7 @@
 <?php
 
 use Esoboy\Ui\Facades\Ui;
+use Livewire\Component;
 
 /*
  * Tags Input and Number Input.
@@ -64,7 +65,8 @@ it('renders a verification code button around a button', function () {
 });
 
 it('starts countdowns from Livewire', function () {
-    Livewire\Livewire::test(new class extends Livewire\Component {
+    Livewire\Livewire::test(new class extends Component
+    {
         public function send(): void
         {
             Ui::countdown('sms', 30);

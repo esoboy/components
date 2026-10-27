@@ -19,7 +19,7 @@ final class Options
         $labels = [];
 
         foreach (array_values((array) $path) as $value) {
-            $option = collect($options)->first(fn ($option) => (string) ($option['value'] ?? '') === (string) $value);
+            $option = self::child($options, (string) $value);
 
             if ($option === null) {
                 return [];
@@ -30,6 +30,21 @@ final class Options
         }
 
         return $labels;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $options
+     * @return array<string, mixed>|null
+     */
+    private static function child(array $options, string $value): ?array
+    {
+        foreach ($options as $option) {
+            if ((string) ($option['value'] ?? '') === $value) {
+                return $option;
+            }
+        }
+
+        return null;
     }
 
     /**

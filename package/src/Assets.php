@@ -2,6 +2,7 @@
 
 namespace Esoboy\Ui;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
 
@@ -81,6 +82,6 @@ final class Assets
      */
     private static function read(string $manifest): ?array
     {
-        return is_file($manifest) ? json_decode(file_get_contents($manifest), true, flags: JSON_THROW_ON_ERROR) : null;
+        return is_file($manifest) ? File::json($manifest, JSON_THROW_ON_ERROR) : null;
     }
 }

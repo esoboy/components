@@ -30,7 +30,8 @@ final class ControlState
         $key = self::key($attributes);
         $messages = self::boolean($inField) ? self::messages($errors, $key) : [];
 
-        $errorId = $messages
+        // Messages only come with a key.
+        $errorId = $messages && $key !== null
             ? ($attributes->get('id') ?? 'ui-'.str_replace('.', '-', $key)).'-error'
             : null;
 

@@ -30,6 +30,9 @@ class Invoices extends Component
             BLADE;
     }
 
+    /**
+     * @return LengthAwarePaginator<int, int>
+     */
     public function invoices(): LengthAwarePaginator
     {
         return new LengthAwarePaginator(range(1, 5), 50, 5, $this->getPage());
