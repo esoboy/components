@@ -55,6 +55,7 @@
     "ui.pagination.next_page": "Go to next page",
     "ui.pagination.previous": "Previous",
     "ui.pagination.previous_page": "Go to previous page",
+    "ui.password_input.toggle": "Show password",
     "ui.questionnaire.next": "Next",
     "ui.questionnaire.optional": "Choose an answer or skip this question.",
     "ui.questionnaire.previous": "Previous",
@@ -66,5 +67,7 @@
     "ui.remove": "Remove",
     "ui.sidebar.toggle": "Toggle Sidebar",
     "ui.toast.close": "Close toast",
-    "ui.toast.label": "Notifications"
+    "ui.toast.label": "Notifications",
+    "ui.verification_code.countdown": "Resend in :secondss",
+    "ui.verification_code.resend": "Resend code"
 }

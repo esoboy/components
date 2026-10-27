@@ -26,6 +26,21 @@ new class extends Component
 
     public ?float $price = 9.9;
 
+    public string $password = '';
+
+    public string $phone = '';
+
+    public int $sent = 0;
+
+    public function sendCode(): void
+    {
+        $this->validate(['phone' => 'required|digits:11']);
+
+        $this->sent++;
+        $this->countdown('sms', 5);
+        $this->toast('Code sent', type: 'success');
+    }
+
     public function mount(): void
     {
         $this->regions = [
@@ -140,6 +155,25 @@ new class extends Component
                 <x-ui::field.label>Price</x-ui::field.label>
                 <x-ui::number-input wire:model.live="price" :min="0" step="0.1" />
                 <x-ui::field.description>Price: <span id="price">{{ $price }}</span></x-ui::field.description>
+            </x-ui::field>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Password and verification code</h2>
+        <div class="grid max-w-sm gap-6">
+            <x-ui::field>
+                <x-ui::field.label for="password">Password</x-ui::field.label>
+                <x-ui::password-input id="password" wire:model.live="password" placeholder="Enter password" autocomplete="new-password" />
+                <x-ui::field.description>Length: <span id="password-length">{{ strlen($password) }}</span></x-ui::field.description>
+            </x-ui::field>
+            <x-ui::field>
+                <x-ui::field.label for="phone">Phone</x-ui::field.label>
+                <div class="flex gap-2">
+                    <x-ui::input id="phone" wire:model="phone" placeholder="11 digits" inputmode="numeric" />
+                    <x-ui::verification-code-button id="send-code" name="sms" wire:click="sendCode">Send code</x-ui::verification-code-button>
+                </div>
+                <x-ui::field.description>Sent: <span id="sent">{{ $sent }}</span></x-ui::field.description>
             </x-ui::field>
         </div>
     </section>

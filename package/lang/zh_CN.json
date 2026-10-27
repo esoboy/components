@@ -55,6 +55,7 @@
     "ui.pagination.next_page": "前往下一页",
     "ui.pagination.previous": "上一页",
     "ui.pagination.previous_page": "前往上一页",
+    "ui.password_input.toggle": "显示密码",
     "ui.questionnaire.next": "下一题",
     "ui.questionnaire.optional": "请选择一个答案，或跳过此题。",
     "ui.questionnaire.previous": "上一题",
@@ -66,5 +67,7 @@
     "ui.remove": "移除",
     "ui.sidebar.toggle": "切换侧边栏",
     "ui.toast.close": "关闭通知",
-    "ui.toast.label": "通知"
+    "ui.toast.label": "通知",
+    "ui.verification_code.countdown": ":seconds 秒后重新获取",
+    "ui.verification_code.resend": "重新获取"
 }

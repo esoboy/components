@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineInputs } from '../../resources/js/inputs.js'
+import { defineInputs, initVerificationCodes } from '../../resources/js/inputs.js'
 
 beforeAll(() => defineInputs())
 
@@ -151,5 +151,90 @@ describe('number input', () => {
         element.input.value = ''
         element.input.dispatchEvent(new Event('change', { bubbles: true }))
         expect(element.value).toBeNull()
+    })
+})
+
+describe('password input', () => {
+    it('toggles the type and keeps it through morphs', async () => {
+        document.body.innerHTML = `
+            <ui-password-input>
+                <input type="password" data-slot="input-group-control">
+                <button data-password-toggle aria-pressed="false"></button>
+            </ui-password-input>`
+
+        const element = document.querySelector('ui-password-input')
+        const input = element.querySelector('input')
+        const toggle = element.querySelector('[data-password-toggle]')
+
+        toggle.click()
+        expect(input.type).toBe('text')
+        expect(toggle.getAttribute('aria-pressed')).toBe('true')
+
+        input.setAttribute('type', 'password')
+        await Promise.resolve()
+        expect(input.type).toBe('text')
+
+        toggle.click()
+        expect(input.type).toBe('password')
+    })
+})
+
+describe('verification code button', () => {
+    function mount(name = 'sms') {
+        document.body.innerHTML = `
+            <ui-verification-code-button data-name="${name}" data-seconds="3" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">
+                <button data-slot="button"><span data-verification-code-label>Send code</span></button>
+            </ui-verification-code-button>`
+
+        return document.querySelector('ui-verification-code-button')
+    }
+
+    const label = element => element.querySelector('[data-verification-code-label]').textContent
+
+    it('counts down on ui-countdown, ignoring clicks, then offers to resend', () => {
+        vi.useFakeTimers()
+        initVerificationCodes()
+        const element = mount('count')
+        const button = element.querySelector('button')
+        let clicks = 0
+        button.addEventListener('click', () => clicks++)
+
+        window.dispatchEvent(new CustomEvent('ui-countdown', { detail: { name: 'count', seconds: null } }))
+
+        expect(label(element)).toBe('Resend in 3s')
+        expect(button.getAttribute('aria-disabled')).toBe('true')
+
+        button.click()
+        expect(clicks).toBe(0)
+
+        vi.advanceTimersByTime(1000)
+        expect(label(element)).toBe('Resend in 2s')
+
+        vi.advanceTimersByTime(2000)
+        expect(label(element)).toBe('Resend code')
+        expect(button.hasAttribute('aria-disabled')).toBe(false)
+
+        button.click()
+        expect(clicks).toBe(1)
+    })
+
+    it('keeps counting when a morph puts back the server label', async () => {
+        vi.useFakeTimers()
+        const element = mount('morph')
+
+        element.start(10)
+        element.querySelector('[data-verification-code-label]').textContent = 'Send code'
+        await Promise.resolve()
+
+        expect(label(element)).toBe('Resend in 10s')
+    })
+
+    it('leaves other names alone', () => {
+        initVerificationCodes()
+        const element = mount('other')
+
+        window.dispatchEvent(new CustomEvent('ui-countdown', { detail: { name: 'nobody' } }))
+
+        expect(label(element)).toBe('Send code')
     })
 })

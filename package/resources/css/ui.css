@@ -57,6 +57,7 @@
 @import './components/navigation-menu.css';
 @import './components/number-input.css';
 @import './components/pagination.css';
+@import './components/password-input.css';
 @import './components/popover.css';
 @import './components/progress.css';
 @import './components/questionnaire.css';
@@ -81,6 +82,7 @@
 @import './components/tooltip.css';
 @import './components/trace.css';
 @import './components/tree.css';
+@import './components/verification-code-button.css';
 
 @source '../views';
 

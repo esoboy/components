@@ -1,5 +1,5 @@
 /*
- * <ui-tags-input> and <ui-number-input>
+ * <ui-tags-input>, <ui-number-input>, <ui-password-input> and <ui-verification-code-button>
  *
  * Tags Input: typed text becomes a tag on Enter, a comma or leaving the field (pasted
  * lists split on commas and new lines); Backspace in the empty input removes the
@@ -10,6 +10,11 @@
  * or null when empty.
  *
  * Both dispatch input/change from themselves, so wire:model binds on them.
+ *
+ * Password Input: the eye toggles the input between password and text.
+ *
+ * Verification Code Button: $this->countdown('name') makes the buttons of that name
+ * count down, ignoring clicks, then offer to resend.
  */
 
 const SEPARATORS = /[,，\n]/
@@ -276,7 +281,113 @@ export class NumberInputElement extends HTMLElement {
     }
 }
 
+// The eye shows or hides the password; morphs put back type="password", so it is reapplied.
+export class PasswordInputElement extends HTMLElement {
+    #visible = false
+    #observer = new MutationObserver(() => this.#render())
+
+    connectedCallback() {
+        this.addEventListener('click', event => {
+            if (! event.target.closest?.('[data-password-toggle]')) return
+
+            this.#visible = ! this.#visible
+            this.#render()
+        })
+
+        this.#render()
+        this.#observer.observe(this, { subtree: true, childList: true, attributes: true, attributeFilter: ['type', 'aria-pressed'] })
+    }
+
+    disconnectedCallback() {
+        this.#observer.disconnect()
+    }
+
+    get visible() {
+        return this.#visible
+    }
+
+    #render() {
+        const input = this.querySelector('[data-slot="input-group-control"]')
+        const toggle = this.querySelector('[data-password-toggle]')
+        const type = this.#visible ? 'text' : 'password'
+
+        if (input && input.getAttribute('type') !== type) input.setAttribute('type', type)
+        if (toggle && toggle.getAttribute('aria-pressed') !== String(this.#visible)) toggle.setAttribute('aria-pressed', String(this.#visible))
+    }
+}
+
+// Countdowns end at a time per name, so they outlive morphs and reach every button of that name.
+const countdowns = new Map()
+
+export class VerificationCodeButtonElement extends HTMLElement {
+    #timer = 0
+    #observer = new MutationObserver(() => this.#render())
+
+    connectedCallback() {
+        // While counting, clicks stop here, before the button's wire:click.
+        this.addEventListener('click', event => {
+            if (this.remaining > 0) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+        }, true)
+
+        this.#render()
+        this.#observer.observe(this, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['aria-disabled'] })
+    }
+
+    disconnectedCallback() {
+        clearTimeout(this.#timer)
+        this.#observer.disconnect()
+    }
+
+    get remaining() {
+        const end = countdowns.get(this.dataset.name)
+
+        return end ? Math.max(0, Math.ceil((end - Date.now()) / 1000)) : 0
+    }
+
+    start(seconds = Number(this.dataset.seconds) || 60) {
+        countdowns.set(this.dataset.name, Date.now() + seconds * 1000)
+        this.#render()
+    }
+
+    #render() {
+        clearTimeout(this.#timer)
+
+        const button = this.querySelector('[data-slot="button"]')
+        const label = this.querySelector('[data-verification-code-label]')
+        const remaining = this.remaining
+
+        if (! button || ! label || ! countdowns.has(this.dataset.name)) return
+
+        const text = remaining > 0
+            ? (this.dataset.labelCountdown ?? ':seconds').replace(':seconds', remaining)
+            : this.dataset.labelResend ?? label.textContent
+
+        if (label.textContent !== text) label.textContent = text
+
+        if (remaining > 0) {
+            button.getAttribute('aria-disabled') !== 'true' && button.setAttribute('aria-disabled', 'true')
+            this.#timer = setTimeout(() => this.#render(), (countdowns.get(this.dataset.name) - Date.now()) % 1000 || 1000)
+        } else {
+            button.hasAttribute('aria-disabled') && button.removeAttribute('aria-disabled')
+        }
+    }
+}
+
 export function defineInputs(registry = window.customElements) {
     if (! registry.get('ui-tags-input')) registry.define('ui-tags-input', TagsInputElement)
     if (! registry.get('ui-number-input')) registry.define('ui-number-input', NumberInputElement)
+    if (! registry.get('ui-password-input')) registry.define('ui-password-input', PasswordInputElement)
+    if (! registry.get('ui-verification-code-button')) registry.define('ui-verification-code-button', VerificationCodeButtonElement)
+}
+
+// $this->countdown('name') starts the buttons of that name.
+export function initVerificationCodes(win = window) {
+    win.addEventListener('ui-countdown', ({ detail }) => {
+        for (const element of win.document.querySelectorAll('ui-verification-code-button')) {
+            if (element.dataset.name === (detail?.name ?? 'verification-code')) element.start(detail?.seconds ?? undefined)
+        }
+    })
 }

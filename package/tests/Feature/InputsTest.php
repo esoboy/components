@@ -34,3 +34,45 @@ it('treats a non-numeric value as empty', function () {
         ->assertSee('value=""', false)
         ->assertDontSee('aria-valuenow', false);
 });
+
+it('renders a password input as an input group with an eye toggle', function () {
+    $html = (string) $this->blade('<x-ui::password-input id="password" wire:model="password" placeholder="Password" class="w-64" />');
+
+    expect($html)
+        ->toContain('<ui-password-input data-slot="password-input" class="w-64">')
+        ->toContain('<input type="password" data-slot="input-group-control" id="password" wire:model="password" placeholder="Password">')
+        ->toMatch('/data-password-toggle="data-password-toggle" aria-pressed="false" aria-label="Show password"/')
+        ->toContain('data-password-icon="hidden"')
+        ->toContain('data-password-icon="shown"');
+});
+
+it('validates a password input inside a field', function () {
+    $this->withViewErrors(['password' => 'Too short.'])
+        ->blade('<x-ui::field><x-ui::password-input id="password" wire:model="password" /></x-ui::field>')
+        ->assertSee('aria-invalid="true" aria-describedby="password-error"', false)
+        ->assertSeeInOrder(['</ui-password-input>', 'Too short.'], false);
+});
+
+it('renders a verification code button around a button', function () {
+    $html = (string) $this->blade('<x-ui::verification-code-button name="sms" :seconds="30" wire:click="send">Send code</x-ui::verification-code-button>');
+
+    expect($html)
+        ->toContain('<ui-verification-code-button data-slot="verification-code-button" data-name="sms" data-seconds="30" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">')
+        ->toMatch('/data-variant="outline" data-size="default" wire:click="send">\s*<span data-verification-code-label>Send code<\/span>/');
+});
+
+it('starts countdowns from Livewire', function () {
+    Livewire\Livewire::test(new class extends Livewire\Component {
+        public function send(): void
+        {
+            $this->countdown('sms', 30);
+        }
+
+        public function render(): string
+        {
+            return '<div></div>';
+        }
+    })
+        ->call('send')
+        ->assertDispatched('ui-countdown', name: 'sms', seconds: 30);
+});

@@ -37,7 +37,7 @@ class UiServiceProvider extends ServiceProvider
     }
 
     /**
-     * $this->toast(...) and $this->dialog('name') on every Livewire component.
+     * $this->toast(...), $this->dialog('name') and $this->countdown('name') on every Livewire component.
      */
     protected function bootLivewire(): void
     {
@@ -59,6 +59,12 @@ class UiServiceProvider extends ServiceProvider
         Component::macro('dialog', function (string $name) {
             /** @var Component $this */
             return new DialogHandle($this, $name);
+        });
+
+        // Starts the Verification Code Buttons of that name; seconds defaults to theirs.
+        Component::macro('countdown', function (string $name = 'verification-code', ?int $seconds = null) {
+            /** @var Component $this */
+            $this->dispatch('ui-countdown', name: $name, seconds: $seconds);
         });
 
         on('render', fn (Component $component) => app(Overlay::class)->restart($component->getId()));
