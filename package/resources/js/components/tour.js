@@ -183,9 +183,12 @@ export function register() {
         detail.open ? tour.start(detail.step ?? 0) : tour.close()
     })
 
-    // Escape closes the tour wherever the focus is.
+    // Escape closes the tour wherever the focus is, once what the target opened is closed:
+    // the browser closes menus (auto popovers) and modal dialogs itself, and components
+    // that close their own layer cancel the key.
     document.addEventListener('keydown', event => {
-        if (event.key !== 'Escape' || ! open().length) return
+        if (event.key !== 'Escape' || event.defaultPrevented || ! open().length) return
+        if (document.querySelector('[popover]:not([popover="manual"]):popover-open, dialog:modal')) return
 
         event.preventDefault()
         open().forEach(tour => tour.close())

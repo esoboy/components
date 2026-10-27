@@ -181,6 +181,57 @@ describe('closing', () => {
         }
     })
 
+    it('leaves Escape to a menu or dialog the target opened, then closes', () => {
+        for (const markup of ['<div id="layer" popover>Menu</div>', '<div id="layer" popover="auto">Menu</div>', '<dialog id="layer">Dialog</dialog>']) {
+            const [tour] = mount()
+
+            document.body.insertAdjacentHTML('beforeend', markup)
+
+            const layer = document.getElementById('layer')
+            const escape = () => {
+                const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+
+                document.dispatchEvent(event)
+
+                return event
+            }
+
+            tour.start(1)
+            layer instanceof HTMLDialogElement ? layer.showModal() : layer.showPopover()
+
+            // Not canceled: the browser goes on to close the menu or dialog.
+            expect(escape().defaultPrevented).toBe(false)
+            expect(tour.isOpen).toBe(true)
+
+            layer instanceof HTMLDialogElement ? layer.close() : layer.hidePopover()
+
+            expect(escape().defaultPrevented).toBe(true)
+            expect(tour.isOpen).toBe(false)
+        }
+    })
+
+    it('leaves Escape to a component that took it', () => {
+        const [tour] = mount()
+        const search = document.getElementById('search')
+
+        search.addEventListener('keydown', event => event.preventDefault())
+        tour.start()
+        search.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+
+        expect(tour.isOpen).toBe(true)
+    })
+
+    it('still closes on Escape while a manual popover such as the toaster is shown', () => {
+        const [tour] = mount()
+
+        document.body.insertAdjacentHTML('beforeend', '<div id="toaster" popover="manual"></div>')
+        document.getElementById('toaster').showPopover()
+        tour.start()
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+
+        expect(tour.isOpen).toBe(false)
+    })
+
     it('reports nothing when it was not open', () => {
         const [tour, seen] = mount()
 
