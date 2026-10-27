@@ -13,12 +13,6 @@
         "vitest": "^3.2.4"
     },
     "peerDependencies": {
-        "tailwindcss": "^4.3.3",
-        "shiki": "^3.0.0"
-    },
-    "peerDependenciesMeta": {
-        "shiki": {
-            "optional": true
-        }
+        "tailwindcss": "^4.3.3"
     }
 }

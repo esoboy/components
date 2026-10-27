@@ -55,6 +55,30 @@ it('prints a deferred script that runs once across wire:navigate', function () {
         ->toContain('defer data-navigate-once nonce="abc"></script>');
 });
 
+it('loads a heavy component module once per page through @assets', function () {
+    $this->app->instance(Assets::class, new Assets(__DIR__.'/../Fixtures/dist'));
+
+    Route::get('/blocks', fn () => Blade::render(<<<'BLADE'
+        <html><head></head><body>
+            <x-ui::code-block.content language="php" code="echo 1;" />
+            <x-ui::code-block.content language="php" code="echo 2;" />
+        </body></html>
+        BLADE));
+
+    $html = $this->get('/blocks')->getContent();
+
+    expect(substr_count($html, '<script type="module" src="http://localhost/esoboy-ui/code-block.js?id=cdef01234567"></script>'))->toBe(1)
+        ->and(strpos($html, 'code-block.js'))->toBeLessThan(strpos($html, '</head>'));
+});
+
+it('leaves heavy modules out of pages that do not need them', function () {
+    $this->app->instance(Assets::class, new Assets(__DIR__.'/../Fixtures/dist'));
+
+    Route::get('/plain', fn () => Blade::render('<html><head></head><body><x-ui::code-block.content code="echo 1;" /></body></html>'));
+
+    $this->get('/plain')->assertDontSee('code-block.js', false);
+});
+
 it('serves the precompressed copy the browser accepts, cached for a year', function () {
     $this->get('/esoboy-ui/ui.js', ['Accept-Encoding' => 'gzip, deflate, br'])
         ->assertOk()

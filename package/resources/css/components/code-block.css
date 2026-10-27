@@ -137,7 +137,7 @@
         @apply min-w-0;
     }
 
-    /* Highlighted tokens (code-block-highlight.js) carry Shiki's light and dark colours. */
+    /* Highlighted tokens (heavy/code-block.js) carry Shiki's light and dark colours. */
     :where([data-slot="code-block-line-content"] [data-token]) {
         color: light-dark(var(--shiki-light), var(--shiki-dark));
     }

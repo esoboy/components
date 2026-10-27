@@ -54,6 +54,16 @@ final class Assets
     }
 
     /**
+     * The script tag of a heavy component's module, for its view's @assets block.
+     */
+    public function module(string $file): string
+    {
+        $nonce = Vite::cspNonce();
+
+        return '<script type="module" src="'.e($this->url($file)).'"'.($nonce ? ' nonce="'.e($nonce).'"' : '').'></script>';
+    }
+
+    /**
      * @return array<string, string>
      */
     private function manifest(): array

@@ -31,6 +31,9 @@ abstract class TestCase extends Orchestra
         // dist/ is a build output; tests read a fixed one.
         $this->app->instance(Assets::class, new Assets(__DIR__.'/Fixtures/dist'));
 
+        // Livewire keeps per-request state (@assets already printed, …) in statics.
+        app('livewire')->flushState();
+
         $this->artisan('view:clear');
     }
 }

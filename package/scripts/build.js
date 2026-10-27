@@ -20,6 +20,15 @@ const dist = join(root, 'dist')
 const bundles = [
     // Every component but the heavy ones, as one classic script for @uiScripts.
     { entryPoints: { ui: 'resources/js/ui.js' }, format: 'iife' },
+
+    // Heavy components: modules their views load through @assets, with what they
+    // import on demand (a Shiki language, …) split into chunks/.
+    {
+        entryPoints: { 'code-block': 'resources/js/heavy/code-block.js' },
+        format: 'esm',
+        splitting: true,
+        chunkNames: 'chunks/[name]-[hash]',
+    },
 ]
 
 // Writes a build's files with their compressed copies, then lists every dist file with its version.

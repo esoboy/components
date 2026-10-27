@@ -1,12 +1,11 @@
 /*
- * Optional syntax highlighting for Code Block, with Shiki like shadcn's
- * use-highlighted-code: every <x-ui::code-block.content language="..."> gets GitHub
- * light and dark colours, and is highlighted again whenever Livewire morphs or
- * streams new code into it.
+ * Syntax highlighting for Code Block, with Shiki like shadcn's use-highlighted-code:
+ * every <x-ui::code-block.content language="..."> gets GitHub light and dark colours,
+ * and is highlighted again whenever Livewire morphs or streams new code into it.
  *
- * It needs Shiki, so it is a separate import:
- *   npm install shiki
- *   import '../../vendor/esoboy/ui/resources/js/code-block-highlight.js'
+ * Built into dist/code-block.js; code-block.content loads it through @assets, so a
+ * page downloads Shiki only when it shows highlighted code, and each language only
+ * when that language is on the page.
  */
 
 import { createHighlighterCore } from 'shiki/core'

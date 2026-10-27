@@ -26,3 +26,10 @@ $rows = $code === null ? null : implode('', array_map(
     'tabindex' => '0',
     'style' => 'counter-reset: line '.($startLine - 1),
 ]) }}><code data-slot="code-block-code">{!! $rows ?? $slot !!}</code></pre>
+
+{{-- Livewire loads this once per page, also when the block arrives in a later update. --}}
+@if ($language)
+@assets
+{!! app(\Esoboy\Ui\Assets::class)->module('code-block.js') !!}
+@endassets
+@endif
