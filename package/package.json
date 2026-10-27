@@ -4,11 +4,13 @@
     "scripts": {
         "build": "node scripts/build.js",
         "dev": "node scripts/build.js --watch",
+        "icons": "node scripts/icons.js",
         "test": "vitest run"
     },
     "devDependencies": {
         "esbuild": "^0.28.2",
         "jsdom": "^26.1.0",
+        "lucide-static": "1.62.0",
         "shiki": "^3.23.0",
         "vitest": "^3.2.4"
     },

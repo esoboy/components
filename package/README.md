@@ -63,6 +63,15 @@ shadcn/ui's:
 
 Controls inside `<x-ui::field>` show their validation errors; standalone controls don't.
 
+Icons are Lucide's, built in (the version is in `resources/icons/lucide.php`):
+
+```blade
+<x-ui::icon name="chevron-down" class="size-4" />
+```
+
+Only the shipped names exist; an unknown name fails the render and names the new name of
+an old one. A newer Lucide comes with a newer package (`npm run icons` regenerates the set).
+
 From Livewire components, form objects and actions:
 
 ```php
