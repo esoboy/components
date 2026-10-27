@@ -40,6 +40,7 @@ import { defineSlider } from './slider.js'
 import { defineTabs } from './tabs.js'
 import { initToasts } from './toast.js'
 import { initTooltips } from './tooltip.js'
+import { defineTransfer } from './transfer.js'
 import { defineTree } from './tree.js'
 
 defineRadioGroup()
@@ -65,6 +66,7 @@ defineTree()
 defineInputs()
 defineColorPicker()
 defineRating()
+defineTransfer()
 initVerificationCodes()
 defineImagePreview()
 initAvatars()

@@ -36,6 +36,8 @@ new class extends Component
 
     public ?int $score = 3;
 
+    public array $roles = ['editor'];
+
     public function sendCode(): void
     {
         $this->validate(['phone' => 'required|digits:11']);
@@ -200,5 +202,20 @@ new class extends Component
                 <span class="text-muted-foreground">4.5 (128 reviews)</span>
             </div>
         </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Transfer</h2>
+        <x-ui::transfer id="roles" wire:model.live="roles" searchable :titles="['Roles', 'Assigned']" :options="[
+            'admin' => 'Administrator',
+            'editor' => 'Editor',
+            'author' => 'Author',
+            'reviewer' => 'Reviewer',
+            ['value' => 'owner', 'label' => 'Owner', 'disabled' => true],
+            'support' => 'Support',
+            'billing' => 'Billing',
+            'viewer' => 'Viewer',
+        ]" />
+        <p class="text-sm text-muted-foreground">Roles: <span id="roles-value">{{ implode(', ', $roles) ?: 'none' }}</span></p>
     </section>
 </div>

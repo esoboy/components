@@ -73,6 +73,12 @@
     "ui.sidebar.toggle": "切换侧边栏",
     "ui.toast.close": "关闭通知",
     "ui.toast.label": "通知",
+    "ui.transfer.empty": "暂无数据",
+    "ui.transfer.search": "搜索",
+    "ui.transfer.source": "待选",
+    "ui.transfer.target": "已选",
+    "ui.transfer.to_source": "移回待选",
+    "ui.transfer.to_target": "移到已选",
     "ui.verification_code.countdown": ":seconds 秒后重新获取",
     "ui.verification_code.resend": "重新获取"
 }

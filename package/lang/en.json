@@ -73,6 +73,12 @@
     "ui.sidebar.toggle": "Toggle Sidebar",
     "ui.toast.close": "Close toast",
     "ui.toast.label": "Notifications",
+    "ui.transfer.empty": "No results.",
+    "ui.transfer.search": "Search",
+    "ui.transfer.source": "Available",
+    "ui.transfer.target": "Selected",
+    "ui.transfer.to_source": "Move to available",
+    "ui.transfer.to_target": "Move to selected",
     "ui.verification_code.countdown": "Resend in :secondss",
     "ui.verification_code.resend": "Resend code"
 }
