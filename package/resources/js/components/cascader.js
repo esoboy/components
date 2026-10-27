@@ -9,17 +9,19 @@
  */
 
 import { announce, define, readValue, writeHidden } from '../support/element.js'
+import { readIcons } from '../support/icons.js'
 
 const ITEM = '[data-cascader-item]'
-const CHEVRON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>'
-const CHECK = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
 
 export class CascaderElement extends HTMLElement {
     #value = []
     #open = []
+    #icons = {}
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        this.#icons = readIcons(this)
+
         const value = readValue(this, [])
 
         this.#value = Array.isArray(value) ? value.map(String) : []
@@ -137,7 +139,7 @@ export class CascaderElement extends HTMLElement {
                 text.textContent = option.label
                 indicator.dataset.slot = 'select-item-indicator'
                 if (parent) indicator.dataset.parent = ''
-                indicator.innerHTML = parent ? CHEVRON : CHECK
+                indicator.innerHTML = (parent ? this.#icons.parent : this.#icons.selected) ?? ''
 
                 item.append(text, indicator)
                 column.append(item)

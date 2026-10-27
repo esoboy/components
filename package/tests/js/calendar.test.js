@@ -12,7 +12,10 @@ afterEach(() => {
 })
 
 function mount(attributes = '') {
-    document.body.innerHTML = `<eso-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}></eso-calendar>`
+    // As <x-ui::calendar> renders it: the icons the script draws, as templates.
+    const icons = ['previous', 'next', 'dropdown'].map(role => `<template data-icon-template="${role}"><svg data-icon-name="${role}"></svg></template>`).join('')
+
+    document.body.innerHTML = `<eso-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}>${icons}</eso-calendar>`
 
     return document.querySelector('eso-calendar')
 }
@@ -138,6 +141,19 @@ describe('selecting', () => {
 })
 
 describe('navigation', () => {
+    it('draws its icons from the templates its view rendered, also after re-rendering', () => {
+        const calendar = mount('data-default-month="2026-10" data-caption-layout="dropdown"')
+        const icon = selector => calendar.querySelector(`${selector} svg`)?.dataset.iconName
+
+        expect(icon('[data-calendar-previous]')).toBe('previous')
+        expect(icon('[data-calendar-next]')).toBe('next')
+        expect(icon('[data-slot="calendar-caption-label"]')).toBe('dropdown')
+        expect(calendar.querySelector('template')).toBeNull()
+
+        calendar.querySelector('[data-calendar-next]').click()
+        expect(icon('[data-calendar-previous]')).toBe('previous')
+    })
+
     it('moves between months with the buttons and dropdowns', () => {
         const calendar = mount('data-default-month="2026-10" data-caption-layout="dropdown"')
 

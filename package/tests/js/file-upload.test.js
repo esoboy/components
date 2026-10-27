@@ -42,6 +42,7 @@ describe('file upload', () => {
     function mount(input = 'multiple') {
         document.body.innerHTML = `
             <eso-file-upload data-uploading-label="Uploading :progress%">
+                <template data-icon-template="file"><svg data-icon-name="file"></svg></template>
                 <label data-slot="file-upload-dropzone">
                     <input type="file" data-slot="file-upload-input" ${input}>
                     <span data-slot="file-upload-progress" hidden></span>
@@ -109,6 +110,7 @@ describe('file upload', () => {
         expect(chips.map(chip => chip.dataset.state)).toEqual(['uploading', 'uploading'])
         expect(chips[0].querySelector('img')).not.toBeNull()
         expect(chips[1].querySelector('[data-slot="attachment-media"]').dataset.variant).toBe('icon')
+        expect(chips[1].querySelector('[data-slot="attachment-media"] svg').dataset.iconName).toBe('file')
 
         element.input.dispatchEvent(new CustomEvent('livewire-upload-progress', { bubbles: true, detail: { progress: 42 } }))
 

@@ -9,20 +9,13 @@
  * A toast with the id of a shown one updates it in place (e.g. loading, then success).
  */
 
+import { readIcons } from '../support/icons.js'
+
 const SWIPE_THRESHOLD = 40
 const LEAVE_DURATION = 500
 
-const svg = (paths, extra = '') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra}>${paths}</svg>`
-
-const ICONS = {
-    success: svg('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
-    info: svg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>'),
-    warning: svg('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>'),
-    error: svg('<path d="m15 9-6 6"/><path d="M2.586 16.726A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2h6.624a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586z"/><path d="m9 9 6 6"/>'),
-    loading: svg('<path d="M21 12a9 9 0 1 1-6.219-8.56"/>', ' data-spin'),
-}
-
-const CLOSE = svg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>')
+// Types with an icon; the toaster's view picks each one.
+const TYPES = ['success', 'info', 'warning', 'error', 'loading']
 
 let ids = 0
 
@@ -101,11 +94,12 @@ export function register() {
         const id = toast.dataset.id
         const content = element('div', { 'data-slot': 'toast-content' })
         const text = element('div')
+        const icons = readIcons(viewport())
 
         type === 'default' ? toast.removeAttribute('data-type') : toast.setAttribute('data-type', type)
         toast.setAttribute('role', type === 'error' ? 'alertdialog' : 'dialog')
 
-        if (ICONS[type]) content.append(Object.assign(element('span', { 'data-slot': 'toast-icon' }), { innerHTML: ICONS[type] }))
+        if (TYPES.includes(type) && icons[type]) content.append(Object.assign(element('span', { 'data-slot': 'toast-icon' }), { innerHTML: icons[type] }))
 
         if (message) text.append(element('h2', { 'data-slot': 'toast-title', id: `${id}-title` }, message))
         if (description) text.append(element('p', { 'data-slot': 'toast-description', id: `${id}-description` }, description))
@@ -127,7 +121,7 @@ export function register() {
 
         const dismiss = button('ghost', 'icon-sm', { 'data-toast-close': '', 'aria-label': viewport().dataset.closeLabel ?? '' })
 
-        dismiss.innerHTML = CLOSE
+        dismiss.innerHTML = icons.close ?? ''
         dismiss.addEventListener('click', () => close(toast))
         content.append(dismiss)
 
@@ -177,7 +171,8 @@ export function register() {
 
             toast.remove()
 
-            if (root && ! root.children.length) {
+            // The viewport also holds its icon templates.
+            if (root && ! root.querySelector(':scope > [data-slot="toast"]')) {
                 expanded = false
                 if (root.matches(':popover-open')) root.hidePopover()
             }

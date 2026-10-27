@@ -18,4 +18,11 @@
     'data-limit' => $limit,
     'data-timeout' => $timeout,
     'data-close-label' => __('ui::toast.close'),
-]) }} wire:ignore></div>
+]) }} wire:ignore>
+    <template data-icon-template="success"><x-ui::icon name="circle-check" /></template>
+    <template data-icon-template="info"><x-ui::icon name="info" /></template>
+    <template data-icon-template="warning"><x-ui::icon name="triangle-alert" /></template>
+    <template data-icon-template="error"><x-ui::icon name="octagon-x" /></template>
+    <template data-icon-template="loading"><x-ui::icon name="loader-circle" data-spin /></template>
+    <template data-icon-template="close"><x-ui::icon name="x" /></template>
+</div>

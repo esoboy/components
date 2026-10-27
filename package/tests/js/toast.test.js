@@ -10,7 +10,10 @@ beforeAll(() => {
 
 beforeEach(() => {
     vi.useFakeTimers()
-    document.body.innerHTML = '<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000" data-close-label="Close toast"></div>'
+    // As <x-ui::toaster> renders it: the viewport holds the icons the script draws.
+    const icons = ['success', 'info', 'warning', 'error', 'close'].map(role => `<template data-icon-template="${role}"><svg data-icon-name="${role}"></svg></template>`).join('')
+
+    document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000" data-close-label="Close toast">${icons}<template data-icon-template="loading"><svg data-spin></svg></template></div>`
     viewport = document.querySelector('[data-slot="toast-viewport"]')
 })
 
@@ -35,6 +38,7 @@ it('shows a title and description, with a close button', () => {
     expect(item.querySelector('[data-slot="toast-description"]').textContent).toBe('Sunday at 9:00')
     expect(item.getAttribute('aria-labelledby')).toBe(item.querySelector('[data-slot="toast-title"]').id)
     expect(item.querySelector('[data-toast-close]').getAttribute('aria-label')).toBe('Close toast')
+    expect(item.querySelector('[data-toast-close] svg[data-icon-name="close"]')).not.toBeNull()
     expect(item.querySelector('[data-slot="toast-icon"]')).toBeNull()
 })
 
@@ -44,6 +48,7 @@ it('adds an icon for each type; errors are alerts', () => {
     for (const type of ['success', 'info', 'warning', 'error', 'loading']) toast({ message: type, type, duration: 0 })
 
     expect(viewport.querySelectorAll('[data-slot="toast-icon"] svg')).toHaveLength(5)
+    expect(viewport.querySelector('[data-type="warning"] [data-slot="toast-icon"] svg').dataset.iconName).toBe('warning')
     expect(viewport.querySelector('[data-type="error"]').getAttribute('role')).toBe('alertdialog')
     expect(viewport.querySelector('[data-type="loading"] svg[data-spin]')).not.toBeNull()
 })
@@ -92,7 +97,7 @@ it('closes after the timeout and hides the empty viewport', () => {
     expect(live()).toHaveLength(0)
 
     vi.advanceTimersByTime(500)
-    expect(viewport.children).toHaveLength(0)
+    expect(viewport.querySelectorAll('[data-slot="toast"]')).toHaveLength(0)
     expect(viewport.matches(':popover-open')).toBe(false)
 })
 

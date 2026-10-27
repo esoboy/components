@@ -7,6 +7,7 @@
  */
 
 import { announce, define, readValue } from '../support/element.js'
+import { readIcons } from '../support/icons.js'
 
 const pad = number => String(number).padStart(2, '0')
 
@@ -23,11 +24,6 @@ const addMonths = (date, months) => new Date(date.getFullYear(), date.getMonth()
 const startOfMonth = date => new Date(date.getFullYear(), date.getMonth(), 1)
 const monthIndex = date => date.getFullYear() * 12 + date.getMonth()
 
-const svg = path => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`
-const CHEVRON_LEFT = svg('<path d="m15 18-6-6 6-6"/>')
-const CHEVRON_RIGHT = svg('<path d="m9 18 6-6-6-6"/>')
-const CHEVRON_DOWN = svg('<path d="m6 9 6 6 6-6"/>')
-
 export function weekStart(locale) {
     try {
         const info = new Intl.Locale(locale)
@@ -43,8 +39,11 @@ export class CalendarElement extends HTMLElement {
     #value = null
     #month = null
     #focused = null
+    #icons = {}
 
     connectedCallback() {
+        // Read before the first render replaces the children; kept when the calendar moves.
+        this.#icons = { ...this.#icons, ...readIcons(this) }
         this.#value = this.#normalize(readValue(this))
 
         const anchor = this.dataset.defaultMonth
@@ -127,8 +126,8 @@ export class CalendarElement extends HTMLElement {
 
         const nav = `
             <nav data-slot="calendar-nav">
-                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-previous aria-label="${this.dataset.labelPrevious ?? ''}" ${this.#canShow(addMonths(first, -1)) ? '' : 'aria-disabled="true"'}>${CHEVRON_LEFT}</button>
-                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-next aria-label="${this.dataset.labelNext ?? ''}" ${this.#canShow(addMonths(first, months)) ? '' : 'aria-disabled="true"'}>${CHEVRON_RIGHT}</button>
+                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-previous aria-label="${this.dataset.labelPrevious ?? ''}" ${this.#canShow(addMonths(first, -1)) ? '' : 'aria-disabled="true"'}>${this.#icons.previous ?? ''}</button>
+                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-next aria-label="${this.dataset.labelNext ?? ''}" ${this.#canShow(addMonths(first, months)) ? '' : 'aria-disabled="true"'}>${this.#icons.next ?? ''}</button>
             </nav>`
 
         const grids = Array.from({ length: months }, (_, offset) => this.#renderMonth(addMonths(first, offset))).join('')
@@ -224,7 +223,7 @@ export class CalendarElement extends HTMLElement {
         const dropdown = (kind, label, options, text) => `
             <span data-slot="calendar-dropdown">
                 <select data-calendar-${kind} aria-label="${label ?? ''}">${options}</select>
-                <span data-slot="calendar-caption-label" aria-hidden="true">${text}${CHEVRON_DOWN}</span>
+                <span data-slot="calendar-caption-label" aria-hidden="true">${text}${this.#icons.dropdown ?? ''}</span>
             </span>`
 
         return `<div data-slot="calendar-dropdowns">${dropdown('month', this.dataset.labelMonth, months, month.toLocaleDateString(locale, { month: 'short' }))}${dropdown('year', this.dataset.labelYear, years, month.toLocaleDateString(locale, { year: 'numeric' }))}</div>`

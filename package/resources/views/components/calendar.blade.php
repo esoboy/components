@@ -41,4 +41,8 @@ $value = $defaultValue ?? Model::value($attributes);
     'data-label-next' => __('ui::calendar.next'),
     'data-label-month' => __('ui::calendar.month'),
     'data-label-year' => __('ui::calendar.year'),
-]) }} wire:ignore></eso-calendar>
+]) }} wire:ignore>
+    <template data-icon-template="previous"><x-ui::icon name="chevron-left" /></template>
+    <template data-icon-template="next"><x-ui::icon name="chevron-right" /></template>
+    <template data-icon-template="dropdown"><x-ui::icon name="chevron-down" /></template>
+</eso-calendar>

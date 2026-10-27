@@ -8,9 +8,7 @@
  */
 
 import { define } from '../support/element.js'
-
-const svg = paths => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
-const FILE_ICON = svg('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>')
+import { readIcons } from '../support/icons.js'
 
 export function formatSize(bytes) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -33,8 +31,11 @@ export function accepts(accept, file) {
 
 export class FileUploadElement extends HTMLElement {
     #urls = []
+    #icons = {}
 
     connectedCallback() {
+        this.#icons = readIcons(this)
+
         const zone = this.dropzone
 
         if (! zone) return
@@ -160,7 +161,7 @@ export class FileUploadElement extends HTMLElement {
             media.append(Object.assign(document.createElement('img'), { src: this.#url(file), alt: '' }))
         } else {
             media.dataset.variant = 'icon'
-            media.innerHTML = FILE_ICON
+            media.innerHTML = this.#icons.file ?? ''
         }
 
         content.dataset.slot = 'attachment-content'

@@ -8,7 +8,8 @@ it('renders a calendar shell configured for the client', function () {
             caption-layout="dropdown" :number-of-months="2" :show-outside-days="false" :week-starts-on="1"
             min="2025-01-01" max="2027-12-31" :disabled-dates="['2026-01-10']" class="rounded-lg border" />
         BLADE)
-        ->assertSee('<eso-calendar data-slot="calendar" data-mode="range" data-value="{&quot;from&quot;:&quot;2026-01-05&quot;,&quot;to&quot;:null}" data-default-month="2026-01" data-caption-layout="dropdown" data-number-of-months="2" data-show-outside-days="false" data-week-starts-on="1" data-min="2025-01-01" data-max="2027-12-31" data-disabled-dates="[&quot;2026-01-10&quot;]" data-locale="zh-CN" data-label-previous="上个月" data-label-next="下个月" data-label-month="选择月份" data-label-year="选择年份" class="rounded-lg border" wire:ignore></eso-calendar>', false);
+        ->assertSee('<eso-calendar data-slot="calendar" data-mode="range" data-value="{&quot;from&quot;:&quot;2026-01-05&quot;,&quot;to&quot;:null}" data-default-month="2026-01" data-caption-layout="dropdown" data-number-of-months="2" data-show-outside-days="false" data-week-starts-on="1" data-min="2025-01-01" data-max="2027-12-31" data-disabled-dates="[&quot;2026-01-10&quot;]" data-locale="zh-CN" data-label-previous="上个月" data-label-next="下个月" data-label-month="选择月份" data-label-year="选择年份" class="rounded-lg border" wire:ignore>', false)
+        ->assertSeeInOrder(['<template data-icon-template="previous"><svg', '<path d="m15 18-6-6 6-6"/>', '<template data-icon-template="next">', '<template data-icon-template="dropdown">', '</eso-calendar>'], false);
 });
 
 it('defaults to a single, labelled calendar', function () {

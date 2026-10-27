@@ -29,6 +29,7 @@ $files = UploadedFiles::of(Model::value($attributes));
 
 {{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
 <eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui::file-upload.uploading')]) }}>
+    <template data-icon-template="file"><x-ui::icon name="file" /></template>
     <label data-slot="file-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'multiple' => (bool) $multiple, 'accept' => $accept ?? false, 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
         @if ($slot->isEmpty())

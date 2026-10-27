@@ -19,6 +19,8 @@ function mount(attributes = '') {
     document.body.innerHTML = `
         <eso-cascader data-separator="/" data-placeholder="Pick" ${attributes}>
             <script type="application/json" data-cascader-options>${JSON.stringify(options)}</script>
+            <template data-icon-template="parent"><svg data-icon-name="parent"></svg></template>
+            <template data-icon-template="selected"><svg data-icon-name="selected"></svg></template>
             <button data-cascader-trigger><span data-slot="select-value">Pick</span></button>
             <div data-slot="cascader-content" popover="auto"></div>
         </eso-cascader>`
@@ -43,6 +45,15 @@ it('opens on the current path, a column per level', () => {
     expect(item(cascader, 'Xihu').getAttribute('aria-selected')).toBe('true')
     expect(item(cascader, 'Zhejiang').hasAttribute('data-expanded')).toBe(true)
     expect(document.activeElement).toBe(item(cascader, 'Xihu'))
+})
+
+it('marks parents and leaves with the icons its view rendered', () => {
+    const cascader = mount(`data-value='["zj","hz","xh"]'`)
+
+    cascader.open()
+
+    expect(item(cascader, 'Zhejiang').querySelector('[data-slot="select-item-indicator"] svg').dataset.iconName).toBe('parent')
+    expect(item(cascader, 'Xihu').querySelector('[data-slot="select-item-indicator"] svg').dataset.iconName).toBe('selected')
 })
 
 it('opens parents and chooses a leaf, closing', () => {

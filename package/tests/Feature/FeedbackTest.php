@@ -66,7 +66,8 @@ class NotifyingForm extends Form
 
 it('renders the toaster as the toast viewport', function () {
     $this->blade('<x-ui::toaster />')
-        ->assertSee('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" data-close-label="Close toast" wire:ignore></div>', false);
+        ->assertSee('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" data-close-label="Close toast" wire:ignore>', false)
+        ->assertSeeInOrder(['<template data-icon-template="success"><svg', '<template data-icon-template="info">', '<template data-icon-template="warning">', '<template data-icon-template="error">', '<template data-icon-template="loading"><svg', 'data-spin', '<template data-icon-template="close">', '</div>'], false);
 
     $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')
         ->assertSee('data-limit="5" data-timeout="8000"', false);
