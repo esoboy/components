@@ -10,10 +10,21 @@ beforeAll(() => {
 
 beforeEach(() => {
     vi.useFakeTimers()
-    // As <x-ui::toaster> renders it: the viewport holds the icons the script draws.
-    const icons = ['success', 'info', 'warning', 'error', 'close'].map(role => `<template data-icon-template="${role}"><svg data-icon-name="${role}"></svg></template>`).join('')
+    // As <x-ui::toaster> renders it: a toast template, and an icon template per type.
+    const icons = ['success', 'info', 'warning', 'error'].map(type => `<template data-template="icon-${type}"><svg data-icon-name="${type}"></svg></template>`).join('')
+    const toast = `
+        <template data-template="toast">
+            <div data-slot="toast" aria-modal="false" tabindex="0">
+                <div data-slot="toast-content">
+                    <span data-slot="toast-icon"></span>
+                    <div><h2 data-slot="toast-title"></h2><p data-slot="toast-description"></p></div>
+                    <button type="button" data-slot="button" data-variant="outline" data-size="sm" data-toast-action></button>
+                    <button type="button" data-slot="button" data-variant="ghost" data-size="icon-sm" data-toast-close aria-label="Close toast"><svg data-icon-name="close"></svg></button>
+                </div>
+            </div>
+        </template>`
 
-    document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000" data-close-label="Close toast">${icons}<template data-icon-template="loading"><svg data-spin></svg></template></div>`
+    document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000">${toast}${icons}<template data-template="icon-loading"><svg data-spin></svg></template></div>`
     viewport = document.querySelector('[data-slot="toast-viewport"]')
 })
 
@@ -63,10 +74,10 @@ it('treats text as text', () => {
 it('stacks the newest in front and keeps three', () => {
     for (const message of ['a', 'b', 'c', 'd']) toast({ message })
 
-    expect(live().map(item => item.textContent)).toEqual(['b', 'c', 'd'])
+    expect(live().map(item => item.textContent.trim())).toEqual(['b', 'c', 'd'])
     expect(live().map(item => item.style.getPropertyValue('--toast-index'))).toEqual(['2', '1', '0'])
     expect(live().map(item => item.firstElementChild.hasAttribute('data-behind'))).toEqual([true, true, false])
-    expect(viewport.querySelector('[data-limited]').textContent).toBe('a')
+    expect(viewport.querySelector('[data-limited]').textContent.trim()).toBe('a')
 })
 
 it('spreads the stack out and pauses while hovered', () => {

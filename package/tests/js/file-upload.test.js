@@ -42,7 +42,18 @@ describe('file upload', () => {
     function mount(input = 'multiple') {
         document.body.innerHTML = `
             <eso-file-upload data-uploading-label="Uploading :progress%">
-                <template data-icon-template="file"><svg data-icon-name="file"></svg></template>
+                <template data-template="pending">
+                    <div data-slot="attachment" data-state="uploading">
+                        <div data-slot="attachment-media" data-variant="icon"><svg data-icon-name="file"></svg></div>
+                        <div data-slot="attachment-content"><span data-slot="attachment-title"></span><span data-slot="attachment-description"></span></div>
+                    </div>
+                </template>
+                <template data-template="pending-image">
+                    <div data-slot="attachment" data-state="uploading">
+                        <div data-slot="attachment-media" data-variant="image"><img alt=""></div>
+                        <div data-slot="attachment-content"><span data-slot="attachment-title"></span><span data-slot="attachment-description"></span></div>
+                    </div>
+                </template>
                 <label data-slot="file-upload-dropzone">
                     <input type="file" data-slot="file-upload-input" ${input}>
                     <span data-slot="file-upload-progress" hidden></span>
@@ -108,7 +119,8 @@ describe('file upload', () => {
         expect(element.hasAttribute('data-uploading')).toBe(true)
         expect(element.querySelector('[data-file-upload-list]').hidden).toBe(false)
         expect(chips.map(chip => chip.dataset.state)).toEqual(['uploading', 'uploading'])
-        expect(chips[0].querySelector('img')).not.toBeNull()
+        expect(chips[0].querySelector('img').getAttribute('src')).toMatch(/^blob:/)
+        expect(chips.map(chip => chip.querySelector('[data-slot="attachment-title"]').textContent)).toEqual(['cover.png', 'notes.txt'])
         expect(chips[1].querySelector('[data-slot="attachment-media"]').dataset.variant).toBe('icon')
         expect(chips[1].querySelector('[data-slot="attachment-media"] svg').dataset.iconName).toBe('file')
 

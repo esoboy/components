@@ -9,13 +9,10 @@
  * A toast with the id of a shown one updates it in place (e.g. loading, then success).
  */
 
-import { readIcons } from '../support/icons.js'
+import { clone, readTemplates } from '../support/templates.js'
 
 const SWIPE_THRESHOLD = 40
 const LEAVE_DURATION = 500
-
-// Types with an icon; the toaster's view picks each one.
-const TYPES = ['success', 'info', 'warning', 'error', 'loading']
 
 let ids = 0
 
@@ -25,17 +22,6 @@ export function register() {
 
     const viewport = () => document.querySelector('[data-slot="toast-viewport"]')
     const live = () => [...(viewport()?.querySelectorAll(':scope > [data-slot="toast"]:not([data-ending-style])') ?? [])].reverse()
-
-    const element = (tag, attributes = {}, text) => {
-        const node = document.createElement(tag)
-
-        for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value)
-        if (text !== undefined) node.textContent = text
-
-        return node
-    }
-
-    const button = (variant, size, attributes) => element('button', { type: 'button', 'data-slot': 'button', 'data-variant': variant, 'data-size': size, ...attributes })
 
     // --- timers: paused while spread out or while the page is in the background ---
 
@@ -88,55 +74,52 @@ export function register() {
         })
     }
 
-    // --- one toast ---
+    // --- one toast, cloned from the toaster's template ---
 
-    const fill = (toast, { message, description = null, type = 'default', action = null }) => {
+    const fill = (toast, templates, { message, description = null, type = 'default', action = null }) => {
         const id = toast.dataset.id
-        const content = element('div', { 'data-slot': 'toast-content' })
-        const text = element('div')
-        const icons = readIcons(viewport())
+        const content = clone(templates.toast).querySelector('[data-slot="toast-content"]')
+        const icon = clone(templates[`icon-${type}`])
+        const title = content.querySelector('[data-slot="toast-title"]')
+        const text = content.querySelector('[data-slot="toast-description"]')
+        const run = content.querySelector('[data-toast-action]')
 
         type === 'default' ? toast.removeAttribute('data-type') : toast.setAttribute('data-type', type)
         toast.setAttribute('role', type === 'error' ? 'alertdialog' : 'dialog')
 
-        if (TYPES.includes(type) && icons[type]) content.append(Object.assign(element('span', { 'data-slot': 'toast-icon' }), { innerHTML: icons[type] }))
-
-        if (message) text.append(element('h2', { 'data-slot': 'toast-title', id: `${id}-title` }, message))
-        if (description) text.append(element('p', { 'data-slot': 'toast-description', id: `${id}-description` }, description))
-        content.append(text)
+        icon ? content.querySelector('[data-slot="toast-icon"]').append(icon) : content.querySelector('[data-slot="toast-icon"]').remove()
+        message ? Object.assign(title, { id: `${id}-title`, textContent: message }) : title.remove()
+        description ? Object.assign(text, { id: `${id}-description`, textContent: description }) : text.remove()
 
         message ? toast.setAttribute('aria-labelledby', `${id}-title`) : toast.removeAttribute('aria-labelledby')
         description ? toast.setAttribute('aria-describedby', `${id}-description`) : toast.removeAttribute('aria-describedby')
 
         if (action?.label) {
-            const run = button('outline', 'sm', { 'data-toast-action': '' })
-
             run.textContent = action.label
             run.addEventListener('click', () => {
                 if (action.component && action.method) window.Livewire?.find(action.component)?.call(action.method, ...(action.params ?? []))
                 close(toast)
             })
-            content.append(run)
+        } else {
+            run.remove()
         }
 
-        const dismiss = button('ghost', 'icon-sm', { 'data-toast-close': '', 'aria-label': viewport().dataset.closeLabel ?? '' })
-
-        dismiss.innerHTML = icons.close ?? ''
-        dismiss.addEventListener('click', () => close(toast))
-        content.append(dismiss)
-
+        content.querySelector('[data-toast-close]').addEventListener('click', () => close(toast))
         toast.replaceChildren(content)
     }
 
     const show = detail => {
         const root = viewport()
+        const templates = root ? readTemplates(root) : {}
 
-        if (! root || ! (detail.message || detail.description)) return
+        if (! templates.toast || ! (detail.message || detail.description)) return
 
         const existing = detail.id && live().find(toast => toast.dataset.id === String(detail.id))
-        const toast = existing || element('div', { 'data-slot': 'toast', 'aria-modal': 'false', tabindex: '0', 'data-id': detail.id || `ui-toast-${++ids}` })
+        const toast = existing || clone(templates.toast)
 
-        fill(toast, detail)
+        if (! existing) toast.dataset.id = detail.id || `ui-toast-${++ids}`
+
+        fill(toast, templates, detail)
 
         if (! existing) {
             for (const name of ['--toast-swipe-movement-x', '--toast-swipe-movement-y']) toast.style.setProperty(name, '0px')
@@ -171,7 +154,7 @@ export function register() {
 
             toast.remove()
 
-            // The viewport also holds its icon templates.
+            // The viewport also holds the templates.
             if (root && ! root.querySelector(':scope > [data-slot="toast"]')) {
                 expanded = false
                 if (root.matches(':popover-open')) root.hidePopover()

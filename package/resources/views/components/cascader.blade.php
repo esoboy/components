@@ -40,8 +40,10 @@ Overlay::close('cascader');
     'data-name' => $attributes->get('name') ?? false,
 ]) }}>
     <script type="application/json" data-cascader-options>@json($options)</script>
-    <template data-icon-template="parent"><x-ui::icon name="chevron-right" /></template>
-    <template data-icon-template="selected"><x-ui::icon name="check" /></template>
+    {{-- A column and an option, cloned as the path opens; a parent option shows the chevron instead of the check. --}}
+    <template data-template="column"><div data-slot="cascader-column" role="listbox"></div></template>
+    <template data-template="option"><x-ui::select.item value="" data-cascader-item /></template>
+    <template data-template="icon-parent"><x-ui::icon name="chevron-right" /></template>
     <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ $id }}" style="anchor-name: --{{ $id }}" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
         <span data-slot="select-value">{{ $labels ? implode(" {$separator} ", $labels) : $placeholder }}</span>
         <x-ui::icon name="chevron-down" data-slot="select-icon" />

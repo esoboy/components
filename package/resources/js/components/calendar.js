@@ -7,7 +7,7 @@
  */
 
 import { announce, define, readValue } from '../support/element.js'
-import { readIcons } from '../support/icons.js'
+import { clone, readTemplates } from '../support/templates.js'
 
 const pad = number => String(number).padStart(2, '0')
 
@@ -24,6 +24,9 @@ const addMonths = (date, months) => new Date(date.getFullYear(), date.getMonth()
 const startOfMonth = date => new Date(date.getFullYear(), date.getMonth(), 1)
 const monthIndex = date => date.getFullYear() * 12 + date.getMonth()
 
+// Sets aria-disabled="true", data-today="true", … or removes it.
+const flag = (element, name, on) => (on ? element.setAttribute(name, 'true') : element.removeAttribute(name))
+
 export function weekStart(locale) {
     try {
         const info = new Intl.Locale(locale)
@@ -39,11 +42,11 @@ export class CalendarElement extends HTMLElement {
     #value = null
     #month = null
     #focused = null
-    #icons = {}
+    #templates = {}
 
     connectedCallback() {
         // Read before the first render replaces the children; kept when the calendar moves.
-        this.#icons = { ...this.#icons, ...readIcons(this) }
+        this.#templates = { ...this.#templates, ...readTemplates(this) }
         this.#value = this.#normalize(readValue(this))
 
         const anchor = this.dataset.defaultMonth
@@ -120,113 +123,144 @@ export class CalendarElement extends HTMLElement {
     }
 
     render() {
+        const parts = this.#templates
+
+        if (! parts.months) return
+
         const months = Math.max(1, Number(this.dataset.numberOfMonths) || 1)
         const first = this.#month
         const restoreFocus = this.contains(this.ownerDocument.activeElement)
+        const root = clone(parts.months)
+        const nav = clone(parts.nav)
 
-        const nav = `
-            <nav data-slot="calendar-nav">
-                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-previous aria-label="${this.dataset.labelPrevious ?? ''}" ${this.#canShow(addMonths(first, -1)) ? '' : 'aria-disabled="true"'}>${this.#icons.previous ?? ''}</button>
-                <button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-calendar-next aria-label="${this.dataset.labelNext ?? ''}" ${this.#canShow(addMonths(first, months)) ? '' : 'aria-disabled="true"'}>${this.#icons.next ?? ''}</button>
-            </nav>`
+        flag(nav.querySelector('[data-calendar-previous]'), 'aria-disabled', ! this.#canShow(addMonths(first, -1)))
+        flag(nav.querySelector('[data-calendar-next]'), 'aria-disabled', ! this.#canShow(addMonths(first, months)))
 
-        const grids = Array.from({ length: months }, (_, offset) => this.#renderMonth(addMonths(first, offset))).join('')
-
-        this.innerHTML = `<div data-slot="calendar-months">${nav}${grids}</div>`
+        root.append(nav, ...Array.from({ length: months }, (_, offset) => this.#renderMonth(addMonths(first, offset))))
+        this.replaceChildren(root)
 
         if (restoreFocus) this.#focusDay(this.#focused ?? this.#defaultFocus())
     }
 
     #renderMonth(month) {
+        const parts = this.#templates
         const locale = this.locale
         const start = this.dataset.weekStartsOn ? Number(this.dataset.weekStartsOn) : weekStart(locale)
         const showOutside = this.dataset.showOutsideDays !== 'false'
         const today = toKey(new Date())
         const focus = this.#focused ?? this.#defaultFocus()
+        const element = clone(parts.month)
+        const weekdays = element.querySelector('[data-slot="calendar-weekdays"]')
+        const body = element.querySelector('tbody')
+
+        element.querySelector('[data-slot="calendar-caption"]').append(this.#renderCaption(month))
 
         // Weekday headers, from a known Sunday.
-        const weekdays = Array.from({ length: 7 }, (_, index) => {
+        for (let index = 0; index < 7; index++) {
             const date = new Date(2023, 0, 1 + ((start + index) % 7))
             const short = date.toLocaleDateString(locale, { weekday: 'short' })
-            const long = date.toLocaleDateString(locale, { weekday: 'long' })
+            const weekday = clone(parts.weekday)
 
-            return `<th data-slot="calendar-weekday" scope="col" aria-label="${long}">${short.length > 2 && /^[a-z]/i.test(short) ? short.slice(0, 2) : short}</th>`
-        }).join('')
+            weekday.setAttribute('aria-label', date.toLocaleDateString(locale, { weekday: 'long' }))
+            weekday.textContent = short.length > 2 && /^[a-z]/i.test(short) ? short.slice(0, 2) : short
+            weekdays.append(weekday)
+        }
 
         const firstDay = addDays(month, -((month.getDay() - start + 7) % 7))
-        const weeks = []
 
         for (let week = 0, day = firstDay; week < 6; week++) {
             if (week > 0 && day.getMonth() !== month.getMonth()) break
 
-            const cells = []
+            const row = clone(parts.week)
 
             for (let index = 0; index < 7; index++, day = addDays(day, 1)) {
                 const key = toKey(day)
                 const outside = day.getMonth() !== month.getMonth()
 
                 if (outside && ! showOutside) {
-                    cells.push('<td data-slot="calendar-day" data-hidden="true"></td>')
+                    row.append(clone(parts['day-hidden']))
                     continue
                 }
 
                 const state = this.#dayState(key)
                 const disabled = this.#isDisabled(day)
-                const attributes = [
-                    key === today && 'data-today="true"',
-                    outside && 'data-outside="true"',
-                    state.selected && 'data-selected="true"',
-                    state.single && 'data-selected-single="true"',
-                    state.start && 'data-range-start="true"',
-                    state.end && 'data-range-end="true"',
-                    state.middle && 'data-range-middle="true"',
-                    disabled && 'data-disabled="true"',
-                ].filter(Boolean).join(' ')
+                const cell = clone(parts.day)
+                const button = cell.querySelector('button')
 
-                const label = day.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+                // The day's state goes on the cell and its button alike, for the CSS.
+                for (const element of [cell, button]) {
+                    flag(element, 'data-today', key === today)
+                    flag(element, 'data-outside', outside)
+                    flag(element, 'data-selected', state.selected)
+                    flag(element, 'data-selected-single', state.single)
+                    flag(element, 'data-range-start', state.start)
+                    flag(element, 'data-range-end', state.end)
+                    flag(element, 'data-range-middle', state.middle)
+                    flag(element, 'data-disabled', disabled)
+                }
 
-                cells.push(`<td data-slot="calendar-day" ${attributes} role="gridcell"><button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-day="${key}" ${attributes} aria-label="${label}" ${state.selected ? 'aria-pressed="true"' : ''} ${disabled ? 'aria-disabled="true"' : ''} tabindex="${key === focus ? 0 : -1}">${day.getDate()}</button></td>`)
+                button.dataset.day = key
+                button.setAttribute('aria-label', day.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))
+                flag(button, 'aria-pressed', state.selected)
+                flag(button, 'aria-disabled', disabled)
+                button.tabIndex = key === focus ? 0 : -1
+                button.textContent = day.getDate()
+                row.append(cell)
             }
 
-            weeks.push(`<tr data-slot="calendar-week">${cells.join('')}</tr>`)
+            body.append(row)
         }
 
-        return `
-            <div data-slot="calendar-month">
-                <div data-slot="calendar-caption">${this.#renderCaption(month)}</div>
-                <table data-slot="calendar-grid" role="grid">
-                    <thead><tr data-slot="calendar-weekdays">${weekdays}</tr></thead>
-                    <tbody>${weeks.join('')}</tbody>
-                </table>
-            </div>`
+        return element
     }
 
     #renderCaption(month) {
+        const parts = this.#templates
         const locale = this.locale
 
         if (this.dataset.captionLayout !== 'dropdown') {
-            return `<span data-slot="calendar-caption-label" aria-live="polite">${month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}</span>`
+            return Object.assign(clone(parts.caption), { textContent: month.toLocaleDateString(locale, { month: 'long', year: 'numeric' }) })
         }
 
         const [startYear, endYear] = this.#yearRange()
-        const months = Array.from({ length: 12 }, (_, index) => {
-            const label = new Date(2023, index, 1).toLocaleDateString(locale, { month: 'short' })
+        const dropdown = (kind, options, text) => {
+            const element = clone(parts[`dropdown-${kind}`])
+            const select = element.querySelector('select')
 
-            return `<option value="${index}" ${index === month.getMonth() ? 'selected' : ''} ${this.#canShow(new Date(month.getFullYear(), index, 1)) ? '' : 'disabled'}>${label}</option>`
-        }).join('')
-        const years = Array.from({ length: endYear - startYear + 1 }, (_, index) => {
-            const year = startYear + index
+            for (const { value, label, selected, disabled = false } of options) {
+                const option = clone(parts.option)
 
-            return `<option value="${year}" ${year === month.getFullYear() ? 'selected' : ''}>${new Date(year, 0, 1).toLocaleDateString(locale, { year: 'numeric' })}</option>`
-        }).join('')
+                option.value = value
+                option.textContent = label
+                option.toggleAttribute('selected', selected)
+                option.toggleAttribute('disabled', disabled)
+                select.append(option)
+            }
 
-        const dropdown = (kind, label, options, text) => `
-            <span data-slot="calendar-dropdown">
-                <select data-calendar-${kind} aria-label="${label ?? ''}">${options}</select>
-                <span data-slot="calendar-caption-label" aria-hidden="true">${text}${this.#icons.dropdown ?? ''}</span>
-            </span>`
+            element.querySelector('[data-slot="calendar-caption-label"]').prepend(text)
 
-        return `<div data-slot="calendar-dropdowns">${dropdown('month', this.dataset.labelMonth, months, month.toLocaleDateString(locale, { month: 'short' }))}${dropdown('year', this.dataset.labelYear, years, month.toLocaleDateString(locale, { year: 'numeric' }))}</div>`
+            return element
+        }
+
+        const months = Array.from({ length: 12 }, (_, index) => ({
+            value: index,
+            label: new Date(2023, index, 1).toLocaleDateString(locale, { month: 'short' }),
+            selected: index === month.getMonth(),
+            disabled: ! this.#canShow(new Date(month.getFullYear(), index, 1)),
+        }))
+        const years = Array.from({ length: endYear - startYear + 1 }, (_, index) => ({
+            value: startYear + index,
+            label: new Date(startYear + index, 0, 1).toLocaleDateString(locale, { year: 'numeric' }),
+            selected: startYear + index === month.getFullYear(),
+        }))
+        const dropdowns = clone(parts.dropdowns)
+
+        dropdowns.append(
+            dropdown('month', months, month.toLocaleDateString(locale, { month: 'short' })),
+            dropdown('year', years, month.toLocaleDateString(locale, { year: 'numeric' })),
+        )
+
+        return dropdowns
     }
 
     #dayState(key) {

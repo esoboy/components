@@ -27,8 +27,9 @@
         @apply bg-accent text-accent-foreground;
     }
 
-    /* Parents show a chevron where leaves show the check. */
-    :where([data-slot="cascader-column"] [data-slot="select-item-indicator"][data-parent]) {
+    /* Parents show a chevron where leaves show the check. Outside :where, so it beats
+       Select's hidden indicator, which ui.css loads later; utilities still win. */
+    :where([data-slot="cascader-column"]) [data-slot="select-item-indicator"][data-parent] {
         @apply visible text-muted-foreground;
     }
 

@@ -64,10 +64,17 @@ class NotifyingForm extends Form
     }
 }
 
-it('renders the toaster as the toast viewport', function () {
-    $this->blade('<x-ui::toaster />')
-        ->assertSee('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" data-close-label="Close toast" wire:ignore>', false)
-        ->assertSeeInOrder(['<template data-icon-template="success"><svg', '<template data-icon-template="info">', '<template data-icon-template="warning">', '<template data-icon-template="error">', '<template data-icon-template="loading"><svg', 'data-spin', '<template data-icon-template="close">', '</div>'], false);
+it('renders the toaster as the toast viewport, with what toasts are cloned from', function () {
+    $html = (string) $this->blade('<x-ui::toaster />');
+
+    expect($html)
+        ->toContain('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" wire:ignore>')
+        ->toContain('<template data-template="toast">')
+        ->toMatch('/<div data-slot="toast" aria-modal="false" tabindex="0">\s*<div data-slot="toast-content">\s*<span data-slot="toast-icon"><\/span>/')
+        ->toMatch('/data-variant="outline" data-size="sm" data-toast-action="data-toast-action"><\/button>/')
+        ->toMatch('/data-variant="ghost" data-size="icon-sm" data-toast-close="data-toast-close" aria-label="Close toast"><svg[^>]*><path d="M18 6 6 18"\/>/')
+        ->toContain('<template data-template="icon-error"><svg')
+        ->toMatch('/<template data-template="icon-loading"><svg[^>]*data-spin/');
 
     $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')
         ->assertSee('data-limit="5" data-timeout="8000"', false);

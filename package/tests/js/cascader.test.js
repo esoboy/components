@@ -19,8 +19,14 @@ function mount(attributes = '') {
     document.body.innerHTML = `
         <eso-cascader data-separator="/" data-placeholder="Pick" ${attributes}>
             <script type="application/json" data-cascader-options>${JSON.stringify(options)}</script>
-            <template data-icon-template="parent"><svg data-icon-name="parent"></svg></template>
-            <template data-icon-template="selected"><svg data-icon-name="selected"></svg></template>
+            <template data-template="column"><div data-slot="cascader-column" role="listbox"></div></template>
+            <template data-template="option">
+                <div role="option" tabindex="-1" data-slot="select-item" data-value="" aria-selected="false" data-cascader-item>
+                    <span data-slot="select-item-text"></span>
+                    <span data-slot="select-item-indicator"><svg data-icon-name="selected"></svg></span>
+                </div>
+            </template>
+            <template data-template="icon-parent"><svg data-icon-name="parent"></svg></template>
             <button data-cascader-trigger><span data-slot="select-value">Pick</span></button>
             <div data-slot="cascader-content" popover="auto"></div>
         </eso-cascader>`
@@ -28,8 +34,9 @@ function mount(attributes = '') {
     return document.querySelector('eso-cascader')
 }
 
-const columns = cascader => [...cascader.content.querySelectorAll('[data-slot="cascader-column"]')].map(column => [...column.querySelectorAll('[data-cascader-item]')].map(item => item.textContent))
-const item = (cascader, label) => [...cascader.content.querySelectorAll('[data-cascader-item]')].find(element => element.textContent === label)
+const text = item => item.querySelector('[data-slot="select-item-text"]').textContent
+const columns = cascader => [...cascader.content.querySelectorAll('[data-slot="cascader-column"]')].map(column => [...column.querySelectorAll('[data-cascader-item]')].map(text))
+const item = (cascader, label) => [...cascader.content.querySelectorAll('[data-cascader-item]')].find(element => text(element) === label)
 const announced = cascader => {
     const seen = []
     cascader.addEventListener('change', event => event.target === cascader && seen.push(cascader.value))
@@ -98,13 +105,13 @@ it('moves through levels with the keyboard', () => {
 
     cascader.open()
     key('ArrowRight')
-    expect(document.activeElement.textContent).toBe('Hangzhou')
+    expect(text(document.activeElement)).toBe('Hangzhou')
 
     key('ArrowRight')
-    expect(document.activeElement.textContent).toBe('Xihu')
+    expect(text(document.activeElement)).toBe('Xihu')
 
     key('ArrowLeft')
-    expect(document.activeElement.textContent).toBe('Hangzhou')
+    expect(text(document.activeElement)).toBe('Hangzhou')
 
     key('ArrowDown')
     key('Enter')

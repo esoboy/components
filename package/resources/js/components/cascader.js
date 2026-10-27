@@ -9,18 +9,18 @@
  */
 
 import { announce, define, readValue, writeHidden } from '../support/element.js'
-import { readIcons } from '../support/icons.js'
+import { clone, readTemplates } from '../support/templates.js'
 
 const ITEM = '[data-cascader-item]'
 
 export class CascaderElement extends HTMLElement {
     #value = []
     #open = []
-    #icons = {}
+    #templates = {}
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
-        this.#icons = readIcons(this)
+        this.#templates = readTemplates(this)
 
         const value = readValue(this, [])
 
@@ -111,37 +111,32 @@ export class CascaderElement extends HTMLElement {
     }
 
     #renderColumns() {
-        const columns = this.#levels().map((options, depth) => {
-            const column = document.createElement('div')
+        const { column: columnTemplate, option: optionTemplate, 'icon-parent': parentIcon } = this.#templates
 
-            column.dataset.slot = 'cascader-column'
-            column.setAttribute('role', 'listbox')
+        if (! columnTemplate || ! optionTemplate) return
+
+        const columns = this.#levels().map((options, depth) => {
+            const column = clone(columnTemplate)
 
             for (const option of options) {
-                const item = document.createElement('div')
-                const text = document.createElement('span')
-                const indicator = document.createElement('span')
+                const item = clone(optionTemplate)
+                const indicator = item.querySelector('[data-slot="select-item-indicator"]')
                 const parent = Boolean(option.children?.length)
                 const chosen = this.#value[depth] === option.value && (parent ? false : this.#value.length === depth + 1)
 
-                item.dataset.slot = 'select-item'
-                item.dataset.cascaderItem = ''
                 item.dataset.depth = depth
                 item.dataset.value = option.value
-                item.setAttribute('role', 'option')
-                item.tabIndex = -1
                 item.setAttribute('aria-selected', String(chosen || (parent && this.#value.length === depth + 1 && this.#value[depth] === option.value)))
+                item.querySelector('[data-slot="select-item-text"]').textContent = option.label
                 if (option.disabled) item.setAttribute('aria-disabled', 'true')
-                if (parent) item.setAttribute('aria-haspopup', 'listbox')
                 if (this.#open[depth] === option.value && parent) item.setAttribute('data-expanded', '')
 
-                text.dataset.slot = 'select-item-text'
-                text.textContent = option.label
-                indicator.dataset.slot = 'select-item-indicator'
-                if (parent) indicator.dataset.parent = ''
-                indicator.innerHTML = (parent ? this.#icons.parent : this.#icons.selected) ?? ''
+                if (parent) {
+                    item.setAttribute('aria-haspopup', 'listbox')
+                    indicator.dataset.parent = ''
+                    indicator.replaceChildren(clone(parentIcon) ?? '')
+                }
 
-                item.append(text, indicator)
                 column.append(item)
             }
 

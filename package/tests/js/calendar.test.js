@@ -11,11 +11,24 @@ afterEach(() => {
     document.body.innerHTML = ''
 })
 
-function mount(attributes = '') {
-    // As <x-ui::calendar> renders it: the icons the script draws, as templates.
-    const icons = ['previous', 'next', 'dropdown'].map(role => `<template data-icon-template="${role}"><svg data-icon-name="${role}"></svg></template>`).join('')
+// As <x-ui::calendar> renders them: the parts the script builds months from.
+const button = attributes => `<button type="button" data-slot="button" data-variant="ghost" data-size="icon" ${attributes}></button>`
+const parts = `
+    <template data-template="months"><div data-slot="calendar-months"></div></template>
+    <template data-template="nav"><nav data-slot="calendar-nav">${button('data-calendar-previous aria-label="Previous month"').replace('></button>', '><svg data-icon-name="previous"></svg></button>')}${button('data-calendar-next aria-label="Next month"').replace('></button>', '><svg data-icon-name="next"></svg></button>')}</nav></template>
+    <template data-template="month"><div data-slot="calendar-month"><div data-slot="calendar-caption"></div><table data-slot="calendar-grid" role="grid"><thead><tr data-slot="calendar-weekdays"></tr></thead><tbody></tbody></table></div></template>
+    <template data-template="caption"><span data-slot="calendar-caption-label" aria-live="polite"></span></template>
+    <template data-template="dropdowns"><div data-slot="calendar-dropdowns"></div></template>
+    <template data-template="dropdown-month"><span data-slot="calendar-dropdown"><select data-calendar-month aria-label="Month"></select><span data-slot="calendar-caption-label" aria-hidden="true"><svg data-icon-name="dropdown"></svg></span></span></template>
+    <template data-template="dropdown-year"><span data-slot="calendar-dropdown"><select data-calendar-year aria-label="Year"></select><span data-slot="calendar-caption-label" aria-hidden="true"><svg data-icon-name="dropdown"></svg></span></span></template>
+    <template data-template="option"><option></option></template>
+    <template data-template="weekday"><th data-slot="calendar-weekday" scope="col"></th></template>
+    <template data-template="week"><tr data-slot="calendar-week"></tr></template>
+    <template data-template="day"><td data-slot="calendar-day" role="gridcell">${button('data-day tabindex="-1"')}</td></template>
+    <template data-template="day-hidden"><td data-slot="calendar-day" data-hidden="true"></td></template>`
 
-    document.body.innerHTML = `<eso-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}>${icons}</eso-calendar>`
+function mount(attributes = '') {
+    document.body.innerHTML = `<eso-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}>${parts}</eso-calendar>`
 
     return document.querySelector('eso-calendar')
 }
@@ -186,7 +199,7 @@ describe('date picker', () => {
         document.body.innerHTML = `
             <eso-date-picker data-placeholder="Pick a date" data-locale="en-US">
                 <button data-date-picker-trigger><span data-slot="date-picker-value">Pick a date</span></button>
-                <eso-calendar data-mode="${mode}" data-locale="en-US" data-week-starts-on="0" data-default-month="2026-10" ${value ? `data-value='${JSON.stringify(value)}'` : ''}></eso-calendar>
+                <eso-calendar data-mode="${mode}" data-locale="en-US" data-week-starts-on="0" data-default-month="2026-10" ${value ? `data-value='${JSON.stringify(value)}'` : ''}>${parts}</eso-calendar>
             </eso-date-picker>`
 
         return document.querySelector('eso-date-picker')

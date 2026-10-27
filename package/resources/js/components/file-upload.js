@@ -8,7 +8,7 @@
  */
 
 import { define } from '../support/element.js'
-import { readIcons } from '../support/icons.js'
+import { clone, readTemplates } from '../support/templates.js'
 
 export function formatSize(bytes) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -31,10 +31,10 @@ export function accepts(accept, file) {
 
 export class FileUploadElement extends HTMLElement {
     #urls = []
-    #icons = {}
+    #templates = {}
 
     connectedCallback() {
-        this.#icons = readIcons(this)
+        this.#templates = readTemplates(this)
 
         const zone = this.dropzone
 
@@ -113,7 +113,7 @@ export class FileUploadElement extends HTMLElement {
         const pending = this.querySelector('[data-file-upload-pending]')
 
         if (pending) {
-            pending.replaceChildren(...files.map(file => this.#chip(file)))
+            pending.replaceChildren(...files.flatMap(file => this.#chip(file)))
             pending.closest('[data-file-upload-list]')?.removeAttribute('hidden')
         }
 
@@ -146,33 +146,16 @@ export class FileUploadElement extends HTMLElement {
     }
 
     #chip(file) {
-        const vertical = this.dataset.orientation === 'vertical'
-        const chip = document.createElement('div')
-        const media = document.createElement('div')
-        const content = document.createElement('div')
-        const title = document.createElement('span')
-        const description = document.createElement('span')
+        const image = file.type.startsWith('image/')
+        const chip = clone(this.#templates[image ? 'pending-image' : 'pending'])
 
-        Object.assign(chip.dataset, { slot: 'attachment', state: 'uploading', size: 'default', orientation: vertical ? 'vertical' : 'horizontal' })
-        media.dataset.slot = 'attachment-media'
+        if (! chip) return []
 
-        if (file.type.startsWith('image/')) {
-            media.dataset.variant = 'image'
-            media.append(Object.assign(document.createElement('img'), { src: this.#url(file), alt: '' }))
-        } else {
-            media.dataset.variant = 'icon'
-            media.innerHTML = this.#icons.file ?? ''
-        }
+        if (image) chip.querySelector('img').src = this.#url(file)
+        chip.querySelector('[data-slot="attachment-title"]').textContent = file.name
+        chip.querySelector('[data-slot="attachment-description"]').textContent = formatSize(file.size)
 
-        content.dataset.slot = 'attachment-content'
-        title.dataset.slot = 'attachment-title'
-        title.textContent = file.name
-        description.dataset.slot = 'attachment-description'
-        description.textContent = formatSize(file.size)
-        content.append(title, description)
-        chip.append(media, content)
-
-        return chip
+        return [chip]
     }
 
     #url(file) {
