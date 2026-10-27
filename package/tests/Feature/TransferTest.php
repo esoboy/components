@@ -14,7 +14,7 @@ it('splits the options between the lists by value', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<ui-transfer data-slot="transfer" data-value="[&quot;b&quot;]" data-name="roles" wire:model="roles">')
+        ->toContain('<eso-transfer data-slot="transfer" data-value="[&quot;b&quot;]" data-name="roles" wire:model="roles">')
         ->toContain('<div role="group" data-slot="transfer-list" data-list="source" aria-label="All">')
         ->toContain('<div role="group" data-slot="transfer-list" data-list="target" aria-label="Picked">')
         ->toContain('<span data-slot="transfer-count">0/2</span>')
@@ -39,5 +39,5 @@ it('validates a transfer inside a field', function () {
     $this->withViewErrors(['roles' => 'Pick a role.'])
         ->blade('<x-ui::field><x-ui::transfer id="roles" wire:model="roles" /></x-ui::field>')
         ->assertSee('aria-invalid="true" aria-describedby="roles-error"', false)
-        ->assertSeeInOrder(['</ui-transfer>', 'Pick a role.'], false);
+        ->assertSeeInOrder(['</eso-transfer>', 'Pick a role.'], false);
 });

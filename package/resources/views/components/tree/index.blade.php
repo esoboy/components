@@ -14,8 +14,8 @@ $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
 $value = $checkable ? array_values(array_map('strval', (array) ($value ?? []))) : ($value === null || $value === '' ? null : (string) $value);
 @endphp
 
-{{-- <ui-tree> exposes the chosen item (or the checked items, when checkable) as .value, so wire:model binds on it. --}}
-<ui-tree {{ $attributes->merge([
+{{-- <eso-tree> exposes the chosen item (or the checked items, when checkable) as .value, so wire:model binds on it. --}}
+<eso-tree {{ $attributes->merge([
     'role' => 'tree',
     'data-slot' => 'tree',
     'data-checkable' => (bool) $checkable,
@@ -29,4 +29,4 @@ $value = $checkable ? array_values(array_map('strval', (array) ($value ?? []))) 
     @else
     {{ $slot }}
     @endif
-</ui-tree>
+</eso-tree>

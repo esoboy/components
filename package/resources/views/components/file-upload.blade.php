@@ -23,8 +23,8 @@ $model = collect($attributes->getAttributes())->first(fn ($value, $name) => str_
 $files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($attributes));
 @endphp
 
-{{-- <ui-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
-<ui-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui.file_upload.uploading')]) }}>
+{{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
+<eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui.file_upload.uploading')]) }}>
     <label data-slot="file-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'multiple' => (bool) $multiple, 'accept' => $accept ?? false, 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
         @if ($slot->isEmpty())
@@ -72,4 +72,4 @@ $files = \Esoboy\Ui\Support\UploadedFiles::of(\Esoboy\Ui\Support\Model::value($a
     @if ($state->showsError())
     <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
     @endif
-</ui-file-upload>
+</eso-file-upload>

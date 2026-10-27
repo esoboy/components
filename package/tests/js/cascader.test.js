@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { defineCascader } from '../../resources/js/cascader.js'
+import { register as registerCascader } from '../../resources/js/components/cascader.js'
 
-beforeAll(() => defineCascader())
+beforeAll(() => registerCascader())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -17,13 +17,13 @@ const options = [
 
 function mount(attributes = '') {
     document.body.innerHTML = `
-        <ui-cascader data-separator="/" data-placeholder="Pick" ${attributes}>
+        <eso-cascader data-separator="/" data-placeholder="Pick" ${attributes}>
             <script type="application/json" data-cascader-options>${JSON.stringify(options)}</script>
             <button data-cascader-trigger><span data-slot="select-value">Pick</span></button>
             <div data-slot="cascader-content" popover="auto"></div>
-        </ui-cascader>`
+        </eso-cascader>`
 
-    return document.querySelector('ui-cascader')
+    return document.querySelector('eso-cascader')
 }
 
 const columns = cascader => [...cascader.content.querySelectorAll('[data-slot="cascader-column"]')].map(column => [...column.querySelectorAll('[data-cascader-item]')].map(item => item.textContent))

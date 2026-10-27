@@ -1,12 +1,12 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { codeOf, initCodeBlocks } from '../../resources/js/code-block.js'
-import { initQuestionnaires } from '../../resources/js/questionnaire.js'
-import { defineRadioGroup } from '../../resources/js/radio-group.js'
+import { codeOf, register as registerCodeBlock } from '../../resources/js/components/code-block.js'
+import { register as registerQuestionnaire } from '../../resources/js/components/questionnaire.js'
+import { register as registerRadioGroup } from '../../resources/js/components/radio-group.js'
 
 beforeAll(() => {
-    defineRadioGroup()
-    initCodeBlocks()
-    initQuestionnaires()
+    registerRadioGroup()
+    registerCodeBlock()
+    registerQuestionnaire()
 })
 
 afterEach(() => {
@@ -67,11 +67,11 @@ describe('questionnaire', () => {
                 <div data-slot="questionnaire-progress" data-template="Question :current of :total"></div>
                 <fieldset data-slot="questionnaire-item" data-name="direction" data-required tabindex="-1">
                     <p data-slot="questionnaire-description">Choose one.</p>
-                    <ui-radio-group name="direction">
+                    <eso-radio-group name="direction">
                         <label data-slot="questionnaire-choice"><input type="radio" value="a" data-slot="questionnaire-choice-input"><span data-slot="questionnaire-choice-shortcut" hidden></span></label>
                         <label data-slot="questionnaire-choice"><input type="radio" value="b" data-slot="questionnaire-choice-input"><span data-slot="questionnaire-choice-shortcut" hidden></span></label>
                         <input type="text" name="direction" data-slot="questionnaire-input">
-                    </ui-radio-group>
+                    </eso-radio-group>
                     <p data-slot="questionnaire-error" hidden>Choose an answer to continue.</p>
                 </fieldset>
                 <fieldset data-slot="questionnaire-item" data-name="detail" data-multiple tabindex="-1">

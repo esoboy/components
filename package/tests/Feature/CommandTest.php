@@ -19,7 +19,7 @@ it('renders a command menu', function () {
         </x-ui::command>
         BLADE);
 
-    $view->assertSee('<ui-command data-slot="command" data-should-filter="false" class="rounded-lg border">', false)
+    $view->assertSee('<eso-command data-slot="command" data-should-filter="false" class="rounded-lg border">', false)
         ->assertSee('<input type="text" data-slot="command-input" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" placeholder="Search..." wire:model.live="q">', false)
         ->assertSee('<div role="listbox" data-slot="command-list">', false)
         ->assertSee('<div role="presentation" data-slot="command-empty">No results.</div>', false)
@@ -39,7 +39,7 @@ it('renders a command dialog with a translated, visually hidden title', function
         ->assertSee('<div data-slot="dialog-header" class="sr-only">', false)
         ->assertSee('>命令面板</h2>', false)
         ->assertSee('>搜索要执行的命令…</p>', false)
-        ->assertSee('<ui-command data-slot="command" data-should-filter="true">', false)
+        ->assertSee('<eso-command data-slot="command" data-should-filter="true">', false)
         ->assertDontSee('data-variant="ghost" data-size="icon-sm"', false);
 });
 
@@ -63,7 +63,7 @@ it('renders a combobox with its input, trigger and clear', function () {
     [$id] = idsOf($html, 'aria-controls');
 
     expect($html)
-        ->toContain('<ui-combobox data-slot="combobox" data-should-filter="true" data-value="&quot;next&quot;" wire:model="framework">')
+        ->toContain('<eso-combobox data-slot="combobox" data-should-filter="true" data-value="&quot;next&quot;" wire:model="framework">')
         ->toContain("<div data-slot=\"input-group\" role=\"group\" data-combobox-anchor=\"data-combobox-anchor\" style=\"anchor-name: --{$id}\">")
         ->toContain("<input type=\"text\" data-slot=\"input-group-control\" data-combobox-input=\"data-combobox-input\" role=\"combobox\" autocomplete=\"off\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"{$id}\" placeholder=\"Select a framework\">")
         ->toContain('data-combobox-trigger')
@@ -87,7 +87,7 @@ it('renders a multiple combobox with a chip template', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<ui-combobox data-slot="combobox" data-multiple="data-multiple" data-should-filter="true" data-value="[&quot;a&quot;]" name="tags">')
+        ->toContain('<eso-combobox data-slot="combobox" data-multiple="data-multiple" data-should-filter="true" data-value="[&quot;a&quot;]" data-name="tags">')
         ->toContain('<div data-slot="combobox-chips" data-combobox-anchor="data-combobox-anchor"')
         ->toContain('<template data-combobox-chip>')
         ->toContain('aria-label="移除"')
@@ -98,5 +98,5 @@ it('validates a combobox inside a field', function () {
     $this->withViewErrors(['framework' => 'Pick one.'])
         ->blade('<x-ui::field><x-ui::combobox id="framework" wire:model="framework"><x-ui::combobox.input /></x-ui::combobox></x-ui::field>')
         ->assertSee('aria-invalid="true" aria-describedby="framework-error"', false)
-        ->assertSeeInOrder(['</ui-combobox>', 'Pick one.'], false);
+        ->assertSeeInOrder(['</eso-combobox>', 'Pick one.'], false);
 });

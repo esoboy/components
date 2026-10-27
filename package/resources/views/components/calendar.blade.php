@@ -19,8 +19,8 @@
 $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
 @endphp
 
-{{-- <ui-calendar> renders the month grid in the app's locale and exposes the selection as .value (Y-m-d). --}}
-<ui-calendar {{ $attributes->merge([
+{{-- <eso-calendar> renders the month grid in the app's locale and exposes the selection as .value (Y-m-d). --}}
+<eso-calendar {{ $attributes->merge([
     'data-slot' => 'calendar',
     'data-mode' => $mode,
     'data-value' => $value === null ? false : json_encode($value),
@@ -39,4 +39,4 @@ $value = $defaultValue ?? \Esoboy\Ui\Support\Model::value($attributes);
     'data-label-next' => __('ui.calendar.next'),
     'data-label-month' => __('ui.calendar.month'),
     'data-label-year' => __('ui.calendar.year'),
-]) }} wire:ignore></ui-calendar>
+]) }} wire:ignore></eso-calendar>

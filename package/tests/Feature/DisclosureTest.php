@@ -20,7 +20,7 @@ describe('accordion', function () {
             BLADE);
 
         $view->assertSeeInOrder([
-            '<ui-accordion data-slot="accordion">',
+            '<eso-accordion data-slot="accordion">',
             '<details data-slot="accordion-item" data-value="a" wire:ignore.self>',
             '<summary data-slot="accordion-trigger">',
             'A?',
@@ -39,7 +39,7 @@ describe('accordion', function () {
             </x-ui::accordion>
             BLADE);
 
-        expect($html)->toContain('<ui-accordion data-slot="accordion" data-multiple="data-multiple">')
+        expect($html)->toContain('<eso-accordion data-slot="accordion" data-multiple="data-multiple">')
             ->toContain('data-disabled="data-disabled"')
             ->toContain('<summary data-slot="accordion-trigger" aria-disabled="true" tabindex="-1">');
     });
@@ -50,19 +50,19 @@ describe('collapsible', function () {
         $template = '<x-ui::collapsible :default-open="$open"><x-ui::collapsible.trigger>T</x-ui::collapsible.trigger><x-ui::collapsible.content>C</x-ui::collapsible.content></x-ui::collapsible>';
 
         $this->blade($template, ['open' => false])
-            ->assertSee('<ui-collapsible data-slot="collapsible">', false)
+            ->assertSee('<eso-collapsible data-slot="collapsible">', false)
             ->assertSee('<button type="button" data-slot="collapsible-trigger" aria-expanded="false">T</button>', false)
             ->assertSee('<div data-slot="collapsible-content" hidden="hidden">C</div>', false);
 
         $this->blade($template, ['open' => true])
-            ->assertSee('<ui-collapsible data-slot="collapsible" data-open="data-open">', false)
+            ->assertSee('<eso-collapsible data-slot="collapsible" data-open="data-open">', false)
             ->assertSee('aria-expanded="true" data-panel-open="data-panel-open"', false)
             ->assertSee('<div data-slot="collapsible-content" data-open="data-open">C</div>', false);
     });
 
     it('starts from the bound Livewire value', function () {
         expect(Livewire::test(Disclosures::class)->html())
-            ->toContain('<ui-collapsible data-slot="collapsible" data-open="data-open" wire:model="open">');
+            ->toContain('<eso-collapsible data-slot="collapsible" data-open="data-open" wire:model="open">');
     });
 });
 
@@ -95,7 +95,7 @@ it('renders a scroll area with both scrollbars, hidden until JS measures', funct
     $view = $this->blade('<x-ui::scroll-area class="h-72">Tags</x-ui::scroll-area>');
 
     $view->assertSeeInOrder([
-        '<ui-scroll-area data-slot="scroll-area" class="h-72">',
+        '<eso-scroll-area data-slot="scroll-area" class="h-72">',
         '<div data-slot="scroll-area-viewport">Tags</div>',
         '<div data-slot="scroll-area-scrollbar" data-orientation="vertical" hidden wire:ignore><div data-slot="scroll-area-thumb"></div></div>',
         '<div data-slot="scroll-area-scrollbar" data-orientation="horizontal" hidden wire:ignore>',
@@ -112,7 +112,7 @@ it('renders resizable panels and handles', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<ui-resizable-panel-group data-slot="resizable-panel-group" aria-orientation="vertical" data-orientation="vertical">')
+        ->toContain('<eso-resizable-panel-group data-slot="resizable-panel-group" aria-orientation="vertical" data-orientation="vertical">')
         ->toContain('<div data-slot="resizable-panel" data-default-size="25" data-min-size="10" style="flex: 25 1 0px; overflow: hidden" wire:ignore.self>A</div>')
         ->toContain('<div role="separator" tabindex="0" data-slot="resizable-handle" aria-orientation="horizontal" wire:ignore.self>')
         ->toContain('<div data-slot="resizable-panel" style="flex: 1 1 0px; overflow: hidden" wire:ignore.self>B</div>');
@@ -128,7 +128,7 @@ it('renders a carousel with its controls', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<ui-carousel role="region" aria-roledescription="carousel" data-slot="carousel" data-orientation="horizontal" data-align="start">')
+        ->toContain('<eso-carousel role="region" aria-roledescription="carousel" data-slot="carousel" data-orientation="horizontal" data-align="start">')
         ->toContain('<div data-slot="carousel-content">')
         ->toContain('<div class="-ml-2"><div role="group" aria-roledescription="slide" data-slot="carousel-item" class="basis-1/3">1</div></div>')
         ->toMatch('/data-carousel="previous" disabled="disabled"/')

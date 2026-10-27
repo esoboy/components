@@ -21,8 +21,8 @@ $value = preg_match('/^[0-9a-f]{6}$/', $hex) ? "#{$hex}" : null;
 $name = $attributes->get('name');
 @endphp
 
-{{-- <ui-color-picker> exposes the color as .value ("#rrggbb" or null), so wire:model binds on it; class styles the trigger. --}}
-<ui-color-picker {{ $attributes->except(['class', 'style', 'name'])->merge(['data-slot' => 'color-picker', 'data-value' => $value ?? false, 'data-placeholder' => $placeholder, ...$state->attributes()]) }}>
+{{-- <eso-color-picker> exposes the color as .value ("#rrggbb" or null), so wire:model binds on it; class styles the trigger. --}}
+<eso-color-picker {{ $attributes->except(['class', 'style', 'name'])->merge(['data-slot' => 'color-picker', 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-placeholder' => $placeholder, ...$state->attributes()]) }}>
     <x-ui::popover>
         <x-ui::popover.trigger variant="outline" data-color-picker-trigger :data-empty="$value ? 'false' : 'true'" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])">
             <span data-slot="color-picker-swatch" style="--color-picker-color: {{ $value ?? 'transparent' }}"></span>
@@ -51,7 +51,7 @@ $name = $attributes->get('name');
     @if ($name)
     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
     @endif
-</ui-color-picker>
+</eso-color-picker>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

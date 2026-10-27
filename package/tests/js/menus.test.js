@@ -1,14 +1,14 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { initDrawers } from '../../resources/js/drawer.js'
-import { initDropdownMenus } from '../../resources/js/dropdown-menu.js'
-import { initHoverCards } from '../../resources/js/hover-card.js'
-import { initNavigationMenus } from '../../resources/js/navigation-menu.js'
+import { register as registerDrawer } from '../../resources/js/components/drawer.js'
+import { register as registerDropdownMenu } from '../../resources/js/components/dropdown-menu.js'
+import { register as registerHoverCard } from '../../resources/js/components/hover-card.js'
+import { register as registerNavigationMenu } from '../../resources/js/components/navigation-menu.js'
 
 beforeAll(() => {
-    initDropdownMenus()
-    initHoverCards()
-    initNavigationMenus()
-    initDrawers()
+    registerDropdownMenu()
+    registerHoverCard()
+    registerNavigationMenu()
+    registerDrawer()
 })
 
 afterEach(() => {

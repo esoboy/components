@@ -8,7 +8,7 @@ it('renders a color picker as a popover trigger with a swatch', function () {
     $html = (string) $this->blade('<x-ui::color-picker wire:model="color" default-value="#2563EB" placeholder="Pick" name="color" class="w-48" :swatches="[\'#2563eb\', \'#ef4444\']" />');
 
     expect($html)
-        ->toContain('<ui-color-picker data-slot="color-picker" data-value="#2563eb" data-placeholder="Pick" wire:model="color">')
+        ->toContain('<eso-color-picker data-slot="color-picker" data-value="#2563eb" data-name="color" data-placeholder="Pick" wire:model="color">')
         ->toContain('class="w-48" data-slot="button" data-variant="outline"')
         ->toContain('data-color-picker-trigger="data-color-picker-trigger" data-empty="false"')
         ->toContain('<span data-slot="color-picker-swatch" style="--color-picker-color: #2563eb"></span>')
@@ -34,14 +34,14 @@ it('validates a color picker inside a field', function () {
     $this->withViewErrors(['color' => 'Pick a color.'])
         ->blade('<x-ui::field><x-ui::color-picker id="color" wire:model="color" /></x-ui::field>')
         ->assertSee('aria-invalid="true" aria-describedby="color-error"', false)
-        ->assertSeeInOrder(['</ui-color-picker>', 'Pick a color.'], false);
+        ->assertSeeInOrder(['</eso-color-picker>', 'Pick a color.'], false);
 });
 
 it('renders a rating as a radio group of stars', function () {
     $html = (string) $this->blade('<x-ui::rating wire:model="score" :default-value="3" :max="4" name="score" />');
 
     expect($html)
-        ->toContain('<ui-rating role="radiogroup" data-slot="rating" data-size="default" data-value="3" wire:model="score">')
+        ->toContain('<eso-rating role="radiogroup" data-slot="rating" data-size="default" data-value="3" data-name="score" wire:model="score">')
         ->toMatch('/<button type="button" role="radio" data-slot="rating-item" data-value="3" aria-checked="true" aria-label="3 of 4 stars" tabindex="0" style="--rating-fill: 100%"\s*>/')
         ->toContain('data-value="4" aria-checked="false" aria-label="4 of 4 stars" tabindex="-1" style="--rating-fill: 0%"')
         ->toContain('<input type="hidden" name="score" value="3">')

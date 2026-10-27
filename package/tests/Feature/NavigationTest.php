@@ -76,7 +76,7 @@ describe('tabs', function () {
             </x-ui::tabs>
             BLADE);
 
-        $view->assertSee('<ui-tabs data-slot="tabs" data-orientation="horizontal" data-value="password">', false)
+        $view->assertSee('<eso-tabs data-slot="tabs" data-orientation="horizontal" data-value="password">', false)
             ->assertSee('<div role="tablist" data-slot="tabs-list" data-variant="line" aria-orientation="horizontal">', false)
             ->assertSee('<button type="button" role="tab" data-slot="tabs-trigger" data-value="account" aria-selected="false" tabindex="-1">Account</button>', false)
             ->assertSee('<button type="button" role="tab" data-slot="tabs-trigger" data-value="password" data-active="data-active" aria-selected="true" tabindex="0">Password</button>', false)
@@ -92,7 +92,7 @@ describe('tabs', function () {
 
     it('starts from the bound Livewire value', function () {
         expect(Livewire::test(Invoices::class)->html())
-            ->toContain('<ui-tabs data-slot="tabs" data-orientation="horizontal" data-value="account" wire:model="tab">');
+            ->toContain('<eso-tabs data-slot="tabs" data-orientation="horizontal" data-value="account" wire:model="tab">');
     });
 });
 
@@ -178,7 +178,7 @@ describe('sidebar', function () {
             BLADE);
 
         $view->assertSeeInOrder([
-            '<ui-sidebar-provider data-slot="sidebar-wrapper" style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem">',
+            '<eso-sidebar-provider data-slot="sidebar-wrapper" style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem">',
             '<div data-slot="sidebar" data-state="expanded" data-collapsible="" data-collapsible-mode="icon" data-variant="sidebar" data-side="left">',
             '<div data-slot="sidebar-gap"></div>',
             '<div data-slot="sidebar-container" data-side="left" popover="manual" class="border-0">',

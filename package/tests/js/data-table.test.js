@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it, vi } from 'vitest'
-import { defineDataTable } from '../../resources/js/data-table.js'
+import { register as registerDataTable } from '../../resources/js/components/data-table.js'
 
-beforeAll(() => defineDataTable())
+beforeAll(() => registerDataTable())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,7 +9,7 @@ afterEach(() => {
 
 function mount() {
     document.body.innerHTML = `
-        <ui-data-table>
+        <eso-data-table>
             <table>
                 <thead><tr><th><input type="checkbox" data-data-table-select-all></th></tr></thead>
                 <tbody>
@@ -18,9 +18,9 @@ function mount() {
                     <tr><td><input type="checkbox" value="3" data-data-table-select-row disabled></td></tr>
                 </tbody>
             </table>
-        </ui-data-table>`
+        </eso-data-table>`
 
-    return document.querySelector('ui-data-table')
+    return document.querySelector('eso-data-table')
 }
 
 const all = () => document.querySelector('[data-data-table-select-all]')

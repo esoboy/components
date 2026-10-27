@@ -11,7 +11,7 @@
 
 @php
 // A single group is a radio group whose pressed item can be clicked off again.
-$tag = $type === 'multiple' ? 'ui-checkbox-group' : 'ui-radio-group';
+$tag = $type === 'multiple' ? 'eso-checkbox-group' : 'eso-radio-group';
 @endphp
 
 <{{ $tag }} {{ $attributes->merge([

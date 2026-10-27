@@ -1,10 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineCalendar, fromKey, toKey, weekStart } from '../../resources/js/calendar.js'
-import { defineDatePicker } from '../../resources/js/date-picker.js'
+import { fromKey, register as registerCalendar, toKey, weekStart } from '../../resources/js/components/calendar.js'
+import { register as registerDatePicker } from '../../resources/js/components/date-picker.js'
 
 beforeAll(() => {
-    defineCalendar()
-    defineDatePicker()
+    registerCalendar()
+    registerDatePicker()
 })
 
 afterEach(() => {
@@ -12,9 +12,9 @@ afterEach(() => {
 })
 
 function mount(attributes = '') {
-    document.body.innerHTML = `<ui-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}></ui-calendar>`
+    document.body.innerHTML = `<eso-calendar data-locale="en-US" ${attributes.includes('data-week-starts-on') ? '' : 'data-week-starts-on="0"'} ${attributes}></eso-calendar>`
 
-    return document.querySelector('ui-calendar')
+    return document.querySelector('eso-calendar')
 }
 
 const day = (calendar, key) => calendar.querySelector(`button[data-day="${key}"]`)
@@ -168,12 +168,12 @@ describe('navigation', () => {
 describe('date picker', () => {
     function picker(mode = 'single', value = null) {
         document.body.innerHTML = `
-            <ui-date-picker data-placeholder="Pick a date" data-locale="en-US">
+            <eso-date-picker data-placeholder="Pick a date" data-locale="en-US">
                 <button data-date-picker-trigger><span data-slot="date-picker-value">Pick a date</span></button>
-                <ui-calendar data-mode="${mode}" data-locale="en-US" data-week-starts-on="0" data-default-month="2026-10" ${value ? `data-value='${JSON.stringify(value)}'` : ''}></ui-calendar>
-            </ui-date-picker>`
+                <eso-calendar data-mode="${mode}" data-locale="en-US" data-week-starts-on="0" data-default-month="2026-10" ${value ? `data-value='${JSON.stringify(value)}'` : ''}></eso-calendar>
+            </eso-date-picker>`
 
-        return document.querySelector('ui-date-picker')
+        return document.querySelector('eso-date-picker')
     }
 
     const text = element => element.querySelector('[data-slot="date-picker-value"]').textContent
@@ -211,7 +211,7 @@ describe('date picker', () => {
         const element = picker('range')
         const seen = []
 
-        element.querySelector('ui-calendar').insertAdjacentHTML('afterend', `<button data-date-picker-preset='{"from":"2026-12-01","to":"2026-12-07"}'></button>`)
+        element.querySelector('eso-calendar').insertAdjacentHTML('afterend', `<button data-date-picker-preset='{"from":"2026-12-01","to":"2026-12-07"}'></button>`)
         element.addEventListener('change', event => event.target === element && seen.push(element.value))
         element.querySelector('[data-date-picker-preset]').click()
 

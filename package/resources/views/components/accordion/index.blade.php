@@ -5,5 +5,5 @@
     'multiple' => false,
 ])
 
-{{-- Items are native <details>; <ui-accordion> names them so only one stays open unless multiple. --}}
-<ui-accordion {{ $attributes->merge(['data-slot' => 'accordion', 'data-multiple' => $multiple]) }}>{{ $slot }}</ui-accordion>
+{{-- Items are native <details>; <eso-accordion> names them so only one stays open unless multiple. --}}
+<eso-accordion {{ $attributes->merge(['data-slot' => 'accordion', 'data-multiple' => $multiple]) }}>{{ $slot }}</eso-accordion>

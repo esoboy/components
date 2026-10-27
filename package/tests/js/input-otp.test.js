@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { defineInputOtp } from '../../resources/js/input-otp.js'
+import { register as registerInputOtp } from '../../resources/js/components/input-otp.js'
 
-beforeAll(() => defineInputOtp())
+beforeAll(() => registerInputOtp())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,12 +9,12 @@ afterEach(() => {
 
 function mount() {
     document.body.innerHTML = `
-        <ui-input-otp>
+        <eso-input-otp>
             <div data-slot="input-otp-group">
                 ${[0, 1, 2, 3].map(index => `<div data-slot="input-otp-slot" data-index="${index}"></div>`).join('')}
             </div>
             <input data-slot="input-otp-input" maxlength="4">
-        </ui-input-otp>`
+        </eso-input-otp>`
 
     return document.querySelector('[data-slot="input-otp-input"]')
 }

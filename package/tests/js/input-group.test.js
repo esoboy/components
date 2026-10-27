@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, expect, it } from 'vitest'
-import { initInputGroups } from '../../resources/js/input-group.js'
+import { register as registerInputGroup } from '../../resources/js/components/input-group.js'
 
-beforeAll(() => initInputGroups())
+beforeAll(() => registerInputGroup())
 
 beforeEach(() => {
     document.body.innerHTML = `

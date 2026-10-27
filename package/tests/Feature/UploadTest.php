@@ -16,7 +16,7 @@ it('renders a drop area around the file input', function () {
     $view = $this->blade('<x-ui::file-upload wire:model="files" multiple accept="image/*" description="PNG up to 2 MB" class="max-w-md" />');
 
     $view->assertSeeInOrder([
-        '<ui-file-upload data-slot="file-upload" data-orientation="horizontal" data-uploading-label="Uploading… :progress%" class="max-w-md">',
+        '<eso-file-upload data-slot="file-upload" data-orientation="horizontal" data-uploading-label="Uploading… :progress%" class="max-w-md">',
         '<label data-slot="file-upload-dropzone" >',
         '<input type="file" data-slot="file-upload-input" multiple="multiple" accept="image/*" wire:model="files">',
         '<span data-slot="file-upload-title">Drop files here or click to upload</span>',
@@ -74,7 +74,7 @@ it('shows the current image, or the new upload with a remove button', function (
     $component = Livewire::test(Uploader::class);
 
     expect($component->html())
-        ->toContain('<ui-file-upload data-slot="image-upload" data-shape="circle">')
+        ->toContain('<eso-file-upload data-slot="image-upload" data-shape="circle">')
         ->toContain('<img data-slot="image-upload-image" src="/old.png" alt="" >')
         ->toContain('<span data-slot="image-upload-placeholder"  hidden >')
         ->not->toContain('data-image-upload-remove');

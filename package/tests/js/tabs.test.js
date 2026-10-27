@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineTabs } from '../../resources/js/tabs.js'
+import { register as registerTabs } from '../../resources/js/components/tabs.js'
 
-beforeAll(() => defineTabs())
+beforeAll(() => registerTabs())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,7 +9,7 @@ afterEach(() => {
 
 function mount(attributes = '') {
     document.body.innerHTML = `
-        <ui-tabs data-orientation="horizontal" ${attributes}>
+        <eso-tabs data-orientation="horizontal" ${attributes}>
             <div role="tablist">
                 <button role="tab" data-slot="tabs-trigger" data-value="account">Account</button>
                 <button role="tab" data-slot="tabs-trigger" data-value="billing" disabled>Billing</button>
@@ -17,9 +17,9 @@ function mount(attributes = '') {
             </div>
             <div role="tabpanel" data-slot="tabs-content" data-value="account" hidden>A</div>
             <div role="tabpanel" data-slot="tabs-content" data-value="password" hidden>P</div>
-        </ui-tabs>`
+        </eso-tabs>`
 
-    return document.querySelector('ui-tabs')
+    return document.querySelector('eso-tabs')
 }
 
 const trigger = (tabs, value) => tabs.querySelector(`[data-slot="tabs-trigger"][data-value="${value}"]`)
@@ -116,7 +116,7 @@ describe('interaction', () => {
     it('leaves nested tabs alone', () => {
         const outer = mount()
 
-        panel(outer, 'account').innerHTML = '<ui-tabs><button data-slot="tabs-trigger" data-value="inner">Inner</button></ui-tabs>'
+        panel(outer, 'account').innerHTML = '<eso-tabs><button data-slot="tabs-trigger" data-value="inner">Inner</button></eso-tabs>'
         outer.querySelector('[data-value="inner"]').click()
 
         expect(outer.value).toBe('account')

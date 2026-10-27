@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineSidebar } from '../../resources/js/sidebar.js'
+import { register as registerSidebar } from '../../resources/js/components/sidebar.js'
 
-beforeAll(() => defineSidebar())
+beforeAll(() => registerSidebar())
 
 const desktop = window.matchMedia
 
@@ -13,7 +13,7 @@ afterEach(() => {
 
 function mount(state = 'expanded') {
     document.body.innerHTML = `
-        <ui-sidebar-provider>
+        <eso-sidebar-provider>
             <div data-slot="sidebar" data-state="${state}" data-collapsible="${state === 'expanded' ? '' : 'icon'}" data-collapsible-mode="icon">
                 <div data-slot="sidebar-container" popover="manual">
                     <a href="/">Home</a>
@@ -21,10 +21,10 @@ function mount(state = 'expanded') {
                 </div>
             </div>
             <main><button data-sidebar="trigger">Toggle</button></main>
-        </ui-sidebar-provider>
+        </eso-sidebar-provider>
         <p>Outside</p>`
 
-    return document.querySelector('ui-sidebar-provider')
+    return document.querySelector('eso-sidebar-provider')
 }
 
 const sidebar = () => document.querySelector('[data-slot="sidebar"]')

@@ -1,8 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { accepts, defineFileUpload, formatSize } from '../../resources/js/file-upload.js'
+import { accepts, formatSize, register as registerFileUpload } from '../../resources/js/components/file-upload.js'
 
 beforeAll(() => {
-    defineFileUpload()
+    registerFileUpload()
     URL.createObjectURL ||= () => 'blob:preview'
     URL.revokeObjectURL ||= () => {}
 
@@ -41,15 +41,15 @@ describe('helpers', () => {
 describe('file upload', () => {
     function mount(input = 'multiple') {
         document.body.innerHTML = `
-            <ui-file-upload data-uploading-label="Uploading :progress%">
+            <eso-file-upload data-uploading-label="Uploading :progress%">
                 <label data-slot="file-upload-dropzone">
                     <input type="file" data-slot="file-upload-input" ${input}>
                     <span data-slot="file-upload-progress" hidden></span>
                 </label>
                 <div data-file-upload-list hidden><div data-file-upload-pending></div></div>
-            </ui-file-upload>`
+            </eso-file-upload>`
 
-        const element = document.querySelector('ui-file-upload')
+        const element = document.querySelector('eso-file-upload')
 
         // jsdom refuses to assign a plain list to input.files; keep what was dropped.
         let files = []
@@ -133,11 +133,11 @@ describe('file upload', () => {
 describe('image upload', () => {
     it('shows the new picture before the upload ends', () => {
         document.body.innerHTML = `
-            <ui-file-upload data-slot="image-upload">
+            <eso-file-upload data-slot="image-upload">
                 <label><input type="file" data-slot="file-upload-input"><img data-slot="image-upload-image" hidden><span data-slot="image-upload-placeholder"></span></label>
-            </ui-file-upload>`
+            </eso-file-upload>`
 
-        const element = document.querySelector('ui-file-upload')
+        const element = document.querySelector('eso-file-upload')
 
         Object.defineProperty(element.input, 'files', { value: [new File(['x'], 'me.png', { type: 'image/png' })] })
         element.input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }))

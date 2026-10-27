@@ -1,10 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineAccordion } from '../../resources/js/accordion.js'
-import { defineCollapsible } from '../../resources/js/collapsible.js'
+import { register as registerAccordion } from '../../resources/js/components/accordion.js'
+import { register as registerCollapsible } from '../../resources/js/components/collapsible.js'
 
 beforeAll(() => {
-    defineAccordion()
-    defineCollapsible()
+    registerAccordion()
+    registerCollapsible()
 })
 
 afterEach(() => {
@@ -14,13 +14,13 @@ afterEach(() => {
 describe('accordion', () => {
     function mount(attributes = '') {
         document.body.innerHTML = `
-            <ui-accordion ${attributes}>
+            <eso-accordion ${attributes}>
                 <details data-slot="accordion-item"><summary data-slot="accordion-trigger">A</summary>a</details>
                 <details data-slot="accordion-item"><summary data-slot="accordion-trigger" aria-disabled="true">B</summary>b</details>
                 <details data-slot="accordion-item"><summary data-slot="accordion-trigger">C</summary>c</details>
-            </ui-accordion>`
+            </eso-accordion>`
 
-        return document.querySelector('ui-accordion')
+        return document.querySelector('eso-accordion')
     }
 
     const press = key => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
@@ -73,13 +73,13 @@ describe('accordion', () => {
 describe('collapsible', () => {
     function mount(attributes = '') {
         document.body.innerHTML = `
-            <ui-collapsible ${attributes}>
+            <eso-collapsible ${attributes}>
                 <button data-slot="collapsible-trigger">Toggle</button>
                 <button data-collapsible-trigger>Also</button>
                 <div data-slot="collapsible-content" hidden>Details</div>
-            </ui-collapsible>`
+            </eso-collapsible>`
 
-        return document.querySelector('ui-collapsible')
+        return document.querySelector('eso-collapsible')
     }
 
     const content = () => document.querySelector('[data-slot="collapsible-content"]')
@@ -123,7 +123,7 @@ describe('collapsible', () => {
     it('leaves a nested collapsible alone', () => {
         const outer = mount()
 
-        content().innerHTML = '<ui-collapsible><button data-slot="collapsible-trigger">Inner</button></ui-collapsible>'
+        content().innerHTML = '<eso-collapsible><button data-slot="collapsible-trigger">Inner</button></eso-collapsible>'
         content().querySelector('button').click()
 
         expect(outer.value).toBe(false)

@@ -1,5 +1,5 @@
 import { beforeEach, expect, it } from 'vitest'
-import { initAvatars } from '../../resources/js/avatar.js'
+import { register as registerAvatar } from '../../resources/js/components/avatar.js'
 
 let morphUpdated
 
@@ -16,7 +16,7 @@ function mount(complete, naturalWidth) {
 }
 
 it('hides an image that fails to load', () => {
-    initAvatars()
+    registerAvatar()
     const image = mount(false, 0)
 
     image.dispatchEvent(new Event('error'))
@@ -27,7 +27,7 @@ it('hides an image that fails to load', () => {
 it('hides images that already failed before it ran', () => {
     const image = mount(true, 0)
 
-    initAvatars()
+    registerAvatar()
 
     expect(image.hidden).toBe(true)
 })
@@ -35,14 +35,14 @@ it('hides images that already failed before it ran', () => {
 it('keeps images that loaded', () => {
     const image = mount(true, 64)
 
-    initAvatars()
+    registerAvatar()
 
     expect(image.hidden).toBe(false)
 })
 
 it('hides a failed image again after a Livewire morph', () => {
     window.Livewire = { hook: (name, callback) => name === 'morph.updated' && (morphUpdated = callback) }
-    initAvatars()
+    registerAvatar()
     document.dispatchEvent(new Event('livewire:init'))
 
     const image = mount(true, 0)
@@ -52,7 +52,7 @@ it('hides a failed image again after a Livewire morph', () => {
 })
 
 it('ignores other images', () => {
-    initAvatars()
+    registerAvatar()
     document.body.innerHTML = '<img src="/x.png">'
     const image = document.querySelector('img')
 

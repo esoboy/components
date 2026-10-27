@@ -27,7 +27,7 @@ $presets = \Esoboy\Ui\Support\DatePresets::normalize($presets, $mode);
 @endphp
 
 {{-- shadcn's date picker examples as one control: wire:model binds on the picker, class styles the trigger. --}}
-<ui-date-picker {{ $attributes->except(['class', 'style'])->merge(['data-slot' => 'date-picker', 'data-mode' => $mode, 'data-placeholder' => $placeholder, 'data-locale' => str_replace('_', '-', app()->getLocale()), ...$state->attributes()]) }}>
+<eso-date-picker {{ $attributes->except(['class', 'style'])->merge(['data-slot' => 'date-picker', 'data-mode' => $mode, 'data-placeholder' => $placeholder, 'data-locale' => str_replace('_', '-', app()->getLocale()), ...$state->attributes()]) }}>
     <x-ui::popover>
         <x-ui::popover.trigger variant="outline" data-date-picker-trigger :attributes="$attributes->only(['class', 'style'])">
             @if ($range)
@@ -60,7 +60,7 @@ $presets = \Esoboy\Ui\Support\DatePresets::normalize($presets, $mode);
             @endif
         </x-ui::popover.content>
     </x-ui::popover>
-</ui-date-picker>
+</eso-date-picker>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

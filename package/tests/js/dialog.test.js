@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { initDialogs } from '../../resources/js/dialog.js'
+import { register as registerDialog } from '../../resources/js/components/dialog.js'
 
-beforeAll(() => initDialogs())
+beforeAll(() => registerDialog())
 
 afterEach(() => {
     document.body.innerHTML = ''

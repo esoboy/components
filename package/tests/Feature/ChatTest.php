@@ -113,7 +113,7 @@ describe('message scroller', function () {
             BLADE);
 
         $view->assertSeeInOrder([
-            '<ui-message-scroller data-slot="message-scroller" data-auto-scroll="data-auto-scroll" data-default-scroll-position="last-anchor" data-scroll-edge-threshold="8" data-scroll-previous-item-peek="32" data-scroll-margin="0" data-pending-scroll="data-pending-scroll" class="flex-1" wire:ignore.self>',
+            '<eso-message-scroller data-slot="message-scroller" data-auto-scroll="data-auto-scroll" data-default-scroll-position="last-anchor" data-scroll-edge-threshold="8" data-scroll-previous-item-peek="32" data-scroll-margin="0" data-pending-scroll="data-pending-scroll" class="flex-1" wire:ignore.self>',
             '<div role="region" aria-label="Messages" tabindex="0" data-slot="message-scroller-viewport" data-pending-scroll="data-pending-scroll" wire:ignore.self>',
             '<div role="log" aria-relevant="additions" data-slot="message-scroller-content">',
             '<div data-slot="message-scroller-item" data-message-id="m1" data-scroll-anchor="true" wire:key="m1">Hi</div>',

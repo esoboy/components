@@ -1,7 +1,15 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineInputs, initVerificationCodes } from '../../resources/js/inputs.js'
+import { register as registerNumberInput } from '../../resources/js/components/number-input.js'
+import { register as registerPasswordInput } from '../../resources/js/components/password-input.js'
+import { register as registerTagsInput } from '../../resources/js/components/tags-input.js'
+import { register as registerVerificationCodeButton } from '../../resources/js/components/verification-code-button.js'
 
-beforeAll(() => defineInputs())
+beforeAll(() => {
+    registerTagsInput()
+    registerNumberInput()
+    registerPasswordInput()
+    registerVerificationCodeButton()
+})
 
 afterEach(() => {
     vi.useRealTimers()
@@ -11,13 +19,13 @@ afterEach(() => {
 describe('tags input', () => {
     function mount(attributes = `data-value='["php"]'`) {
         document.body.innerHTML = `
-            <ui-tags-input ${attributes}>
+            <eso-tags-input ${attributes}>
                 <template data-tags-input-template><span data-slot="tags-input-tag"><span data-tags-input-label></span><button data-tags-input-remove></button></span></template>
                 <span data-slot="tags-input-tag"><span data-tags-input-label>php</span></span>
                 <input data-slot="tags-input-input">
-            </ui-tags-input>`
+            </eso-tags-input>`
 
-        return document.querySelector('ui-tags-input')
+        return document.querySelector('eso-tags-input')
     }
 
     const labels = element => [...element.querySelectorAll('[data-tags-input-label]')].map(label => label.textContent)
@@ -89,13 +97,13 @@ describe('tags input', () => {
 describe('number input', () => {
     function mount(attributes = 'data-min="0" data-max="3" data-step="1"', value = '1') {
         document.body.innerHTML = `
-            <ui-number-input ${attributes}>
+            <eso-number-input ${attributes}>
                 <button data-number-input="decrement"></button>
                 <input data-slot="input-group-control" value="${value}">
                 <button data-number-input="increment"></button>
-            </ui-number-input>`
+            </eso-number-input>`
 
-        return document.querySelector('ui-number-input')
+        return document.querySelector('eso-number-input')
     }
 
     const press = (element, direction) => {
@@ -157,12 +165,12 @@ describe('number input', () => {
 describe('password input', () => {
     it('toggles the type and keeps it through morphs', async () => {
         document.body.innerHTML = `
-            <ui-password-input>
+            <eso-password-input>
                 <input type="password" data-slot="input-group-control">
                 <button data-password-toggle aria-pressed="false"></button>
-            </ui-password-input>`
+            </eso-password-input>`
 
-        const element = document.querySelector('ui-password-input')
+        const element = document.querySelector('eso-password-input')
         const input = element.querySelector('input')
         const toggle = element.querySelector('[data-password-toggle]')
 
@@ -182,18 +190,17 @@ describe('password input', () => {
 describe('verification code button', () => {
     function mount(name = 'sms') {
         document.body.innerHTML = `
-            <ui-verification-code-button data-name="${name}" data-seconds="3" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">
+            <eso-verification-code-button data-name="${name}" data-seconds="3" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">
                 <button data-slot="button"><span data-verification-code-label>Send code</span></button>
-            </ui-verification-code-button>`
+            </eso-verification-code-button>`
 
-        return document.querySelector('ui-verification-code-button')
+        return document.querySelector('eso-verification-code-button')
     }
 
     const label = element => element.querySelector('[data-verification-code-label]').textContent
 
     it('counts down on ui-countdown, ignoring clicks, then offers to resend', () => {
         vi.useFakeTimers()
-        initVerificationCodes()
         const element = mount('count')
         const button = element.querySelector('button')
         let clicks = 0
@@ -230,7 +237,6 @@ describe('verification code button', () => {
     })
 
     it('leaves other names alone', () => {
-        initVerificationCodes()
         const element = mount('other')
 
         window.dispatchEvent(new CustomEvent('ui-countdown', { detail: { name: 'nobody' } }))

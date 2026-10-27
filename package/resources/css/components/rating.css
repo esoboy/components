@@ -40,15 +40,15 @@
         @apply cursor-pointer transition-transform hover:scale-110 disabled:pointer-events-none disabled:opacity-50;
     }
 
-    :where(ui-rating[data-slot="rating"]:not([data-disabled]):has(> [data-slot="rating-item"]:hover)) > [data-slot="rating-item"] {
+    :where(eso-rating[data-slot="rating"]:not([data-disabled]):has(> [data-slot="rating-item"]:hover)) > [data-slot="rating-item"] {
         --rating-hover: 100%;
     }
 
-    :where(ui-rating[data-slot="rating"]:not([data-disabled])) > [data-slot="rating-item"]:hover ~ [data-slot="rating-item"] {
+    :where(eso-rating[data-slot="rating"]:not([data-disabled])) > [data-slot="rating-item"]:hover ~ [data-slot="rating-item"] {
         --rating-hover: 0%;
     }
 
-    :where(ui-rating[data-slot="rating"][aria-invalid="true"]) {
+    :where(eso-rating[data-slot="rating"][aria-invalid="true"]) {
         @apply rounded-sm ring-3;
         --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
     }

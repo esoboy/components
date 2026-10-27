@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineImagePreview } from '../../resources/js/image-preview.js'
+import { register as registerImagePreview } from '../../resources/js/components/image-preview.js'
 
-beforeAll(() => defineImagePreview())
+beforeAll(() => registerImagePreview())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -13,16 +13,16 @@ function mount(count = 3) {
     const triggers = Array.from({ length: count }, (_, index) => `<button data-slot="image-preview-trigger" data-src="/${index}.jpg" data-alt="Photo ${index}"></button>`).join('')
 
     document.body.innerHTML = `
-        <ui-image-preview>
+        <eso-image-preview>
             ${triggers}
             <dialog data-slot="image-preview-content">
                 <img data-slot="image-preview-image">
                 ${actions.map(action => `<button data-image-preview="${action}"></button>`).join('')}
                 <span data-slot="image-preview-counter"></span>
             </dialog>
-        </ui-image-preview>`
+        </eso-image-preview>`
 
-    return document.querySelector('ui-image-preview')
+    return document.querySelector('eso-image-preview')
 }
 
 const button = (element, action) => element.querySelector(`[data-image-preview="${action}"]`)

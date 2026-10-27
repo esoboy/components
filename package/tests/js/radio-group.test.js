@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineRadioGroup } from '../../resources/js/radio-group.js'
+import { register as registerRadioGroup } from '../../resources/js/components/radio-group.js'
 
-beforeAll(() => defineRadioGroup())
+beforeAll(() => registerRadioGroup())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -10,7 +10,7 @@ afterEach(() => {
 function mount(html) {
     document.body.innerHTML = html
 
-    return document.querySelector('ui-radio-group')
+    return document.querySelector('eso-radio-group')
 }
 
 const items = `
@@ -20,17 +20,17 @@ const items = `
 
 describe('value', () => {
     it('reports the checked radio', () => {
-        const group = mount(`<ui-radio-group><input type="radio" value="starter"><input type="radio" value="pro" checked></ui-radio-group>`)
+        const group = mount(`<eso-radio-group><input type="radio" value="starter"><input type="radio" value="pro" checked></eso-radio-group>`)
 
         expect(group.value).toBe('pro')
     })
 
     it('is null when nothing is checked', () => {
-        expect(mount(`<ui-radio-group>${items}</ui-radio-group>`).value).toBeNull()
+        expect(mount(`<eso-radio-group>${items}</eso-radio-group>`).value).toBeNull()
     })
 
     it('checks the matching radio when set', () => {
-        const group = mount(`<ui-radio-group>${items}</ui-radio-group>`)
+        const group = mount(`<eso-radio-group>${items}</eso-radio-group>`)
 
         group.value = 'pro'
         expect(group.querySelector('[value="pro"]').checked).toBe(true)
@@ -40,7 +40,7 @@ describe('value', () => {
     })
 
     it('compares numbers as strings', () => {
-        const group = mount(`<ui-radio-group><input type="radio" value="1"><input type="radio" value="2"></ui-radio-group>`)
+        const group = mount(`<eso-radio-group><input type="radio" value="1"><input type="radio" value="2"></eso-radio-group>`)
 
         group.value = 2
 
@@ -50,7 +50,7 @@ describe('value', () => {
 
 describe('events', () => {
     it('re-dispatches radio input and change events from the group', () => {
-        const group = mount(`<ui-radio-group>${items}</ui-radio-group>`)
+        const group = mount(`<eso-radio-group>${items}</eso-radio-group>`)
         const seen = []
 
         for (const type of ['input', 'change']) {
@@ -63,7 +63,7 @@ describe('events', () => {
     })
 
     it('ignores radios of a nested group', () => {
-        const outer = mount(`<ui-radio-group id="outer"><ui-radio-group id="inner"><input type="radio" value="x"></ui-radio-group></ui-radio-group>`)
+        const outer = mount(`<eso-radio-group id="outer"><eso-radio-group id="inner"><input type="radio" value="x"></eso-radio-group></eso-radio-group>`)
         const fromOuter = []
 
         outer.addEventListener('input', event => event.target === outer && fromOuter.push(event))
@@ -76,7 +76,7 @@ describe('events', () => {
 
 describe('names', () => {
     it('gives unnamed radios a shared name', () => {
-        const group = mount(`<ui-radio-group>${items}</ui-radio-group>`)
+        const group = mount(`<eso-radio-group>${items}</eso-radio-group>`)
         const names = group.inputs.map(radio => radio.name)
 
         expect(names[0]).toMatch(/^ui-radio-group-\d+$/)
@@ -84,19 +84,19 @@ describe('names', () => {
     })
 
     it('uses the group name for classic form posts', () => {
-        const group = mount(`<ui-radio-group name="plan">${items}</ui-radio-group>`)
+        const group = mount(`<eso-radio-group name="plan">${items}</eso-radio-group>`)
 
         expect(group.inputs.map(radio => radio.name)).toEqual(['plan', 'plan'])
     })
 
     it('keeps names the radios already have', () => {
-        const group = mount(`<ui-radio-group name="plan"><input type="radio" name="custom" value="a"></ui-radio-group>`)
+        const group = mount(`<eso-radio-group name="plan"><input type="radio" name="custom" value="a"></eso-radio-group>`)
 
         expect(group.inputs[0].name).toBe('custom')
     })
 
     it('names radios added or stripped by a later morph', async () => {
-        const group = mount(`<ui-radio-group name="plan">${items}</ui-radio-group>`)
+        const group = mount(`<eso-radio-group name="plan">${items}</eso-radio-group>`)
 
         group.insertAdjacentHTML('beforeend', '<input type="radio" value="team">')
         group.inputs[0].removeAttribute('name')

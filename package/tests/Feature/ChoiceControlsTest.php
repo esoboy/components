@@ -60,7 +60,7 @@ it('renders a radio group bound on the group', function () {
         </x-ui::radio-group>
         BLADE);
 
-    $view->assertSee('<ui-radio-group role="radiogroup" data-slot="radio-group" wire:model="plan">', false)
+    $view->assertSee('<eso-radio-group role="radiogroup" data-slot="radio-group" wire:model="plan">', false)
         ->assertSee('<input type="radio" data-slot="radio-group-item" value="starter">', false)
         ->assertSee('<input type="radio" data-slot="radio-group-item" value="pro">', false);
 });
@@ -89,7 +89,7 @@ it('shows the radio group error once, after the group in a field set', function 
             BLADE);
 
     $view->assertSee('aria-invalid="true"', false)
-        ->assertSeeInOrder(['</ui-radio-group>', 'Choose a plan.'], false);
+        ->assertSeeInOrder(['</eso-radio-group>', 'Choose a plan.'], false);
 
     expect(substr_count($view, 'Choose a plan.'))->toBe(1);
 });

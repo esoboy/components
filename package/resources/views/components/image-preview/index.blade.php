@@ -1,7 +1,7 @@
 @blaze
 
 {{-- The images inside open in one viewer and page through each other. --}}
-<ui-image-preview {{ $attributes->merge(['data-slot' => 'image-preview']) }}>
+<eso-image-preview {{ $attributes->merge(['data-slot' => 'image-preview']) }}>
     {{ $slot }}
     {{-- wire:ignore keeps Livewire morphs out of the open viewer. --}}
     <dialog data-slot="image-preview-content" aria-label="{{ __('ui.image_preview.label') }}" wire:ignore>
@@ -38,4 +38,4 @@
             </x-ui::button>
         </div>
     </dialog>
-</ui-image-preview>
+</eso-image-preview>

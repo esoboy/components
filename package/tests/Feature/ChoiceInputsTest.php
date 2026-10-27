@@ -21,7 +21,7 @@ it('renders a single toggle group as a deselectable radio group', function () {
         </x-ui::toggle-group>
         BLADE);
 
-    $view->assertSee('<ui-radio-group role="group" data-slot="toggle-group" data-variant="outline" data-size="default" data-spacing="0" data-orientation="horizontal" data-deselectable="data-deselectable" style="--gap: 0" wire:model="align">', false)
+    $view->assertSee('<eso-radio-group role="group" data-slot="toggle-group" data-variant="outline" data-size="default" data-spacing="0" data-orientation="horizontal" data-deselectable="data-deselectable" style="--gap: 0" wire:model="align">', false)
         ->assertSee('<label data-slot="toggle-group-item" data-variant="outline" data-size="default" data-spacing="0">', false)
         ->assertSee('<input type="radio" value="left" checked="checked">', false)
         ->assertSee('<label data-slot="toggle-group-item" data-variant="default"', false)
@@ -37,7 +37,7 @@ it('renders a multiple toggle group as a checkbox group', function () {
         </x-ui::toggle-group>
         BLADE);
 
-    $view->assertSee('<ui-checkbox-group role="group" data-slot="toggle-group"', false)
+    $view->assertSee('<eso-checkbox-group role="group" data-slot="toggle-group"', false)
         ->assertDontSee('data-deselectable', false)
         ->assertSee('<input type="checkbox" value="b" checked="checked">', false)
         ->assertSee('<input type="checkbox" value="i" checked="checked">', false)
@@ -48,7 +48,7 @@ it('renders one native range input per slider value', function () {
     $html = (string) $this->blade('<x-ui::slider :default-value="[25, 75]" :step="5" name="price" aria-label="Price" />');
 
     expect($html)
-        ->toContain('<ui-slider data-slot="slider" data-orientation="horizontal" name="price">')
+        ->toContain('<eso-slider data-slot="slider" data-orientation="horizontal" name="price">')
         ->toContain('style="--start: 25; --end: 75"')
         ->and(substr_count($html, 'data-slot="slider-thumb"'))->toBe(2)
         ->and($html)->toContain('<input type="range" data-slot="slider-thumb" min="0" max="100" step="5" value="25" aria-orientation="horizontal" aria-label="Price">');
@@ -82,7 +82,7 @@ it('renders an input otp with slots over one input', function () {
         </x-ui::input-otp>
         BLADE);
 
-    $view->assertSee('<ui-input-otp data-slot="input-otp" class="justify-center">', false)
+    $view->assertSee('<eso-input-otp data-slot="input-otp" class="justify-center">', false)
         ->assertSee('<div data-slot="input-otp-group">', false)
         ->assertSee('<div data-slot="input-otp-slot" data-index="0"></div>', false)
         ->assertSee('<div data-slot="input-otp-separator" role="separator">', false)
@@ -93,5 +93,5 @@ it('validates an input otp inside a field', function () {
     $this->withViewErrors(['code' => 'Invalid code.'])
         ->blade('<x-ui::field><x-ui::input-otp id="code" wire:model="code"><x-ui::input-otp.slot :index="0" /></x-ui::input-otp></x-ui::field>')
         ->assertSee('aria-invalid="true" aria-describedby="code-error"', false)
-        ->assertSeeInOrder(['</ui-input-otp>', 'Invalid code.'], false);
+        ->assertSeeInOrder(['</eso-input-otp>', 'Invalid code.'], false);
 });

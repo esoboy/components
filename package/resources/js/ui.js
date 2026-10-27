@@ -1,83 +1,60 @@
 /*
  * esoboy/ui
  *
- * Import once from the app's entry point:
- *   import '../../vendor/esoboy/ui/resources/js/ui.js'
+ * Every component but the heavy ones (resources/js/heavy), bundled into dist/ui.js
+ * and loaded by @uiScripts. Each module registers its custom elements or document
+ * listeners; the order matters where one element uses another (Calendar before
+ * Date Picker).
  */
 
-import { defineAccordion } from './accordion.js'
-import { initAvatars } from './avatar.js'
-import { defineCalendar } from './calendar.js'
-import { defineCarousel } from './carousel.js'
-import { defineCascader } from './cascader.js'
-import { defineCollapsible } from './collapsible.js'
-import { defineColorPicker } from './color-picker.js'
-import { defineCombobox } from './combobox.js'
-import { initCodeBlocks } from './code-block.js'
-import { defineCommand } from './command.js'
-import { initConfirm } from './confirm.js'
-import { defineDatePicker } from './date-picker.js'
-import { defineDataTable } from './data-table.js'
-import { initDialogs } from './dialog.js'
-import { initDrawers } from './drawer.js'
-import { initDropdownMenus } from './dropdown-menu.js'
-import { defineFileUpload } from './file-upload.js'
-import { initHoverCards } from './hover-card.js'
-import { defineImagePreview } from './image-preview.js'
-import { initInputGroups } from './input-group.js'
-import { defineInputOtp } from './input-otp.js'
-import { defineInputs, initVerificationCodes } from './inputs.js'
-import { defineMessageScroller } from './message-scroller.js'
-import { initNavigationMenus } from './navigation-menu.js'
-import { initQuestionnaires } from './questionnaire.js'
-import { defineRadioGroup } from './radio-group.js'
-import { defineRating } from './rating.js'
-import { defineResizable } from './resizable.js'
-import { defineScrollArea } from './scroll-area.js'
-import { defineSelect } from './select.js'
-import { defineSidebar } from './sidebar.js'
-import { defineSlider } from './slider.js'
-import { defineTabs } from './tabs.js'
-import { initToasts } from './toast.js'
-import { initTooltips } from './tooltip.js'
-import { defineTransfer } from './transfer.js'
-import { defineTree } from './tree.js'
+import * as accordion from './components/accordion.js'
+import * as avatar from './components/avatar.js'
+import * as calendar from './components/calendar.js'
+import * as carousel from './components/carousel.js'
+import * as cascader from './components/cascader.js'
+import * as codeBlock from './components/code-block.js'
+import * as collapsible from './components/collapsible.js'
+import * as colorPicker from './components/color-picker.js'
+import * as combobox from './components/combobox.js'
+import * as command from './components/command.js'
+import * as confirm from './components/confirm.js'
+import * as dataTable from './components/data-table.js'
+import * as datePicker from './components/date-picker.js'
+import * as dialog from './components/dialog.js'
+import * as drawer from './components/drawer.js'
+import * as dropdownMenu from './components/dropdown-menu.js'
+import * as fileUpload from './components/file-upload.js'
+import * as hoverCard from './components/hover-card.js'
+import * as imagePreview from './components/image-preview.js'
+import * as inputGroup from './components/input-group.js'
+import * as inputOtp from './components/input-otp.js'
+import * as messageScroller from './components/message-scroller.js'
+import * as navigationMenu from './components/navigation-menu.js'
+import * as numberInput from './components/number-input.js'
+import * as passwordInput from './components/password-input.js'
+import * as questionnaire from './components/questionnaire.js'
+import * as radioGroup from './components/radio-group.js'
+import * as rating from './components/rating.js'
+import * as resizable from './components/resizable.js'
+import * as scrollArea from './components/scroll-area.js'
+import * as select from './components/select.js'
+import * as sidebar from './components/sidebar.js'
+import * as slider from './components/slider.js'
+import * as tabs from './components/tabs.js'
+import * as tagsInput from './components/tags-input.js'
+import * as toast from './components/toast.js'
+import * as tooltip from './components/tooltip.js'
+import * as transfer from './components/transfer.js'
+import * as tree from './components/tree.js'
+import * as verificationCodeButton from './components/verification-code-button.js'
 
-defineRadioGroup()
-defineSelect()
-defineCommand()
-defineCombobox()
-defineCalendar()
-defineDatePicker()
-defineSlider()
-defineInputOtp()
-defineTabs()
-defineSidebar()
-defineAccordion()
-defineCollapsible()
-defineScrollArea()
-defineResizable()
-defineCarousel()
-defineMessageScroller()
-defineFileUpload()
-defineDataTable()
-defineCascader()
-defineTree()
-defineInputs()
-defineColorPicker()
-defineRating()
-defineTransfer()
-initVerificationCodes()
-defineImagePreview()
-initAvatars()
-initCodeBlocks()
-initConfirm()
-initDialogs()
-initDrawers()
-initDropdownMenus()
-initHoverCards()
-initInputGroups()
-initNavigationMenus()
-initQuestionnaires()
-initToasts()
-initTooltips()
+const components = [
+    radioGroup, select, command, combobox, calendar, datePicker, slider, inputOtp,
+    tabs, sidebar, accordion, collapsible, scrollArea, resizable, carousel,
+    messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
+    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview,
+    avatar, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
+    navigationMenu, questionnaire, toast, tooltip,
+]
+
+for (const component of components) component.register()

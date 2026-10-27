@@ -13,7 +13,7 @@ it('renders thumbnails and one viewer for the group', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<ui-image-preview data-slot="image-preview" class="flex gap-2">')
+        ->toContain('<eso-image-preview data-slot="image-preview" class="flex gap-2">')
         ->toContain('<button type="button" data-slot="image-preview-trigger" data-src="/a-large.jpg" data-alt="A" aria-haspopup="dialog" class="size-20">')
         ->toContain('<img src="/a.jpg" alt="A" loading="lazy">')
         ->toContain('data-src="/b.jpg" data-alt="" aria-haspopup="dialog" aria-label="Preview image"')

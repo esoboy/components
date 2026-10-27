@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineRating } from '../../resources/js/rating.js'
+import { register as registerRating } from '../../resources/js/components/rating.js'
 
-beforeAll(() => defineRating())
+beforeAll(() => registerRating())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,12 +9,12 @@ afterEach(() => {
 
 function mount(value = 2) {
     document.body.innerHTML = `
-        <ui-rating data-value="${value}">
+        <eso-rating data-value="${value}">
             ${[1, 2, 3, 4, 5].map(star => `<button data-slot="rating-item" data-value="${star}"></button>`).join('')}
             <input type="hidden" name="score">
-        </ui-rating>`
+        </eso-rating>`
 
-    const element = document.querySelector('ui-rating')
+    const element = document.querySelector('eso-rating')
     const seen = []
 
     element.addEventListener('change', event => event.target === element && seen.push(element.value))

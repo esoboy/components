@@ -57,7 +57,7 @@ it('renders the selection boxes bound to the selected rows', function () {
     $html = Livewire::test(Payments::class)->html();
 
     expect($html)
-        ->toContain('<ui-data-table data-slot="data-table">')
+        ->toContain('<eso-data-table data-slot="data-table">')
         ->toMatch('/data-data-table-select-all="data-data-table-select-all" aria-label="Select all"/')
         ->toMatch('/wire:model.live="selected" value="1" data-data-table-select-row="data-data-table-select-row" aria-label="Select row"/')
         ->toContain('<td data-slot="table-cell" colspan="3" data-data-table-empty="data-data-table-empty">')

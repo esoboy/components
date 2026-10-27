@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineCombobox } from '../../resources/js/combobox.js'
+import { register as registerCombobox } from '../../resources/js/components/combobox.js'
 
-beforeAll(() => defineCombobox())
+beforeAll(() => registerCombobox())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -15,7 +15,7 @@ const items = `
 
 function single(attributes = '') {
     document.body.innerHTML = `
-        <ui-combobox ${attributes}>
+        <eso-combobox ${attributes}>
             <div data-slot="input-group">
                 <input data-combobox-input>
                 <button data-combobox-trigger></button>
@@ -25,22 +25,22 @@ function single(attributes = '') {
                 <div data-slot="combobox-empty">None</div>
                 <div data-slot="combobox-list">${items}</div>
             </div>
-        </ui-combobox>`
+        </eso-combobox>`
 
-    return document.querySelector('ui-combobox')
+    return document.querySelector('eso-combobox')
 }
 
 function multiple(attributes = '') {
     document.body.innerHTML = `
-        <ui-combobox data-multiple ${attributes}>
+        <eso-combobox data-multiple ${attributes}>
             <div data-slot="combobox-chips">
                 <template data-combobox-chip><div data-slot="combobox-chip"><span data-combobox-chip-label></span><button data-combobox-chip-remove></button></div></template>
                 <input data-combobox-input>
             </div>
             <div data-slot="combobox-content" popover="manual"><div data-slot="combobox-list">${items}</div></div>
-        </ui-combobox>`
+        </eso-combobox>`
 
-    return document.querySelector('ui-combobox')
+    return document.querySelector('eso-combobox')
 }
 
 const type = (combobox, text) => {
@@ -169,7 +169,7 @@ describe('multiple', () => {
     })
 
     it('writes hidden inputs for form posts', () => {
-        const combobox = multiple('name="tags" data-value=\'["next","astro"]\'')
+        const combobox = multiple('data-name="tags" data-value=\'["next","astro"]\'')
 
         expect([...combobox.querySelectorAll(':scope > input[type="hidden"]')].map(input => `${input.name}=${input.value}`)).toEqual(['tags[]=next', 'tags[]=astro'])
     })

@@ -1,10 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { initDropdownMenus } from '../../resources/js/dropdown-menu.js'
+import { register as registerDropdownMenu } from '../../resources/js/components/dropdown-menu.js'
 
 let menu
 let sub
 
-beforeAll(() => initDropdownMenus())
+beforeAll(() => registerDropdownMenu())
 
 beforeEach(() => {
     document.body.innerHTML = `

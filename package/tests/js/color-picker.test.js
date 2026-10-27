@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineColorPicker, hexToHsv, hsvToHex, parseHex } from '../../resources/js/color-picker.js'
+import { hexToHsv, hsvToHex, parseHex, register as registerColorPicker } from '../../resources/js/components/color-picker.js'
 
-beforeAll(() => defineColorPicker())
+beforeAll(() => registerColorPicker())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -27,16 +27,16 @@ describe('colors', () => {
 describe('color picker', () => {
     function mount(value = '#2563eb') {
         document.body.innerHTML = `
-            <ui-color-picker data-value="${value}" data-placeholder="Pick">
+            <eso-color-picker data-value="${value}" data-name="color" data-placeholder="Pick">
                 <button data-color-picker-trigger><span data-slot="color-picker-swatch"></span><span data-slot="color-picker-value"></span></button>
                 <div data-slot="color-picker-area" tabindex="0"><span data-slot="color-picker-thumb"></span></div>
                 <input type="range" data-slot="color-picker-hue" min="0" max="360">
                 <input data-color-picker-input>
                 <button data-color-picker-swatch="#ef4444"></button>
                 <input type="hidden" name="color">
-            </ui-color-picker>`
+            </eso-color-picker>`
 
-        const element = document.querySelector('ui-color-picker')
+        const element = document.querySelector('eso-color-picker')
         const seen = []
 
         element.addEventListener('change', event => event.target === element && seen.push([true, element.value]))

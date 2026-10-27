@@ -8,8 +8,8 @@
     'scrollMargin' => 0,
 ])
 
-{{-- <ui-message-scroller> keeps the transcript's scroll position; its state lives in data-* attributes, so morphs leave it alone. --}}
-<ui-message-scroller {{ $attributes->merge([
+{{-- <eso-message-scroller> keeps the transcript's scroll position; its state lives in data-* attributes, so morphs leave it alone. --}}
+<eso-message-scroller {{ $attributes->merge([
     'data-slot' => 'message-scroller',
     'data-auto-scroll' => (bool) $autoScroll,
     'data-default-scroll-position' => $defaultScrollPosition,
@@ -17,4 +17,4 @@
     'data-scroll-previous-item-peek' => $scrollPreviousItemPeek,
     'data-scroll-margin' => $scrollMargin,
     'data-pending-scroll' => in_array($defaultScrollPosition, ['end', 'last-anchor'], true),
-]) }} wire:ignore.self>{{ $slot }}</ui-message-scroller>
+]) }} wire:ignore.self>{{ $slot }}</eso-message-scroller>

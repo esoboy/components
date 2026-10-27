@@ -24,8 +24,8 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
 \Esoboy\Ui\Support\Overlay::close('cascader');
 @endphp
 
-{{-- <ui-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
-<ui-cascader {{ $attributes->except(['name', 'class', 'style'])->merge([
+{{-- <eso-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
+<eso-cascader {{ $attributes->except(['name', 'class', 'style'])->merge([
     'data-slot' => 'cascader',
     'data-value' => json_encode($labels ? $value : []),
     'data-separator' => $separator,
@@ -44,7 +44,7 @@ $id = \Esoboy\Ui\Support\Overlay::open('cascader');
         <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $part }}">
         @endforeach
     @endif
-</ui-cascader>
+</eso-cascader>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineCommand, matches } from '../../resources/js/command.js'
+import { matches, register as registerCommand } from '../../resources/js/components/command.js'
 
-beforeAll(() => defineCommand())
+beforeAll(() => registerCommand())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,7 +9,7 @@ afterEach(() => {
 
 function mount(attributes = '') {
     document.body.innerHTML = `
-        <ui-command ${attributes}>
+        <eso-command ${attributes}>
             <input data-slot="command-input">
             <div data-slot="command-list">
                 <div data-slot="command-empty">No results</div>
@@ -23,9 +23,9 @@ function mount(attributes = '') {
                     <div data-slot="command-item">Profile</div>
                 </div>
             </div>
-        </ui-command>`
+        </eso-command>`
 
-    return document.querySelector('ui-command')
+    return document.querySelector('eso-command')
 }
 
 const type = (command, text) => {

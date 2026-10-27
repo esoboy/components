@@ -14,7 +14,7 @@ it('renders items as an ARIA tree, open where asked', function () use ($items) {
     $html = (string) $this->blade('<x-ui::tree :items="$items" checkable :default-expanded="[\'orders\']" :default-value="[\'orders.view\']" />', ['items' => $items]);
 
     expect($html)
-        ->toContain('<ui-tree role="tree" data-slot="tree" data-checkable="data-checkable" data-value="[&quot;orders.view&quot;]" aria-multiselectable="true">')
+        ->toContain('<eso-tree role="tree" data-slot="tree" data-checkable="data-checkable" data-value="[&quot;orders.view&quot;]" aria-multiselectable="true">')
         ->toContain('<li role="treeitem" tabindex="-1" data-slot="tree-item" data-value="orders" aria-expanded="true">')
         ->toContain('<span data-slot="tree-item-label">Orders</span>')
         ->toContain('<input type="checkbox" data-slot="checkbox" data-tree-check tabindex="-1" aria-hidden="true" >')
@@ -45,11 +45,11 @@ it('renders a tree select with the chosen labels', function () use ($items) {
     $html = (string) $this->blade('<x-ui::tree-select :items="$items" checkable :default-value="[\'orders.view\', \'settings\']" placeholder="Pick" class="w-64" />', ['items' => $items]);
 
     expect($html)
-        ->toContain('<ui-tree-select data-slot="tree-select" data-placeholder="Pick" data-checkable="data-checkable">')
+        ->toContain('<eso-tree-select data-slot="tree-select" data-placeholder="Pick" data-checkable="data-checkable">')
         ->toContain('<button class="w-64" type="button" data-slot="select-trigger" data-tree-select-trigger')
         ->toContain('<span data-slot="select-value">View, Settings</span>')
         ->toContain('popover="auto" data-slot="tree-select-content"')
-        ->toContain('<ui-tree role="tree"');
+        ->toContain('<eso-tree role="tree"');
 
     expect(CascaderOptions::find($items, ['settings', 'orders.view']))->toBe(['View', 'Settings']);
 });

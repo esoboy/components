@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { defineSelect } from '../../resources/js/select.js'
+import { register as registerSelect } from '../../resources/js/components/select.js'
 
-beforeAll(() => defineSelect())
+beforeAll(() => registerSelect())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,7 +9,7 @@ afterEach(() => {
 
 function mount(attributes = '') {
     document.body.innerHTML = `
-        <ui-select ${attributes}>
+        <eso-select data-name="fruit" ${attributes}>
             <button data-slot="select-trigger"><span data-slot="select-value" data-placeholder="Pick">Pick</span></button>
             <div data-slot="select-content" popover="auto" data-align-trigger="false">
                 <div data-slot="select-item" data-value="apple" tabindex="-1"><span data-slot="select-item-text">Apple</span></div>
@@ -18,9 +18,9 @@ function mount(attributes = '') {
                 <div data-slot="select-item" data-value="blueberry" tabindex="-1"><span data-slot="select-item-text">Blueberry</span></div>
             </div>
             <input type="hidden" name="fruit" value="">
-        </ui-select>`
+        </eso-select>`
 
-    return document.querySelector('ui-select')
+    return document.querySelector('eso-select')
 }
 
 const key = (target, name) => target.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))

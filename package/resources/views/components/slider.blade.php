@@ -17,7 +17,7 @@ $end = $percent(max($values));
 $thumbAttributes = $attributes->only(['disabled', 'aria-label', 'aria-labelledby']);
 @endphp
 
-<ui-slider {{ $attributes->except(['disabled', 'aria-label', 'aria-labelledby'])->merge(['data-slot' => 'slider', 'data-orientation' => $orientation, 'data-disabled' => $attributes->has('disabled')]) }}>
+<eso-slider {{ $attributes->except(['disabled', 'aria-label', 'aria-labelledby'])->merge(['data-slot' => 'slider', 'data-orientation' => $orientation, 'data-disabled' => $attributes->has('disabled')]) }}>
     <div data-slot="slider-control">
         <div data-slot="slider-track">
             <div data-slot="slider-range" style="--start: {{ $start }}; --end: {{ $end }}"></div>
@@ -26,4 +26,4 @@ $thumbAttributes = $attributes->only(['disabled', 'aria-label', 'aria-labelledby
             <input {{ $thumbAttributes->merge(['type' => 'range', 'data-slot' => 'slider-thumb', 'min' => $min, 'max' => $max, 'step' => $step, 'value' => $value, 'aria-orientation' => $orientation]) }}>
         @endforeach
     </div>
-</ui-slider>
+</eso-slider>

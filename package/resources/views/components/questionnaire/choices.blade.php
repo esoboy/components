@@ -7,7 +7,7 @@
 
 {{-- The same elements as Radio Group / Checkbox Group: wire:model binds here. --}}
 @if ($multiple)
-<ui-checkbox-group {{ $attributes->merge(['role' => 'group', 'name' => $name.'[]', 'data-slot' => 'questionnaire-choices']) }}>{{ $slot }}</ui-checkbox-group>
+<eso-checkbox-group {{ $attributes->merge(['role' => 'group', 'name' => $name.'[]', 'data-slot' => 'questionnaire-choices']) }}>{{ $slot }}</eso-checkbox-group>
 @else
-<ui-radio-group {{ $attributes->merge(['role' => 'radiogroup', 'name' => $name, 'data-slot' => 'questionnaire-choices']) }}>{{ $slot }}</ui-radio-group>
+<eso-radio-group {{ $attributes->merge(['role' => 'radiogroup', 'name' => $name, 'data-slot' => 'questionnaire-choices']) }}>{{ $slot }}</eso-radio-group>
 @endif

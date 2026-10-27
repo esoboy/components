@@ -1,10 +1,10 @@
 import { beforeAll, beforeEach, expect, it } from 'vitest'
-import { initTooltips } from '../../resources/js/tooltip.js'
+import { register as registerTooltip } from '../../resources/js/components/tooltip.js'
 
 let trigger
 let tooltip
 
-beforeAll(() => initTooltips())
+beforeAll(() => registerTooltip())
 
 beforeEach(() => {
     document.body.innerHTML = `

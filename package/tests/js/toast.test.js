@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
-import { initToasts } from '../../resources/js/toast.js'
+import { register as registerToast } from '../../resources/js/components/toast.js'
 
 let viewport
 
 beforeAll(() => {
     document.hasFocus = () => true
-    initToasts()
+    registerToast()
 })
 
 beforeEach(() => {

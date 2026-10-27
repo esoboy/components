@@ -89,7 +89,7 @@ describe('trace', function () {
         $template = '<x-ui::trace.collapsible :default-open="$open"><x-ui::trace.collapsible-trigger>Read</x-ui::trace.collapsible-trigger><x-ui::trace.collapsible-content>files</x-ui::trace.collapsible-content></x-ui::trace.collapsible>';
 
         $this->blade($template, ['open' => true])
-            ->assertSee('<ui-collapsible data-slot="trace-collapsible" data-open="data-open">', false)
+            ->assertSee('<eso-collapsible data-slot="trace-collapsible" data-open="data-open">', false)
             ->assertSee('<button type="button" data-slot="trace-collapsible-trigger" data-collapsible-trigger="data-collapsible-trigger" aria-expanded="true">', false)
             ->assertSee('<div data-slot="trace-collapsible-content" data-collapsible-content >', false)
             ->assertSee('<div data-slot="trace-collapsible-content-inner">files</div>', false);
@@ -133,14 +133,14 @@ describe('questionnaire', function () {
             '<fieldset data-slot="questionnaire-item" data-name="direction" data-required="data-required" data-active="data-active" tabindex="-1">',
             '<legend data-slot="questionnaire-title">What next?</legend>',
             '<p data-slot="questionnaire-description">Choose one.</p>',
-            '<ui-radio-group role="radiogroup" name="direction" data-slot="questionnaire-choices" wire:model="direction">',
+            '<eso-radio-group role="radiogroup" name="direction" data-slot="questionnaire-choices" wire:model="direction">',
             '<label data-slot="questionnaire-choice" data-type="radio">',
             '<input type="radio" value="a" data-slot="questionnaire-choice-input">',
             '<span data-slot="questionnaire-choice-description">About A</span>',
             '<input type="text" name="direction" data-slot="questionnaire-input" aria-label="Other">',
             '<p data-slot="questionnaire-error" hidden="hidden">Choose an answer to continue.</p>',
             '<fieldset data-slot="questionnaire-item" data-name="detail" data-multiple="data-multiple" hidden="hidden" inert="inert" tabindex="-1">',
-            '<ui-checkbox-group role="group" name="detail[]" data-slot="questionnaire-choices">',
+            '<eso-checkbox-group role="group" name="detail[]" data-slot="questionnaire-choices">',
             '<input type="checkbox" value="x" data-slot="questionnaire-choice-input">',
             '<p data-slot="questionnaire-error" hidden="hidden">Choose an answer or skip this question.</p>',
             '<div data-slot="questionnaire-actions">',

@@ -113,6 +113,6 @@ it('binds checkbox and radio items with wire:model', function () {
 
     expect($html)->toContain('<label data-slot="dropdown-menu-checkbox-item" class="w-full">')
         ->and($html)->toContain('<input type="checkbox" role="menuitemcheckbox" wire:model.live="statusBar">')
-        ->and($html)->toContain('<ui-radio-group role="group" data-slot="dropdown-menu-radio-group" wire:model.live="position">')
+        ->and($html)->toContain('<eso-radio-group role="group" data-slot="dropdown-menu-radio-group" wire:model.live="position">')
         ->and($html)->toContain('<input type="radio" role="menuitemradio" value="top">');
 });

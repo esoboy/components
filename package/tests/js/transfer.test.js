@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineTransfer } from '../../resources/js/transfer.js'
+import { register as registerTransfer } from '../../resources/js/components/transfer.js'
 
-beforeAll(() => defineTransfer())
+beforeAll(() => registerTransfer())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -20,14 +20,14 @@ function mount(value = ['b'], { disabled = [] } = {}) {
         </div>`
 
     document.body.innerHTML = `
-        <ui-transfer data-value='${JSON.stringify(value)}' data-name="roles">
+        <eso-transfer data-value='${JSON.stringify(value)}' data-name="roles">
             ${list('source')}
             <button data-transfer-move="target" disabled></button>
             <button data-transfer-move="source" disabled></button>
             ${list('target')}
-        </ui-transfer>`
+        </eso-transfer>`
 
-    const element = document.querySelector('ui-transfer')
+    const element = document.querySelector('eso-transfer')
     const seen = []
 
     element.addEventListener('change', event => event.target === element && seen.push(element.value))

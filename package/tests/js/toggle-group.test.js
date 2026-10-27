@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { defineRadioGroup } from '../../resources/js/radio-group.js'
+import { register as registerRadioGroup } from '../../resources/js/components/radio-group.js'
 
-beforeAll(() => defineRadioGroup())
+beforeAll(() => registerRadioGroup())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -15,11 +15,11 @@ const inputEvents = group => {
 
 it('deselects the pressed item of a single toggle group when clicked again', () => {
     document.body.innerHTML = `
-        <ui-radio-group data-deselectable>
+        <eso-radio-group data-deselectable>
             <label><input type="radio" value="left" checked></label>
             <label><input type="radio" value="right"></label>
-        </ui-radio-group>`
-    const group = document.querySelector('ui-radio-group')
+        </eso-radio-group>`
+    const group = document.querySelector('eso-radio-group')
     const seen = inputEvents(group)
     const [left, right] = group.querySelectorAll('input')
 
@@ -34,8 +34,8 @@ it('deselects the pressed item of a single toggle group when clicked again', () 
 })
 
 it('keeps a plain radio group from deselecting', () => {
-    document.body.innerHTML = '<ui-radio-group><input type="radio" value="a" checked></ui-radio-group>'
-    const group = document.querySelector('ui-radio-group')
+    document.body.innerHTML = '<eso-radio-group><input type="radio" value="a" checked></eso-radio-group>'
+    const group = document.querySelector('eso-radio-group')
 
     group.querySelector('input').click()
 
@@ -44,12 +44,12 @@ it('keeps a plain radio group from deselecting', () => {
 
 it('exposes a checkbox group as an array', () => {
     document.body.innerHTML = `
-        <ui-checkbox-group name="styles">
+        <eso-checkbox-group name="styles">
             <input type="checkbox" value="b" checked>
             <input type="checkbox" value="i">
             <input type="checkbox" value="u">
-        </ui-checkbox-group>`
-    const group = document.querySelector('ui-checkbox-group')
+        </eso-checkbox-group>`
+    const group = document.querySelector('eso-checkbox-group')
     const seen = inputEvents(group)
     const [, italic] = group.querySelectorAll('input')
 

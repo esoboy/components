@@ -20,7 +20,7 @@ it('renders a select with its parts linked by id', function () {
     [$id] = idsOf($html, 'aria-controls');
 
     expect($html)
-        ->toContain('<ui-select data-slot="select" data-value="apple" wire:model="fruit">')
+        ->toContain('<eso-select data-slot="select" data-value="apple" data-name="fruit" wire:model="fruit">')
         ->toContain("<button type=\"button\" data-slot=\"select-trigger\" data-size=\"sm\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"{$id}\" style=\"anchor-name: --{$id}\" class=\"w-48\">")
         ->toContain('<span data-slot="select-value" data-placeholder="Select a fruit">Select a fruit</span>')
         ->toContain("<div id=\"{$id}\" popover=\"auto\" role=\"listbox\" tabindex=\"-1\" data-slot=\"select-content\" data-align-trigger=\"false\" data-side=\"top\"")
@@ -41,6 +41,6 @@ it('aligns the list with the trigger by default', function () {
 it('validates a select inside a field', function () {
     $this->withViewErrors(['fruit' => 'Pick a fruit.'])
         ->blade('<x-ui::field><x-ui::select id="fruit" wire:model="fruit"><x-ui::select.trigger>x</x-ui::select.trigger></x-ui::select></x-ui::field>')
-        ->assertSee('<ui-select data-slot="select" aria-invalid="true" aria-describedby="fruit-error" id="fruit" wire:model="fruit">', false)
-        ->assertSeeInOrder(['</ui-select>', 'Pick a fruit.'], false);
+        ->assertSee('<eso-select data-slot="select" aria-invalid="true" aria-describedby="fruit-error" id="fruit" wire:model="fruit">', false)
+        ->assertSeeInOrder(['</eso-select>', 'Pick a fruit.'], false);
 });

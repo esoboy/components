@@ -1,12 +1,12 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineCarousel } from '../../resources/js/carousel.js'
-import { defineResizable } from '../../resources/js/resizable.js'
-import { defineScrollArea } from '../../resources/js/scroll-area.js'
+import { register as registerCarousel } from '../../resources/js/components/carousel.js'
+import { register as registerResizable } from '../../resources/js/components/resizable.js'
+import { register as registerScrollArea } from '../../resources/js/components/scroll-area.js'
 
 beforeAll(() => {
-    defineCarousel()
-    defineResizable()
-    defineScrollArea()
+    registerCarousel()
+    registerResizable()
+    registerScrollArea()
 })
 
 afterEach(() => {
@@ -21,13 +21,13 @@ function size(element, sizes) {
 describe('scroll area', () => {
     function mount() {
         document.body.innerHTML = `
-            <ui-scroll-area>
+            <eso-scroll-area>
                 <div data-slot="scroll-area-viewport"><div>Content</div></div>
                 <div data-slot="scroll-area-scrollbar" data-orientation="vertical" hidden><div data-slot="scroll-area-thumb"></div></div>
                 <div data-slot="scroll-area-scrollbar" data-orientation="horizontal" hidden><div data-slot="scroll-area-thumb"></div></div>
-            </ui-scroll-area>`
+            </eso-scroll-area>`
 
-        return document.querySelector('ui-scroll-area')
+        return document.querySelector('eso-scroll-area')
     }
 
     it('shows a scrollbar for an overflowing axis and sizes its thumb', () => {
@@ -58,15 +58,15 @@ describe('scroll area', () => {
 describe('resizable', () => {
     function mount(orientation = 'horizontal') {
         document.body.innerHTML = `
-            <ui-resizable-panel-group data-orientation="${orientation}">
+            <eso-resizable-panel-group data-orientation="${orientation}">
                 <div data-slot="resizable-panel" data-default-size="25" data-min-size="10"></div>
                 <div data-slot="resizable-handle" tabindex="0"></div>
                 <div data-slot="resizable-panel" data-max-size="80"></div>
                 <div data-slot="resizable-handle" tabindex="0"></div>
                 <div data-slot="resizable-panel"></div>
-            </ui-resizable-panel-group>`
+            </eso-resizable-panel-group>`
 
-        return document.querySelector('ui-resizable-panel-group')
+        return document.querySelector('eso-resizable-panel-group')
     }
 
     const press = (handle, key) => handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
@@ -117,13 +117,13 @@ describe('resizable', () => {
 describe('carousel', () => {
     function mount() {
         document.body.innerHTML = `
-            <ui-carousel data-orientation="horizontal">
+            <eso-carousel data-orientation="horizontal">
                 <div data-slot="carousel-content"><div><div data-slot="carousel-item"></div><div data-slot="carousel-item"></div></div></div>
                 <button data-carousel="previous" disabled></button>
                 <button data-carousel="next"></button>
-            </ui-carousel>`
+            </eso-carousel>`
 
-        const carousel = document.querySelector('ui-carousel')
+        const carousel = document.querySelector('eso-carousel')
 
         size(carousel.viewport, { scrollLeft: 0, scrollWidth: 640, clientWidth: 320 })
         size(carousel.querySelector('[data-slot="carousel-item"]'), { offsetWidth: 320 })

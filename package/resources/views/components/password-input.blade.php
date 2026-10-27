@@ -14,7 +14,7 @@
 $state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
-<ui-password-input {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
+<eso-password-input {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
     <div role="group" data-slot="input-group">
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'password', 'data-slot' => 'input-group-control', 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
         <div role="group" data-slot="input-group-addon" data-align="inline-end">
@@ -24,7 +24,7 @@ $state = \Esoboy\Ui\Support\ControlState::for($attributes, $errors ?? null, $uiF
             </x-ui::input-group.button>
         </div>
     </div>
-</ui-password-input>
+</eso-password-input>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

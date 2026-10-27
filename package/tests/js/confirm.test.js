@@ -1,11 +1,11 @@
 import { beforeAll, beforeEach, expect, it, vi } from 'vitest'
-import { initConfirm } from '../../resources/js/confirm.js'
+import { register as registerConfirm } from '../../resources/js/components/confirm.js'
 
 let directiveInit
 
 beforeAll(() => {
     window.Livewire = { hook: (name, callback) => name === 'directive.init' && (directiveInit = callback) }
-    initConfirm()
+    registerConfirm()
     document.dispatchEvent(new Event('livewire:init'))
 })
 

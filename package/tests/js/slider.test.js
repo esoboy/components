@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { defineSlider } from '../../resources/js/slider.js'
+import { register as registerSlider } from '../../resources/js/components/slider.js'
 
-beforeAll(() => defineSlider())
+beforeAll(() => registerSlider())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -9,14 +9,14 @@ afterEach(() => {
 
 function mount(values, name = '') {
     document.body.innerHTML = `
-        <ui-slider ${name ? `name="${name}"` : ''}>
+        <eso-slider ${name ? `name="${name}"` : ''}>
             <div data-slot="slider-control">
                 <div data-slot="slider-track"><div data-slot="slider-range"></div></div>
                 ${values.map(value => `<input type="range" data-slot="slider-thumb" min="0" max="200" step="1" value="${value}">`).join('')}
             </div>
-        </ui-slider>`
+        </eso-slider>`
 
-    return document.querySelector('ui-slider')
+    return document.querySelector('eso-slider')
 }
 
 const range = slider => slider.querySelector('[data-slot="slider-range"]').style

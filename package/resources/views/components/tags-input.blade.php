@@ -19,8 +19,8 @@ $tags = array_values(array_map('strval', (array) ($defaultValue ?? \Esoboy\Ui\Su
 $name = $attributes->get('name');
 @endphp
 
-{{-- <ui-tags-input> exposes the tags as .value, so wire:model binds on it. --}}
-<ui-tags-input {{ $attributes->except('name')->merge([
+{{-- <eso-tags-input> exposes the tags as .value, so wire:model binds on it. --}}
+<eso-tags-input {{ $attributes->except('name')->merge([
     'data-slot' => 'tags-input',
     'data-value' => json_encode($tags),
     'data-max' => $max ?? false,
@@ -44,7 +44,7 @@ $name = $attributes->get('name');
         <input type="hidden" name="{{ $name }}[]" value="{{ $tag }}">
         @endforeach
     @endif
-</ui-tags-input>
+</eso-tags-input>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

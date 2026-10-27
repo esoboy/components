@@ -25,8 +25,8 @@ $lists = [
 ];
 @endphp
 
-{{-- <ui-transfer> exposes the right list's values as .value, so wire:model binds on it. --}}
-<ui-transfer {{ $attributes->except('name')->merge(['data-slot' => 'transfer', 'data-value' => json_encode($value), 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
+{{-- <eso-transfer> exposes the right list's values as .value, so wire:model binds on it. --}}
+<eso-transfer {{ $attributes->except('name')->merge(['data-slot' => 'transfer', 'data-value' => json_encode($value), 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
     @foreach ($lists as $list => $data)
     <div role="group" data-slot="transfer-list" data-list="{{ $list }}" aria-label="{{ $data['title'] }}">
         <div data-slot="transfer-header">
@@ -70,7 +70,7 @@ $lists = [
         <input type="hidden" name="{{ $name }}[]" value="{{ $item }}">
         @endforeach
     @endif
-</ui-transfer>
+</eso-transfer>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { defineMessageScroller } from '../../resources/js/message-scroller.js'
+import { register as registerMessageScroller } from '../../resources/js/components/message-scroller.js'
 
 /*
  * jsdom does no layout, so rows get their height from data-h and stack in the content;
@@ -9,7 +9,7 @@ const VIEWPORT = 300
 const nativeRect = Element.prototype.getBoundingClientRect
 
 beforeAll(() => {
-    defineMessageScroller()
+    registerMessageScroller()
 
     Element.prototype.getBoundingClientRect = function () {
         const viewport = this.closest('[data-slot="message-scroller-viewport"]')
@@ -48,13 +48,13 @@ function mount(rows, attributes = '') {
     const host = document.createElement('div')
 
     host.innerHTML = `
-        <ui-message-scroller data-pending-scroll ${attributes}>
+        <eso-message-scroller data-pending-scroll ${attributes}>
             <div data-slot="message-scroller-viewport" data-pending-scroll>
                 <div data-slot="message-scroller-content">${rows.join('')}<div data-message-scroller-spacer hidden></div></div>
             </div>
             <button data-message-scroller-button="end" data-active="false"></button>
             <button data-message-scroller-button="start" data-active="false"></button>
-        </ui-message-scroller>`
+        </eso-message-scroller>`
 
     const viewport = host.querySelector('[data-slot="message-scroller-viewport"]')
     const content = host.querySelector('[data-slot="message-scroller-content"]')
@@ -71,7 +71,7 @@ function mount(rows, attributes = '') {
 
     document.body.append(host)
 
-    return host.querySelector('ui-message-scroller')
+    return host.querySelector('eso-message-scroller')
 }
 
 const offset = (scroller, id) => scroller.items.find(item => item.dataset.messageId === id).getBoundingClientRect().top

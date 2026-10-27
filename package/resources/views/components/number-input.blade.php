@@ -22,8 +22,8 @@ $value = is_numeric($value) ? $value + 0 : null;
 $name = $attributes->get('name');
 @endphp
 
-{{-- <ui-number-input> exposes the number as .value (null when empty), so wire:model binds on it. --}}
-<ui-number-input {{ $attributes->except('name')->merge([
+{{-- <eso-number-input> exposes the number as .value (null when empty), so wire:model binds on it. --}}
+<eso-number-input {{ $attributes->except('name')->merge([
     'data-slot' => 'number-input',
     'data-min' => $min ?? false,
     'data-max' => $max ?? false,
@@ -42,7 +42,7 @@ $name = $attributes->get('name');
             </x-ui::button>
         </div>
     </div>
-</ui-number-input>
+</eso-number-input>
 @if ($state->showsError())
 <x-ui::field.error :id="$state->errorId" :messages="$state->messages" />
 @endif

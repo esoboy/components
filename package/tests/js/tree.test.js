@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { defineTree } from '../../resources/js/tree.js'
+import { register as registerTree } from '../../resources/js/components/tree.js'
 
-beforeAll(() => defineTree())
+beforeAll(() => registerTree())
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -16,9 +16,9 @@ const item = (value, label, children = '', attributes = '') => `
 const permissions = item('orders', 'Orders', item('view', 'View') + item('refund', 'Refund') + item('export', 'Export', '', 'aria-disabled="true"')) + item('users', 'Users', item('ban', 'Ban')) + item('settings', 'Settings')
 
 function mount(attributes = '') {
-    document.body.innerHTML = `<ui-tree ${attributes}>${permissions}</ui-tree>`
+    document.body.innerHTML = `<eso-tree ${attributes}>${permissions}</eso-tree>`
 
-    return document.querySelector('ui-tree')
+    return document.querySelector('eso-tree')
 }
 
 const node = (tree, value) => tree.querySelector(`[data-value="${value}"]`)
@@ -121,12 +121,12 @@ describe('single', () => {
 describe('tree select', () => {
     function picker(checkable = false) {
         document.body.innerHTML = `
-            <ui-tree-select data-placeholder="Pick" ${checkable ? 'data-checkable' : ''}>
+            <eso-tree-select data-placeholder="Pick" ${checkable ? 'data-checkable' : ''}>
                 <button data-tree-select-trigger><span data-slot="select-value">Pick</span></button>
-                <div data-slot="tree-select-content" popover="auto"><ui-tree ${checkable ? 'data-checkable' : ''}>${permissions}</ui-tree></div>
-            </ui-tree-select>`
+                <div data-slot="tree-select-content" popover="auto"><eso-tree ${checkable ? 'data-checkable' : ''}>${permissions}</eso-tree></div>
+            </eso-tree-select>`
 
-        return document.querySelector('ui-tree-select')
+        return document.querySelector('eso-tree-select')
     }
 
     it('closes after one choice and shows its label', () => {
