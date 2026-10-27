@@ -34,6 +34,7 @@
 @import './components/context-menu.css';
 @import './components/data-table.css';
 @import './components/date-picker.css';
+@import './components/description-list.css';
 @import './components/dialog.css';
 @import './components/drawer.css';
 @import './components/dropdown-menu.css';
@@ -66,9 +67,11 @@
 @import './components/skeleton.css';
 @import './components/slider.css';
 @import './components/spinner.css';
+@import './components/steps.css';
 @import './components/switch.css';
 @import './components/table.css';
 @import './components/tabs.css';
+@import './components/timeline.css';
 @import './components/toast.css';
 @import './components/toggle.css';
 @import './components/tooltip.css';

@@ -6,6 +6,7 @@ use Esoboy\Ui\Livewire\DialogHandle;
 use Esoboy\Ui\Support\FieldContext;
 use Esoboy\Ui\Support\Overlay;
 use Esoboy\Ui\Support\PendingControl;
+use Esoboy\Ui\Support\Sequence;
 use Esoboy\Ui\Support\SidebarState;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
@@ -20,6 +21,7 @@ class UiServiceProvider extends ServiceProvider
     {
         $this->app->scoped(Overlay::class);
         $this->app->scoped(PendingControl::class);
+        $this->app->scoped(Sequence::class);
     }
 
     public function boot(): void
