@@ -82,10 +82,37 @@ Ui::dialog('edit-profile')->close();
 Ui::countdown('sms');
 ```
 
+## Light and dark
+
+Colors follow the system until a user picks a theme. Name the app on `<html>`; each app on
+the site (admin, shop, …) keeps its own choice in one cookie, and the server renders the
+page in it, so nothing flashes:
+
+```blade
+<html lang="zh-CN" @uiTheme('admin')>
+```
+
+Any control picks the theme with `data-theme-value`: `light`, `dark`, `system`, or
+`toggle` (between light and dark). Buttons act on click; Toggles, Switches, Toggle Group
+items and menu radio items act on change, and every one of them shows the current choice.
+`Ui::theme('admin')` gives the choice to render a control's initial state:
+
+```blade
+<x-ui::toggle-group type="single" :default-value="Ui::theme('admin')">
+    <x-ui::toggle-group.item value="light" data-theme-value="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
+    <x-ui::toggle-group.item value="dark" data-theme-value="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
+    <x-ui::toggle-group.item value="system" data-theme-value="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
+</x-ui::toggle-group>
+
+<x-ui::switch data-theme-value="toggle" />
+```
+
+Tailwind's `dark:` follows the same choice.
+
 ## Customizing
 
 - **Theme:** every token lives in `@theme`; a later `@theme` block in the app overrides it.
-  Light and dark values follow the system through `color-scheme`.
+  Light and dark values are paired with `light-dark()`.
 - **Styles:** component defaults sit in `@layer components`, so any utility class on a
   component wins without `!`.
 - **Strings:** override single lines in `lang/vendor/ui/{locale}/{component}.php`, or

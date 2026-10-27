@@ -7,8 +7,9 @@
  *
  * Every token below lives in @theme, so a later @theme block in the app overrides it.
  * Light and dark values are paired with light-dark() and follow the system through
- * color-scheme. To force a scheme, put Tailwind's scheme-light / scheme-dark on <html>
- * or on any element to scope it.
+ * color-scheme, unless the app's theme choice (<html @uiTheme('admin')>, set with
+ * data-theme-value controls) fixes it. Tailwind's scheme-light / scheme-dark still
+ * force a scheme on any element and what it contains.
  */
 
 @import './utilities.css';
@@ -89,6 +90,19 @@
 
 @source '../views';
 
+/* dark: follows the app's theme choice, and the system when there is none. */
+@custom-variant dark {
+    &:where([data-theme="dark"], [data-theme="dark"] *) {
+        @slot;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        &:where(:not([data-theme="light"], [data-theme="light"] *)) {
+            @slot;
+        }
+    }
+}
+
 @theme {
     /* shadcn's scale: everything derives from --radius-lg (shadcn's --radius). */
     --radius-lg: 0.625rem;
@@ -150,6 +164,22 @@
 @layer base {
     :root {
         color-scheme: light dark;
+    }
+
+    :root[data-theme="light"] {
+        color-scheme: light;
+    }
+
+    :root[data-theme="dark"] {
+        color-scheme: dark;
+    }
+
+    /* While the theme switches, every color changes at once instead of transitioning. */
+    :root[data-theme-switching],
+    :root[data-theme-switching] *,
+    :root[data-theme-switching] ::before,
+    :root[data-theme-switching] ::after {
+        transition: none !important;
     }
 
     *,

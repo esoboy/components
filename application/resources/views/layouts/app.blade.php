@@ -3,7 +3,7 @@ $current = request()->path();
 $page = collect(config('demo'))->collapse()->get($current);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @uiTheme('demo')>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -72,6 +72,11 @@ $page = collect(config('demo'))->collapse()->get($current);
                             @endif
                         </x-ui::breadcrumb.list>
                     </x-ui::breadcrumb>
+                    <x-ui::toggle-group type="single" variant="outline" size="sm" :default-value="Ui::theme('demo')" class="ml-auto">
+                        <x-ui::toggle-group.item value="light" data-theme-value="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
+                        <x-ui::toggle-group.item value="dark" data-theme-value="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
+                        <x-ui::toggle-group.item value="system" data-theme-value="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
+                    </x-ui::toggle-group>
                 </header>
 
                 {{ $slot }}

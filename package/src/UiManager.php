@@ -3,12 +3,14 @@
 namespace Esoboy\Ui;
 
 use Esoboy\Ui\Livewire\DialogHandle;
+use Esoboy\Ui\Support\Theme;
 use Livewire\Component;
 use LogicException;
 
 /**
- * What Ui:: offers server code. Each call reaches the browser through the Livewire
- * component being handled, so it works from its methods, Form objects and actions alike.
+ * What Ui:: offers server code. toast(), dialog() and countdown() reach the browser
+ * through the Livewire component being handled, so they work from its methods, Form
+ * objects and actions alike.
  */
 final class UiManager
 {
@@ -48,6 +50,14 @@ final class UiManager
     public function countdown(string $name = 'verification-code', ?int $seconds = null): void
     {
         $this->component(__FUNCTION__)->dispatch('ui-countdown', name: $name, seconds: $seconds);
+    }
+
+    /**
+     * The app's theme choice (light, dark or system), to render theme controls in their state.
+     */
+    public function theme(string $scope = 'default'): string
+    {
+        return Theme::current($scope);
     }
 
     private function component(string $method): Component

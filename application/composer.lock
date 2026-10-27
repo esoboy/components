@@ -517,7 +517,7 @@
             "dist": {
                 "type": "path",
                 "url": "../package",
-                "reference": "c8454a0eca7d88108feccf6e38dd6ddf1e9d4bb5"
+                "reference": "c48b994872f2ba2eadcf55016efc824b62dc127f"
             },
             "require": {
                 "illuminate/support": "^13.0",
@@ -527,6 +527,8 @@
                 "php": "^8.3"
             },
             "require-dev": {
+                "larastan/larastan": "^3.13",
+                "laravel/pint": "^1.32",
                 "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0"
@@ -536,7 +538,10 @@
                 "laravel": {
                     "providers": [
                         "Esoboy\\Ui\\UiServiceProvider"
-                    ]
+                    ],
+                    "aliases": {
+                        "Ui": "Esoboy\\Ui\\Facades\\Ui"
+                    }
                 }
             },
             "autoload": {
@@ -550,6 +555,12 @@
                 }
             },
             "scripts": {
+                "lint": [
+                    "pint"
+                ],
+                "analyse": [
+                    "phpstan analyse --memory-limit=1G"
+                ],
                 "test": [
                     "pest"
                 ]

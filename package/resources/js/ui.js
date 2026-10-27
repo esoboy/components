@@ -42,6 +42,7 @@ import * as sidebar from './components/sidebar.js'
 import * as slider from './components/slider.js'
 import * as tabs from './components/tabs.js'
 import * as tagsInput from './components/tags-input.js'
+import * as theme from './components/theme.js'
 import * as toast from './components/toast.js'
 import * as tooltip from './components/tooltip.js'
 import * as transfer from './components/transfer.js'
@@ -54,7 +55,7 @@ const components = [
     messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
     passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview,
     avatar, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
-    navigationMenu, questionnaire, toast, tooltip,
+    navigationMenu, questionnaire, theme, toast, tooltip,
 ]
 
 for (const component of components) component.register()

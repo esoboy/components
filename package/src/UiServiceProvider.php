@@ -7,6 +7,7 @@ use Esoboy\Ui\Support\Overlay;
 use Esoboy\Ui\Support\PendingControl;
 use Esoboy\Ui\Support\Sequence;
 use Esoboy\Ui\Support\SidebarState;
+use Esoboy\Ui\Support\Theme;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -34,8 +35,11 @@ class UiServiceProvider extends ServiceProvider
         $this->bootFieldContext();
         $this->bootLivewire();
 
-        // The browser writes the sidebar state cookie, so it can't be encrypted.
-        EncryptCookies::except(SidebarState::COOKIE);
+        // <html @uiTheme('admin')>: the app's theme choice as data-theme; see Theme.
+        Blade::directive('uiTheme', fn (string $expression) => "<?php echo \Esoboy\Ui\Support\Theme::attributes({$expression}); ?>");
+
+        // The browser writes the sidebar and theme cookies, so they can't be encrypted.
+        EncryptCookies::except([SidebarState::COOKIE, Theme::COOKIE]);
     }
 
     /**

@@ -46,6 +46,26 @@ PHP;
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Theme</h2>
+        <p class="text-sm text-muted-foreground">Any control with data-theme-value switches this app's theme; the header uses a Toggle Group.</p>
+        <div class="flex flex-wrap items-center gap-4">
+            <x-ui::button variant="outline" size="icon" data-theme-value="toggle" aria-label="Toggle theme"><x-ui::icon name="sun-moon" /></x-ui::button>
+            <label class="flex items-center gap-2 text-sm"><x-ui::switch data-theme-value="toggle" /> Dark mode</label>
+            <x-ui::dropdown-menu>
+                <x-ui::dropdown-menu.trigger variant="outline">Theme</x-ui::dropdown-menu.trigger>
+                <x-ui::dropdown-menu.content>
+                    <x-ui::dropdown-menu.radio-group>
+                        <x-ui::dropdown-menu.radio-item value="light" data-theme-value="light">Light</x-ui::dropdown-menu.radio-item>
+                        <x-ui::dropdown-menu.radio-item value="dark" data-theme-value="dark">Dark</x-ui::dropdown-menu.radio-item>
+                        <x-ui::dropdown-menu.radio-item value="system" data-theme-value="system">System</x-ui::dropdown-menu.radio-item>
+                    </x-ui::dropdown-menu.radio-group>
+                </x-ui::dropdown-menu.content>
+            </x-ui::dropdown-menu>
+            <span data-dark-sample class="rounded-md bg-amber-100 px-2 py-1 text-xs text-amber-900 dark:bg-indigo-950 dark:text-indigo-200">dark: utilities follow the choice</span>
+        </div>
+    </section>
+
+    <section class="space-y-4">
         <h2 class="text-lg font-semibold">Variants</h2>
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::button>Default</x-ui::button>
