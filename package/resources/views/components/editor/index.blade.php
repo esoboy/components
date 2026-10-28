@@ -69,7 +69,7 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     <textarea data-slot="editor-source" aria-label="{{ __('ui::editor.source') }}" spellcheck="false" hidden wire:ignore></textarea>
     @endif
     @if (in_array('character-count', $tools, true))
-    <div data-slot="editor-footer" wire:ignore><span data-editor-count></span></div>
+    <div data-slot="editor-footer" wire:ignore><span data-editor-count></span> {{ __('ui::editor.characters') }}</div>
     @endif
     <x-ui::editor.menus />
     <div id="{{ $tip }}" popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip style="position-anchor: --{{ $tip }}; --side-offset: 4px" wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></div>

@@ -10,6 +10,7 @@ import Image from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Table, TableCell, TableHeader, TableRow, createColGroup } from '@tiptap/extension-table'
 import { mediaStyle, parseAlign, parseSize, playable, safeUrl } from './media.js'
+import { resizable } from './resize.js'
 
 // Attributes the node writes itself, so they don't render as attributes of their own.
 const own = (fallback, parseHTML) => ({ default: fallback, parseHTML, renderHTML: () => ({}) })
@@ -68,10 +69,10 @@ export const collapsible = labels => [
     }),
 ]
 
-// A code block without a language: plain <pre><code>.
+// A code block without a language: plain <pre><code>, Tab indenting in it.
 export const PlainCodeBlock = CodeBlock.extend({
     addAttributes: () => ({}),
-})
+}).configure({ enableTabIndentation: true, tabSize: 4 })
 
 // A cell's column widths: Tiptap's colwidth, else its columns' <col> widths.
 function columnWidths(cell) {
@@ -124,6 +125,9 @@ const mediaAttributes = () => ({
     align: own('center', parseAlign),
 })
 
+// In its box while editing: as wide as the box once sized, else its own width.
+const boxed = ({ attrs }) => `display:block;max-width:100%;height:auto;width:${attrs.size ? '100%' : 'auto'}`
+
 // Images: never a data: address (pasted screenshots go to the app as files instead).
 export const Picture = Image.extend({
     addAttributes() {
@@ -131,6 +135,8 @@ export const Picture = Image.extend({
     },
     parseHTML: () => [{ tag: 'img[src]', getAttrs: image => safeUrl(image.getAttribute('src')) ? null : false }],
     renderHTML: ({ node, HTMLAttributes }) => ['img', mergeAttributes(HTMLAttributes, { style: mediaStyle(node.attrs) })],
+
+    addNodeView: () => resizable('img', ({ attrs }) => ({ src: attrs.src, alt: attrs.alt, title: attrs.title, width: attrs.width, height: attrs.height }), boxed),
 })
 
 const source = element => element.getAttribute('src') ?? element.querySelector('source[src]')?.getAttribute('src')
@@ -153,6 +159,8 @@ export const Video = Node.create({
     parseHTML: () => [{ tag: 'video', getAttrs: video => source(video) && safeUrl(source(video)) ? null : false }],
 
     renderHTML: ({ node, HTMLAttributes }) => ['video', mergeAttributes(HTMLAttributes, { controls: 'controls', preload: 'metadata', style: mediaStyle(node.attrs) })],
+
+    addNodeView: () => resizable('video', ({ attrs }) => ({ src: attrs.src, poster: attrs.poster, title: attrs.title, width: attrs.width, height: attrs.height, controls: true, preload: 'metadata' }), boxed),
 })
 
 export const Audio = Node.create({
@@ -202,8 +210,8 @@ export function file(card) {
 }
 
 /**
- * Embeds: a platform's player in a 16:9 iframe; other addresses don't load. In the
- * editor it takes no clicks until selected, so a click selects it.
+ * Embeds: a platform's player in a 16:9 iframe; other addresses don't load. While
+ * editing it takes no clicks until selected, so a click selects it.
  */
 export function embed(platforms) {
     return Node.create({
@@ -222,16 +230,7 @@ export function embed(platforms) {
 
         renderHTML: ({ node, HTMLAttributes }) => ['iframe', mergeAttributes(HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy', style: mediaStyle({ ...node.attrs, size: node.attrs.size ?? '100%' }, ';aspect-ratio:16/9;border:0') })],
 
-        addNodeView: () => ({ HTMLAttributes, node }) => {
-            const dom = document.createElement('div')
-            const frame = document.createElement('iframe')
-
-            dom.dataset.editorEmbed = ''
-            Object.entries(mergeAttributes(HTMLAttributes, { loading: 'lazy', style: mediaStyle({ ...node.attrs, size: node.attrs.size ?? '100%' }, ';aspect-ratio:16/9;border:0') })).forEach(([name, value]) => value != null && frame.setAttribute(name, value))
-            dom.append(frame)
-
-            return { dom }
-        },
+        addNodeView: () => resizable('iframe', ({ attrs }) => ({ src: attrs.src, title: attrs.title, allowfullscreen: true, loading: 'lazy' }), () => 'display:block;width:100%;height:auto;aspect-ratio:16/9;border:0'),
     })
 }
 

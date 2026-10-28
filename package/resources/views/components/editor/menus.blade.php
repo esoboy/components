@@ -9,7 +9,7 @@
     'tools' => null,
 ])
 
-{{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, media, a formula), the / and : suggestions, the drag handle. --}}
+{{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a formula), the / and : suggestions, the drag handle. --}}
 @php
 $rich = RichText::resolve($format);
 $tools = $rich->tools($tools);
@@ -22,6 +22,8 @@ $slash = [
     'heading-2' => ['heading-2', __('ui::editor.heading-2'), ['data-editor-command' => 'heading', 'data-editor-value' => '2']],
     'heading-3' => ['heading-3', __('ui::editor.heading-3'), ['data-editor-command' => 'heading', 'data-editor-value' => '3']],
     'heading-4' => ['heading-4', __('ui::editor.heading-4'), ['data-editor-command' => 'heading', 'data-editor-value' => '4']],
+    'heading-5' => ['heading-5', __('ui::editor.heading-5'), ['data-editor-command' => 'heading', 'data-editor-value' => '5']],
+    'heading-6' => ['heading-6', __('ui::editor.heading-6'), ['data-editor-command' => 'heading', 'data-editor-value' => '6']],
     'bullet-list' => ['list', __('ui::editor.bullet-list'), ['data-editor-command' => 'bullet-list']],
     'ordered-list' => ['list-ordered', __('ui::editor.ordered-list'), ['data-editor-command' => 'ordered-list']],
     'task-list' => ['list-todo', __('ui::editor.task-list'), ['data-editor-command' => 'task-list']],
@@ -60,9 +62,9 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
     </div>
 </template>
 @endif
-@if ($rich->has('image', 'audio', 'video', 'file', 'embed'))
-<template data-template="bubble-media">
-    <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.media') }}">
+{{-- A selected block (media, a divider, a block picked by its drag handle): what fits it, and delete. --}}
+<template data-template="bubble-node">
+    <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.selection') }}">
         @if ($rich->has('image'))
         <x-ui::input data-editor-alt-input data-editor-for="image" :placeholder="__('ui::editor.alt-placeholder')" :aria-label="__('ui::editor.alt-text')" />
         @endif
@@ -80,7 +82,6 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
         <x-ui::editor.button command="delete-node" />
     </div>
 </template>
-@endif
 @if ($rich->has('math'))
 <template data-template="bubble-math">
     <div data-slot="editor-bubble" data-editor-bubble-form>

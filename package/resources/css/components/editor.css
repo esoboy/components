@@ -33,9 +33,10 @@
         }
     }
 
-    /* Sticks to the top of the page while the text scrolls by under it. */
+    /* Sticks to the top of the page while the text scrolls by under it, below a fixed
+       header of --editor-sticky-top. */
     :where([data-slot="editor-toolbar"]) {
-        @apply sticky top-0 z-10 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b border-input bg-background p-1;
+        @apply sticky top-(--editor-sticky-top,0px) z-10 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b border-input bg-background p-1;
 
         & > [data-slot="separator"] {
             @apply mx-1 h-5;
@@ -74,8 +75,9 @@
         }
     }
 
-    :where([data-editor-menu-content="font-family"]) {
-        @apply w-48;
+    /* Wider than their small buttons: as wide as their items. */
+    :where([data-editor-menu-content]) {
+        @apply w-max;
     }
 
     /* Fields in a row: outside :where to beat popover.css, imported after this file. */
@@ -87,12 +89,13 @@
         }
     }
 
+    /* At their natural width: squeezed by the window's edge they'd overlap, so they flip. */
     [data-slot="popover-content"]:is([data-editor-color-content], [data-editor-math-content]) {
-        @apply w-auto p-2;
+        @apply w-max p-2;
     }
 
     [data-slot="popover-content"][data-editor-emoji-content] {
-        @apply w-auto p-0;
+        @apply w-max p-0;
     }
 
     :where([data-slot="editor-field-error"]) {
@@ -217,16 +220,64 @@
             content: attr(data-placeholder);
         }
 
-        & .ProseMirror-selectednode:is(img, video, audio, [data-editor-embed], a, [data-editor-math]) {
-            @apply rounded-sm ring-2 ring-ring;
+        /* A selected block (clicked, or picked by its drag handle); media by their box. */
+        & .ProseMirror-selectednode:not([data-editor-media]), & .ProseMirror-selectednode > [data-editor-media-box] {
+            @apply rounded-sm outline-2 outline-offset-2 outline-ring;
+        }
+
+        /* A divider is a line: a band around it (unclipped: browsers hide what overflows
+           an hr) takes the click that selects it. */
+        & hr {
+            @apply relative cursor-pointer overflow-visible;
+
+            &::after {
+                @apply absolute inset-x-0 -inset-y-2;
+                content: "";
+            }
+        }
+
+        /* Images, videos and embeds: their box sized and placed, a handle on each side
+           that can grow it, shown on hover and while selected. */
+        & [data-editor-media] {
+            @apply flex;
+        }
+
+        & [data-editor-media-box] {
+            @apply relative max-w-full min-w-0;
+        }
+
+        & [data-editor-resize] {
+            @apply absolute top-1/2 hidden h-10 max-h-[50%] w-1.5 -translate-y-1/2 cursor-ew-resize touch-none rounded-full bg-background ring-1 ring-foreground/40 shadow-sm;
+
+            &[data-editor-resize="left"] {
+                @apply left-1.5;
+            }
+
+            &[data-editor-resize="right"] {
+                @apply right-1.5;
+            }
+        }
+
+        & :is([data-editor-media]:hover, .ProseMirror-selectednode[data-editor-media], [data-editor-media][data-resizing]) [data-editor-resize] {
+            @apply block;
+        }
+
+        /* Left-aligned media grow to the right, right-aligned ones to the left; none
+           grow while the editor is disabled. */
+        [data-slot="editor"][data-disabled] & [data-editor-resize] {
+            @apply hidden;
+        }
+
+        & [data-editor-media][data-align="left"] [data-editor-resize="left"], & [data-editor-media][data-align="right"] [data-editor-resize="right"] {
+            @apply hidden;
         }
 
         /* Embeds take clicks once selected, so the first one selects them. */
-        & [data-editor-embed] iframe {
+        & [data-editor-media="embed"] iframe {
             @apply pointer-events-none;
         }
 
-        & .ProseMirror-selectednode[data-editor-embed] iframe {
+        & .ProseMirror-selectednode[data-editor-media="embed"]:not([data-resizing]) iframe {
             @apply pointer-events-auto;
         }
 
@@ -315,9 +366,12 @@
         }
     }
 
-    /* With a drag handle: the grip in the left margin, by the block pointed at. */
-    :where([data-slot="editor"][data-tools~="drag-handle"]) > [data-slot="editor-content"] {
-        @apply pl-8;
+    /* With a drag handle: the grip in the left margin, by the block pointed at (on
+       screens with a pointer to point: touch screens get no margin for it). */
+    @media (hover: hover) {
+        :where([data-slot="editor"][data-tools~="drag-handle"]) > [data-slot="editor-content"] {
+            @apply pl-8;
+        }
     }
 
     :where([data-slot="editor-drag-handle"]) {
@@ -333,9 +387,9 @@
     }
 
     :where([data-slot="editor-footer"]) {
-        @apply flex justify-end border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
+        @apply flex justify-end gap-1 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
 
-        & [data-full] {
+        &:has([data-full]) {
             @apply text-destructive;
         }
     }
@@ -354,8 +408,20 @@
             @apply text-xl font-semibold tracking-tight;
         }
 
-        & :is(h3, h4, h5, h6) {
+        & h3 {
             @apply text-lg font-semibold tracking-tight;
+        }
+
+        & h4 {
+            @apply text-base font-semibold tracking-tight;
+        }
+
+        & h5 {
+            @apply text-sm font-semibold;
+        }
+
+        & h6 {
+            @apply text-sm font-semibold text-muted-foreground;
         }
 
         & p {

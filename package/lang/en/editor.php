@@ -13,6 +13,8 @@ return [
     'heading-2' => 'Heading 2',
     'heading-3' => 'Heading 3',
     'heading-4' => 'Heading 4',
+    'heading-5' => 'Heading 5',
+    'heading-6' => 'Heading 6',
     'font-family' => 'Font',
     'font-default' => 'Default font',
     'font-sans-serif' => 'Sans serif',
@@ -81,6 +83,7 @@ return [
     'alt-text' => 'Alternative text',
     'alt-placeholder' => 'Describe the image…',
     'replace-media' => 'Replace',
+    'selection' => 'Selected block',
     'delete' => 'Delete',
     'embed' => 'Embed video',
     'embed-placeholder' => 'Paste a YouTube, Bilibili, … link',
@@ -121,4 +124,5 @@ return [
     'source' => 'HTML source',
     'fullscreen' => 'Full screen',
     'drag-handle' => 'Drag to move, click to select',
+    'characters' => 'characters',
 ];

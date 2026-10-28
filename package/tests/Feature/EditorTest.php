@@ -73,7 +73,7 @@ describe('the view', function () {
             ->toContain('<div data-slot="editor-find" role="search" aria-label="Find and replace" hidden wire:ignore>')
             ->toContain('<div data-slot="editor-content" wire:ignore><p>Hi <b>there</b></p></div>')
             ->toContain('<textarea data-slot="editor-source" aria-label="HTML source" spellcheck="false" hidden wire:ignore></textarea>')
-            ->toContain('<div data-slot="editor-footer" wire:ignore><span data-editor-count></span></div>')
+            ->toContain('<div data-slot="editor-footer" wire:ignore><span data-editor-count></span> characters</div>')
             ->toContain('data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip')
             ->not->toContain('onclick')
             ->not->toContain('alert')
@@ -99,7 +99,7 @@ describe('the view', function () {
         preg_match('~<template data-template="slash">(.*?)</template>~s', $html, $slash);
         preg_match_all('~data-keywords="([^"]+)"~', $slash[1], $items);
 
-        expect($items[1])->toBe(['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'bullet-list', 'media', 'math'])
+        expect($items[1])->toBe(['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'media', 'math'])
             ->and($slash[1])->toContain('data-editor-action="open" data-editor-value="math"');
     });
 
@@ -113,7 +113,9 @@ describe('the view', function () {
             ->and(substr_count($html, 'data-editor-command="line-height"'))->toBe(8)
             ->and($html)->toContain('data-editor-command="color" data-editor-value="#dc2626" aria-pressed="false" aria-label="Red"><span style="color: #dc2626"><svg')
             ->toContain('role="menuitemradio" data-slot="dropdown-menu-item" data-variant="default" aria-checked="false" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun"')
-            ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"');
+            ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"')
+            ->toContain('data-editor-command="heading" data-editor-value="6" data-editor-label="Heading 6"')
+            ->and(substr_count($html, 'data-editor-command="heading"'))->toBe(6);
     });
 
     it('takes a toolbar of its own, its controls rendering only when the format has them', function () {
@@ -190,7 +192,7 @@ describe('the view', function () {
 
 describe('sanitizing', function () {
     it('keeps what the editor writes', function () {
-        $html = '<h1>A</h1><h2>B</h2><h3>C</h3><h4>D</h4><p>Text <strong>b</strong> <em>i</em> <u>u</u> <s>s</s> <code>c</code> <sup>2</sup> <sub>2</sub><br />line</p>'
+        $html = '<h1>A</h1><h2>B</h2><h3>C</h3><h4>D</h4><h5>E</h5><h6>F</h6><p>Text <strong>b</strong> <em>i</em> <u>u</u> <s>s</s> <code>c</code> <sup>2</sup> <sub>2</sub><br />line</p>'
             .'<ul><li><p>One</p></li></ul><ol start="3"><li><p>Three</p></li></ol><blockquote><p>Q</p></blockquote><pre><code>a &lt; b</code></pre><hr />'
             .'<details><summary>More</summary><div><p>Hidden</p></div></details>';
 

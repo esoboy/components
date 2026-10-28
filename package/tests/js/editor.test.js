@@ -28,7 +28,7 @@ PRESETS.full = [...PRESETS.basic, 'code-block', 'image', 'audio', 'video', 'file
 // What the view writes into data-format (RichTextFormat::client()).
 const format = features => ({
     features,
-    headings: [1, 2, 3, 4],
+    headings: [1, 2, 3, 4, 5, 6],
     colors: ['#6b7280', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#3b82f6', '#a855f7', '#db2777'],
     highlights: ['#fef08a', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fbcfe8', '#fecaca', '#fed7aa', '#e5e7eb'],
     highlightText: '#171717',
@@ -230,17 +230,19 @@ describe('styles', () => {
         expect(element.value).toBe('<p>Hello world</p>')
     })
 
+    it('keeps pasted sizes, the nearest it offers', () => {
+        const [element] = mount('<p>Hello</p>')
+
+        element.editor.commands.setTextSelection(6)
+        paste(element, { 'text/html': '<p><span style="font-size: 16px">a</span><span style="font-size: 21px">b</span></p>' })
+
+        expect(element.value).toBe('<p>Hello<span style="font-size: 16px;">a</span><span style="font-size: 20px;">b</span></p>')
+    })
+
     it('reads its own styles back, and snaps pasted ones to the nearest it offers', () => {
         const [element] = mount('<p style="text-align: right; margin-left: 2em; line-height: 2;"><span style="color: rgb(220, 38, 38); font-size: 10.5pt; font-family: Songti SC, SimSun;">a</span> <span style="color: #111; font-family: Inter, sans-serif;">b</span> <span style="background-color: rgb(255, 255, 0)">c</span> <span style="color: #ff5555">d</span> <span style="background-color: #fff">e</span></p>')
 
         expect(element.value).toBe('<p style="text-align: right; margin-left: 2em; line-height: 2;"><span style="color: rgb(220, 38, 38); font-family: SimSun, &quot;Songti SC&quot;, serif; font-size: 14px;">a</span> b <mark style="background-color: rgb(254, 240, 138); color: rgb(23, 23, 23);">c</mark> <span style="color: rgb(220, 38, 38);">d</span> e</p>')
-    })
-
-    it('drops a pasted size of body text, but keeps one copied within an editor', async () => {
-        const { cleanPastedHTML } = await import('../../resources/js/heavy/editor/styles.js')
-
-        expect(cleanPastedHTML('<p><span style="font-size: 16px; color: red">a</span><span style="font-size: 24px">b</span></p>')).toBe('<p><span style="color: red;">a</span><span style="font-size: 24px">b</span></p>')
-        expect(cleanPastedHTML('<p data-pm-slice="1 1 []"><span style="font-size: 16px">a</span></p>')).toBe('<p data-pm-slice="1 1 []"><span style="font-size: 16px">a</span></p>')
     })
 })
 
@@ -252,6 +254,58 @@ describe('blocks', () => {
         expect(tasks.map(node => node.type)).toEqual(['taskList', 'taskList', 'bulletList'])
         expect(tasks[0].content.map(item => [item.attrs.checked, item.content[0].content[0].text])).toEqual([[true, 'Done'], [false, 'Todo']])
         expect(tasks[1].content[0].attrs.checked).toBe(true)
+    })
+
+    it('keeps a paragraph after a last table or image to write in, out of its value', () => {
+        const [element, events] = mount('<p>Intro</p><img src="/a.png">')
+
+        element.editor.commands.setTextSelection(1)
+
+        expect(element.editor.state.doc.lastChild.type.name).toBe('paragraph')
+        expect(element.value).toBe('<p>Intro</p><img src="/a.png" style="display: block; max-width: 100%; height: auto;">')
+        expect(events).toEqual([])
+
+        element.value = '<p>Intro</p><img src="/a.png" style="display:block;max-width:100%;height:auto">'
+
+        expect(element.editor.state.selection.from).toBe(1)
+    })
+
+    it('writes six levels of headings, and indents code with Tab', () => {
+        const [element] = mount('<h5>Five</h5><h6>Six</h6><pre><code>a</code></pre>')
+
+        expect(element.value).toBe('<h5>Five</h5><h6>Six</h6><pre><code>a</code></pre>')
+
+        element.editor.commands.setTextSelection(element.editor.state.doc.content.size - 2)
+        element.editor.view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }))
+
+        expect(element.value).toContain('<pre><code>    a</code></pre>')
+    })
+
+    it('resizes media by their handles, as a width in px or the full width', () => {
+        const [element] = mount('<img src="/a.png" style="width: 200px; margin-left: auto; margin-right: auto;">')
+        const media = element.querySelector('[data-editor-media="image"]')
+        const box = media.querySelector('[data-editor-media-box]')
+        const right = media.querySelector('[data-editor-resize="right"]')
+        const drag = (handle, to) => {
+            handle.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true, clientX: 100 }))
+            handle.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: to }))
+            handle.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: to }))
+        }
+
+        Object.defineProperty(media, 'clientWidth', { value: 600 })
+        box.getBoundingClientRect = () => ({ width: 200 })
+
+        expect(media.dataset.align).toBe('center')
+        expect(box.style.width).toBe('200px')
+
+        drag(right, 150)
+
+        expect(element.value).toContain('style="display: block; width: 300px; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;"')
+
+        box.getBoundingClientRect = () => ({ width: 300 })
+        drag(right, 400)
+
+        expect(element.value).toContain('width: 100%;')
     })
 
     it('writes collapsible blocks as native details, and code blocks without a language', () => {
@@ -465,6 +519,17 @@ describe('views', () => {
 })
 
 describe('links', () => {
+    it('opens its link popover with Mod-K', () => {
+        const [element] = mount()
+        const opened = vi.fn()
+
+        control(element, '[data-editor-opens="link"]').addEventListener('click', opened)
+        select(element, 'world')
+        element.editor.view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }))
+
+        expect(opened).toHaveBeenCalledOnce()
+    })
+
     it('sets and removes the selection link from its popover, Enter applying it in place', () => {
         const [element] = mount()
         const input = control(element, '[data-editor-link-input]')

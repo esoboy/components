@@ -1,6 +1,7 @@
 /*
- * The drag handle: a grip beside the block under the pointer. Dragging it moves the
- * block, as ProseMirror moves a dragged node; clicking it selects the block.
+ * The drag handle: a grip beside the block under the pointer (a mouse or a pen).
+ * Dragging it moves the block, as ProseMirror moves a dragged node; clicking it selects
+ * the block.
  */
 
 import { Extension } from '@tiptap/core'
@@ -43,7 +44,9 @@ export function dragHandle(handle) {
                         handle.hidden = false
                     }
 
+                    // Touch has nothing to point with: no handle for it.
                     const move = event => {
+                        if (event.pointerType === 'touch') return hide()
                         if (event.target === handle || handle.contains(event.target)) return
 
                         const position = blockAt(view, event.clientY)

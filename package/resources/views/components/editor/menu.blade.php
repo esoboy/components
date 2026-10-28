@@ -22,7 +22,7 @@ $fonts = [
     'kaiti' => __('ui::editor.font-kaiti'),
     'fangsong' => __('ui::editor.font-fangsong'),
 ];
-$headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3 => __('ui::editor.heading-3'), 4 => __('ui::editor.heading-4')];
+$headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3 => __('ui::editor.heading-3'), 4 => __('ui::editor.heading-4'), 5 => __('ui::editor.heading-5'), 6 => __('ui::editor.heading-6')];
 
 // [label, trigger: icons or the current label, items: [command, value, label, icon, style], radio]
 [$label, $trigger, $items, $radio] = match ($name) {

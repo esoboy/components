@@ -33,7 +33,7 @@ final class RichText
      */
     public const TOOLS = ['toolbar', 'bubble-menu', 'slash-menu', 'drag-handle', 'find-replace', 'source', 'fullscreen', 'character-count', 'typography', 'markdown'];
 
-    public const HEADINGS = [1, 2, 3, 4];
+    public const HEADINGS = [1, 2, 3, 4, 5, 6];
 
     /**
      * Text colors: mid tones that read on light and dark pages alike.

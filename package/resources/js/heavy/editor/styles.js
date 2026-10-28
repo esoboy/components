@@ -103,26 +103,6 @@ export function nearestSize(value, sizes) {
     return size > 0 ? `${nearest(size, sizes)}px` : null
 }
 
-/**
- * Pasted from elsewhere (not copied within an editor): text at the size of body text
- * keeps no size, as pages and documents set one on every run of it.
- */
-export function cleanPastedHTML(html) {
-    if (html.includes('data-pm-slice')) return html
-
-    const template = document.createElement('template')
-
-    template.innerHTML = html
-
-    for (const element of template.content.querySelectorAll('[style*="font-size"]')) {
-        const size = pixels(element.style.fontSize)
-
-        if (size >= 13.5 && size <= 16.5) element.style.removeProperty('font-size')
-    }
-
-    return template.innerHTML
-}
-
 // textStyle's color, font and size: each its own style, or nothing.
 function textStyles(format) {
     const attributes = {}

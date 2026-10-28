@@ -26,7 +26,7 @@ import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
 import Typography from '@tiptap/extension-typography'
 import { CharacterCount, Placeholder } from '@tiptap/extensions'
-import { TextSelection } from '@tiptap/pm/state'
+import { NodeSelection, TextSelection } from '@tiptap/pm/state'
 import { CellSelection } from '@tiptap/pm/tables'
 import StarterKit from '@tiptap/starter-kit'
 import { marked } from 'marked'
@@ -37,11 +37,10 @@ import { dragHandle } from './editor/drag.js'
 import { Find, findKey } from './editor/find.js'
 import { accepted, attachmentNode, embedSource } from './editor/media.js'
 import { Audio, PlainCodeBlock, Picture, Video, collapsible, embed, file, formulas, tables, tasks, toMathML } from './editor/nodes.js'
-import { ClearFormatting, cleanPastedHTML, styleExtensions } from './editor/styles.js'
+import { ClearFormatting, styleExtensions } from './editor/styles.js'
 import { emojiMenu, slashMenu } from './editor/suggest.js'
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform ?? '')
-const MEDIA = ['image', 'video', 'audio', 'file', 'embed']
 const MATH = ['inlineMath', 'blockMath']
 const ROVE = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
 
@@ -66,11 +65,13 @@ export class EditorElement extends HTMLElement {
 
     #editor = null
     #focused = null
+    #reported = ''
     #format = null
     #tools = []
     #requests = new Set()
     #selected = null
     #anchor = null
+    #context = ''
     #menus = []
     #mathPreview = 0
 
@@ -85,7 +86,7 @@ export class EditorElement extends HTMLElement {
 
         if (! content) return
 
-        this.#format = { features: [], headings: [1, 2, 3, 4], colors: [], highlights: [], fonts: [], sizes: [], lineHeights: [], indents: 8, platforms: [], styles: {}, ...JSON.parse(this.dataset.format || '{}') }
+        this.#format = { features: [], headings: [1, 2, 3, 4, 5, 6], colors: [], highlights: [], fonts: [], sizes: [], lineHeights: [], indents: 8, platforms: [], styles: {}, ...JSON.parse(this.dataset.format || '{}') }
         this.#tools = (this.dataset.tools ?? 'toolbar').split(/\s+/).filter(Boolean)
 
         const html = content.innerHTML
@@ -105,12 +106,19 @@ export class EditorElement extends HTMLElement {
                     'aria-label': this.dataset.label ?? '',
                     ...this.#aria(),
                 }),
-                transformPastedHTML: cleanPastedHTML,
                 handlePaste: (view, event) => this.#paste(event),
                 handleDrop: (view, event, slice, moved) => this.#drop(view, event, moved),
             },
             onUpdate: () => {
-                writeHidden(this, this.dataset.name, this.value)
+                const value = this.value
+
+                writeHidden(this, this.dataset.name, value)
+
+                // A change that leaves the value as it was (the paragraph kept after a last
+                // table or image) isn't one.
+                if (value === this.#reported) return
+
+                this.#reported = value
                 this.dispatchEvent(new Event('input', { bubbles: true }))
             },
             onFocus: () => {
@@ -131,6 +139,7 @@ export class EditorElement extends HTMLElement {
             },
         })
 
+        this.#reported = this.value
         this.#listen()
         this.#prepareControls(this)
         this.#sync()
@@ -163,10 +172,11 @@ export class EditorElement extends HTMLElement {
         return this.#editor
     }
 
+    // The HTML, without the empty paragraph kept last to write after a table or image.
     get value() {
         if (! this.#editor) return this.querySelector('[data-slot="editor-content"]')?.innerHTML.trim() ?? ''
 
-        return this.#editor.isEmpty ? '' : this.#editor.getHTML()
+        return this.#editor.isEmpty ? '' : this.#editor.getHTML().replace(/<p><\/p>$/, '')
     }
 
     // From the server (wire:model): its HTML replaces ours, without reporting back. The
@@ -174,10 +184,22 @@ export class EditorElement extends HTMLElement {
     set value(value) {
         value ??= ''
 
-        if (! this.#editor || value === this.value || createDocument(value, this.#editor.schema).eq(this.#editor.state.doc)) return
+        if (! this.#editor || value === this.value || this.#holds(value)) return
 
         this.#editor.commands.setContent(value, { emitUpdate: false })
+        this.#reported = this.value
         writeHidden(this, this.dataset.name, this.value)
+    }
+
+    // Whether the editor has this content, give or take its last empty paragraph.
+    #holds(html) {
+        const incoming = createDocument(html, this.#editor.schema)
+        const { doc } = this.#editor.state
+        const last = doc.lastChild
+
+        if (incoming.eq(doc)) return true
+
+        return doc.childCount > 1 && last.type.name === 'paragraph' && ! last.content.size && incoming.eq(doc.copy(doc.content.cut(0, doc.content.size - last.nodeSize)))
     }
 
     /**
@@ -204,7 +226,8 @@ export class EditorElement extends HTMLElement {
         const labels = { expand: 'Expand', collapse: 'Collapse', task: 'Done', ...JSON.parse(this.dataset.labels || '{}') }
 
         return [
-            // No trailing empty paragraph: the value stays the HTML that was written.
+            // A paragraph is kept after a last table or image, to write after it; the value
+            // leaves it out.
             StarterKit.configure({
                 heading: has('heading') && { levels: this.#format.headings },
                 bold: has('bold') && {},
@@ -220,7 +243,6 @@ export class EditorElement extends HTMLElement {
                 blockquote: has('blockquote') && {},
                 horizontalRule: has('horizontal-rule') && {},
                 codeBlock: false,
-                trailingNode: false,
             }),
             Placeholder.configure({ placeholder: this.dataset.placeholder ?? '' }),
             styleExtensions(this.#format),
@@ -247,13 +269,13 @@ export class EditorElement extends HTMLElement {
         ].flat().filter(Boolean)
     }
 
-    // The bubble menus: for selected text, in a table, on media, on a formula.
+    // The bubble menus: for selected text, in a table, on a selected block, on a formula.
     #bubbles(templates) {
         const node = state => state.selection.node?.type.name
         const menus = {
             text: ({ editor, view, state, from, to, element }) => state.selection instanceof TextSelection && ! state.selection.empty && !! state.doc.textBetween(from, to).trim() && ! editor.isActive('codeBlock') && focused(view, element),
             table: ({ editor, view, state, element }) => editor.isActive('table') && (state.selection.empty || state.selection instanceof CellSelection) && focused(view, element),
-            media: ({ view, state, element }) => MEDIA.includes(node(state)) && focused(view, element),
+            node: ({ view, state, element }) => state.selection instanceof NodeSelection && ! MATH.includes(node(state)) && focused(view, element),
             math: ({ view, state, element }) => MATH.includes(node(state)) && focused(view, element),
         }
 
@@ -264,7 +286,7 @@ export class EditorElement extends HTMLElement {
             shouldShow: props => props.editor.isEditable && shouldShow(props),
             // The table's menu sits above the table, not the cursor.
             getReferencedVirtualElement: name === 'table' ? () => this.#tableRect() : undefined,
-            options: { placement: 'top', offset: 8, flip: {}, shift: { padding: 8 } },
+            options: { placement: 'top', offset: 8, flip: {}, shift: { padding: 8 }, onShow: () => queueMicrotask(() => this.#sync(true)) },
         }))
     }
 
@@ -431,6 +453,14 @@ export class EditorElement extends HTMLElement {
             }
         }
 
+        // Mod-K: the link's popover, from the toolbar or the bubble menu, whichever shows.
+        if ((event.key === 'k' || event.key === 'K') && (MAC ? event.metaKey : event.ctrlKey) && this.#editor.view.dom.contains(target)) {
+            const link = this.#all('[data-editor-opens="link"]').find(control => control.isConnected && ! control.disabled && (control.checkVisibility?.() ?? true))
+
+            event.preventDefault()
+            link?.click()
+        }
+
         // Find opens over the browser's own, from the text or the bar.
         if ((event.key === 'f' || event.key === 'F') && (MAC ? event.metaKey : event.ctrlKey) && ! event.altKey && this.#part('editor-find') && this.contains(target)) {
             event.preventDefault()
@@ -478,7 +508,7 @@ export class EditorElement extends HTMLElement {
 
         if (math) this.#fillMath(math, '', false)
 
-        this.#sync()
+        this.#sync(true)
     }
 
     // Sets the selection's link to the address, or removes it for none.
@@ -768,23 +798,35 @@ export class EditorElement extends HTMLElement {
             .map(name => [name, this.getAttribute(name)]))
     }
 
-    // The controls show what is on at the selection and what can be done there.
-    #sync() {
+    /**
+     * The controls show what is on at the selection and what can be done there. What can
+     * be done depends on where the selection is, so it is asked again when that changes
+     * (or when a menu or popover opens: force), undo and redo every time; controls out of
+     * sight wait to be shown, but a menu's items still say which is current.
+     */
+    #sync(force = false) {
         const editor = this.#editor
 
         if (! editor) return
 
         const editable = editor.isEditable && ! this.hasAttribute('data-source')
-        const shown = control => ! control.closest('[popover]') || control.closest('[popover]').matches(':popover-open')
+        const { selection } = editor.state
+        const path = $position => Array.from({ length: $position.depth + 1 }, (_, depth) => $position.node(depth).type.name).join('/')
+        const context = [editable, selection.toJSON().type, selection.empty, selection.node?.type.name, path(selection.$from), path(selection.$to)].join('|')
+        const fresh = force || context !== this.#context
+        const shown = control => control.isConnected && (! control.closest('[popover]') || control.closest('[popover]').matches(':popover-open'))
+
+        this.#context = context
 
         for (const control of this.#all('[data-editor-command]')) {
-            const command = COMMANDS[control.dataset.editorCommand]
+            const name = control.dataset.editorCommand
+            const command = COMMANDS[name]
             const value = control.dataset.editorValue ?? ''
+            const visible = command && shown(control)
 
-            if (! command) continue
+            if (! command || (! visible && control.getAttribute('role') !== 'menuitemradio')) continue
 
-            // Menus closed are checked when they open.
-            if (shown(control)) control.disabled = ! editable || ! this.#can(control.dataset.editorCommand, value, editor.can().chain().focus())
+            if (visible && (fresh || name === 'undo' || name === 'redo')) control.disabled = ! editable || ! this.#can(name, value, editor.can().chain().focus())
             if (command.active) control.setAttribute(control.getAttribute('role') === 'menuitemradio' ? 'aria-checked' : 'aria-pressed', String(command.active(editor, value)))
         }
 

@@ -23,7 +23,7 @@ final class EditorControls
     /**
      * What /, typed in the text, lists: blocks and media.
      */
-    public const SLASH = ['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule', 'media', 'embed', 'table', 'details', 'math'];
+    public const SLASH = ['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule', 'media', 'embed', 'table', 'details', 'math'];
 
     /** The formatting that clearing takes off. */
     private const FORMATTING = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height'];
@@ -36,7 +36,7 @@ final class EditorControls
         return match ($control) {
             'undo', 'redo' => true,
             'paragraph' => $format->has('heading'),
-            'heading-1', 'heading-2', 'heading-3', 'heading-4' => $format->has('heading'),
+            'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6' => $format->has('heading'),
             'color' => $format->has('color', 'highlight'),
             'clear-formatting' => $format->has(...self::FORMATTING),
             'indent', 'outdent' => $format->has('indent', 'bullet-list', 'ordered-list', 'task-list'),

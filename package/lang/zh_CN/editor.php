@@ -13,6 +13,8 @@ return [
     'heading-2' => '标题 2',
     'heading-3' => '标题 3',
     'heading-4' => '标题 4',
+    'heading-5' => '标题 5',
+    'heading-6' => '标题 6',
     'font-family' => '字体',
     'font-default' => '默认字体',
     'font-sans-serif' => '无衬线体',
@@ -81,6 +83,7 @@ return [
     'alt-text' => '替代文字',
     'alt-placeholder' => '描述这张图片…',
     'replace-media' => '替换',
+    'selection' => '所选内容',
     'delete' => '删除',
     'embed' => '嵌入视频',
     'embed-placeholder' => '粘贴 YouTube、B 站等视频链接',
@@ -121,4 +124,5 @@ return [
     'source' => 'HTML 源码',
     'fullscreen' => '全屏',
     'drag-handle' => '拖动以移动，点击以选中',
+    'characters' => '字',
 ];
