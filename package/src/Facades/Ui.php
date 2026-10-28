@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static string theme(string $scope = 'default')
  * @method static \Esoboy\Ui\Livewire\EditorHandle editor(string $id)
  * @method static string sanitize(?string $html, string|list<string> $format = 'full')
- * @method static string plainText(?string $html)
- * @method static void editorFormat(string $name, list<string> $features)
+ * @method static string plainText(?string $html, string|list<string> $format = 'full')
+ * @method static void editorFormat(string $name, list<string> $features, array<string, list<string>> $allow = [], list<string> $css = [])
  * @method static void embedPlatform(string $name, string $pattern, string $src)
  *
  * @see UiManager

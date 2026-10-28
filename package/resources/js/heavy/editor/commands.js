@@ -1,27 +1,76 @@
 /*
- * What [data-editor-command] buttons and menu items do: run(chain, value) builds the
- * command, active(editor, value) says whether it is on at the selection. A value comes
- * from data-editor-value (a heading's level, a color, a size, …).
+ * What [data-editor-command] buttons and menu items do: run(chain, value, editor) builds
+ * the command, active(editor, value) says whether it is on at the selection. A value
+ * comes from data-editor-value (a heading's level, a color, a size, …); values compare
+ * as CSS values, so a color written rgb() is the palette's hex.
  */
+
+import { CellSelection } from '@tiptap/pm/tables'
+import { EMBED_STYLE } from './media.js'
+import { alignOf } from './resize.js'
+import { blockStyle, computed, restyle, same } from './styles.js'
 
 const toggle = (command, name, attributes) => ({ run: chain => chain[command](), active: editor => editor.isActive(name, attributes) })
 
-// The textStyle attribute set, or unset ('' is the default).
-const textStyle = attribute => ({
-    run: (chain, value) => chain.setMark('textStyle', { [attribute]: value || null }).removeEmptyTextStyle(),
-    active: (editor, value) => (editor.getAttributes('textStyle')[attribute] ?? '') === value,
+// A property of the text style (span); '' unsets it.
+const textStyle = property => ({
+    run: (chain, value) => chain.setTextStyle(property, value || null),
+    active: (editor, value) => same(computed(editor.getAttributes('textStyle').style, property), value),
 })
 
-const block = attribute => editor => editor.getAttributes('paragraph')[attribute] ?? editor.getAttributes('heading')[attribute]
+// A property of the selection's paragraphs and headings; '' unsets it.
+const block = (property, fallback = '') => ({
+    run: (chain, value) => chain.setBlockStyle(property, value || null),
+    active: (editor, value) => same(computed(blockStyle(editor), property) ?? fallback, value || fallback),
+})
 
-// On a selected image, video or embed.
-const media = attribute => ({
+const selected = editor => editor.state.selection.node ?? null
+
+// The selected image, video or embed's style, changed.
+const media = (change, active) => ({
     run: (chain, value, editor) => {
-        const node = editor.state.selection.node
+        const node = selected(editor)
 
-        return node && attribute in node.attrs ? chain.updateAttributes(node.type.name, { [attribute]: value || null }) : chain.command(() => false)
+        return node && 'style' in node.attrs ? chain.updateAttributes(node.type.name, { style: change(node, value) }) : chain.command(() => false)
     },
-    active: (editor, value) => (editor.state.selection.node?.attrs[attribute] ?? '') === value,
+    active: (editor, value) => !! selected(editor) && active(selected(editor), value),
+})
+
+const MARGINS = { left: { 'margin-left': null, 'margin-right': null }, center: { 'margin-left': 'auto', 'margin-right': 'auto' }, right: { 'margin-left': 'auto', 'margin-right': null } }
+
+// The cells of the selection, or the one the cursor is in, as [cell, position].
+function cells(state) {
+    if (state.selection instanceof CellSelection) {
+        const found = []
+
+        state.selection.forEachCell((cell, position) => found.push([cell, position]))
+
+        return found
+    }
+
+    const { $from } = state.selection
+
+    for (let depth = $from.depth; depth > 0; depth--) {
+        if (['tableCell', 'tableHeader'].includes($from.node(depth).type.name)) return [[$from.node(depth), $from.before(depth)]]
+    }
+
+    return []
+}
+
+// A property of the selected cells' style.
+const cell = property => ({
+    run: (chain, value) => chain.command(({ tr, state, dispatch }) => {
+        const found = cells(state)
+
+        if (dispatch) found.forEach(([node, position]) => tr.setNodeMarkup(position, undefined, { ...node.attrs, style: restyle(node.attrs.style, { [property]: value || null }) }))
+
+        return found.length > 0
+    }),
+    active: (editor, value) => {
+        const [first] = cells(editor.state)
+
+        return !! first && same(computed(first[0].attrs.style, property) ?? '', value)
+    },
 })
 
 export const COMMANDS = {
@@ -40,25 +89,22 @@ export const COMMANDS = {
     'subscript': toggle('toggleSubscript', 'subscript'),
 
     'color': textStyle('color'),
-    'font-family': textStyle('fontFamily'),
-    'font-size': textStyle('fontSize'),
+    'font-family': textStyle('font-family'),
+    'font-size': textStyle('font-size'),
     'highlight': {
-        run: (chain, color) => color ? chain.setHighlight({ color }) : chain.unsetHighlight(),
-        active: (editor, color) => color ? editor.isActive('highlight', { color }) : ! editor.isActive('highlight'),
+        run: (chain, color) => color ? chain.setHighlightColor(color) : chain.unsetHighlight(),
+        active: (editor, color) => color ? same(computed(editor.getAttributes('highlight').style, 'background-color'), color) : ! editor.isActive('highlight'),
     },
     'clear-formatting': { run: chain => chain.clearFormatting() },
 
-    'text-align': {
-        run: (chain, align) => chain.setTextAlign(align),
-        active: (editor, align) => (block('textAlign')(editor) ?? 'left') === align,
-    },
-    'line-height': {
-        run: (chain, height) => chain.setLineHeight(height || null),
-        active: (editor, height) => (block('lineHeight')(editor) ?? '') === height,
-    },
+    'text-align': block('text-align', 'left'),
+    'line-height': block('line-height'),
+    'margin-top': block('margin-top'),
+    'margin-bottom': block('margin-bottom'),
+    'letter-spacing': block('letter-spacing'),
     'indent': { run: chain => chain.indent() },
     'outdent': { run: chain => chain.outdent() },
-    'text-indent': { run: chain => chain.toggleTextIndent(), active: editor => !! editor.getAttributes('paragraph').textIndent },
+    'text-indent': { run: chain => chain.toggleTextIndent(), active: editor => !! computed(blockStyle(editor), 'text-indent') },
 
     'bullet-list': toggle('toggleBulletList', 'bulletList'),
     'ordered-list': toggle('toggleOrderedList', 'orderedList'),
@@ -67,6 +113,10 @@ export const COMMANDS = {
     'code-block': toggle('toggleCodeBlock', 'codeBlock'),
     'horizontal-rule': { run: chain => chain.setHorizontalRule() },
     'details': { run: chain => chain.setDetails(), active: editor => editor.isActive('details') },
+    'callout': {
+        run: (chain, look) => chain.setCallout(look || null),
+        active: (editor, look) => look ? editor.isActive('callout') && same(computed(editor.getAttributes('callout').style, 'border-left-color'), computed(look, 'border-left-color')) : ! editor.isActive('callout'),
+    },
 
     'table': { run: chain => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }) },
     'add-row-before': { run: chain => chain.addRowBefore() },
@@ -80,8 +130,21 @@ export const COMMANDS = {
     'header-row': { run: chain => chain.toggleHeaderRow() },
     'header-column': { run: chain => chain.toggleHeaderColumn() },
     'delete-table': { run: chain => chain.deleteTable() },
+    'cell-background': cell('background-color'),
+    'cell-align': cell('vertical-align'),
 
-    'media-size': media('size'),
-    'media-align': media('align'),
+    // Width: '' for its own (an embed's own is the page's); alignment by its margins.
+    'media-size': media(
+        (node, size) => restyle(node.attrs.style ?? (node.type.name === 'embed' ? EMBED_STYLE : null), { width: size || (node.type.name === 'embed' ? '100%' : null) }),
+        (node, size) => same(computed(node.attrs.style, 'width') ?? (node.type.name === 'embed' ? '100%' : ''), size || (node.type.name === 'embed' ? '100%' : '')),
+    ),
+    'media-align': media(
+        (node, align) => restyle(node.attrs.style, MARGINS[align] ?? MARGINS.left),
+        (node, align) => alignOf(node.attrs.style) === align,
+    ),
+    'caption': {
+        run: chain => chain.toggleCaption(),
+        active: editor => selected(editor)?.type.name === 'image' && editor.state.doc.resolve(editor.state.selection.from).parent.type.name === 'figure',
+    },
     'delete-node': { run: chain => chain.deleteSelection() },
 }

@@ -5,8 +5,8 @@ namespace Esoboy\Ui\Livewire;
 use Livewire\Component;
 
 /**
- * Ui::editor('body')->insert($attachments) / ->insertContent($html) / ->focus(), for the
- * Editor with that id.
+ * Ui::editor('body')->insert($attachments) / ->replaceImages($attachments) /
+ * ->insertContent($html) / ->focus(), for the Editor with that id.
  */
 final class EditorHandle
 {
@@ -26,6 +26,18 @@ final class EditorHandle
     public function insert(array $attachments): void
     {
         $this->component->dispatch('ui-editor', id: $this->id, action: 'insert', attachments: array_values($attachments), html: null);
+    }
+
+    /**
+     * Answers the Editor's editor-external-images event: the attachments the app made of
+     * the images it was given, in their order (null for one it didn't), which take
+     * their place wherever they are.
+     *
+     * @param  array<array<string, mixed>|null>  $attachments
+     */
+    public function replaceImages(array $attachments): void
+    {
+        $this->component->dispatch('ui-editor', id: $this->id, action: 'replace-images', attachments: array_values($attachments), html: null);
     }
 
     /**

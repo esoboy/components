@@ -2,7 +2,7 @@
 
 @use('Esoboy\Ui\Support\RichText')
 
-{{-- A control's dropdown: a choice of values (paragraph style, font, size, alignment, line height, media size), its button showing the current one, or the table's row and column commands. --}}
+{{-- A control's dropdown: a choice of values (paragraph style, font, size, alignment, line height, callout, media size, cell alignment), its button showing the current one, or the table's row and column commands. An item without a command labels the items after it. --}}
 @props([
     'name',
 ])
@@ -55,6 +55,18 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
         ['media-size', '75%', __('ui::editor.size-large'), null, null],
         ['media-size', '100%', __('ui::editor.size-full'), null, null],
     ], true],
+    'callout' => [__('ui::editor.callout'), 'message-square-warning', [
+        ['callout', '', __('ui::editor.callout-none'), 'ban', null],
+        ['callout', RichText::CALLOUTS['info'], __('ui::editor.callout-info'), 'info', null],
+        ['callout', RichText::CALLOUTS['success'], __('ui::editor.callout-success'), 'circle-check', null],
+        ['callout', RichText::CALLOUTS['warning'], __('ui::editor.callout-warning'), 'triangle-alert', null],
+        ['callout', RichText::CALLOUTS['danger'], __('ui::editor.callout-danger'), 'octagon-alert', null],
+    ], true],
+    'cell-align' => [__('ui::editor.cell-align'), 'align-vertical-justify-start', [
+        ['cell-align', 'top', __('ui::editor.align-top'), 'align-vertical-justify-start', null],
+        ['cell-align', 'middle', __('ui::editor.align-middle'), 'align-vertical-justify-center', null],
+        ['cell-align', 'bottom', __('ui::editor.align-bottom'), 'align-vertical-justify-end', null],
+    ], true],
     'table-rows' => [__('ui::editor.rows'), 'rows-3', [
         ['add-row-before', '', __('ui::editor.add-row-before'), 'between-horizontal-start', null],
         ['add-row-after', '', __('ui::editor.add-row-after'), 'between-horizontal-end', null],
@@ -67,7 +79,7 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
         ['header-column', '', __('ui::editor.header-column'), 'panel-left', null],
         ['delete-column', '', __('ui::editor.delete-column'), 'trash', null],
     ], false],
-    default => throw new InvalidArgumentException("[{$name}] is not an Editor menu; use heading, font-family, font-size, text-align, line-height, media-size, table-rows or table-columns."),
+    default => throw new InvalidArgumentException("[{$name}] is not an Editor menu; use heading, font-family, font-size, text-align, line-height, callout, media-size, cell-align, table-rows or table-columns."),
 };
 @endphp
 
@@ -86,6 +98,13 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
     </x-ui::dropdown-menu.trigger>
     <x-ui::dropdown-menu.content data-editor-menu-content="{{ $name }}">
         @foreach ($items as [$command, $value, $itemLabel, $icon, $style])
+        @if ($command === null)
+        @if (! $loop->first)
+        <x-ui::dropdown-menu.separator />
+        @endif
+        <x-ui::dropdown-menu.label>{{ $itemLabel }}</x-ui::dropdown-menu.label>
+        @continue
+        @endif
         <x-ui::dropdown-menu.item :role="$radio ? 'menuitemradio' : 'menuitem'" :aria-checked="$radio ? 'false' : false" data-editor-command="{{ $command }}" data-editor-value="{{ $value }}" data-editor-label="{{ $itemLabel }}" :variant="str_starts_with($command, 'delete') ? 'destructive' : 'default'">
             @if ($icon)
             <x-ui::icon :name="$icon" />

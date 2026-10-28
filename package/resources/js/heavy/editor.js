@@ -34,14 +34,23 @@ import { define, writeHidden } from '../support/element.js'
 import { clone, readTemplates } from '../support/templates.js'
 import { COMMANDS } from './editor/commands.js'
 import { dragHandle } from './editor/drag.js'
+import { Imports, externalImages } from './editor/external.js'
 import { Find, findKey } from './editor/find.js'
-import { accepted, attachmentNode, embedSource } from './editor/media.js'
-import { Audio, PlainCodeBlock, Picture, Video, collapsible, embed, file, formulas, tables, tasks, toMathML } from './editor/nodes.js'
-import { ClearFormatting, styleExtensions } from './editor/styles.js'
+import { accepted, attachmentNode, embedSource, safeUrl } from './editor/media.js'
+import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, picture, tables, tasks, toMathML } from './editor/nodes.js'
+import { wordLists } from './editor/paste.js'
+import { blockStyle, styleExtensions } from './editor/styles.js'
 import { emojiMenu, slashMenu } from './editor/suggest.js'
+import { uploads } from './editor/uploads.js'
+import { generic, passthrough, whitelist } from './editor/whitelist.js'
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform ?? '')
 const MATH = ['inlineMath', 'blockMath']
+
+// The nodes and marks that keep their whitelisted style (and other attributes), and the
+// marks that keep only other attributes.
+const STYLED = ['paragraph', 'heading', 'blockquote', 'bulletList', 'orderedList', 'listItem', 'taskList', 'taskItem', 'codeBlock', 'horizontalRule', 'details', 'detailsSummary', 'detailsContent', 'table', 'tableRow', 'tableCell', 'tableHeader', 'image', 'video', 'audio', 'file', 'embed', 'figure', 'figcaption', 'callout', 'textStyle', 'highlight', 'link']
+const MARKS = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript']
 const ROVE = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
 
 // Text that reads as Markdown: headings, lists, quotes, fences, tables, emphasis, links.
@@ -67,6 +76,10 @@ export class EditorElement extends HTMLElement {
     #focused = null
     #reported = ''
     #format = null
+    #whitelist = null
+    #imports = []
+    #hosts = []
+    #painter = null
     #tools = []
     #requests = new Set()
     #selected = null
@@ -88,6 +101,8 @@ export class EditorElement extends HTMLElement {
 
         this.#format = { features: [], headings: [1, 2, 3, 4, 5, 6], colors: [], highlights: [], fonts: [], sizes: [], lineHeights: [], indents: 8, platforms: [], styles: {}, ...JSON.parse(this.dataset.format || '{}') }
         this.#tools = (this.dataset.tools ?? 'toolbar').split(/\s+/).filter(Boolean)
+        this.#whitelist = whitelist(this.#format)
+        this.#hosts = (this.dataset.imageHosts ?? '').split(/\s+/).filter(Boolean)
 
         const html = content.innerHTML
 
@@ -106,8 +121,19 @@ export class EditorElement extends HTMLElement {
                     'aria-label': this.dataset.label ?? '',
                     ...this.#aria(),
                 }),
+                transformPastedHTML: wordLists,
+                // Pasted or dropped images from elsewhere: the app is asked to import them.
+                transformPasted: slice => {
+                    if (this.#has('image')) queueMicrotask(() => this.#importImages(externalImages(slice.content, this.#hosts)))
+
+                    return slice
+                },
                 handlePaste: (view, event) => this.#paste(event),
                 handleDrop: (view, event, slice, moved) => this.#drop(view, event, moved),
+                handleDOMEvents: {
+                    pointerup: () => this.#paint(),
+                    keyup: () => this.#paint(),
+                },
             },
             onUpdate: () => {
                 const value = this.value
@@ -223,9 +249,15 @@ export class EditorElement extends HTMLElement {
         const templates = readTemplates(this)
         const lists = has('bullet-list') || has('ordered-list')
         const max = Number(this.dataset.maxLength) || null
-        const labels = { expand: 'Expand', collapse: 'Collapse', task: 'Done', ...JSON.parse(this.dataset.labels || '{}') }
+        const labels = { expand: 'Expand', collapse: 'Collapse', task: 'Done', caption: '', ...JSON.parse(this.dataset.labels || '{}') }
+        const list = this.#whitelist
+        const styles = this.#format.styles
 
         return [
+            // What the whitelist keeps of every node and mark, and of the tags no feature
+            // writes.
+            passthrough(list, STYLED, MARKS),
+            generic(list),
             // A paragraph is kept after a last table or image, to write after it; the value
             // leaves it out.
             StarterKit.configure({
@@ -244,21 +276,26 @@ export class EditorElement extends HTMLElement {
                 horizontalRule: has('horizontal-rule') && {},
                 codeBlock: false,
             }),
-            Placeholder.configure({ placeholder: this.dataset.placeholder ?? '' }),
-            styleExtensions(this.#format),
-            ClearFormatting,
+            // The placeholder on the first paragraph, a caption's on an empty caption.
+            Placeholder.configure({
+                includeChildren: true,
+                placeholder: ({ node, pos, editor }) => node.type.name === 'figcaption' ? labels.caption : editor.state.doc.resolve(pos).depth ? '' : this.dataset.placeholder ?? '',
+            }),
+            styleExtensions(this.#format, list),
             has('superscript') && Superscript,
             has('subscript') && Subscript,
             has('task-list') && tasks(labels),
             has('details') && collapsible(labels),
             has('code-block') && PlainCodeBlock,
-            has('table') && tables(this.#format.styles),
-            has('image') && Picture,
+            has('table') && tables(styles, list),
+            has('image') && [picture(list), figures(styles), Imports],
             has('video') && Video,
             has('audio') && Audio,
-            has('file') && file(this.#format.styles.card),
+            has('file') && file(styles.card),
             has('embed') && embed(this.#format.platforms),
             has('math') && formulas(),
+            has('callout') && callout(styles),
+            accepted(this.#format.features).length && templates.uploading && uploads(templates.uploading),
             this.#tool('find-replace') && Find,
             this.#tool('character-count') && CharacterCount.configure({ limit: max, textCounter: characters }),
             this.#tool('typography') && Typography,
@@ -266,7 +303,7 @@ export class EditorElement extends HTMLElement {
             this.#tool('slash-menu') && templates.slash && slashMenu(templates.slash, option => this.#run(option)),
             has('emoji') && this.dataset.emoji && templates.emoji && emojiMenu(templates.emoji, this.dataset.emoji),
             this.#tool('bubble-menu') && this.#bubbles(templates),
-        ].flat().filter(Boolean)
+        ].flat(Infinity).filter(Boolean)
     }
 
     // The bubble menus: for selected text, in a table, on a selected block, on a formula.
@@ -277,6 +314,8 @@ export class EditorElement extends HTMLElement {
             table: ({ editor, view, state, element }) => editor.isActive('table') && (state.selection.empty || state.selection instanceof CellSelection) && focused(view, element),
             node: ({ view, state, element }) => state.selection instanceof NodeSelection && ! MATH.includes(node(state)) && focused(view, element),
             math: ({ view, state, element }) => MATH.includes(node(state)) && focused(view, element),
+            // The cursor in a link: where it goes, to open, change or take off.
+            link: ({ editor, view, state, element }) => state.selection.empty && editor.isActive('link') && focused(view, element),
         }
 
         return Object.entries(menus).filter(([name]) => templates[`bubble-${name}`]).map(([name, shouldShow]) => BubbleMenu.extend({ name: `bubble-${name}` }).configure({
@@ -372,6 +411,7 @@ export class EditorElement extends HTMLElement {
         if (! this.#editor || ! id || id !== this.id) return
 
         if (action === 'insert') this.#insert(attachments, [...this.#requests].pop() ?? null)
+        if (action === 'replace-images') this.#replaceImages(attachments, this.#imports.at(-1))
         if (action === 'insert-content' && html) this.#editor.chain().focus().insertContent(html).run()
         if (action === 'focus') this.#editor.commands.focus()
     }
@@ -403,6 +443,10 @@ export class EditorElement extends HTMLElement {
         if (action === 'replace') editor.chain().replace(this.#field('editor-replace-input')).findNext(0).run()
         if (action === 'replace-all') editor.commands.replaceAll(this.#field('editor-replace-input'))
         if (action === 'find-close') this.#find(false)
+        if (action === 'format-painter') this.#pick(! this.#painter)
+        if (action === 'dismiss-upload') editor.commands.removeUpload(value)
+        if (action === 'image-link-apply') this.#imageLink(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-image-link-input]')?.value ?? '')
+        if (action === 'image-link-remove') this.#imageLink(control.closest('[popover]'), '')
 
         // A control in a menu or a popover opens one elsewhere: the toolbar's.
         if (action === 'open') this.querySelector(`[data-slot="editor-toolbar"] [data-editor-opens="${control.dataset.editorValue}"]`)?.click()
@@ -467,6 +511,11 @@ export class EditorElement extends HTMLElement {
             this.#find(true)
         }
 
+        if (event.key === 'Escape' && this.#painter) {
+            event.preventDefault()
+            this.#pick(false)
+        }
+
         if (event.key === 'Escape' && this.hasAttribute('data-fullscreen') && ! event.defaultPrevented && ! document.querySelector('[popover]:not([popover="manual"]):popover-open')) {
             event.preventDefault()
             this.#fullscreen(false)
@@ -494,6 +543,12 @@ export class EditorElement extends HTMLElement {
         const link = popover.querySelector('[data-editor-link-input]')
         const embed = popover.querySelector('[data-editor-embed-input]')
         const math = popover.querySelector('[data-editor-math-form]')
+        const imageLink = popover.querySelector('[data-editor-image-link-input]')
+
+        if (imageLink) {
+            imageLink.value = editor.state.selection.node?.attrs.href ?? ''
+            imageLink.select()
+        }
 
         if (link) {
             link.value = editor.getAttributes('link').href ?? ''
@@ -600,10 +655,13 @@ export class EditorElement extends HTMLElement {
         if (! accepted(this.#format.features).length) return
 
         const { from, to } = range ?? this.#editor.state.selection
-        const request = { from, to }
+        const request = { from, to, id: `upload-${Date.now()}-${this.#requests.size}` }
 
         this.#requests.add(request)
         if (this.#requests.size > 20) this.#requests.delete(this.#requests.values().next().value)
+
+        // Files take a while to upload: a placeholder stands where they will go.
+        if (files.length) this.#editor.commands.addUpload?.(request.id, from)
 
         this.dispatchEvent(new CustomEvent('editor-media', {
             bubbles: true,
@@ -612,10 +670,11 @@ export class EditorElement extends HTMLElement {
     }
 
     #insert(attachments, request) {
-        const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this.#format.features)).filter(Boolean)
+        const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this.#format.features, this.#format.styles.card)).filter(Boolean)
 
         if (request) this.#requests.delete(request)
         if (! this.#editor) return
+        if (request) this.#editor.commands.removeUpload?.(request.id)
 
         // None: nothing was chosen.
         if (! nodes.length) return this.#editor.commands.focus()
@@ -624,6 +683,89 @@ export class EditorElement extends HTMLElement {
         const { from, to } = request ?? this.#editor.state.selection
 
         this.#editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
+    }
+
+    /**
+     * Asks the app to import images from elsewhere (editor-external-images, with their
+     * addresses): until it answers they show as importing; the attachments it answers
+     * with, in their order, take their place wherever they are by then.
+     */
+    #importImages(urls) {
+        const waiting = new Set(this.#imports.flatMap(request => request.urls))
+
+        urls = urls.filter(url => ! waiting.has(url))
+
+        if (! urls.length || ! this.#editor) return
+
+        const request = { urls }
+
+        this.#imports.push(request)
+        this.#editor.commands.setImporting([...waiting, ...urls])
+
+        this.dispatchEvent(new CustomEvent('editor-external-images', {
+            bubbles: true,
+            detail: { urls: [...urls], replace: attachments => this.#replaceImages(attachments, request) },
+        }))
+    }
+
+    #replaceImages(attachments, request) {
+        if (! request || ! this.#imports.includes(request) || ! this.#editor) return
+
+        const answers = new Map(request.urls.map((url, index) => [url, attachments?.[index]]).filter(([, attachment]) => attachment?.url && safeUrl(attachment.url)))
+        const { tr } = this.#editor.state
+
+        tr.doc.descendants((node, position) => {
+            const attachment = node.type.name === 'image' && answers.get(node.attrs.src)
+
+            if (attachment) tr.setNodeMarkup(position, undefined, { ...node.attrs, src: attachment.url, alt: node.attrs.alt || attachment.alt || null, width: node.attrs.width ?? attachment.width ?? null, height: node.attrs.height ?? attachment.height ?? null })
+        })
+
+        this.#imports = this.#imports.filter(waiting => waiting !== request)
+        tr.setMeta('addToHistory', false)
+        this.#editor.view.dispatch(tr)
+        this.#editor.commands.setImporting(this.#imports.flatMap(waiting => waiting.urls))
+    }
+
+    // Sets the selected image's link, or takes it off for none.
+    #imageLink(popover, href) {
+        href = href.trim()
+
+        if (this.#editor.state.selection.node?.type.name === 'image' && (! href || safeUrl(href))) this.#editor.chain().focus().updateAttributes('image', { href: href || null }).run()
+        popover?.hidePopover()
+    }
+
+    /**
+     * The format painter: picks up the selection's marks (but links) and its block's
+     * style, and puts them on the next text selected, once.
+     */
+    #pick(on) {
+        const { state } = this.#editor
+
+        this.#painter = on ? { marks: (state.storedMarks ?? state.selection.$from.marks()).filter(mark => mark.type.name !== 'link'), style: blockStyle(this.#editor) } : null
+        this.toggleAttribute('data-painting', on)
+        this.#sync()
+    }
+
+    #paint() {
+        const { state, view } = this.#editor ?? {}
+
+        if (! this.#painter || ! state || state.selection.empty) return
+
+        const { from, to } = state.selection
+        const { tr } = state
+
+        Object.values(state.schema.marks).filter(type => type.name !== 'link').forEach(type => tr.removeMark(from, to, type))
+        this.#painter.marks.forEach(mark => tr.addMark(from, to, mark))
+        state.doc.nodesBetween(from, to, (node, position) => {
+            if (! ['paragraph', 'heading'].includes(node.type.name)) return
+
+            tr.setNodeMarkup(position, undefined, { ...node.attrs, style: this.#painter.style })
+
+            return false
+        })
+
+        view.dispatch(tr)
+        this.#pick(false)
     }
 
     #paste(event) {
@@ -712,6 +854,9 @@ export class EditorElement extends HTMLElement {
 
         if (on) textarea.value = lines(this.value)
         else this.#editor.commands.setContent(textarea.value, { emitUpdate: true })
+
+        // Images written into the source from elsewhere are imported as pasted ones are.
+        if (! on && this.#has('image')) this.#importImages(externalImages(this.#editor.state.doc, this.#hosts))
 
         this.toggleAttribute('data-source', on)
         textarea.hidden = ! on
@@ -849,6 +994,7 @@ export class EditorElement extends HTMLElement {
         for (const control of this.querySelectorAll('[data-editor-action="find"]')) control.disabled = ! editable
 
         this.querySelector('[data-editor-action="source"]')?.setAttribute('aria-pressed', String(this.hasAttribute('data-source')))
+        this.querySelector('[data-editor-action="format-painter"]')?.setAttribute('aria-pressed', String(!! this.#painter))
         this.querySelector('[data-editor-action="fullscreen"]')?.setAttribute('aria-pressed', String(this.hasAttribute('data-fullscreen')))
 
         this.#syncSelection(editor)
@@ -857,12 +1003,18 @@ export class EditorElement extends HTMLElement {
         this.#rovingStart()
     }
 
-    // The media and formula menus' parts and fields, for the node selected.
+    // The media, formula and link menus' parts and fields, for the node selected or the link.
     #syncSelection(editor) {
         const node = editor.state.selection.node ?? null
         const type = node?.type.name
+        const href = editor.getAttributes('link').href ?? ''
 
         for (const part of this.#all('[data-editor-for]')) part.hidden = ! part.dataset.editorFor.split(' ').includes(type)
+
+        for (const link of this.#all('[data-editor-link-href]')) {
+            if (link.getAttribute('href') !== href) link.setAttribute('href', href)
+            link.textContent = href
+        }
 
         if (node === this.#selected) return
 

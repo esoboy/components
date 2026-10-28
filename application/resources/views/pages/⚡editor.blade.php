@@ -2,6 +2,8 @@
 
 use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Livewire\Sanitize;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -18,7 +20,7 @@ new class extends Component
 
     #[Sanitize]
     #[Validate('required')]
-    public string $article = '<h1>Full</h1><p>Everything basic has, and media, embeds, tables, collapsible blocks, formulas like <math><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\pi} + 1 = 0</annotation></semantics></math> and code.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:50%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><details><summary>Click to expand</summary><div><p>Hidden until opened.</p></div></details><pre><code>composer require esoboy/ui</code></pre>';
+    public string $article = '<h1>Full</h1><p>Everything basic has, and media, embeds, tables, collapsible blocks, formulas like <math><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\pi} + 1 = 0</annotation></semantics></math> and code.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:50%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><details><summary>Click to expand</summary><div><p>Hidden until opened.</p></div></details><pre><code>composer require esoboy/ui</code></pre><section style="padding:12px 16px;border-left:3px solid #f97316;background-color:rgba(249,115,22,0.08)"><p><strong>A section</strong> pasted from a WeChat article: the whitelist keeps the tag and its style.</p></section><aside style="padding:12px 16px;border-radius:6px;background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6"><p>A callout.</p></aside>';
 
     public ?string $published = null;
 
@@ -72,6 +74,27 @@ new class extends Component
         $this->drops = [];
     }
 
+    // editor-external-images: the app copies images from elsewhere and answers with its copies.
+    public function importImages(array $urls): void
+    {
+        $directory = public_path('demo/imported');
+        File::ensureDirectoryExists($directory);
+
+        Ui::editor('article')->replaceImages(array_map(function (string $url) use ($directory) {
+            $response = rescue(fn () => Http::timeout(10)->get($url), report: false);
+            $type = strtok((string) $response?->header('Content-Type'), ';');
+
+            if (! $response?->successful() || ! str_starts_with((string) $type, 'image/')) {
+                return null;
+            }
+
+            $name = md5($url).'.'.(explode('/', $type)[1] ?? 'img');
+            File::put("{$directory}/{$name}", $response->body());
+
+            return ['url' => "/demo/imported/{$name}", 'name' => basename((string) parse_url($url, PHP_URL_PATH)), 'mime' => $type];
+        }, $urls));
+    }
+
     public function kind(array $attachment): string
     {
         return in_array(strtok($attachment['mime'], '/'), ['image', 'audio', 'video'], true) ? strtok($attachment['mime'], '/') : 'file';
@@ -106,7 +129,8 @@ new class extends Component
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
             <x-ui::editor id="article" wire:model="article"
-                x-on:editor-media="$event.detail.files.length ? $wire.uploadMultiple('drops', $event.detail.files, () => $wire.insertDrops()) : $wire.pickMedia($event.detail.accept)" />
+                x-on:editor-media="$event.detail.files.length ? $wire.uploadMultiple('drops', $event.detail.files, () => $wire.insertDrops()) : $wire.pickMedia($event.detail.accept)"
+                x-on:editor-external-images="$wire.importImages($event.detail.urls)" />
             <x-ui::field.description>The media button asks the app (editor-media): here a library picker in a dialog, many at once; files dropped or pasted are uploaded first. Type / for blocks.</x-ui::field.description>
         </x-ui::field>
         <x-ui::button type="submit">Publish</x-ui::button>

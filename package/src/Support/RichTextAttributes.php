@@ -6,17 +6,18 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\Visitor\AttributeSanitizer\AttributeSanitizerInterface;
 
 /**
- * Keeps a rich text format's style declarations, each with an allowed value (written
- * as the format writes it, rgb() colors as hex), and embeds' players on their hosts.
+ * Keeps a style's declarations whose property is whitelisted, their values as written
+ * unless they could run or load something (expression(), javascript:, a url() that isn't
+ * http(s) or relative, escapes, comments); and embeds' players on their hosts only.
  */
 final class RichTextAttributes implements AttributeSanitizerInterface
 {
     /**
-     * @param  array<string, array<string, list<string>|string>>  $styles  element => property => values or a pattern
+     * @param  list<string>  $css
      * @param  list<string>  $hosts
      */
     public function __construct(
-        private readonly array $styles,
+        private readonly array $css,
         private readonly array $hosts,
     ) {}
 
@@ -38,16 +39,8 @@ final class RichTextAttributes implements AttributeSanitizerInterface
 
         $kept = [];
 
-        foreach (explode(';', $value) as $declaration) {
-            if (! str_contains($declaration, ':')) {
-                continue;
-            }
-
-            [$property, $declared] = array_map(trim(...), explode(':', $declaration, 2));
-            $property = strtolower($property);
-            $allowed = $this->styles[$element][$property] ?? null;
-
-            if ($allowed !== null && ($declared = self::match(self::normalize($declared), $allowed)) !== null) {
+        foreach (self::declarations($value) as [$property, $declared]) {
+            if (in_array($property, $this->css, true) && self::safe($declared)) {
                 $kept[$property] = "{$property}:{$declared}";
             }
         }
@@ -56,31 +49,73 @@ final class RichTextAttributes implements AttributeSanitizerInterface
     }
 
     /**
-     * @param  list<string>|string  $allowed
+     * A style's declarations as [property, value], split on the semicolons outside
+     * parentheses and quotes.
+     *
+     * @return list<array{string, string}>
      */
-    private static function match(string $value, array|string $allowed): ?string
+    public static function declarations(string $style): array
     {
-        if (is_string($allowed)) {
-            return preg_match($allowed, $value) ? $value : null;
+        $parts = [];
+        $part = '';
+        $depth = 0;
+        $quote = null;
+
+        foreach (mb_str_split($style) as $character) {
+            if ($quote !== null) {
+                $quote = $character === $quote ? null : $quote;
+            } elseif ($character === '"' || $character === "'") {
+                $quote = $character;
+            } elseif ($character === '(') {
+                $depth++;
+            } elseif ($character === ')') {
+                $depth = max(0, $depth - 1);
+            } elseif ($character === ';' && $depth === 0) {
+                $parts[] = $part;
+                $part = '';
+
+                continue;
+            }
+
+            $part .= $character;
         }
 
-        foreach ($allowed as $candidate) {
-            if (self::normalize($candidate) === $value) {
-                return $candidate;
+        $declarations = [];
+
+        foreach ([...$parts, $part] as $declaration) {
+            if (! str_contains($declaration, ':')) {
+                continue;
+            }
+
+            [$property, $value] = explode(':', $declaration, 2);
+            $value = trim(preg_replace('/\s+/', ' ', $value) ?? '');
+
+            // Unbalanced, a value could carry a declaration of its own: it goes.
+            if ($value !== '' && ! str_contains($value, ';')) {
+                $declarations[] = [strtolower(trim($property)), $value];
             }
         }
 
-        return null;
+        return $declarations;
     }
 
-    // Lower case, quotes and spaces around punctuation gone, 0px as 0, rgb() as hex.
-    private static function normalize(string $value): string
+    private static function safe(string $value): bool
     {
-        $value = strtolower(trim(preg_replace('/\s+/', ' ', $value) ?? ''));
-        $value = preg_replace('/\s*([,()\/])\s*/', '$1', str_replace(['"', "'"], '', $value)) ?? '';
-        $value = preg_replace('/(?<![\w.])0(?:px|em|rem|%)(?![\w%])/', '0', $value) ?? '';
+        if (preg_match('~expression\s*\(|javascript:|vbscript:|-moz-binding|behavior|@import|[\\\\<>{}]|/\*~i', $value)) {
+            return false;
+        }
 
-        return preg_replace_callback('/^rgb\((\d{1,3}),(\d{1,3}),(\d{1,3})\)$/', fn (array $rgb) => sprintf('#%02x%02x%02x', ...array_map(fn (string $channel) => min(255, (int) $channel), array_slice($rgb, 1))), $value) ?? '';
+        preg_match_all('~url\(\s*([\'"]?)(.*?)\1\s*\)~i', $value, $urls);
+
+        foreach ($urls[2] as $url) {
+            $scheme = parse_url(trim($url), PHP_URL_SCHEME);
+
+            if (is_string($scheme) && ! in_array(strtolower($scheme), ['http', 'https'], true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function plays(string $src): bool

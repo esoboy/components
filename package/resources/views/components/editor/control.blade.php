@@ -24,10 +24,14 @@ $rich = RichText::resolve($format);
 @case('font-size')
 @case('text-align')
 @case('line-height')
+@case('callout')
 <x-ui::editor.menu :name="$name" :attributes="$attributes" />
 @break
 @case('color')
 <x-ui::editor.color :attributes="$attributes" />
+@break
+@case('spacing')
+<x-ui::editor.spacing :attributes="$attributes" />
 @break
 @case('link')
 <x-ui::editor.link :attributes="$attributes" />

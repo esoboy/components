@@ -11,11 +11,12 @@
     'showError' => true,
 ])
 
-{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides what can be written, tools what it offers besides; the toolbar fits both unless the slot holds an <x-ui::editor.toolbar>. The HTML is sanitized to the format on the way in here; put #[Sanitize] with the same format on the property for the way back. --}}
+{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides what can be written and what pasted HTML keeps (its whitelist), tools what it offers besides; the toolbar fits both unless the slot holds an <x-ui::editor.toolbar>. The HTML is sanitized to the format on the way in here; put #[Sanitize] with the same format on the property for the way back. Images from hosts other than the page's and image-hosts are offered to the app to import (editor-external-images). --}}
 @props([
     'format' => 'full',
     'tools' => null,
     'maxLength' => null,
+    'imageHosts' => [],
     'placeholder' => null,
     'label' => null,
     'defaultValue' => null,
@@ -47,7 +48,8 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     'data-slot' => 'editor',
     'data-format' => json_encode($rich->client(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     'data-tools' => implode(' ', $tools),
-    'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox')], JSON_UNESCAPED_UNICODE),
+    'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox'), 'caption' => __('ui::editor.caption-placeholder')], JSON_UNESCAPED_UNICODE),
+    'data-image-hosts' => $imageHosts ? implode(' ', $imageHosts) : false,
     'data-max-length' => $maxLength ?? false,
     'data-emoji' => $emoji ?? false,
     'data-placeholder' => $placeholder ?? false,

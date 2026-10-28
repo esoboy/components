@@ -72,8 +72,8 @@ final class UiManager
     }
 
     /**
-     * Cleans HTML to what an Editor of the format writes, before it is stored or shown;
-     * #[Sanitize] does this for a Livewire property.
+     * Cleans HTML to the format's whitelist, before it is stored or shown; #[Sanitize]
+     * does this for a Livewire property, Rich Text before it shows.
      *
      * @param  string|list<string>  $format  text, basic, full, a named format or a list of features
      */
@@ -83,22 +83,29 @@ final class UiManager
     }
 
     /**
-     * The text of rich text, for search, summaries and length checks.
+     * The text of rich text (cleaned the same way first), for search, summaries and
+     * length checks.
+     *
+     * @param  string|list<string>  $format
      */
-    public function plainText(?string $html): string
+    public function plainText(?string $html, string|array $format = 'full'): string
     {
-        return RichText::plainText($html);
+        return RichText::plainText($html, $format);
     }
 
     /**
      * Names a format of features and presets, for format="…", #[Sanitize('…')] and
-     * sanitize(); register it in a service provider's boot().
+     * sanitize(), with more for its whitelist: tags and the attributes kept on them
+     * (['section' => ['style']]), and CSS properties. Register it in a service
+     * provider's boot().
      *
      * @param  list<string>  $features
+     * @param  array<string, list<string>>  $allow
+     * @param  list<string>  $css
      */
-    public function editorFormat(string $name, array $features): void
+    public function editorFormat(string $name, array $features, array $allow = [], array $css = []): void
     {
-        RichText::format($name, $features);
+        RichText::format($name, $features, $allow, $css);
     }
 
     /**

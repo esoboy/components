@@ -1,0 +1,610 @@
+{
+    "features": [
+        "heading",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "code",
+        "superscript",
+        "subscript",
+        "link",
+        "color",
+        "highlight",
+        "font-family",
+        "font-size",
+        "text-align",
+        "indent",
+        "text-indent",
+        "line-height",
+        "spacing",
+        "bullet-list",
+        "ordered-list",
+        "task-list",
+        "blockquote",
+        "horizontal-rule",
+        "emoji",
+        "code-block",
+        "image",
+        "audio",
+        "video",
+        "file",
+        "embed",
+        "table",
+        "details",
+        "math",
+        "callout",
+        "layout"
+    ],
+    "allow": {
+        "a": [
+            "href",
+            "target",
+            "rel",
+            "title",
+            "download",
+            "type",
+            "style"
+        ],
+        "abbr": [
+            "title",
+            "style"
+        ],
+        "address": [
+            "style"
+        ],
+        "annotation": [
+            "encoding"
+        ],
+        "article": [
+            "style"
+        ],
+        "aside": [
+            "style"
+        ],
+        "audio": [
+            "src",
+            "controls",
+            "preload",
+            "title",
+            "style"
+        ],
+        "b": [
+            "style"
+        ],
+        "bdi": [
+            "style"
+        ],
+        "bdo": [
+            "dir",
+            "style"
+        ],
+        "big": [
+            "style"
+        ],
+        "blockquote": [
+            "style"
+        ],
+        "br": [],
+        "center": [
+            "style"
+        ],
+        "cite": [
+            "style"
+        ],
+        "code": [
+            "style"
+        ],
+        "col": [
+            "span",
+            "style"
+        ],
+        "colgroup": [
+            "style"
+        ],
+        "dd": [
+            "style"
+        ],
+        "del": [
+            "style"
+        ],
+        "details": [
+            "style"
+        ],
+        "dfn": [
+            "style"
+        ],
+        "div": [
+            "style"
+        ],
+        "dl": [
+            "style"
+        ],
+        "dt": [
+            "style"
+        ],
+        "em": [
+            "style"
+        ],
+        "figcaption": [
+            "style"
+        ],
+        "figure": [
+            "style"
+        ],
+        "font": [
+            "color",
+            "face",
+            "size",
+            "style"
+        ],
+        "footer": [
+            "style"
+        ],
+        "h1": [
+            "style"
+        ],
+        "h2": [
+            "style"
+        ],
+        "h3": [
+            "style"
+        ],
+        "h4": [
+            "style"
+        ],
+        "h5": [
+            "style"
+        ],
+        "h6": [
+            "style"
+        ],
+        "header": [
+            "style"
+        ],
+        "hr": [
+            "style"
+        ],
+        "i": [
+            "style"
+        ],
+        "iframe": [
+            "src",
+            "title",
+            "allowfullscreen",
+            "loading",
+            "style"
+        ],
+        "img": [
+            "src",
+            "alt",
+            "title",
+            "width",
+            "height",
+            "style"
+        ],
+        "input": [
+            "type",
+            "checked",
+            "disabled",
+            "style"
+        ],
+        "ins": [
+            "style"
+        ],
+        "kbd": [
+            "style"
+        ],
+        "li": [
+            "style"
+        ],
+        "main": [
+            "style"
+        ],
+        "mark": [
+            "style"
+        ],
+        "math": [
+            "display"
+        ],
+        "menclose": [
+            "notation"
+        ],
+        "merror": [],
+        "mfrac": [
+            "linethickness"
+        ],
+        "mi": [
+            "mathvariant"
+        ],
+        "mmultiscripts": [],
+        "mn": [
+            "mathvariant"
+        ],
+        "mo": [
+            "stretchy",
+            "fence",
+            "separator",
+            "lspace",
+            "rspace",
+            "form",
+            "largeop",
+            "movablelimits",
+            "accent",
+            "minsize",
+            "maxsize",
+            "symmetric"
+        ],
+        "mover": [
+            "accent"
+        ],
+        "mpadded": [
+            "width",
+            "height",
+            "depth",
+            "lspace",
+            "voffset"
+        ],
+        "mphantom": [],
+        "mprescripts": [],
+        "mroot": [],
+        "mrow": [],
+        "ms": [],
+        "mspace": [
+            "width",
+            "height",
+            "depth"
+        ],
+        "msqrt": [],
+        "mstyle": [
+            "displaystyle",
+            "scriptlevel",
+            "mathcolor",
+            "mathbackground",
+            "mathsize"
+        ],
+        "msub": [],
+        "msubsup": [],
+        "msup": [],
+        "mtable": [
+            "columnalign",
+            "rowspacing",
+            "columnspacing",
+            "rowlines",
+            "columnlines",
+            "displaystyle"
+        ],
+        "mtd": [
+            "columnalign",
+            "columnspan",
+            "rowspan"
+        ],
+        "mtext": [
+            "mathvariant"
+        ],
+        "mtr": [],
+        "munder": [
+            "accentunder"
+        ],
+        "munderover": [
+            "accent",
+            "accentunder"
+        ],
+        "nav": [
+            "style"
+        ],
+        "none": [],
+        "ol": [
+            "start",
+            "type",
+            "style"
+        ],
+        "p": [
+            "style"
+        ],
+        "pre": [
+            "style"
+        ],
+        "q": [
+            "style"
+        ],
+        "s": [
+            "style"
+        ],
+        "samp": [
+            "style"
+        ],
+        "section": [
+            "style"
+        ],
+        "semantics": [],
+        "small": [
+            "style"
+        ],
+        "span": [
+            "style"
+        ],
+        "strong": [
+            "style"
+        ],
+        "sub": [
+            "style"
+        ],
+        "summary": [
+            "style"
+        ],
+        "sup": [
+            "style"
+        ],
+        "table": [
+            "style"
+        ],
+        "tbody": [
+            "style"
+        ],
+        "td": [
+            "colspan",
+            "rowspan",
+            "style"
+        ],
+        "tfoot": [
+            "style"
+        ],
+        "th": [
+            "colspan",
+            "rowspan",
+            "style"
+        ],
+        "thead": [
+            "style"
+        ],
+        "time": [
+            "datetime",
+            "style"
+        ],
+        "tr": [
+            "style"
+        ],
+        "u": [
+            "style"
+        ],
+        "ul": [
+            "style"
+        ],
+        "var": [
+            "style"
+        ],
+        "video": [
+            "src",
+            "poster",
+            "controls",
+            "preload",
+            "width",
+            "height",
+            "title",
+            "style"
+        ]
+    },
+    "css": [
+        "align-items",
+        "align-self",
+        "aspect-ratio",
+        "background",
+        "background-color",
+        "background-image",
+        "background-position",
+        "background-repeat",
+        "background-size",
+        "border",
+        "border-bottom",
+        "border-bottom-color",
+        "border-bottom-left-radius",
+        "border-bottom-right-radius",
+        "border-bottom-style",
+        "border-bottom-width",
+        "border-collapse",
+        "border-color",
+        "border-left",
+        "border-left-color",
+        "border-left-style",
+        "border-left-width",
+        "border-radius",
+        "border-right",
+        "border-right-color",
+        "border-right-style",
+        "border-right-width",
+        "border-spacing",
+        "border-style",
+        "border-top",
+        "border-top-color",
+        "border-top-left-radius",
+        "border-top-right-radius",
+        "border-top-style",
+        "border-top-width",
+        "border-width",
+        "box-shadow",
+        "box-sizing",
+        "caption-side",
+        "clear",
+        "color",
+        "column-gap",
+        "direction",
+        "display",
+        "flex",
+        "flex-basis",
+        "flex-direction",
+        "flex-grow",
+        "flex-shrink",
+        "flex-wrap",
+        "float",
+        "font",
+        "font-family",
+        "font-size",
+        "font-style",
+        "font-variant",
+        "font-weight",
+        "gap",
+        "height",
+        "justify-content",
+        "letter-spacing",
+        "line-height",
+        "list-style",
+        "list-style-position",
+        "list-style-type",
+        "margin",
+        "margin-bottom",
+        "margin-left",
+        "margin-right",
+        "margin-top",
+        "max-height",
+        "max-width",
+        "min-height",
+        "min-width",
+        "object-fit",
+        "opacity",
+        "overflow",
+        "overflow-wrap",
+        "overflow-x",
+        "overflow-y",
+        "padding",
+        "padding-bottom",
+        "padding-left",
+        "padding-right",
+        "padding-top",
+        "row-gap",
+        "table-layout",
+        "text-align",
+        "text-decoration",
+        "text-decoration-color",
+        "text-decoration-line",
+        "text-decoration-style",
+        "text-indent",
+        "text-shadow",
+        "text-transform",
+        "vertical-align",
+        "white-space",
+        "width",
+        "word-break",
+        "word-spacing",
+        "word-wrap"
+    ],
+    "headings": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+    ],
+    "colors": [
+        "#6b7280",
+        "#dc2626",
+        "#ea580c",
+        "#ca8a04",
+        "#16a34a",
+        "#3b82f6",
+        "#a855f7",
+        "#db2777"
+    ],
+    "highlights": [
+        "#fef08a",
+        "#bbf7d0",
+        "#bfdbfe",
+        "#e9d5ff",
+        "#fbcfe8",
+        "#fecaca",
+        "#fed7aa",
+        "#e5e7eb"
+    ],
+    "highlightText": "#171717",
+    "fonts": [
+        "sans-serif",
+        "serif",
+        "monospace",
+        "Arial, sans-serif",
+        "Georgia, serif",
+        "'Times New Roman', serif",
+        "'Courier New', monospace",
+        "'Microsoft YaHei', 'PingFang SC', sans-serif",
+        "SimSun, 'Songti SC', serif",
+        "SimHei, 'Heiti SC', sans-serif",
+        "KaiTi, 'Kaiti SC', serif",
+        "FangSong, STFangsong, serif"
+    ],
+    "sizes": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        18,
+        20,
+        24,
+        28,
+        32,
+        36,
+        48
+    ],
+    "lineHeights": [
+        "1",
+        "1.15",
+        "1.5",
+        "1.75",
+        "2",
+        "2.5",
+        "3"
+    ],
+    "indents": 8,
+    "spacings": [
+        "0",
+        "5px",
+        "10px",
+        "15px",
+        "20px",
+        "30px"
+    ],
+    "letterSpacings": [
+        "0",
+        "0.5px",
+        "1px",
+        "1.5px",
+        "2px",
+        "3px"
+    ],
+    "callouts": {
+        "info": "background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6",
+        "success": "background-color:rgba(22,163,74,0.1);border-left:4px solid #16a34a",
+        "warning": "background-color:rgba(202,138,4,0.12);border-left:4px solid #ca8a04",
+        "danger": "background-color:rgba(220,38,38,0.1);border-left:4px solid #dc2626"
+    },
+    "platforms": [
+        [
+            "^https?://(?:www\\.|m\\.)?(?:youtube\\.com/(?:watch\\?(?:.*&)?v=|embed/|shorts/|live/)|youtu\\.be/)([\\w-]{11})",
+            "https://www.youtube-nocookie.com/embed/$1"
+        ],
+        [
+            "^https?://(?:www\\.|m\\.)?bilibili\\.com/video/(BV\\w{10})",
+            "https://player.bilibili.com/player.html?bvid=$1&autoplay=0"
+        ],
+        [
+            "^https?://(?:www\\.)?vimeo\\.com/(\\d+)",
+            "https://player.vimeo.com/video/$1"
+        ],
+        [
+            "^https?://v\\.qq\\.com/x/(?:cover/\\w+/|page/)(\\w+)\\.html",
+            "https://v.qq.com/txp/iframe/player.html?vid=$1"
+        ],
+        [
+            "^https?://v\\.youku\\.com/v_show/id_([\\w=]+)\\.html",
+            "https://player.youku.com/embed/$1"
+        ]
+    ],
+    "styles": {
+        "cell": "border:1px solid rgba(128,128,128,0.4);padding:6px 10px;vertical-align:top",
+        "headerCell": "background-color:rgba(128,128,128,0.1);text-align:left",
+        "card": "display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(128,128,128,0.4);border-radius:8px;color:inherit;text-decoration:none",
+        "callout": "padding:12px 16px;border-radius:6px",
+        "figure": "margin:0",
+        "caption": "margin-top:6px;text-align:center;font-size:0.875em;color:#6b7280"
+    }
+}

@@ -1,6 +1,8 @@
 /*
  * The Editor's blocks beyond StarterKit, each written as plain HTML that reads anywhere
  * and parsed back from it: no data-* attributes or classes, inline style for the rest.
+ * Their style is the whitelisted one they came with (passthrough), or what the editor
+ * gives what it creates.
  */
 
 import { Node, mergeAttributes } from '@tiptap/core'
@@ -9,8 +11,11 @@ import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-detai
 import Image from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Table, TableCell, TableHeader, TableRow, createColGroup } from '@tiptap/extension-table'
-import { mediaStyle, parseAlign, parseSize, playable, safeUrl } from './media.js'
+import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state'
+import { EMBED_STYLE, playable, safeUrl } from './media.js'
 import { resizable } from './resize.js'
+import { computed, restyle } from './styles.js'
+import { declarations } from './whitelist.js'
 
 // Attributes the node writes itself, so they don't render as attributes of their own.
 const own = (fallback, parseHTML) => ({ default: fallback, parseHTML, renderHTML: () => ({}) })
@@ -92,12 +97,24 @@ function columnWidths(cell) {
     return widths.length === span && widths.every(width => width > 0) ? widths : null
 }
 
-const cell = (extension, style) => extension.extend({
+/**
+ * A cell: its whitelisted style, over the editor's border and padding unless it has a
+ * border of its own (a table copied from a page drew its borders with a class).
+ */
+const cell = (extension, style, list) => extension.extend({
     addAttributes() {
-        return { ...this.parent?.(), colwidth: own(null, columnWidths) }
-    },
-    renderHTML({ HTMLAttributes, ...props }) {
-        return this.parent({ ...props, HTMLAttributes: mergeAttributes(HTMLAttributes, { style }) })
+        return {
+            ...this.parent?.(),
+            colwidth: own(null, columnWidths),
+            style: {
+                default: style,
+                parseHTML: element => {
+                    const kept = list.style(element)
+
+                    return computed(kept, 'border-top-style') ? kept : restyle(style, Object.fromEntries(declarations(kept)))
+                },
+            },
+        }
     },
 })
 
@@ -105,39 +122,109 @@ const cell = (extension, style) => extension.extend({
  * Tables: collapsed borders and padded cells inline; column widths on <col>, the table
  * as wide as they add up to (or the page) and scrolling in a div when wider.
  */
-export function tables(styles) {
+export function tables(styles, list) {
     return [
         Table.extend({
-            renderHTML({ node }) {
+            // The div a table scrolls in is the table's own: it isn't kept as a block.
+            parseHTML: () => [{ tag: 'div', priority: 60, skip: true, getAttrs: element => element.children.length === 1 && element.firstElementChild.matches('table') ? null : false }, { tag: 'table' }],
+            renderHTML({ node, HTMLAttributes }) {
                 const { colgroup, tableWidth } = createColGroup(node, this.options.cellMinWidth)
 
-                return ['div', { style: 'overflow-x:auto' }, ['table', { style: `border-collapse:collapse;width:${tableWidth || '100%'}` }, colgroup, ['tbody', 0]]]
+                return ['div', { style: 'overflow-x:auto' }, ['table', mergeAttributes(HTMLAttributes, { style: `border-collapse:collapse;width:${tableWidth || '100%'}` }), colgroup, ['tbody', 0]]]
             },
         }).configure({ resizable: true, cellMinWidth: 48, allowTableNodeSelection: true }),
         TableRow,
-        cell(TableHeader, `${styles.cell};${styles.headerCell}`),
-        cell(TableCell, styles.cell),
+        cell(TableHeader, `${styles.cell};${styles.headerCell}`, list),
+        cell(TableCell, styles.cell, list),
     ]
 }
 
-const mediaAttributes = () => ({
-    size: own(null, parseSize),
-    align: own('center', parseAlign),
-})
+// The image of a link that holds nothing else.
+const linked = link => link.children.length === 1 && link.firstElementChild.matches('img[src]') && ! link.textContent.trim() ? link.firstElementChild : null
 
-// In its box while editing: as wide as the box once sized, else its own width.
-const boxed = ({ attrs }) => `display:block;max-width:100%;height:auto;width:${attrs.size ? '100%' : 'auto'}`
+/**
+ * Images: never a data: address (pasted screenshots go to the app as files instead);
+ * a link around one alone is its link. Sized and placed by their style.
+ */
+export function picture(list) {
+    const attributes = image => ({ src: image.getAttribute('src'), alt: image.getAttribute('alt'), title: image.getAttribute('title'), width: image.getAttribute('width'), height: image.getAttribute('height'), style: list.style(image), extras: list.extras(image) })
 
-// Images: never a data: address (pasted screenshots go to the app as files instead).
-export const Picture = Image.extend({
-    addAttributes() {
-        return { ...this.parent?.(), ...mediaAttributes() }
-    },
-    parseHTML: () => [{ tag: 'img[src]', getAttrs: image => safeUrl(image.getAttribute('src')) ? null : false }],
-    renderHTML: ({ node, HTMLAttributes }) => ['img', mergeAttributes(HTMLAttributes, { style: mediaStyle(node.attrs) })],
+    return Image.extend({
+        addAttributes() {
+            return { ...this.parent?.(), href: own(null, () => null) }
+        },
+        parseHTML: () => [
+            { tag: 'a[href]', priority: 70, getAttrs: link => linked(link) && safeUrl(linked(link).getAttribute('src')) && safeUrl(link.getAttribute('href')) ? { ...attributes(linked(link)), href: link.getAttribute('href') } : false },
+            { tag: 'img[src]', getAttrs: image => safeUrl(image.getAttribute('src')) ? null : false },
+        ],
+        renderHTML: ({ node, HTMLAttributes }) => node.attrs.href ? ['a', { href: node.attrs.href }, ['img', HTMLAttributes]] : ['img', HTMLAttributes],
+        // Images from elsewhere show while editing, whatever their host thinks of the page.
+        addNodeView: () => resizable('img', ({ attrs }) => ({ src: attrs.src, alt: attrs.alt, title: attrs.title, width: attrs.width, height: attrs.height, referrerpolicy: 'no-referrer' })),
+    })
+}
 
-    addNodeView: () => resizable('img', ({ attrs }) => ({ src: attrs.src, alt: attrs.alt, title: attrs.title, width: attrs.width, height: attrs.height }), boxed),
-})
+/**
+ * Captions: an image in a <figure> with its <figcaption> under it.
+ */
+export function figures(styles) {
+    return [
+        Node.create({
+            name: 'figure',
+            group: 'block',
+            content: 'image figcaption',
+            isolating: true,
+            draggable: true,
+            parseHTML: () => [{ tag: 'figure', priority: 60, getAttrs: figure => figure.querySelector('img[src]') ? null : false }],
+            renderHTML: ({ HTMLAttributes }) => ['figure', mergeAttributes({ style: styles.figure }, HTMLAttributes), 0],
+            addCommands: () => ({
+                // A caption under the selected image, or the image alone again.
+                toggleCaption: () => ({ state, tr, dispatch }) => {
+                    const { selection, schema } = state
+                    const image = selection.node?.type.name === 'image' ? selection.node : null
+
+                    if (! image) return false
+
+                    const $position = state.doc.resolve(selection.from)
+
+                    // Writing goes on in the new caption; without one, the image stays selected.
+                    if (dispatch && $position.parent.type.name === 'figure') {
+                        tr.replaceWith($position.before(), $position.after(), image)
+                        tr.setSelection(NodeSelection.create(tr.doc, $position.before()))
+                    } else if (dispatch) {
+                        tr.replaceWith(selection.from, selection.to, schema.nodes.figure.create(null, [image, schema.nodes.figcaption.create()]))
+                        tr.setSelection(TextSelection.create(tr.doc, selection.from + image.nodeSize + 2))
+                    }
+
+                    return true
+                },
+            }),
+            // A figure whose image went (replaced, deleted) leaves its caption as a paragraph.
+            addProseMirrorPlugins: () => [new Plugin({
+                appendTransaction: (transactions, previous, state) => {
+                    if (! transactions.some(transaction => transaction.docChanged)) return null
+
+                    const { tr } = state
+
+                    state.doc.descendants((node, position) => {
+                        if (node.type.name !== 'figure') return
+                        if (! node.firstChild?.attrs.src) tr.replaceWith(tr.mapping.map(position), tr.mapping.map(position + node.nodeSize), state.schema.nodes.paragraph.create(null, node.lastChild.content))
+
+                        return false
+                    })
+
+                    return tr.docChanged ? tr : null
+                },
+            })],
+        }),
+        Node.create({
+            name: 'figcaption',
+            content: 'inline*',
+            // Only in a figure: elsewhere it is a block like any other.
+            parseHTML: () => [{ tag: 'figcaption', context: 'figure/' }],
+            renderHTML: ({ HTMLAttributes }) => ['figcaption', mergeAttributes({ style: styles.caption }, HTMLAttributes), 0],
+        }),
+    ]
+}
 
 const source = element => element.getAttribute('src') ?? element.querySelector('source[src]')?.getAttribute('src')
 
@@ -153,14 +240,13 @@ export const Video = Node.create({
         width: { default: null },
         height: { default: null },
         title: { default: null },
-        ...mediaAttributes(),
     }),
 
     parseHTML: () => [{ tag: 'video', getAttrs: video => source(video) && safeUrl(source(video)) ? null : false }],
 
-    renderHTML: ({ node, HTMLAttributes }) => ['video', mergeAttributes(HTMLAttributes, { controls: 'controls', preload: 'metadata', style: mediaStyle(node.attrs) })],
+    renderHTML: ({ HTMLAttributes }) => ['video', mergeAttributes(HTMLAttributes, { controls: 'controls', preload: 'metadata' })],
 
-    addNodeView: () => resizable('video', ({ attrs }) => ({ src: attrs.src, poster: attrs.poster, title: attrs.title, width: attrs.width, height: attrs.height, controls: true, preload: 'metadata' }), boxed),
+    addNodeView: () => resizable('video', ({ attrs }) => ({ src: attrs.src, poster: attrs.poster, title: attrs.title, width: attrs.width, height: attrs.height, controls: true, preload: 'metadata' })),
 })
 
 export const Audio = Node.create({
@@ -176,38 +262,36 @@ export const Audio = Node.create({
 
     parseHTML: () => [{ tag: 'audio', getAttrs: audio => source(audio) && safeUrl(source(audio)) ? null : false }],
 
-    renderHTML: ({ HTMLAttributes }) => ['audio', mergeAttributes(HTMLAttributes, { controls: 'controls', preload: 'metadata', style: 'display:block;width:100%' })],
+    renderHTML: ({ HTMLAttributes }) => ['audio', mergeAttributes(HTMLAttributes, { controls: 'controls', preload: 'metadata' })],
 })
 
 /**
  * Files: a download link drawn as a card (clip, name, size) with inline style, so it
  * reads as one anywhere.
  */
-export function file(card) {
-    return Node.create({
-        name: 'file',
-        group: 'block',
-        atom: true,
-        draggable: true,
+export const file = card => Node.create({
+    name: 'file',
+    group: 'block',
+    atom: true,
+    draggable: true,
 
-        addAttributes: () => ({
-            href: own(null, link => link.getAttribute('href')),
-            name: own(null, link => link.getAttribute('download') || link.querySelector(':scope > span:nth-of-type(2)')?.textContent || link.textContent.trim()),
-            mime: own(null, link => link.getAttribute('type')),
-            size: own(null, link => link.querySelector(':scope > span:nth-of-type(3)')?.textContent ?? null),
-        }),
+    addAttributes: () => ({
+        href: own(null, link => link.getAttribute('href')),
+        name: own(null, link => link.getAttribute('download') || link.querySelector(':scope > span:nth-of-type(2)')?.textContent || link.textContent.trim()),
+        mime: own(null, link => link.getAttribute('type')),
+        size: own(null, link => link.querySelector(':scope > span:nth-of-type(3)')?.textContent ?? null),
+    }),
 
-        parseHTML: () => [{ tag: 'a[download][href]', priority: 60, getAttrs: link => safeUrl(link.getAttribute('href')) ? null : false }],
+    parseHTML: () => [{ tag: 'a[download][href]', priority: 80, getAttrs: link => safeUrl(link.getAttribute('href')) ? null : false }],
 
-        renderHTML: ({ node }) => [
-            'a',
-            { href: node.attrs.href, download: node.attrs.name ?? '', type: node.attrs.mime, style: card },
-            ['span', {}, '📎'],
-            ['span', {}, node.attrs.name ?? ''],
-            ...node.attrs.size ? [['span', { style: 'opacity:0.6' }, node.attrs.size]] : [],
-        ],
-    })
-}
+    renderHTML: ({ node, HTMLAttributes }) => [
+        'a',
+        mergeAttributes({ href: node.attrs.href, download: node.attrs.name ?? '', type: node.attrs.mime, style: card }, HTMLAttributes),
+        ['span', {}, '📎'],
+        ['span', {}, node.attrs.name ?? ''],
+        ...node.attrs.size ? [['span', { style: 'opacity:0.6' }, node.attrs.size]] : [],
+    ],
+})
 
 /**
  * Embeds: a platform's player in a 16:9 iframe; other addresses don't load. While
@@ -223,14 +307,42 @@ export function embed(platforms) {
         addAttributes: () => ({
             src: { default: null },
             title: { default: null },
-            ...mediaAttributes(),
         }),
 
         parseHTML: () => [{ tag: 'iframe[src]', getAttrs: frame => playable(frame.getAttribute('src'), platforms) ? null : false }],
 
-        renderHTML: ({ node, HTMLAttributes }) => ['iframe', mergeAttributes(HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy', style: mediaStyle({ ...node.attrs, size: node.attrs.size ?? '100%' }, ';aspect-ratio:16/9;border:0') })],
+        // A 16:9 player as wide as the page, unless its style says otherwise.
+        renderHTML: ({ HTMLAttributes }) => ['iframe', mergeAttributes({ style: EMBED_STYLE }, HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy' })],
 
-        addNodeView: () => resizable('iframe', ({ attrs }) => ({ src: attrs.src, title: attrs.title, allowfullscreen: true, loading: 'lazy' }), () => 'display:block;width:100%;height:auto;aspect-ratio:16/9;border:0'),
+        addNodeView: () => resizable('iframe', ({ attrs }) => ({ src: attrs.src, title: attrs.title, allowfullscreen: true, loading: 'lazy' })),
+    })
+}
+
+/**
+ * Callouts: an <aside> of blocks, tinted and barred inline (see RichText::CALLOUTS).
+ */
+export function callout(styles) {
+    return Node.create({
+        name: 'callout',
+        group: 'block',
+        content: 'block+',
+        defining: true,
+
+        parseHTML: () => [{ tag: 'aside', priority: 60 }],
+
+        renderHTML: ({ HTMLAttributes }) => ['aside', HTMLAttributes, 0],
+
+        addCommands: () => ({
+            // Wraps the selection's blocks in a callout of that look, changes the look of
+            // the one it is in, or takes it off for none.
+            setCallout: look => ({ editor, commands }) => {
+                const style = look ? `${styles.callout};${look}` : null
+
+                if (editor.isActive('callout')) return style ? commands.updateAttributes('callout', { style }) : commands.lift('callout')
+
+                return !! style && commands.wrapIn('callout', { style })
+            },
+        }),
     })
 }
 

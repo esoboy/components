@@ -8,26 +8,121 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerAction;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
 /**
- * A resolved rich text format (RichText::resolve()): its features, the sanitizer that
- * keeps exactly what they write, and what the Editor's script needs to write it.
+ * A resolved rich text format (RichText::resolve()): its features, its whitelist (the
+ * tags its features write, with their attributes, and the CSS properties of their
+ * style, plus what a named format adds), the sanitizer that keeps just that, and what
+ * the Editor's script needs to write it.
  */
 final class RichTextFormat
 {
-    // The inline styles the Editor writes beside the ones people choose.
+    // The inline styles the Editor writes for what it creates.
     public const CELL = 'border:1px solid rgba(128,128,128,0.4);padding:6px 10px;vertical-align:top';
 
     public const HEADER_CELL = 'background-color:rgba(128,128,128,0.1);text-align:left';
 
     public const CARD = 'display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(128,128,128,0.4);border-radius:8px;color:inherit;text-decoration:none';
 
+    public const CALLOUT = 'padding:12px 16px;border-radius:6px';
+
+    public const FIGURE = 'margin:0';
+
+    public const CAPTION = 'margin-top:6px;text-align:center;font-size:0.875em;color:#6b7280';
+
+    private const BLOCKS = ['p' => ['style'], 'h1' => ['style'], 'h2' => ['style'], 'h3' => ['style'], 'h4' => ['style'], 'h5' => ['style'], 'h6' => ['style']];
+
     private const MATHML = ['math' => ['display'], 'semantics' => [], 'annotation' => ['encoding'], 'mrow' => [], 'mi' => ['mathvariant'], 'mn' => ['mathvariant'], 'mo' => ['stretchy', 'fence', 'separator', 'lspace', 'rspace', 'form', 'largeop', 'movablelimits', 'accent', 'minsize', 'maxsize', 'symmetric'], 'ms' => [], 'mtext' => ['mathvariant'], 'mspace' => ['width', 'height', 'depth'], 'msup' => [], 'msub' => [], 'msubsup' => [], 'mfrac' => ['linethickness'], 'msqrt' => [], 'mroot' => [], 'mstyle' => ['displaystyle', 'scriptlevel', 'mathcolor', 'mathbackground', 'mathsize'], 'munder' => ['accentunder'], 'mover' => ['accent'], 'munderover' => ['accent', 'accentunder'], 'mtable' => ['columnalign', 'rowspacing', 'columnspacing', 'rowlines', 'columnlines', 'displaystyle'], 'mtr' => [], 'mtd' => ['columnalign', 'columnspan', 'rowspan'], 'mpadded' => ['width', 'height', 'depth', 'lspace', 'voffset'], 'mphantom' => [], 'menclose' => ['notation'], 'merror' => [], 'mmultiscripts' => [], 'mprescripts' => [], 'none' => []];
+
+    /**
+     * The tags each feature writes, with the attributes it writes on them.
+     */
+    private const TAGS = [
+        'heading' => self::BLOCKS,
+        'bold' => ['strong' => [], 'b' => []],
+        'italic' => ['em' => [], 'i' => []],
+        'underline' => ['u' => []],
+        'strike' => ['s' => [], 'del' => []],
+        'code' => ['code' => []],
+        'superscript' => ['sup' => []],
+        'subscript' => ['sub' => []],
+        'link' => ['a' => ['href', 'target', 'rel', 'title']],
+        'color' => ['span' => ['style']],
+        'highlight' => ['mark' => ['style']],
+        'font-family' => ['span' => ['style']],
+        'font-size' => ['span' => ['style']],
+        'text-align' => self::BLOCKS,
+        'indent' => self::BLOCKS,
+        'text-indent' => self::BLOCKS,
+        'line-height' => self::BLOCKS,
+        'spacing' => self::BLOCKS,
+        'bullet-list' => ['ul' => [], 'li' => []],
+        'ordered-list' => ['ol' => ['start', 'type'], 'li' => []],
+        'task-list' => ['ul' => ['style'], 'li' => ['style'], 'input' => ['type', 'checked', 'disabled']],
+        'blockquote' => ['blockquote' => []],
+        'horizontal-rule' => ['hr' => []],
+        'code-block' => ['pre' => [], 'code' => []],
+        'image' => ['img' => ['src', 'alt', 'title', 'width', 'height', 'style'], 'figure' => ['style'], 'figcaption' => ['style'], 'a' => ['href', 'target', 'rel']],
+        'audio' => ['audio' => ['src', 'controls', 'preload', 'title', 'style']],
+        'video' => ['video' => ['src', 'poster', 'controls', 'preload', 'width', 'height', 'title', 'style']],
+        'file' => ['a' => ['href', 'download', 'type', 'title', 'rel', 'style'], 'span' => ['style']],
+        'embed' => ['iframe' => ['src', 'title', 'allowfullscreen', 'loading', 'style']],
+        'table' => ['div' => ['style'], 'table' => ['style'], 'colgroup' => [], 'col' => ['span', 'style'], 'thead' => [], 'tbody' => [], 'tfoot' => [], 'tr' => ['style'], 'th' => ['colspan', 'rowspan', 'style'], 'td' => ['colspan', 'rowspan', 'style']],
+        'details' => ['details' => [], 'summary' => []],
+        'math' => self::MATHML,
+        'callout' => ['aside' => ['style']],
+        'layout' => ['section' => [], 'div' => [], 'article' => [], 'aside' => [], 'header' => [], 'footer' => [], 'main' => [], 'nav' => [], 'address' => [], 'center' => [], 'figure' => [], 'figcaption' => [], 'dl' => [], 'dt' => [], 'dd' => [], 'span' => [], 'small' => [], 'big' => [], 'abbr' => ['title'], 'cite' => [], 'q' => [], 'ins' => [], 'kbd' => [], 'samp' => [], 'var' => [], 'dfn' => [], 'time' => ['datetime'], 'bdi' => [], 'bdo' => ['dir'], 'font' => ['color', 'face', 'size']],
+    ];
+
+    /**
+     * The CSS properties each feature writes.
+     */
+    private const CSS = [
+        'color' => ['color'],
+        'highlight' => ['background-color', 'color'],
+        'font-family' => ['font-family'],
+        'font-size' => ['font-size'],
+        'text-align' => ['text-align'],
+        'indent' => ['margin-left'],
+        'text-indent' => ['text-indent'],
+        'line-height' => ['line-height'],
+        'spacing' => ['margin-top', 'margin-bottom', 'letter-spacing'],
+        'task-list' => ['list-style-type', 'padding-left', 'display', 'align-items', 'gap'],
+        'image' => ['display', 'width', 'max-width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'text-align', 'font-size', 'color'],
+        'video' => ['display', 'width', 'max-width', 'height', 'margin-left', 'margin-right'],
+        'audio' => ['display', 'width'],
+        'embed' => ['display', 'width', 'max-width', 'height', 'margin-left', 'margin-right', 'aspect-ratio', 'border'],
+        'file' => ['display', 'align-items', 'gap', 'padding', 'border', 'border-radius', 'color', 'text-decoration', 'opacity'],
+        'table' => ['overflow-x', 'border-collapse', 'width', 'min-width', 'border', 'padding', 'vertical-align', 'background-color', 'text-align'],
+        'callout' => ['background-color', 'border-left', 'padding', 'border-radius'],
+        'layout' => [
+            'color', 'background', 'background-color', 'background-image', 'background-size', 'background-position', 'background-repeat',
+            'font', 'font-family', 'font-size', 'font-style', 'font-weight', 'font-variant',
+            'text-align', 'text-indent', 'text-decoration', 'text-decoration-line', 'text-decoration-style', 'text-decoration-color', 'text-transform', 'text-shadow',
+            'line-height', 'letter-spacing', 'word-spacing', 'white-space', 'word-break', 'overflow-wrap', 'word-wrap', 'vertical-align', 'direction',
+            'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-width', 'border-style', 'border-color',
+            'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width', 'border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
+            'border-radius', 'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius', 'border-collapse', 'border-spacing',
+            'width', 'min-width', 'max-width', 'height', 'min-height', 'max-height', 'box-sizing',
+            'display', 'float', 'clear', 'overflow', 'overflow-x', 'overflow-y', 'opacity', 'box-shadow', 'aspect-ratio', 'object-fit',
+            'list-style', 'list-style-type', 'list-style-position',
+            'flex', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'align-items', 'align-self', 'gap', 'row-gap', 'column-gap',
+            'table-layout', 'caption-side',
+        ],
+    ];
 
     private ?HtmlSanitizer $sanitizer = null;
 
     /**
      * @param  list<string>  $features
+     * @param  array<string, list<string>>  $allow  tags and attributes a named format adds
+     * @param  list<string>  $css  CSS properties a named format adds
      */
-    public function __construct(public readonly array $features) {}
+    public function __construct(
+        public readonly array $features,
+        private readonly array $allow = [],
+        private readonly array $css = [],
+    ) {}
 
     /**
      * Whether it has any of these features.
@@ -62,9 +157,51 @@ final class RichTextFormat
     }
 
     /**
-     * Cleans HTML to what the format writes. Images, players and embeds whose address
-     * didn't pass go entirely, rather than stay as empty boxes; spans left without a
-     * style go too, their text kept.
+     * The tags kept, each with the attributes kept on it; with layout, style on all.
+     *
+     * @return array<string, list<string>>
+     */
+    public function whitelist(): array
+    {
+        $tags = ['p' => [], 'br' => [], 'div' => []];
+
+        foreach ([...array_map(fn (string $feature) => self::TAGS[$feature] ?? [], $this->features), $this->allow] as $more) {
+            foreach ($more as $tag => $attributes) {
+                $tags[$tag] = [...$tags[$tag] ?? [], ...$attributes];
+            }
+        }
+
+        if ($this->has('layout')) {
+            foreach ($tags as $tag => $attributes) {
+                if ($tag !== 'br' && ! isset(self::MATHML[$tag])) {
+                    $tags[$tag][] = 'style';
+                }
+            }
+        }
+
+        ksort($tags);
+
+        return array_map(fn (array $attributes) => array_values(array_unique($attributes)), $tags);
+    }
+
+    /**
+     * The CSS properties kept in a style.
+     *
+     * @return list<string>
+     */
+    public function css(): array
+    {
+        $properties = [...array_merge(...array_map(fn (string $feature) => self::CSS[$feature] ?? [], $this->features)), ...$this->css];
+
+        sort($properties);
+
+        return array_values(array_unique($properties));
+    }
+
+    /**
+     * Cleans HTML to the whitelist. Images, players and embeds whose address didn't
+     * pass go entirely, rather than stay as empty boxes; spans left without attributes
+     * go too, their text kept.
      */
     public function sanitize(string $html): string
     {
@@ -79,7 +216,8 @@ final class RichTextFormat
     }
 
     /**
-     * What the Editor's script reads from data-format.
+     * What the Editor's script reads from data-format: the features, the whitelist, and
+     * the values its controls offer.
      *
      * @return array<string, mixed>
      */
@@ -87,6 +225,8 @@ final class RichTextFormat
     {
         return [
             'features' => $this->features,
+            'allow' => $this->whitelist(),
+            'css' => $this->css(),
             'headings' => RichText::HEADINGS,
             'colors' => array_values(RichText::COLORS),
             'highlights' => array_values(RichText::HIGHLIGHTS),
@@ -95,108 +235,18 @@ final class RichTextFormat
             'sizes' => RichText::SIZES,
             'lineHeights' => RichText::LINE_HEIGHTS,
             'indents' => RichText::INDENTS,
+            'spacings' => RichText::SPACINGS,
+            'letterSpacings' => RichText::LETTER_SPACINGS,
+            'callouts' => RichText::CALLOUTS,
             'platforms' => array_values(RichText::platforms()),
-            'styles' => ['cell' => self::CELL, 'headerCell' => self::HEADER_CELL, 'card' => self::CARD],
+            'styles' => ['cell' => self::CELL, 'headerCell' => self::HEADER_CELL, 'card' => self::CARD, 'callout' => self::CALLOUT, 'figure' => self::FIGURE, 'caption' => self::CAPTION],
         ];
-    }
-
-    /**
-     * Each element's allowed declarations, property => allowed values (or a pattern).
-     *
-     * @return array<string, array<string, list<string>|string>>
-     */
-    public function styles(): array
-    {
-        $styles = [];
-        $allow = function (array $elements, array $declarations) use (&$styles) {
-            foreach ($elements as $element) {
-                $styles[$element] = [...$styles[$element] ?? [], ...$declarations];
-            }
-        };
-
-        $blocks = ['p', ...array_map(fn (int $level) => "h{$level}", RichText::HEADINGS)];
-        $size = '/^(\d{1,4}px|([1-9]\d?|100)%)$/';
-        $pixels = '/^\d{1,4}px$/';
-
-        if ($this->has('text-align')) {
-            $allow($blocks, ['text-align' => ['left', 'center', 'right', 'justify']]);
-        }
-
-        if ($this->has('indent')) {
-            $allow($blocks, ['margin-left' => array_map(fn (int $level) => ($level * 2).'em', range(1, RichText::INDENTS))]);
-        }
-
-        if ($this->has('text-indent')) {
-            $allow(['p'], ['text-indent' => ['2em']]);
-        }
-
-        if ($this->has('line-height')) {
-            $allow($blocks, ['line-height' => RichText::LINE_HEIGHTS]);
-        }
-
-        if ($this->has('color')) {
-            $allow(['span'], ['color' => array_values(RichText::COLORS)]);
-        }
-
-        if ($this->has('font-family')) {
-            $allow(['span'], ['font-family' => array_values(RichText::FONTS)]);
-        }
-
-        if ($this->has('font-size')) {
-            $allow(['span'], ['font-size' => array_map(fn (int $size) => "{$size}px", RichText::SIZES)]);
-        }
-
-        if ($this->has('highlight')) {
-            $allow(['mark'], ['background-color' => array_values(RichText::HIGHLIGHTS), 'color' => [RichText::HIGHLIGHT_TEXT]]);
-        }
-
-        if ($this->has('task-list')) {
-            $allow(['ul'], ['list-style-type' => ['none'], 'padding-left' => ['0']]);
-            $allow(['li'], ['display' => ['flex'], 'align-items' => ['baseline'], 'gap' => ['0.5em']]);
-        }
-
-        if ($this->has('image', 'video', 'embed')) {
-            $allow(['img', 'video', 'iframe'], ['display' => ['block'], 'width' => $size, 'max-width' => ['100%'], 'height' => ['auto'], 'margin-left' => ['auto'], 'margin-right' => ['auto']]);
-            $allow(['iframe'], ['aspect-ratio' => ['16/9'], 'border' => ['0']]);
-        }
-
-        if ($this->has('audio')) {
-            $allow(['audio'], ['display' => ['block'], 'width' => ['100%']]);
-        }
-
-        if ($this->has('file')) {
-            $allow(['a'], self::declarations(self::CARD));
-            $allow(['span'], ['opacity' => ['0.6']]);
-        }
-
-        if ($this->has('table')) {
-            $allow(['div'], ['overflow-x' => ['auto']]);
-            $allow(['table'], ['border-collapse' => ['collapse'], 'width' => '/^(\d{1,5}px|100%)$/', 'min-width' => $pixels]);
-            $allow(['col'], ['width' => $pixels, 'min-width' => $pixels]);
-            $allow(['td', 'th'], [...self::declarations(self::CELL), 'text-align' => ['left', 'center', 'right', 'justify']]);
-            $allow(['th'], self::declarations(self::HEADER_CELL));
-        }
-
-        return $styles;
-    }
-
-    /**
-     * @return array<string, list<string>>
-     */
-    private static function declarations(string $style): array
-    {
-        $declarations = [];
-
-        foreach (explode(';', $style) as $declaration) {
-            [$property, $value] = explode(':', $declaration, 2);
-            $declarations[$property] = array_values(array_unique([...$declarations[$property] ?? [], $value]));
-        }
-
-        return $declarations;
     }
 
     private function config(): HtmlSanitizerConfig
     {
+        $whitelist = $this->whitelist();
+
         $config = (new HtmlSanitizerConfig)
             ->defaultAction(HtmlSanitizerAction::Block)
             ->withMaxInputLength(-1)
@@ -204,79 +254,36 @@ final class RichTextFormat
             ->allowRelativeLinks()
             ->allowMediaSchemes(['http', 'https'])
             ->allowRelativeMedias()
-            ->withAttributeSanitizer(new RichTextAttributes($this->styles(), $this->hosts()));
+            ->withAttributeSanitizer(new RichTextAttributes($this->css(), $this->hosts()));
 
-        // Elements and their attributes, by the features that write them; anything else
-        // is unwrapped, its text kept (a div, or older HTML's <b> and <i>, keep theirs).
-        $elements = ['p' => ['style'], 'br' => [], 'div' => ['style']];
-        $add = function (array $more) use (&$elements) {
-            foreach ($more as $element => $attributes) {
-                $elements[$element] = array_values(array_unique([...$elements[$element] ?? [], ...$attributes]));
-            }
-        };
-
-        $features = [
-            'heading' => array_fill_keys(array_map(fn (int $level) => "h{$level}", RichText::HEADINGS), ['style']),
-            'bold' => ['strong' => [], 'b' => []],
-            'italic' => ['em' => [], 'i' => []],
-            'underline' => ['u' => []],
-            'strike' => ['s' => [], 'del' => []],
-            'code' => ['code' => []],
-            'superscript' => ['sup' => []],
-            'subscript' => ['sub' => []],
-            'link' => ['a' => ['href', 'target', 'rel', 'title']],
-            'color' => ['span' => ['style']],
-            'font-family' => ['span' => ['style']],
-            'font-size' => ['span' => ['style']],
-            'highlight' => ['mark' => ['style']],
-            'bullet-list' => ['ul' => [], 'li' => []],
-            'ordered-list' => ['ol' => ['start'], 'li' => []],
-            'task-list' => ['ul' => ['style'], 'li' => ['style'], 'input' => ['type', 'checked', 'disabled']],
-            'blockquote' => ['blockquote' => []],
-            'horizontal-rule' => ['hr' => []],
-            'code-block' => ['pre' => [], 'code' => []],
-            'image' => ['img' => ['src', 'alt', 'title', 'width', 'height', 'style']],
-            'audio' => ['audio' => ['src', 'controls', 'preload', 'title', 'style']],
-            'video' => ['video' => ['src', 'poster', 'controls', 'preload', 'width', 'height', 'title', 'style']],
-            'file' => ['a' => ['href', 'download', 'type', 'title', 'rel', 'style'], 'span' => ['style']],
-            'embed' => ['iframe' => ['src', 'title', 'allowfullscreen', 'loading', 'referrerpolicy', 'style']],
-            'table' => ['table' => ['style'], 'colgroup' => [], 'col' => ['span', 'style'], 'thead' => [], 'tbody' => [], 'tr' => [], 'th' => ['colspan', 'rowspan', 'style'], 'td' => ['colspan', 'rowspan', 'style']],
-            'details' => ['details' => [], 'summary' => []],
-            'math' => self::MATHML,
-        ];
-
-        foreach ($this->features as $feature) {
-            $add($features[$feature] ?? []);
+        foreach ($whitelist as $tag => $attributes) {
+            $config = $config->allowElement($tag, $attributes);
         }
 
-        foreach ($elements as $element => $attributes) {
-            $config = $config->allowElement($element, $attributes);
-        }
-
-        if (isset($elements['a'])) {
+        if (isset($whitelist['a'])) {
             $config = $config->forceAttribute('a', 'rel', 'noopener noreferrer nofollow');
         }
 
         // A task's box, never a field of a form around the content.
-        if ($this->has('task-list')) {
+        if (isset($whitelist['input'])) {
             $config = $config->forceAttribute('input', 'type', 'checkbox')->forceAttribute('input', 'disabled', 'disabled');
         }
 
         foreach (['audio', 'video'] as $media) {
-            if ($this->has($media)) {
+            if (isset($whitelist[$media])) {
                 $config = $config->forceAttribute($media, 'controls', 'controls')->forceAttribute($media, 'preload', 'metadata');
             }
         }
 
-        if ($this->has('embed')) {
+        if (isset($whitelist['iframe'])) {
             $config = $config->forceAttribute('iframe', 'allowfullscreen', 'allowfullscreen')->forceAttribute('iframe', 'loading', 'lazy');
         }
 
         // These go with what is inside them. (Head elements, style and title, can't be
         // dropped inside a body: their text stays, escaped.)
-        foreach (['script', 'template', 'noscript', 'iframe', 'object', 'embed', 'svg', 'math', 'textarea', 'select', 'button', 'input'] as $element) {
-            if (! isset($elements[$element])) {
-                $config = $config->dropElement($element);
+        foreach (['script', 'template', 'noscript', 'iframe', 'object', 'embed', 'svg', 'math', 'textarea', 'select', 'button', 'input'] as $tag) {
+            if (! isset($whitelist[$tag])) {
+                $config = $config->dropElement($tag);
             }
         }
 

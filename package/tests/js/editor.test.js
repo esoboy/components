@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import full from '../Fixtures/editor-full.json'
 
 /*
  * ProseMirror measures the selection to scroll it into view; jsdom lays nothing out.
@@ -6,6 +7,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 beforeAll(async () => {
     const rect = () => ({ top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 })
 
+    // jsdom has no canvas to read color names with.
+    HTMLCanvasElement.prototype.getContext = () => null
     Range.prototype.getClientRects = () => []
     Range.prototype.getBoundingClientRect = rect
     Element.prototype.getClientRects = () => []
@@ -18,32 +21,18 @@ afterEach(() => {
     document.body.innerHTML = ''
 })
 
-const PRESETS = {
-    text: [],
-    basic: ['heading', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'emoji'],
-}
-
-PRESETS.full = [...PRESETS.basic, 'code-block', 'image', 'audio', 'video', 'file', 'embed', 'table', 'details', 'math']
-
-// What the view writes into data-format (RichTextFormat::client()).
-const format = features => ({
+// What the view writes into data-format (RichTextFormat::client()): the full format's,
+// kept in step with the server by EditorTest; a list of features narrows its whitelist.
+const format = (features, allow = null) => ({
+    ...full,
     features,
-    headings: [1, 2, 3, 4, 5, 6],
-    colors: ['#6b7280', '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#3b82f6', '#a855f7', '#db2777'],
-    highlights: ['#fef08a', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fbcfe8', '#fecaca', '#fed7aa', '#e5e7eb'],
-    highlightText: '#171717',
-    fonts: ['sans-serif', 'serif', 'monospace', 'Arial, sans-serif', 'Georgia, serif', "'Times New Roman', serif", "'Courier New', monospace", "'Microsoft YaHei', 'PingFang SC', sans-serif", "SimSun, 'Songti SC', serif", "SimHei, 'Heiti SC', sans-serif", "KaiTi, 'Kaiti SC', serif", 'FangSong, STFangsong, serif'],
-    sizes: [12, 13, 14, 15, 16, 18, 20, 24, 28, 32, 36, 48],
-    lineHeights: ['1', '1.15', '1.5', '1.75', '2', '2.5', '3'],
-    indents: 8,
-    platforms: [['^https?://(?:www\\.|m\\.)?(?:youtube\\.com/(?:watch\\?(?:.*&)?v=|embed/|shorts/|live/)|youtu\\.be/)([\\w-]{11})', 'https://www.youtube-nocookie.com/embed/$1'], ['^https?://(?:www\\.|m\\.)?bilibili\\.com/video/(BV\\w{10})', 'https://player.bilibili.com/player.html?bvid=$1&autoplay=0']],
-    styles: { cell: 'border:1px solid rgba(128,128,128,0.4);padding:6px 10px;vertical-align:top', headerCell: 'background-color:rgba(128,128,128,0.1);text-align:left', card: 'display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(128,128,128,0.4);border-radius:8px;color:inherit;text-decoration:none' },
+    allow: allow ?? (features.length === full.features.length ? full.allow : { p: [], br: [], div: [] }),
 })
 
 const COMMANDS = ['undo', 'redo', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'clear-formatting', 'indent', 'outdent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule', 'table', 'details']
 const TOGGLES = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'details']
 
-function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = PRESETS.full, tools = 'toolbar find-replace source fullscreen character-count markdown', attributes = '' } = {}) {
+function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.features, tools = 'toolbar find-replace source fullscreen character-count markdown', attributes = '' } = {}) {
     document.body.innerHTML = `
         <form>
             <eso-editor id="body" data-slot="editor" data-format='${JSON.stringify(format(features)).replaceAll("'", '&#39;')}' data-tools="${tools}" data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
@@ -53,6 +42,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = PRESETS.f
                     <button type="button" data-editor-action="find" aria-label="Find" aria-pressed="false"></button>
                     <button type="button" data-editor-action="source" aria-label="Source" aria-pressed="false"></button>
                     <button type="button" data-editor-action="fullscreen" aria-label="Full screen" aria-pressed="false"></button>
+                    <button type="button" data-editor-action="format-painter" aria-label="Format painter" aria-pressed="false"></button>
                     <button type="button" data-editor-opens="link" commandfor="link" aria-pressed="false" aria-label="Link"></button>
                     <div id="link" popover="auto" data-editor-field-content>
                         <input type="url" data-editor-link-input>
@@ -88,6 +78,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = PRESETS.f
                 <div data-slot="editor-content">${html}</div>
                 <textarea data-slot="editor-source" hidden></textarea>
                 <div data-slot="editor-footer"><span data-editor-count></span></div>
+                <template data-template="uploading"><span data-slot="editor-uploading"><span>Uploading…</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
                 <div id="tip" popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label></span><kbd data-editor-tip-keys hidden></kbd></div>
             </eso-editor>
         </form>`
@@ -102,6 +93,28 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = PRESETS.f
 }
 
 const control = (element, selector) => element.querySelector(selector)
+
+// A command's control, made for the test: clicked to run it, or asked whether it is on.
+function commandControl(element, command, value) {
+    const button = Object.assign(document.createElement('button'), { type: 'button' })
+
+    button.dataset.editorCommand = command
+    button.dataset.editorValue = value
+    button.setAttribute('aria-pressed', 'false')
+    element.querySelector('[data-slot="editor-toolbar"]').append(button)
+
+    return button
+}
+
+const run = (element, command, value = '') => commandControl(element, command, value).click()
+
+function active(element, command, value = '') {
+    const button = commandControl(element, command, value)
+
+    element.editor.view.dispatch(element.editor.state.tr)
+
+    return button.getAttribute('aria-pressed') === 'true'
+}
 const button = (element, command) => control(element, `[data-editor-command="${command}"]`)
 const select = (element, text) => {
     let from = 0
@@ -214,35 +227,53 @@ describe('commands', () => {
 })
 
 describe('styles', () => {
-    it('writes colors, highlights and text layout as inline style', () => {
+    it('writes colors, highlights, spacing and text layout as inline style', () => {
         const [element] = mount('<p>Hello world</p>')
 
         select(element, 'Hello')
         control(element, '[data-editor-command="color"]').click()
         select(element, 'world')
         control(element, '[data-editor-command="highlight"]').click()
-        element.editor.chain().setTextAlign('center').setLineHeight('1.75').indent().indent().toggleTextIndent().run()
+        element.editor.chain().setBlockStyle('text-align', 'center').setBlockStyle('line-height', '1.75').setBlockStyle('margin-bottom', '10px').setBlockStyle('letter-spacing', '1px').indent().indent().toggleTextIndent().run()
 
-        expect(element.value).toBe('<p style="text-align: center; margin-left: 4em; line-height: 1.75; text-indent: 2em;"><span style="color: rgb(220, 38, 38);">Hello</span> <mark style="background-color: rgb(187, 247, 208); color: rgb(23, 23, 23);">world</mark></p>')
+        expect(element.value).toBe('<p style="text-align: center; line-height: 1.75; margin-bottom: 10px; letter-spacing: 1px; margin-left: 4em; text-indent: 2em;"><span style="color: rgb(220, 38, 38);">Hello</span> <mark style="background-color: rgb(187, 247, 208); color: rgb(23, 23, 23);">world</mark></p>')
+        expect(active(element, 'text-align', 'center')).toBe(true)
 
         element.editor.chain().selectAll().clearFormatting().run()
 
         expect(element.value).toBe('<p>Hello world</p>')
     })
 
-    it('keeps pasted sizes, the nearest it offers', () => {
-        const [element] = mount('<p>Hello</p>')
+    it('changes one property of a style, keeping the others', () => {
+        const [element] = mount('<p><span style="font-size: 20px; color: rgb(255, 0, 0);">Hello</span> world</p>')
 
-        element.editor.commands.setTextSelection(6)
-        paste(element, { 'text/html': '<p><span style="font-size: 16px">a</span><span style="font-size: 21px">b</span></p>' })
+        element.editor.commands.setTextSelection({ from: 1, to: 12 })
+        control(element, '[data-editor-command="color"]').click()
 
-        expect(element.value).toBe('<p>Hello<span style="font-size: 16px;">a</span><span style="font-size: 20px;">b</span></p>')
+        expect(element.value).toBe('<p><span style="font-size: 20px; color: rgb(220, 38, 38);">Hello</span><span style="color: rgb(220, 38, 38);"> world</span></p>')
     })
 
-    it('reads its own styles back, and snaps pasted ones to the nearest it offers', () => {
-        const [element] = mount('<p style="text-align: right; margin-left: 2em; line-height: 2;"><span style="color: rgb(220, 38, 38); font-size: 10.5pt; font-family: Songti SC, SimSun;">a</span> <span style="color: #111; font-family: Inter, sans-serif;">b</span> <span style="background-color: rgb(255, 255, 0)">c</span> <span style="color: #ff5555">d</span> <span style="background-color: #fff">e</span></p>')
+    it('keeps the whitelisted CSS of what it is given, as written, and nothing else', () => {
+        const [element] = mount('<p style="text-align: right; position: fixed; line-height: 2;"><span style="color: #111; font-size: 10.5pt; font-family: Songti SC, SimSun; z-index: 9; background: url(javascript:x)">a</span> <span style="background-color: yellow">b</span> <span data-x="1">c</span></p>')
 
-        expect(element.value).toBe('<p style="text-align: right; margin-left: 2em; line-height: 2;"><span style="color: rgb(220, 38, 38); font-family: SimSun, &quot;Songti SC&quot;, serif; font-size: 14px;">a</span> b <mark style="background-color: rgb(254, 240, 138); color: rgb(23, 23, 23);">c</mark> <span style="color: rgb(220, 38, 38);">d</span> e</p>')
+        expect(element.value).toBe('<p style="text-align: right; line-height: 2;"><span style="color: rgb(17, 17, 17); font-size: 10.5pt; font-family: Songti SC, SimSun;">a</span> <span style="background-color: yellow;">b</span> c</p>')
+    })
+
+    it('keeps tags no feature writes when the whitelist has them, as they are', () => {
+        const [element] = mount('<section style="padding: 8px; position: fixed;"><p>One</p><section style="color: red;">Two <small>small</small> <abbr title="Laravel">LV</abbr></section></section><div>Three</div><marquee>Four</marquee>')
+
+        expect(element.value).toBe('<section style="padding: 8px;"><p>One</p><section style="color: red;">Two <small>small</small> <abbr title="Laravel">LV</abbr></section></section><div>Three</div><p>Four</p>')
+        expect(element.editor.getJSON().content.map(node => node.type)).toEqual(['container', 'textContainer', 'paragraph'])
+    })
+
+    it('makes lists pasted from Word and WPS lists', async () => {
+        const { wordLists } = await import('../../resources/js/heavy/editor/paste.js')
+        const word = '<p class="MsoListParagraph" style="mso-list:l0 level1 lfo1"><!--[if !supportLists]--><span style="mso-list:Ignore">1.<span>&nbsp;</span></span><!--[endif]-->One</p>'
+            + '<p class="MsoListParagraph" style="mso-list:l0 level2 lfo1"><span style="font-family:Symbol"><span style="mso-list:Ignore">·</span></span>Inner</p>'
+            + '<p class="MsoListParagraph" style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p><p>After</p>'
+
+        expect(wordLists(word).replace(/<!--.*?-->/g, '')).toBe('<ol><li><p style="mso-list:l0 level1 lfo1">One</p><ul><li><p style="mso-list:l0 level2 lfo1">Inner</p></li></ul></li><li><p style="mso-list:l0 level1 lfo1">Two</p></li></ol><p>After</p>')
+        expect(wordLists('<p>Plain</p>')).toBe('<p>Plain</p>')
     })
 })
 
@@ -262,10 +293,10 @@ describe('blocks', () => {
         element.editor.commands.setTextSelection(1)
 
         expect(element.editor.state.doc.lastChild.type.name).toBe('paragraph')
-        expect(element.value).toBe('<p>Intro</p><img src="/a.png" style="display: block; max-width: 100%; height: auto;">')
+        expect(element.value).toBe('<p>Intro</p><img src="/a.png">')
         expect(events).toEqual([])
 
-        element.value = '<p>Intro</p><img src="/a.png" style="display:block;max-width:100%;height:auto">'
+        element.value = '<p>Intro</p><img src="/a.png">'
 
         expect(element.editor.state.selection.from).toBe(1)
     })
@@ -300,7 +331,7 @@ describe('blocks', () => {
 
         drag(right, 150)
 
-        expect(element.value).toContain('style="display: block; width: 300px; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;"')
+        expect(element.value).toBe('<img style="width: 300px; margin-left: auto; margin-right: auto;" src="/a.png">')
 
         box.getBoundingClientRect = () => ({ width: 300 })
         drag(right, 400)
@@ -325,14 +356,43 @@ describe('blocks', () => {
         expect(element.editor.getJSON().content[0].content[0].content[0].attrs.colwidth).toEqual([120])
     })
 
-    it('keeps media on web addresses, sized and aligned inline, and no data: images', () => {
-        const [element] = mount('<img src="/a.png" alt="A" width="1200" height="800" style="width: 50%; margin-left: auto;"><img src="data:image/png;base64,AAAA"><video src="https://cdn.test/v.mp4" poster="/p.jpg"></video><audio src="/a.mp3"></audio><a href="/f.pdf" download="f.pdf" type="application/pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a><iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe><iframe src="https://evil.test/x"></iframe>')
+    it('keeps media on web addresses with their style, and no data: images', () => {
+        const [element] = mount('<img src="/a.png" alt="A" width="1200" height="800" style="width: 50%; margin-left: auto; border-radius: 8px;"><img src="data:image/png;base64,AAAA"><video src="https://cdn.test/v.mp4" poster="/p.jpg"></video><audio src="/a.mp3"></audio><a href="/f.pdf" download="f.pdf" type="application/pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a><iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe><iframe src="https://evil.test/x"></iframe>')
 
-        expect(element.value).toBe('<img src="/a.png" alt="A" width="1200" height="800" style="display: block; width: 50%; max-width: 100%; height: auto; margin-left: auto;">'
-            + '<video src="https://cdn.test/v.mp4" poster="/p.jpg" controls="controls" preload="metadata" style="display: block; max-width: 100%; height: auto;"></video>'
-            + '<audio src="/a.mp3" controls="controls" preload="metadata" style="display: block; width: 100%;"></audio>'
+        expect(element.value).toBe('<img style="width: 50%; margin-left: auto; border-radius: 8px;" src="/a.png" alt="A" width="1200" height="800">'
+            + '<video src="https://cdn.test/v.mp4" poster="/p.jpg" controls="controls" preload="metadata"></video>'
+            + '<audio src="/a.mp3" controls="controls" preload="metadata"></audio>'
             + '<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>f.pdf</span><span style="opacity: 0.6;">1 KB</span></a>'
-            + '<iframe src="https://www.youtube-nocookie.com/embed/abc" allowfullscreen="allowfullscreen" loading="lazy" style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16/9; border: 0px;"></iframe>')
+            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://www.youtube-nocookie.com/embed/abc" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
+    })
+
+    it('captions images, links them, and wraps blocks in callouts', () => {
+        const [element] = mount('<figure><a href="https://x.test"><img src="/a.png"></a><figcaption>Cap</figcaption></figure><img src="/b.png"><p>Note</p>')
+        let image = null
+
+        element.editor.state.doc.descendants((node, position) => {
+            if (node.attrs.src === '/b.png') image = position
+        })
+        element.editor.chain().setNodeSelection(image).toggleCaption().run()
+
+        expect(element.value).toBe('<figure style="margin: 0px;"><a href="https://x.test"><img src="/a.png"></a><figcaption style="margin-top: 6px; text-align: center; font-size: 0.875em; color: rgb(107, 114, 128);">Cap</figcaption></figure>'
+            + '<figure style="margin: 0px;"><img src="/b.png"><figcaption style="margin-top: 6px; text-align: center; font-size: 0.875em; color: rgb(107, 114, 128);"></figcaption></figure><p>Note</p>')
+
+        element.editor.chain().setTextSelection(element.editor.state.doc.content.size - 2).setCallout(full.callouts.info).run()
+
+        expect(element.value).toContain('<aside style="padding: 12px 16px; border-radius: 6px; background-color: rgba(59, 130, 246, 0.1); border-left: 4px solid rgb(59, 130, 246);"><p>Note</p></aside>')
+        expect(active(element, 'callout', full.callouts.info)).toBe(true)
+    })
+
+    it('colors and aligns table cells', () => {
+        const [element] = mount('<table><tbody><tr><td><p>1</p></td><td><p>2</p></td></tr></tbody></table>')
+
+        element.editor.commands.setTextSelection(3)
+        run(element, 'cell-background', '#fef08a')
+        run(element, 'cell-align', 'middle')
+
+        expect(element.value).toContain('<td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: middle; background-color: rgb(254, 240, 138);"><p>1</p></td><td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top;"><p>2</p></td>')
+        expect(active(element, 'cell-align', 'middle')).toBe(true)
     })
 
     it('keeps formulas as MathML with their LaTeX, written by KaTeX', async () => {
@@ -368,8 +428,8 @@ describe('media', () => {
             { url: 'javascript:alert(1)', name: 'x.png' },
         ])
 
-        expect(element.value).toBe('<img src="/a.png" alt="A" width="10" height="20" style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;">'
-            + '<audio src="/b.mp3" title="b.mp3" controls="controls" preload="metadata" style="display: block; width: 100%;"></audio>'
+        expect(element.value).toBe('<img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/a.png" alt="A" width="10" height="20">'
+            + '<audio style="display: block; width: 100%;" src="/b.mp3" title="b.mp3" controls="controls" preload="metadata"></audio>'
             + '<a href="/c.zip" download="c.zip" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>c.zip</span><span style="opacity: 0.6;">1.5 KB</span></a>'
             + '<p> world!</p>')
     })
@@ -408,8 +468,53 @@ describe('media', () => {
         paste(element, { 'text/plain': '## Heading\n\n- [x] Done\n\n**bold**' })
         paste(element, { 'text/plain': 'https://youtu.be/dQw4w9WgXcQ' })
 
-        expect(element.value).toContain('<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"')
+        expect(element.value).toContain('src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"')
         expect(element.value).toContain('<h2>Heading</h2><ul style="list-style-type: none; padding-left: 0px;"><li style="display: flex; align-items: baseline; gap: 0.5em;"><input type="checkbox" disabled="disabled" checked="checked"><div><p>Done</p></div></li></ul><p><strong>bold</strong></p>')
+    })
+
+    it('shows where pasted files will go until the app answers, or they are dismissed', () => {
+        const [element] = mount('<p>Hello</p>')
+        const requests = []
+
+        element.addEventListener('editor-media', event => requests.push(event.detail))
+        element.editor.commands.setTextSelection(6)
+        paste(element, { files: [new File(['x'], 'a.png', { type: 'image/png' })] })
+        paste(element, { files: [new File(['y'], 'b.png', { type: 'image/png' })] })
+
+        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(2)
+        expect(element.value).toBe('<p>Hello</p>')
+
+        requests[0].insert([{ url: '/a.png', mime: 'image/png' }])
+
+        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(1)
+        expect(element.value).toContain('src="/a.png"')
+
+        element.querySelector('[data-slot="editor-uploading"] [data-editor-action="dismiss-upload"]').click()
+
+        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
+    })
+
+    it('asks the app to import images from elsewhere, and puts its copies in their place', () => {
+        const [element] = mount('<p>Hello</p>', { attributes: 'data-image-hosts="cdn.app.test"' })
+        const requests = []
+
+        element.addEventListener('editor-external-images', event => requests.push(event.detail))
+        element.editor.commands.setTextSelection(6)
+        paste(element, { 'text/html': '<p><img src="https://other.test/a.png"><img src="https://other.test/a.png"><img src="https://cdn.app.test/b.png"><img src="/c.png"><img src="https://other.test/d.png"></p>' })
+
+        return new Promise(resolve => queueMicrotask(resolve)).then(() => {
+            expect(requests.map(request => request.urls)).toEqual([['https://other.test/a.png', 'https://other.test/d.png']])
+            expect(element.querySelectorAll('[data-editor-importing]')).toHaveLength(3)
+
+            requests[0].replace([{ url: '/uploads/a.png', name: 'a.png', mime: 'image/png' }, null])
+
+            expect(element.value.match(/src="[^"]+"/g)).toEqual(['src="/uploads/a.png"', 'src="/uploads/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"'])
+            expect(element.querySelectorAll('[data-editor-importing]')).toHaveLength(0)
+
+            window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'replace-images', attachments: [{ url: '/x.png' }], html: null } }))
+
+            expect(element.value).toContain('src="https://other.test/d.png"')
+        })
     })
 
     it('reads attachments and embed links', async () => {
@@ -425,6 +530,26 @@ describe('media', () => {
         expect(embedSource('https://www.bilibili.com/video/BV1GJ411x7h7?spm=1', platforms)).toBe('https://player.bilibili.com/player.html?bvid=BV1GJ411x7h7&autoplay=0')
         expect(embedSource('<iframe src="https://player.bilibili.com/player.html?bvid=BV1&amp;page=1" allowfullscreen></iframe>', platforms)).toBe('https://player.bilibili.com/player.html?bvid=BV1&page=1')
         expect(embedSource('https://evil.test/x', platforms)).toBeNull()
+    })
+})
+
+describe('format painter', () => {
+    it('puts the marks and block style it picked up on the next text selected, once', () => {
+        const [element] = mount('<p style="text-align: center;"><strong><span style="color: rgb(220, 38, 38);">Bold</span></strong> <a href="https://x.test">plain</a></p><p>Other text</p>')
+        const painter = control(element, '[data-editor-action="format-painter"]')
+
+        element.editor.commands.setTextSelection(2)
+        painter.click()
+
+        expect(painter.getAttribute('aria-pressed')).toBe('true')
+        expect(element.hasAttribute('data-painting')).toBe(true)
+
+        select(element, 'Other')
+        element.editor.view.dom.dispatchEvent(new Event('pointerup', { bubbles: true }))
+
+        expect(element.value).toBe('<p style="text-align: center;"><span style="color: rgb(220, 38, 38);"><strong>Bold</strong></span> <a target="_blank" rel="noopener noreferrer nofollow" href="https://x.test">plain</a></p><p style="text-align: center;"><span style="color: rgb(220, 38, 38);"><strong>Other</strong></span> text</p>')
+        expect(painter.getAttribute('aria-pressed')).toBe('false')
+        expect(element.hasAttribute('data-painting')).toBe(false)
     })
 })
 

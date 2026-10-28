@@ -1,6 +1,6 @@
 /*
  * What the Editor inserts for attachments ({ url, name, mime | type, size, alt, width,
- * height, poster }) and embed links, and the media's inline style.
+ * height, poster }) and embed links.
  */
 
 const EXTENSIONS = {
@@ -50,11 +50,16 @@ export function formatSize(bytes) {
     return `${number} ${units[exponent]}`
 }
 
+// What the editor gives the media it inserts: blocks no wider than the page, centered.
+export const MEDIA_STYLE = 'display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto'
+
+export const EMBED_STYLE = 'display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0'
+
 /**
  * The node for an attachment, as the format allows: a kind it leaves out goes in as a
  * file, or not at all without files. Addresses must be http(s) or relative.
  */
-export function attachmentNode(attachment, features) {
+export function attachmentNode(attachment, features, card) {
     const url = String(attachment?.url ?? '').trim()
 
     if (! url || ! safeUrl(url)) return null
@@ -66,11 +71,11 @@ export function attachmentNode(attachment, features) {
 
     const name = attachment.name ? String(attachment.name) : null
 
-    if (kind === 'image') return { type: 'image', attrs: { src: url, alt: attachment.alt ?? name ?? '', width: number(attachment.width), height: number(attachment.height) } }
-    if (kind === 'video') return { type: 'video', attrs: { src: url, poster: attachment.poster && safeUrl(attachment.poster) ? attachment.poster : null, width: number(attachment.width), height: number(attachment.height), title: name } }
-    if (kind === 'audio') return { type: 'audio', attrs: { src: url, title: name } }
+    if (kind === 'image') return { type: 'image', attrs: { src: url, alt: attachment.alt ?? name ?? '', width: number(attachment.width), height: number(attachment.height), style: MEDIA_STYLE } }
+    if (kind === 'video') return { type: 'video', attrs: { src: url, poster: attachment.poster && safeUrl(attachment.poster) ? attachment.poster : null, width: number(attachment.width), height: number(attachment.height), title: name, style: MEDIA_STYLE } }
+    if (kind === 'audio') return { type: 'audio', attrs: { src: url, title: name, style: 'display: block; width: 100%' } }
 
-    return { type: 'file', attrs: { href: url, name: name ?? basename(url), mime: attachment.mime ?? attachment.type ?? null, size: attachment.size == null ? null : formatSize(attachment.size) } }
+    return { type: 'file', attrs: { href: url, name: name ?? basename(url), mime: attachment.mime ?? attachment.type ?? null, size: attachment.size == null ? null : formatSize(attachment.size), style: card } }
 }
 
 // http(s) or relative; never data:, javascript:, …
@@ -107,28 +112,4 @@ export function playable(url, platforms) {
     } catch {
         return false
     }
-}
-
-/**
- * Images, videos and embeds: blocks no wider than their container, a width of their
- * own (480px, 50%) or their natural one, aligned with margins.
- */
-export function mediaStyle({ size, align }, more = '') {
-    const margins = { center: ';margin-left:auto;margin-right:auto', right: ';margin-left:auto' }[align] ?? ''
-
-    return `display:block${size ? `;width:${size}` : ''};max-width:100%;height:auto${more}${margins}`
-}
-
-export function parseSize(element) {
-    const width = element.style.width
-
-    return /^(\d{1,4}px|([1-9]\d?|100)%)$/.test(width) ? width : null
-}
-
-export function parseAlign(element) {
-    const { marginLeft, marginRight } = element.style
-
-    if (marginLeft === 'auto') return marginRight === 'auto' ? 'center' : 'right'
-
-    return 'left'
 }

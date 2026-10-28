@@ -12,10 +12,10 @@ final class EditorControls
     public const TOOLBAR = [
         ['undo', 'redo'],
         ['heading', 'font-family', 'font-size'],
-        ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'color', 'clear-formatting'],
+        ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'color', 'clear-formatting', 'format-painter'],
         ['link'],
-        ['text-align', 'line-height', 'outdent', 'indent', 'text-indent'],
-        ['bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule'],
+        ['text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent'],
+        ['bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule'],
         ['media', 'embed', 'table', 'details', 'math', 'emoji'],
         ['find', 'source', 'fullscreen'],
     ];
@@ -23,10 +23,10 @@ final class EditorControls
     /**
      * What /, typed in the text, lists: blocks and media.
      */
-    public const SLASH = ['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule', 'media', 'embed', 'table', 'details', 'math'];
+    public const SLASH = ['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule', 'media', 'embed', 'table', 'details', 'math'];
 
     /** The formatting that clearing takes off. */
-    private const FORMATTING = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height'];
+    private const FORMATTING = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing'];
 
     /**
      * @param  list<string>  $tools
@@ -43,6 +43,7 @@ final class EditorControls
             'media' => $format->has('image', 'audio', 'video', 'file'),
             'find' => in_array('find-replace', $tools, true),
             'source', 'fullscreen' => in_array($control, $tools, true),
+            'format-painter' => in_array($control, $tools, true) && $format->has(...self::FORMATTING),
             default => $format->has($control),
         };
     }
