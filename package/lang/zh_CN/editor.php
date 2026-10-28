@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'label' => '富文本编辑器',
+    'toolbar' => '格式',
+    'undo' => '撤销',
+    'redo' => '重做',
+    'heading-1' => '一级标题',
+    'heading-2' => '二级标题',
+    'heading-3' => '三级标题',
+    'bullet-list' => '无序列表',
+    'ordered-list' => '有序列表',
+    'blockquote' => '引用',
+    'code-block' => '代码块',
+    'bold' => '粗体',
+    'italic' => '斜体',
+    'underline' => '下划线',
+    'strike' => '删除线',
+    'code' => '行内代码',
+    'horizontal-rule' => '分隔线',
+    'link' => '链接',
+    'link-placeholder' => '粘贴链接…',
+    'link-apply' => '应用链接',
+    'link-remove' => '移除链接',
+];

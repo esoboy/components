@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'label' => 'Rich text editor',
+    'toolbar' => 'Formatting',
+    'undo' => 'Undo',
+    'redo' => 'Redo',
+    'heading-1' => 'Heading 1',
+    'heading-2' => 'Heading 2',
+    'heading-3' => 'Heading 3',
+    'bullet-list' => 'Bullet list',
+    'ordered-list' => 'Ordered list',
+    'blockquote' => 'Blockquote',
+    'code-block' => 'Code block',
+    'bold' => 'Bold',
+    'italic' => 'Italic',
+    'underline' => 'Underline',
+    'strike' => 'Strikethrough',
+    'code' => 'Code',
+    'horizontal-rule' => 'Horizontal rule',
+    'link' => 'Link',
+    'link-placeholder' => 'Paste a link…',
+    'link-apply' => 'Apply link',
+    'link-remove' => 'Remove link',
+];

@@ -4,6 +4,7 @@ namespace Esoboy\Ui;
 
 use Esoboy\Ui\Livewire\DialogHandle;
 use Esoboy\Ui\Livewire\TourHandle;
+use Esoboy\Ui\Support\RichText;
 use Esoboy\Ui\Support\Theme;
 use Livewire\Component;
 use LogicException;
@@ -59,6 +60,15 @@ final class UiManager
     public function countdown(string $name = 'verification-code', ?int $seconds = null): void
     {
         $this->component(__FUNCTION__)->dispatch('ui-countdown', name: $name, seconds: $seconds);
+    }
+
+    /**
+     * Cleans HTML to what the Editor writes, before it is stored or shown; #[Sanitize]
+     * does this for a Livewire property.
+     */
+    public function sanitize(?string $html): string
+    {
+        return RichText::sanitize($html);
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use Esoboy\Ui\Livewire\Sanitize;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -26,6 +27,18 @@ new class extends Component
     public array $channels = [];
 
     public ?string $saved = null;
+
+    #[Sanitize]
+    public string $body = '<h2>Release notes</h2><p>Write <strong>rich</strong> text with <em>marks</em>, <a href="https://tiptap.dev">links</a> and lists:</p><ul><li><p>Headings 1 to 3</p></li><li><p>Quotes and code blocks</p></li></ul>';
+
+    public ?string $published = null;
+
+    public function publish(): void
+    {
+        $this->validate(['body' => 'required']);
+
+        $this->published = $this->body;
+    }
 
     public function save(): void
     {
@@ -123,4 +136,16 @@ new class extends Component
         <x-ui::button>Primary</x-ui::button>
         <x-ui::input placeholder="Input" />
     </div>
+
+    <form wire:submit="publish" class="mt-10 space-y-4">
+        <x-ui::field>
+            <x-ui::field.label>Release notes</x-ui::field.label>
+            <x-ui::editor id="body" wire:model="body" placeholder="Write something…" />
+            <x-ui::field.description>#[Sanitize] cleans what comes back; the view cleans what goes in.</x-ui::field.description>
+        </x-ui::field>
+        <x-ui::button type="submit">Publish</x-ui::button>
+        @if ($published)
+        <pre id="published" class="overflow-x-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap">{{ $published }}</pre>
+        @endif
+    </form>
 </div>

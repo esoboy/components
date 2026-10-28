@@ -26,6 +26,7 @@ const bundles = [
     {
         entryPoints: {
             'code-block': 'resources/js/heavy/code-block.js',
+            editor: 'resources/js/heavy/editor.js',
             signature: 'resources/js/heavy/signature.js',
         },
         format: 'esm',

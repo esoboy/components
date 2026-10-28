@@ -1,0 +1,109 @@
+/*
+ * Editor: Tiptap framed as shadcn's Textarea, a toolbar of ghost icon buttons (pressed
+ * as a Toggle is), and its content set in the spirit of shadcn's Typography, tightened
+ * for a field. The same rules style the sanitized HTML the server renders before Tiptap
+ * takes over.
+ */
+@layer components {
+    :where([data-slot="editor"]) {
+        @apply flex w-full min-w-0 flex-col rounded-lg border border-input transition-colors;
+        background-color: light-dark(transparent, color-mix(in oklab, var(--color-input) 30%, transparent));
+
+        &:focus-within {
+            @apply border-ring ring-3 ring-ring/50;
+        }
+
+        &[aria-invalid="true"] {
+            @apply ring-3;
+            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
+            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+        }
+
+        &[data-disabled] {
+            @apply cursor-not-allowed opacity-50;
+        }
+    }
+
+    :where([data-slot="editor-toolbar"]) {
+        @apply flex flex-wrap items-center gap-0.5 border-b border-input p-1;
+
+        & > [data-slot="separator"] {
+            @apply mx-1 h-5;
+        }
+
+        & [aria-pressed="true"] {
+            @apply bg-muted text-foreground;
+        }
+    }
+
+    /* The link field in a row: outside :where to beat popover.css, imported after this file. */
+    [data-slot="popover-content"][data-editor-link-content] {
+        @apply w-80 flex-row items-center gap-1 p-1.5;
+    }
+
+    :where([data-slot="editor-content"]) {
+        @apply min-h-32 flex-1 px-3 py-2 text-base text-foreground md:text-sm;
+
+        & > [data-slot="editor-input"] {
+            @apply min-h-[inherit] outline-none;
+        }
+
+        & :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div) + :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div) {
+            @apply mt-3;
+        }
+
+        & h1 {
+            @apply text-2xl font-extrabold tracking-tight;
+        }
+
+        & h2 {
+            @apply text-xl font-semibold tracking-tight;
+        }
+
+        & :is(h3, h4, h5, h6) {
+            @apply text-lg font-semibold tracking-tight;
+        }
+
+        & p {
+            @apply leading-7;
+        }
+
+        & ul {
+            @apply ml-6 list-disc;
+        }
+
+        & ol {
+            @apply ml-6 list-decimal;
+        }
+
+        & li + li {
+            @apply mt-1;
+        }
+
+        & blockquote {
+            @apply border-l-2 pl-4 italic;
+        }
+
+        & :not(pre) > code {
+            @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
+        }
+
+        & pre {
+            @apply overflow-x-auto rounded-md bg-muted px-4 py-3 font-mono text-sm;
+        }
+
+        & a {
+            @apply font-medium text-primary underline underline-offset-4;
+        }
+
+        & hr {
+            @apply my-4 border-border;
+        }
+
+        /* Tiptap's placeholder, on the empty first paragraph. */
+        & p.is-editor-empty:first-child::before {
+            @apply pointer-events-none float-left h-0 text-muted-foreground;
+            content: attr(data-placeholder);
+        }
+    }
+}
