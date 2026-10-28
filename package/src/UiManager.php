@@ -3,6 +3,7 @@
 namespace Esoboy\Ui;
 
 use Esoboy\Ui\Livewire\DialogHandle;
+use Esoboy\Ui\Livewire\EditorHandle;
 use Esoboy\Ui\Livewire\TourHandle;
 use Esoboy\Ui\Support\RichText;
 use Esoboy\Ui\Support\Theme;
@@ -10,9 +11,9 @@ use Livewire\Component;
 use LogicException;
 
 /**
- * What Ui:: offers server code. toast(), dialog(), tour() and countdown() reach the browser
- * through the Livewire component being handled, so they work from its methods, Form
- * objects and actions alike.
+ * What Ui:: offers server code. toast(), dialog(), tour(), editor() and countdown() reach
+ * the browser through the Livewire component being handled, so they work from its
+ * methods, Form objects and actions alike.
  */
 final class UiManager
 {
@@ -63,12 +64,50 @@ final class UiManager
     }
 
     /**
-     * Cleans HTML to what the Editor writes, before it is stored or shown; #[Sanitize]
-     * does this for a Livewire property.
+     * Inserts into the Editor with that id: the attachments it asked for, or HTML.
      */
-    public function sanitize(?string $html): string
+    public function editor(string $id): EditorHandle
     {
-        return RichText::sanitize($html);
+        return new EditorHandle($this->component(__FUNCTION__), $id);
+    }
+
+    /**
+     * Cleans HTML to what an Editor of the format writes, before it is stored or shown;
+     * #[Sanitize] does this for a Livewire property.
+     *
+     * @param  string|list<string>  $format  text, basic, full, a named format or a list of features
+     */
+    public function sanitize(?string $html, string|array $format = 'full'): string
+    {
+        return RichText::sanitize($html, $format);
+    }
+
+    /**
+     * The text of rich text, for search, summaries and length checks.
+     */
+    public function plainText(?string $html): string
+    {
+        return RichText::plainText($html);
+    }
+
+    /**
+     * Names a format of features and presets, for format="…", #[Sanitize('…')] and
+     * sanitize(); register it in a service provider's boot().
+     *
+     * @param  list<string>  $features
+     */
+    public function editorFormat(string $name, array $features): void
+    {
+        RichText::format($name, $features);
+    }
+
+    /**
+     * Lets embeds play from another video platform: share links matching the pattern (a
+     * JavaScript regular expression) become the player address, $1 its first capture.
+     */
+    public function embedPlatform(string $name, string $pattern, string $src): void
+    {
+        RichText::platform($name, $pattern, $src);
     }
 
     /**

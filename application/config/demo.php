@@ -8,6 +8,7 @@ return [
     'Components' => [
         'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Item, Button Group, Input Group, QR Code, status colours'],
         'forms' => ['Forms', 'Field, Input, Textarea, Native Select, Radio Group, Checkbox, Switch, Editor, validation'],
+        'editor' => ['Editor', 'Editor in the text, basic and full formats, a list of features, a media picker, Rich Text'],
         'controls' => ['Controls', 'Calendar, Date Picker, Time Picker, Select, Combobox, Command, Toggle, Toggle Group, Slider, Input OTP'],
         'inputs' => ['Inputs', 'Cascader, Tree, Tree Select, Tags Input, Number Input, Password Input, Verification Code Button, Color Picker, Rating, Mentions, Emoji Picker, Signature, Transfer'],
         'uploads' => ['Uploads', 'File Upload, Image Upload, Image Preview, Cropper'],

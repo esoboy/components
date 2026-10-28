@@ -1,30 +1,49 @@
 @blaze
 
-{{-- One command's button: its icon and label come with it; the marks and blocks show aria-pressed. --}}
+{{-- One control's button: its icon, label and shortcut come with it; marks and blocks show aria-pressed. A command runs on the text; an action is the editor's own (media, find, source, full screen). --}}
 @props([
     'command',
 ])
 
 @php
-// command => [icon, label, toggles]
-$commands = [
-    'undo' => ['undo-2', __('ui::editor.undo'), false],
-    'redo' => ['redo-2', __('ui::editor.redo'), false],
-    'heading-1' => ['heading-1', __('ui::editor.heading-1'), true],
-    'heading-2' => ['heading-2', __('ui::editor.heading-2'), true],
-    'heading-3' => ['heading-3', __('ui::editor.heading-3'), true],
-    'bullet-list' => ['list', __('ui::editor.bullet-list'), true],
-    'ordered-list' => ['list-ordered', __('ui::editor.ordered-list'), true],
-    'blockquote' => ['text-quote', __('ui::editor.blockquote'), true],
-    'code-block' => ['square-code', __('ui::editor.code-block'), true],
-    'bold' => ['bold', __('ui::editor.bold'), true],
-    'italic' => ['italic', __('ui::editor.italic'), true],
-    'underline' => ['underline', __('ui::editor.underline'), true],
-    'strike' => ['strikethrough', __('ui::editor.strike'), true],
-    'code' => ['code', __('ui::editor.code'), true],
-    'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), false],
+// name => [icon, label, toggles, shortcut, action]
+$buttons = [
+    'undo' => ['undo-2', __('ui::editor.undo'), false, 'Mod-z'],
+    'redo' => ['redo-2', __('ui::editor.redo'), false, 'Mod-Shift-z'],
+    'bold' => ['bold', __('ui::editor.bold'), true, 'Mod-b'],
+    'italic' => ['italic', __('ui::editor.italic'), true, 'Mod-i'],
+    'underline' => ['underline', __('ui::editor.underline'), true, 'Mod-u'],
+    'strike' => ['strikethrough', __('ui::editor.strike'), true, 'Mod-Shift-s'],
+    'code' => ['code', __('ui::editor.code'), true, 'Mod-e'],
+    'superscript' => ['superscript', __('ui::editor.superscript'), true, 'Mod-.'],
+    'subscript' => ['subscript', __('ui::editor.subscript'), true, 'Mod-,'],
+    'clear-formatting' => ['remove-formatting', __('ui::editor.clear-formatting'), false, null],
+    'outdent' => ['list-indent-decrease', __('ui::editor.outdent'), false, 'Mod-['],
+    'indent' => ['list-indent-increase', __('ui::editor.indent'), false, 'Mod-]'],
+    'text-indent' => ['pilcrow-right', __('ui::editor.text-indent'), true, null],
+    'bullet-list' => ['list', __('ui::editor.bullet-list'), true, 'Mod-Shift-8'],
+    'ordered-list' => ['list-ordered', __('ui::editor.ordered-list'), true, 'Mod-Shift-7'],
+    'task-list' => ['list-todo', __('ui::editor.task-list'), true, 'Mod-Shift-9'],
+    'blockquote' => ['text-quote', __('ui::editor.blockquote'), true, 'Mod-Shift-b'],
+    'code-block' => ['square-code', __('ui::editor.code-block'), true, 'Mod-Alt-c'],
+    'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), false, null],
+    'table' => ['table', __('ui::editor.table'), false, null],
+    'details' => ['list-chevrons-down-up', __('ui::editor.details'), true, null],
+    'merge-cells' => ['table-cells-merge', __('ui::editor.merge-cells'), false, null],
+    'split-cell' => ['table-cells-split', __('ui::editor.split-cell'), false, null],
+    'delete-table' => ['trash', __('ui::editor.delete-table'), false, null],
+    'delete-node' => ['trash', __('ui::editor.delete'), false, null],
+    'media' => ['image-plus', __('ui::editor.media'), false, null, true],
+    'find' => ['text-search', __('ui::editor.find'), true, 'Mod-f', true],
+    'source' => ['code-xml', __('ui::editor.source'), true, null, true],
+    'fullscreen' => [['maximize', 'minimize'], __('ui::editor.fullscreen'), true, null, true],
 ];
-[$icon, $label, $toggles] = $commands[$command] ?? throw new InvalidArgumentException("[{$command}] is not an Editor command; use one of: ".implode(', ', array_keys($commands)).'.');
+[$icon, $label, $toggles, $keys, $action] = [...$buttons[$command] ?? throw new InvalidArgumentException("[{$command}] is not an Editor button; use one of: ".implode(', ', array_keys($buttons)).'.'), false];
 @endphp
 
-<x-ui::button variant="ghost" size="icon-sm" :attributes="$attributes->merge(['data-editor-command' => $command, 'aria-label' => $label, 'aria-pressed' => $toggles ? 'false' : false])"><x-ui::icon :name="$icon" /></x-ui::button>
+<x-ui::button variant="ghost" size="icon-sm" :attributes="$attributes->merge([
+    $action ? 'data-editor-action' : 'data-editor-command' => $command,
+    'aria-label' => $label,
+    'aria-pressed' => $toggles ? 'false' : false,
+    'data-editor-keys' => $keys ?? false,
+])">@foreach ((array) $icon as $index => $name)<x-ui::icon :name="$name" :data-editor-pressed="is_array($icon) ? ($index ? 'true' : 'false') : false" />@endforeach</x-ui::button>
