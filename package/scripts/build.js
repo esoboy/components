@@ -24,7 +24,10 @@ const bundles = [
     // Heavy components: modules their views load through @assets, with what they
     // import on demand (a Shiki language, …) split into chunks/.
     {
-        entryPoints: { 'code-block': 'resources/js/heavy/code-block.js' },
+        entryPoints: {
+            'code-block': 'resources/js/heavy/code-block.js',
+            signature: 'resources/js/heavy/signature.js',
+        },
         format: 'esm',
         splitting: true,
         chunkNames: 'chunks/[name]-[hash]',

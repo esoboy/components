@@ -49,6 +49,12 @@ new class extends Component
 
     public string $reaction = '';
 
+    public ?string $signature = null;
+
+    public ?string $saved = null;
+
+    public ?string $initials = null;
+
     /**
      * People a server search would return for what follows the @.
      *
@@ -68,6 +74,19 @@ new class extends Component
         $this->sent++;
         Ui::countdown('sms', 5);
         Ui::toast('Code sent', type: 'success');
+    }
+
+    public function saveSignature(): void
+    {
+        $this->validate(['signature' => 'required']);
+
+        $this->saved = $this->signature;
+        Ui::toast('Signature saved', description: round(strlen($this->signature) / 1024, 1).' KB', type: 'success');
+    }
+
+    public function resetSignature(): void
+    {
+        $this->reset('signature');
     }
 
     public function mount(): void
@@ -271,6 +290,27 @@ new class extends Component
                 </x-ui::popover>
             </div>
         </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Signature</h2>
+        <x-ui::field class="max-w-md">
+            <x-ui::field.label>Signature</x-ui::field.label>
+            <x-ui::signature id="signature" wire:model="signature" />
+            <x-ui::field.description>PNG, sent with Save.</x-ui::field.description>
+        </x-ui::field>
+        <div class="flex gap-2">
+            <x-ui::button wire:click="saveSignature">Save</x-ui::button>
+            <x-ui::button variant="outline" wire:click="resetSignature">Reset from server</x-ui::button>
+        </div>
+        @if ($saved)
+        <img id="saved-signature" src="{{ $saved }}" alt="Saved signature" class="h-20 rounded-md border bg-white">
+        @endif
+        <x-ui::field class="max-w-xs">
+            <x-ui::field.label>Initials</x-ui::field.label>
+            <x-ui::signature id="initials" type="image/svg+xml" wire:model.live="initials" placeholder="Initial here" class="h-24" />
+            <x-ui::field.description>SVG, live: <span id="initials-size">{{ $initials ? round(strlen($initials) / 1024, 1).' KB' : 'empty' }}</span></x-ui::field.description>
+        </x-ui::field>
     </section>
 
     <section class="space-y-4">
