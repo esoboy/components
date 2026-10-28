@@ -10,7 +10,7 @@ return [
         'forms' => ['Forms', 'Field, Input, Textarea, Native Select, Radio Group, Checkbox, Switch, validation'],
         'controls' => ['Controls', 'Calendar, Date Picker, Time Picker, Select, Combobox, Command, Toggle, Toggle Group, Slider, Input OTP'],
         'inputs' => ['Inputs', 'Cascader, Tree, Tree Select, Tags Input, Number Input, Password Input, Verification Code Button, Color Picker, Rating, Mentions, Emoji Picker, Signature, Transfer'],
-        'uploads' => ['Uploads', 'File Upload, Image Upload, Image Preview'],
+        'uploads' => ['Uploads', 'File Upload, Image Upload, Image Preview, Cropper'],
     ],
     'Structure' => [
         'overlays' => ['Overlays', 'Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Toast, Tour'],

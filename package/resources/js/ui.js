@@ -18,6 +18,7 @@ import * as colorPicker from './components/color-picker.js'
 import * as combobox from './components/combobox.js'
 import * as command from './components/command.js'
 import * as confirm from './components/confirm.js'
+import * as cropper from './components/cropper.js'
 import * as dataTable from './components/data-table.js'
 import * as datePicker from './components/date-picker.js'
 import * as dialog from './components/dialog.js'
@@ -57,7 +58,7 @@ const components = [
     radioGroup, select, command, combobox, mentions, calendar, datePicker, slider, inputOtp,
     tabs, sidebar, accordion, collapsible, scrollArea, resizable, carousel,
     messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
-    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview, watermark, emojiPicker,
+    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview, watermark, emojiPicker, cropper,
     avatar, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
     navigationMenu, questionnaire, theme, toast, tooltip, tour,
 ]
