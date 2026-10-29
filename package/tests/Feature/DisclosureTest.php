@@ -75,7 +75,7 @@ it('renders progress with its value', function () {
         BLADE);
 
     $view->assertSeeInOrder([
-        '<div role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="30" aria-valuetext="15%" data-slot="progress">',
+        '<div role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="30" aria-valuetext="15%" data-slot="progress" data-variant="default">',
         '<span data-slot="progress-label">Upload</span>',
         '<span data-slot="progress-value">15%</span>',
         '<div data-slot="progress-track">',
@@ -84,6 +84,26 @@ it('renders progress with its value', function () {
 
     $this->blade('<x-ui::progress />')->assertSee('data-indeterminate', false)->assertDontSee('aria-valuenow', false);
     $this->blade('<x-ui::progress :value="100" />')->assertSee('data-complete', false);
+});
+
+it('renders a circle progress with its value in the middle', function () {
+    $view = $this->blade(<<<'BLADE'
+        <x-ui::progress variant="circle" :value="75">
+            <x-ui::progress.value />
+        </x-ui::progress>
+        BLADE);
+
+    $view->assertSeeInOrder([
+        'aria-valuetext="75%" data-slot="progress" data-variant="circle">',
+        '<span data-slot="progress-value">75%</span>',
+        '<svg data-slot="progress-circle">',
+        '<circle data-slot="progress-circle-track" />',
+        '<circle data-slot="progress-circle-indicator" pathLength="100"  style="stroke-dashoffset: 25"  />',
+    ], false)->assertDontSee('progress-track"', false);
+
+    $this->blade('<x-ui::progress variant="circle" />')
+        ->assertSee('data-indeterminate', false)
+        ->assertSee('<circle data-slot="progress-circle-indicator" pathLength="100"  />', false);
 });
 
 it('renders an aspect ratio box', function () {

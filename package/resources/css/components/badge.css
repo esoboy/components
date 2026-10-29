@@ -63,4 +63,34 @@
     :where([data-slot="badge"][data-variant="link"]) {
         @apply text-primary underline-offset-4 hover:underline;
     }
+
+    :where([data-slot="badge"][data-count]) {
+        @apply min-w-5 rounded-full px-1 font-mono tabular-nums;
+    }
+
+    :where([data-slot="badge"][data-dot]) {
+        @apply size-2 p-0;
+    }
+
+    :where([data-slot="badge-wrapper"]) {
+        @apply relative inline-flex w-fit;
+    }
+
+    /* A dot has no text to tint, so a status dot is filled with its tone. */
+    :where([data-slot="badge"][data-dot]:is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"])) {
+        background-color: var(--tone);
+    }
+
+    :where([data-slot="badge-wrapper"] > [data-slot="badge"]) {
+        @apply absolute end-0 top-0 z-10 translate-x-1/2 -translate-y-1/2 ring-2 ring-background rtl:-translate-x-1/2;
+    }
+
+    /* Over other content, the see-through looks get an opaque backing. */
+    :where([data-slot="badge-wrapper"] > [data-slot="badge"]:is([data-variant="outline"], [data-variant="ghost"], [data-variant="link"])) {
+        @apply bg-background;
+    }
+
+    :where([data-slot="badge-wrapper"] > [data-slot="badge"]:not([data-dot]):is([data-variant="destructive"], [data-variant="success"], [data-variant="warning"], [data-variant="info"])) {
+        background-color: light-dark(color-mix(in oklab, var(--tone) 10%, var(--color-background)), color-mix(in oklab, var(--tone) 20%, var(--color-background)));
+    }
 }

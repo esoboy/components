@@ -71,6 +71,7 @@
 @import './components/radio-group.css';
 @import './components/rating.css';
 @import './components/resizable.css';
+@import './components/result.css';
 @import './components/scroll-area.css';
 @import './components/select.css';
 @import './components/separator.css';
@@ -79,6 +80,7 @@
 @import './components/skeleton.css';
 @import './components/slider.css';
 @import './components/spinner.css';
+@import './components/statistic.css';
 @import './components/steps.css';
 @import './components/switch.css';
 @import './components/table.css';

@@ -6,6 +6,7 @@
     "license": "proprietary",
     "require": {
         "php": "^8.3",
+        "ext-intl": "*",
         "bacon/bacon-qr-code": "^3.1",
         "illuminate/support": "^13.0",
         "illuminate/view": "^13.0",

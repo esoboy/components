@@ -7,6 +7,8 @@ new class extends Component
 {
     public int $count = 0;
 
+    public int $notifications = 5;
+
     public string $link = 'https://esoboy.com/orders/1024';
 
     #[Validate('required|url')]
@@ -155,8 +157,35 @@ PHP;
             <x-ui::badge variant="destructive">Destructive</x-ui::badge>
             <x-ui::badge variant="outline">Outline</x-ui::badge>
             <x-ui::badge variant="secondary" class="bg-blue-500 text-white dark:bg-blue-600"><x-ui::icon name="badge-check" /> Verified</x-ui::badge>
-            <x-ui::badge class="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums">8</x-ui::badge>
             <x-ui::badge href="#" variant="outline">Link</x-ui::badge>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <x-ui::badge :count="8" />
+            <x-ui::badge variant="destructive" :count="120" />
+            <x-ui::badge variant="outline" :count="20" :max="9" />
+            <x-ui::badge variant="secondary" :count="0" show-zero />
+            <x-ui::badge variant="success" dot />
+        </div>
+        <div class="flex flex-wrap items-center gap-6">
+            <x-ui::badge.wrapper>
+                <x-ui::button variant="outline" size="icon" aria-label="Notifications"><x-ui::icon name="bell" /></x-ui::button>
+                <x-ui::badge variant="destructive" :count="$notifications" />
+            </x-ui::badge.wrapper>
+            <x-ui::badge.wrapper>
+                <x-ui::button variant="outline" size="icon" aria-label="Messages"><x-ui::icon name="mail" /></x-ui::button>
+                <x-ui::badge variant="destructive" dot />
+            </x-ui::badge.wrapper>
+            <x-ui::badge.wrapper>
+                <x-ui::avatar>
+                    <x-ui::avatar.image src="https://github.com/shadcn.png" alt="@shadcn" />
+                    <x-ui::avatar.fallback>CN</x-ui::avatar.fallback>
+                </x-ui::avatar>
+                <x-ui::badge :count="3" />
+            </x-ui::badge.wrapper>
+            <div class="flex gap-2">
+                <x-ui::button variant="outline" size="sm" wire:click="$set('notifications', {{ $notifications + 1 }})">Notify</x-ui::button>
+                <x-ui::button variant="ghost" size="sm" wire:click="$set('notifications', 0)">Clear</x-ui::button>
+            </div>
         </div>
     </section>
 
@@ -275,6 +304,46 @@ PHP;
                 </div>
             </x-ui::empty.content>
         </x-ui::empty>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Result</h2>
+        <div class="grid gap-4 md:grid-cols-2">
+            <x-ui::result status="success" class="border">
+                <x-ui::result.header>
+                    <x-ui::result.media />
+                    <x-ui::result.title>Payment successful</x-ui::result.title>
+                    <x-ui::result.description>Order #4189 is confirmed. A receipt has been sent to your email address.</x-ui::result.description>
+                </x-ui::result.header>
+                <x-ui::result.content>
+                    <div class="flex gap-2">
+                        <x-ui::button>View order</x-ui::button>
+                        <x-ui::button variant="outline">Back to shop</x-ui::button>
+                    </div>
+                </x-ui::result.content>
+            </x-ui::result>
+            <x-ui::result status="error" class="border">
+                <x-ui::result.header>
+                    <x-ui::result.media />
+                    <x-ui::result.title>Submission failed</x-ui::result.title>
+                    <x-ui::result.description>Your card was declined. Check your payment details and try again.</x-ui::result.description>
+                </x-ui::result.header>
+                <x-ui::result.content>
+                    <x-ui::button variant="outline">Try again</x-ui::button>
+                </x-ui::result.content>
+            </x-ui::result>
+            <x-ui::result status="404" class="border">
+                <x-ui::result.header>
+                    <x-ui::result.media />
+                    <x-ui::result.title />
+                    <x-ui::result.description />
+                </x-ui::result.header>
+                <x-ui::result.content>
+                    <x-ui::button variant="outline" href="/">Back home</x-ui::button>
+                </x-ui::result.content>
+            </x-ui::result>
+            <x-ui::result status="403" class="border" />
+        </div>
     </section>
 
     <section class="space-y-4">

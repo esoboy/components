@@ -5,7 +5,7 @@ components that bind with `wire:model`.
 
 ## Requirements
 
-- PHP 8.3+, Laravel 13, Livewire 4
+- PHP 8.3+ with the `intl` extension (Statistic formats numbers for the app's locale), Laravel 13, Livewire 4
 - Tailwind CSS 4
 
 ## Installation

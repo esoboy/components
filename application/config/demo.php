@@ -6,7 +6,7 @@
 
 return [
     'Components' => [
-        'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Item, Button Group, Input Group, QR Code, status colours'],
+        'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Result, Item, Button Group, Input Group, QR Code, status colours'],
         'forms' => ['Forms', 'Field, Input, Textarea, Native Select, Radio Group, Checkbox, Switch, Editor, validation'],
         'editor' => ['Editor', 'Editor in the text, basic and full formats, a list of features, a media picker, Rich Text'],
         'controls' => ['Controls', 'Calendar, Date Picker, Time Picker, Select, Combobox, Command, Toggle, Toggle Group, Slider, Input OTP'],
@@ -16,8 +16,8 @@ return [
     'Structure' => [
         'overlays' => ['Overlays', 'Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu, Context Menu, Menubar, Toast, Tour'],
         'navigation' => ['Navigation', 'Sidebar, Breadcrumb, Tabs, Pagination, Navigation Menu'],
-        'layout' => ['Layout', 'Watermark, Accordion, Collapsible, Progress, Aspect Ratio, Scroll Area, Resizable, Carousel'],
-        'data' => ['Data', 'Data Table, Description List, Steps, Timeline'],
+        'layout' => ['Layout', 'Watermark, Accordion, Collapsible, Progress (bar and circle), Aspect Ratio, Scroll Area, Resizable, Carousel'],
+        'data' => ['Data', 'Data Table, Statistic, Description List, Steps, Timeline'],
     ],
     'Conversation' => [
         'chat' => ['Chat', 'Message, Bubble, Message Scroller, Attachment, Marker'],

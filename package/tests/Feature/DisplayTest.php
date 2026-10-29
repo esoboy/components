@@ -1,7 +1,9 @@
 <?php
 
+use Esoboy\Ui\Support\Icons;
+
 /*
- * Badge, Avatar, Card, Kbd, Spinner, Skeleton, Empty, Item, Alert, Button Group.
+ * Badge, Avatar, Card, Kbd, Spinner, Skeleton, Empty, Result, Statistic, Item, Alert, Button Group.
  */
 
 it('renders badges as spans or links', function () {
@@ -10,6 +12,83 @@ it('renders badges as spans or links', function () {
 
     $this->blade('<x-ui::badge variant="outline" href="/inbox">Inbox</x-ui::badge>')
         ->assertSee('<a data-slot="badge" data-variant="outline" href="/inbox">Inbox</a>', false);
+});
+
+it('renders count and dot badges, pinned by a wrapper', function () {
+    $this->blade('<x-ui::badge :count="8" />')
+        ->assertSee('<span data-slot="badge" data-variant="default" data-count="data-count">8</span>', false);
+
+    $this->blade('<x-ui::badge variant="destructive" :count="120" />')->assertSee('>99+</span>', false);
+    $this->blade('<x-ui::badge :count="1200" :max="999" />')->assertSee('>999+</span>', false);
+    $this->blade('<x-ui::badge :count="0" />')->assertDontSee('data-slot="badge"', false);
+    $this->blade('<x-ui::badge :count="0" show-zero />')->assertSee('>0</span>', false);
+
+    $this->blade('<x-ui::badge.wrapper><x-ui::button size="icon">B</x-ui::button><x-ui::badge dot /></x-ui::badge.wrapper>')
+        ->assertSeeInOrder(['<span data-slot="badge-wrapper">', '<button', '<span data-slot="badge" data-variant="default" data-dot="data-dot"></span>', '</span>'], false);
+});
+
+it('renders a result with default media, title and description for error pages', function () {
+    $this->blade('<x-ui::result status="404" />')
+        ->assertSeeInOrder([
+            '<div data-slot="result" data-status="404">',
+            '<div data-slot="result-header">',
+            '<div data-slot="result-media" data-variant="code">404</div>',
+            '<div data-slot="result-title">Page not found</div>',
+            '<p data-slot="result-description">The page you&#039;re looking for doesn&#039;t exist or has been moved.</p>',
+        ], false);
+
+    app()->setLocale('zh_CN');
+    $this->blade('<x-ui::result :status="403" />')->assertSee('<div data-slot="result-title">无权访问</div>', false);
+    app()->setLocale('en');
+});
+
+it('renders a result with its own content and a status icon', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::result status="success">
+            <x-ui::result.header>
+                <x-ui::result.media />
+                <x-ui::result.title>Paid</x-ui::result.title>
+                <x-ui::result.description>Receipt sent.</x-ui::result.description>
+            </x-ui::result.header>
+            <x-ui::result.content>Actions</x-ui::result.content>
+        </x-ui::result>
+        BLADE)
+        ->assertSeeInOrder([
+            '<div data-slot="result" data-status="success">',
+            '<div data-slot="result-media" data-variant="icon"><svg',
+            Icons::markup('circle-check'),
+            '<div data-slot="result-title">Paid</div>',
+            '<p data-slot="result-description">Receipt sent.</p>',
+            '<div data-slot="result-content">Actions</div>',
+        ], false);
+
+    $this->blade('<x-ui::result status="error"><x-ui::result.media variant="default">img</x-ui::result.media></x-ui::result>')
+        ->assertSee('<div data-slot="result-media" data-variant="default">img</div>', false);
+});
+
+it('renders a statistic with a formatted value and a trend', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::statistic>
+            <x-ui::statistic.label>Revenue</x-ui::statistic.label>
+            <x-ui::statistic.value :value="1250.5" :precision="2" prefix="$" />
+            <x-ui::statistic.trend :value="12.5" />
+        </x-ui::statistic>
+        BLADE)
+        ->assertSeeInOrder([
+            '<div data-slot="statistic">',
+            '<div data-slot="statistic-label">Revenue</div>',
+            '<div data-slot="statistic-value">$1,250.50</div>',
+            '<span data-slot="badge" data-variant="outline" data-direction="up">',
+            Icons::markup('trending-up'),
+            '+12.5%',
+        ], false);
+
+    $this->blade('<x-ui::statistic.trend :value="-3" variant="destructive" />')
+        ->assertSeeInOrder(['data-variant="destructive" data-direction="down">', Icons::markup('trending-down'), '-3%'], false);
+    $this->blade('<x-ui::statistic.trend :value="0">Flat</x-ui::statistic.trend>')
+        ->assertSeeInOrder(['data-direction="flat">', Icons::markup('minus'), 'Flat'], false);
+    $this->blade('<x-ui::statistic.value suffix="%">4.5</x-ui::statistic.value>')
+        ->assertSee('<div data-slot="statistic-value">4.5%</div>', false);
 });
 
 it('renders an avatar with its parts', function () {

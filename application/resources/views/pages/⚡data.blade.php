@@ -36,6 +36,16 @@ new class extends Component
         Ui::toast("{$count} users would be deleted", type: 'warning');
     }
 
+    public function markSelected(string $status): void
+    {
+        Ui::toast(count($this->selected)." users would be marked {$status}");
+    }
+
+    public function exportSelected(): void
+    {
+        Ui::toast(count($this->selected).' users would be exported');
+    }
+
     public function next(): void
     {
         $this->step = min(4, $this->step + 1);
@@ -46,12 +56,9 @@ new class extends Component
 <div class="mx-auto max-w-4xl space-y-12 p-10">
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Data Table</h2>
-        <x-ui::data-table>
+        <x-ui::data-table style="anchor-name: --users-table">
             <x-ui::data-table.toolbar>
                 <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." class="max-w-sm" />
-                @if ($selected)
-                <x-ui::button variant="destructive" size="sm" wire:click="deleteSelected">Delete {{ count($selected) }}</x-ui::button>
-                @endif
                 <x-ui::data-table.view-options :columns="['name' => 'Name', 'email' => 'Email', 'status' => 'Status', 'created_at' => 'Joined']" />
             </x-ui::data-table.toolbar>
 
@@ -111,7 +118,79 @@ new class extends Component
             </x-ui::data-table.content>
 
             <x-ui::data-table.pagination :paginator="$this->users" />
+
+            {{-- Bulk action bar: composed from Button Group, Separator, Dropdown Menu, Tooltip and Button.
+                 Fixed to the window's bottom, centred on the table (and hidden with it) through its anchor. --}}
+            @if ($selected)
+            <div role="toolbar" aria-label="Bulk actions" class="fixed bottom-6 z-40 flex items-center gap-2 rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10 transition duration-200 starting:translate-y-4 starting:opacity-0" style="position-anchor: --users-table; justify-self: anchor-center">
+                <x-ui::button-group>
+                    <x-ui::button-group.text class="tabular-nums">{{ count($selected) }} selected</x-ui::button-group.text>
+                    <x-ui::tooltip>
+                        <x-ui::tooltip.trigger variant="outline" size="icon-sm" wire:click="$set('selected', [])" aria-label="Clear selection"><x-ui::icon name="x" /></x-ui::tooltip.trigger>
+                        <x-ui::tooltip.content>Clear selection</x-ui::tooltip.content>
+                    </x-ui::tooltip>
+                </x-ui::button-group>
+                <x-ui::separator orientation="vertical" class="my-1" />
+                <x-ui::dropdown-menu>
+                    <x-ui::dropdown-menu.trigger variant="secondary" size="sm"><x-ui::icon name="circle-check" data-icon="inline-start" />Status</x-ui::dropdown-menu.trigger>
+                    <x-ui::dropdown-menu.content side="top" class="w-36">
+                        <x-ui::dropdown-menu.item wire:click="markSelected('verified')"><x-ui::icon name="badge-check" />Verified</x-ui::dropdown-menu.item>
+                        <x-ui::dropdown-menu.item wire:click="markSelected('pending')"><x-ui::icon name="clock" />Pending</x-ui::dropdown-menu.item>
+                    </x-ui::dropdown-menu.content>
+                </x-ui::dropdown-menu>
+                <x-ui::button variant="secondary" size="sm" wire:click="exportSelected"><x-ui::icon name="download" data-icon="inline-start" />Export</x-ui::button>
+                <x-ui::button variant="destructive" size="sm" wire:click="deleteSelected" wire:confirm="Delete {{ count($selected) }} users?"><x-ui::icon name="trash" data-icon="inline-start" />Delete</x-ui::button>
+            </div>
+            @endif
         </x-ui::data-table>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Statistic</h2>
+        <div class="grid gap-4 sm:grid-cols-2">
+            <x-ui::card>
+                <x-ui::card.content>
+                    <x-ui::statistic>
+                        <x-ui::statistic.label>Total Revenue</x-ui::statistic.label>
+                        <x-ui::statistic.value :value="1250" :precision="2" prefix="$" />
+                        <x-ui::statistic.trend :value="12.5" />
+                    </x-ui::statistic>
+                </x-ui::card.content>
+                <x-ui::card.footer class="flex-col items-start gap-1.5">
+                    <div class="flex gap-2 font-medium">Trending up this month <x-ui::icon name="trending-up" class="size-4" /></div>
+                    <div class="text-muted-foreground">Visitors for the last 6 months</div>
+                </x-ui::card.footer>
+            </x-ui::card>
+            <x-ui::card>
+                <x-ui::card.content>
+                    <x-ui::statistic>
+                        <x-ui::statistic.label>New Customers</x-ui::statistic.label>
+                        <x-ui::statistic.value :value="1234" />
+                        <x-ui::statistic.trend :value="-20" />
+                    </x-ui::statistic>
+                </x-ui::card.content>
+                <x-ui::card.footer class="flex-col items-start gap-1.5">
+                    <div class="flex gap-2 font-medium">Down 20% this period <x-ui::icon name="trending-down" class="size-4" /></div>
+                    <div class="text-muted-foreground">Acquisition needs attention</div>
+                </x-ui::card.footer>
+            </x-ui::card>
+        </div>
+        <div class="flex flex-wrap gap-x-12 gap-y-6">
+            <x-ui::statistic>
+                <x-ui::statistic.label>Active Accounts</x-ui::statistic.label>
+                <x-ui::statistic.value :value="45678" />
+                <x-ui::statistic.trend :value="4.5" variant="success" />
+            </x-ui::statistic>
+            <x-ui::statistic>
+                <x-ui::statistic.label>Refund Rate</x-ui::statistic.label>
+                <x-ui::statistic.value :value="1.82" suffix="%" />
+                <x-ui::statistic.trend :value="0.3" variant="destructive" />
+            </x-ui::statistic>
+            <x-ui::statistic>
+                <x-ui::statistic.label>Storage</x-ui::statistic.label>
+                <x-ui::statistic.value>38.6 <span class="text-base font-normal text-muted-foreground">/ 100 GB</span></x-ui::statistic.value>
+            </x-ui::statistic>
+        </div>
     </section>
 
     <section class="space-y-4">

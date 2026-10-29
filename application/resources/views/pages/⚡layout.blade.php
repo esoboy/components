@@ -79,7 +79,20 @@ new class extends Component
             <x-ui::progress.label>Upload progress</x-ui::progress.label>
             <x-ui::progress.value />
         </x-ui::progress>
-        <x-ui::button variant="outline" size="sm" wire:click="advance">Advance</x-ui::button>
+        <div class="flex flex-wrap items-center gap-6">
+            <x-ui::progress variant="circle" :value="$progress">
+                <x-ui::progress.value />
+            </x-ui::progress>
+            <x-ui::progress variant="circle" :value="$progress" class="size-24 [--progress-stroke:8px]">
+                <x-ui::progress.value class="text-lg" />
+            </x-ui::progress>
+            <x-ui::progress variant="circle" :value="$progress" class="size-5 [--progress-stroke:3px]" />
+            <x-ui::progress variant="circle" class="size-5 [--progress-stroke:3px]" aria-label="Loading" />
+        </div>
+        <div class="flex gap-2">
+            <x-ui::button variant="outline" size="sm" wire:click="advance">Advance</x-ui::button>
+            <x-ui::button variant="ghost" size="sm" wire:click="$set('progress', 0)">Reset</x-ui::button>
+        </div>
     </section>
 
     <section class="space-y-4">
