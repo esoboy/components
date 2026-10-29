@@ -9,7 +9,7 @@ new class extends Component
     #[Validate('required|email')]
     public string $email = '';
 
-    #[Validate('required|min:10')]
+    #[Validate('required|min:10|max:160')]
     public string $bio = '';
 
     #[Validate('required|in:admin,agent')]
@@ -64,7 +64,13 @@ new class extends Component
 
                 <x-ui::field>
                     <x-ui::field.label for="bio">Bio</x-ui::field.label>
-                    <x-ui::textarea id="bio" wire:model="bio" placeholder="Tell us about yourself" />
+                    <x-ui::input-group>
+                        <x-ui::input-group.textarea id="bio" wire:model="bio" placeholder="Tell us about yourself" />
+                        <x-ui::input-group.addon align="block-end">
+                            <x-ui::input-group.count :max="160" />
+                        </x-ui::input-group.addon>
+                    </x-ui::input-group>
+                    <x-ui::field.description>Input Group Count: a soft limit of 160, counted as the max rule counts.</x-ui::field.description>
                 </x-ui::field>
 
                 <x-ui::field>

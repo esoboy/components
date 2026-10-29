@@ -5,10 +5,8 @@
  * then offer to resend.
  */
 
+import { countdowns } from '../support/countdown.js'
 import { define } from '../support/element.js'
-
-// Countdowns end at a time per name, so they outlive morphs and reach every button of that name.
-const countdowns = new Map()
 
 export class VerificationCodeButtonElement extends HTMLElement {
     #timer = 0

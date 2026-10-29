@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Breadcrumb, Table, Tabs, Pagination, Sidebar.
+ * Breadcrumb, Table, Tabs, Pagination, Sidebar, Anchor, Float Button, Back to Top.
  */
 
 use Esoboy\Ui\Tests\Fixtures\Invoices;
@@ -255,4 +255,35 @@ describe('sidebar', function () {
             ->toContain('data-sidebar="menu-skeleton-icon"')
             ->toMatch('/--skeleton-width: (5\d|[6-8]\d)%/');
     });
+});
+
+it('renders an anchor list of the page\'s sections', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::anchor>
+            <x-ui::anchor.title>On This Page</x-ui::anchor.title>
+            <x-ui::anchor.item href="#install">Install</x-ui::anchor.item>
+            <x-ui::anchor.item href="#props" :level="2">Props</x-ui::anchor.item>
+        </x-ui::anchor>
+        BLADE)
+        ->assertSeeInOrder([
+            '<eso-anchor role="navigation" aria-label="On this page" data-slot="anchor">',
+            '<p data-slot="anchor-title">On This Page</p>',
+            '<a data-slot="anchor-item" data-level="1" href="#install">Install</a>',
+            '<a data-slot="anchor-item" data-level="2" href="#props">Props</a>',
+        ], false);
+});
+
+it('renders float buttons and a back to top button that starts hidden', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::float-button.group>
+            <x-ui::float-button aria-label="Chat">C</x-ui::float-button>
+            <x-ui::back-to-top target="#main" :threshold="200" />
+        </x-ui::float-button.group>
+        BLADE);
+
+    expect($html)
+        ->toContain('<div data-slot="float-button-group">')
+        ->toMatch('/<button[^>]*data-variant="outline" data-size="icon-lg" aria-label="Chat">C<\/button>/')
+        ->toContain('<eso-back-to-top data-slot="back-to-top"  data-target="#main"  data-threshold="200" hidden wire:ignore.self>')
+        ->toMatch('/data-size="icon-lg" aria-label="Back to top"><svg/');
 });

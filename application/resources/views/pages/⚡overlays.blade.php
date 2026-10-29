@@ -120,8 +120,28 @@ new class extends Component
                 </x-ui::alert-dialog.content>
             </x-ui::alert-dialog>
 
-            <x-ui::button variant="destructive" wire:click="delete" wire:confirm="Delete this item?">Delete with wire:confirm</x-ui::button>
+            <x-ui::alert-dialog name="delete-chat">
+                <x-ui::alert-dialog.trigger variant="destructive">Delete chat</x-ui::alert-dialog.trigger>
+                <x-ui::alert-dialog.content size="sm">
+                    <x-ui::alert-dialog.header>
+                        <x-ui::alert-dialog.media class="bg-destructive/10 text-destructive dark:bg-destructive/20"><x-ui::icon name="trash" /></x-ui::alert-dialog.media>
+                        <x-ui::alert-dialog.title>Delete chat?</x-ui::alert-dialog.title>
+                        <x-ui::alert-dialog.description>This will permanently delete this chat conversation.</x-ui::alert-dialog.description>
+                    </x-ui::alert-dialog.header>
+                    <x-ui::alert-dialog.footer>
+                        <x-ui::alert-dialog.cancel>Cancel</x-ui::alert-dialog.cancel>
+                        <x-ui::alert-dialog.action variant="destructive" wire:click="delete">Delete</x-ui::alert-dialog.action>
+                    </x-ui::alert-dialog.footer>
+                </x-ui::alert-dialog.content>
+            </x-ui::alert-dialog>
             <span class="text-sm text-muted-foreground">deleted: <span id="deleted">{{ $deleted }}</span></span>
+        </div>
+        <p class="text-sm text-muted-foreground">wire:confirm asks with the layout's &lt;x-ui::confirm /&gt;: .destructive for a red confirm button, .popover at the button, "Question?|Label" to name it.</p>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui::button variant="outline" wire:click="delete" wire:confirm="Publish this post?|Publish">wire:confirm</x-ui::button>
+            <x-ui::button variant="destructive" wire:click="delete" wire:confirm.destructive="Delete this item?">wire:confirm.destructive</x-ui::button>
+            <x-ui::button variant="outline" wire:click="delete" wire:confirm.popover="Archive this item?|Archive">wire:confirm.popover</x-ui::button>
+            <x-ui::button variant="outline" wire:click="delete" wire:confirm.popover.destructive="Delete this row?">wire:confirm.popover.destructive</x-ui::button>
         </div>
     </section>
 

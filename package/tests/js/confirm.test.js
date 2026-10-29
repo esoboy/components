@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { register as registerConfirm } from '../../resources/js/components/confirm.js'
 
 let directiveInit
@@ -16,6 +16,15 @@ beforeEach(() => {
             <button data-cancel>Cancel</button>
             <button value="confirm">Continue</button>
         </dialog>
+        <dialog id="ui-confirm-destructive">
+            <h2 data-slot="alert-dialog-title">Are you sure?</h2>
+            <button value="confirm">Delete</button>
+        </dialog>
+        <div id="ui-confirm-popover" popover="auto">
+            <h2 data-slot="popover-title">Are you sure?</h2>
+            <button data-cancel>Cancel</button>
+            <button value="confirm">Continue</button>
+        </div>
         <button id="delete"></button>
     `
 })
@@ -68,6 +77,34 @@ it('falls back to the translated title without a message', () => {
     expect(title()).toBe('Are you sure?')
 })
 
+it('names the confirm button after the bar, and back without one', () => {
+    const label = () => dialog().querySelector('[value="confirm"]').textContent
+
+    bind('Publish this post?|Publish').__livewire_confirm(vi.fn(), vi.fn())
+    expect(title()).toBe('Publish this post?')
+    expect(label()).toBe('Publish')
+    dialog().close()
+
+    bind('Archive?').__livewire_confirm(vi.fn(), vi.fn())
+    expect(label()).toBe('Continue')
+})
+
+it('asks with the destructive dialog for .destructive', async () => {
+    const action = vi.fn()
+    const destructive = document.getElementById('ui-confirm-destructive')
+
+    bind('Delete this post?', ['destructive']).__livewire_confirm(action, vi.fn())
+
+    expect(destructive.open).toBe(true)
+    expect(dialog().open).toBe(false)
+    expect(destructive.querySelector('h2').textContent).toBe('Delete this post?')
+
+    destructive.close('confirm')
+    await Promise.resolve()
+
+    expect(action).toHaveBeenCalled()
+})
+
 it('leaves wire:confirm.prompt to Livewire', () => {
     const el = document.getElementById('delete')
     const livewire = (el.__livewire_confirm = vi.fn())
@@ -77,13 +114,54 @@ it('leaves wire:confirm.prompt to Livewire', () => {
     expect(el.__livewire_confirm).toBe(livewire)
 })
 
-it('falls back to Livewire\'s confirm when the layout has no dialog', () => {
-    const el = document.getElementById('delete')
-    const livewire = (el.__livewire_confirm = vi.fn())
+it('falls back to the browser\'s confirm, without the label, when the layout has no dialog', () => {
+    const ask = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const action = vi.fn()
 
-    directiveInit({ el, directive: { value: 'confirm', expression: 'Delete?', modifiers: [] } })
+    const el = bind('Delete?|Delete')
     dialog().remove()
-    el.__livewire_confirm(vi.fn(), vi.fn())
+    el.__livewire_confirm(action, vi.fn())
 
-    expect(livewire).toHaveBeenCalled()
+    expect(ask).toHaveBeenCalledWith('Delete?')
+    expect(action).toHaveBeenCalled()
+    ask.mockRestore()
+})
+
+describe('popover', () => {
+    const popover = () => document.getElementById('ui-confirm-popover')
+
+    it('asks in a popover anchored to the element, confirmed by its confirm button', async () => {
+        const action = vi.fn()
+        const el = bind('Remove this row?', ['popover'])
+        el.style.setProperty('anchor-name', '--tooltip-1')
+
+        el.__livewire_confirm(action, vi.fn())
+
+        expect(popover().matches(':popover-open')).toBe(true)
+        expect(popover().querySelector('h2').textContent).toBe('Remove this row?')
+        expect(el.style.getPropertyValue('anchor-name')).toBe('--tooltip-1, --ui-confirm')
+
+        popover().querySelector('[value="confirm"]').click()
+        popover().hidePopover()
+        await Promise.resolve()
+
+        expect(action).toHaveBeenCalled()
+        expect(el.style.getPropertyValue('anchor-name')).toBe('--tooltip-1')
+        expect(document.activeElement).toBe(el)
+    })
+
+    it('declines when it closes any other way', async () => {
+        const action = vi.fn()
+        const instead = vi.fn()
+        const el = bind('Remove?', ['popover'])
+
+        el.__livewire_confirm(action, instead)
+        popover().querySelector('[data-cancel]').click()
+        popover().hidePopover()
+        await Promise.resolve()
+
+        expect(action).not.toHaveBeenCalled()
+        expect(instead).toHaveBeenCalled()
+        expect(el.style.getPropertyValue('anchor-name')).toBe('')
+    })
 })

@@ -8,7 +8,9 @@
  */
 
 import * as accordion from './components/accordion.js'
+import * as anchor from './components/anchor.js'
 import * as avatar from './components/avatar.js'
+import * as backToTop from './components/back-to-top.js'
 import * as calendar from './components/calendar.js'
 import * as carousel from './components/carousel.js'
 import * as cascader from './components/cascader.js'
@@ -18,6 +20,7 @@ import * as colorPicker from './components/color-picker.js'
 import * as combobox from './components/combobox.js'
 import * as command from './components/command.js'
 import * as confirm from './components/confirm.js'
+import * as countdown from './components/countdown.js'
 import * as cropper from './components/cropper.js'
 import * as dataTable from './components/data-table.js'
 import * as datePicker from './components/date-picker.js'
@@ -58,8 +61,8 @@ const components = [
     radioGroup, select, command, combobox, mentions, calendar, datePicker, slider, inputOtp,
     tabs, sidebar, accordion, collapsible, scrollArea, resizable, carousel,
     messageScroller, fileUpload, dataTable, cascader, tree, tagsInput, numberInput,
-    passwordInput, verificationCodeButton, colorPicker, rating, transfer, imagePreview, watermark, emojiPicker, cropper,
-    avatar, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
+    passwordInput, verificationCodeButton, countdown, colorPicker, rating, transfer, imagePreview, watermark, emojiPicker, cropper,
+    anchor, avatar, backToTop, codeBlock, confirm, dialog, drawer, dropdownMenu, hoverCard, inputGroup,
     navigationMenu, questionnaire, theme, toast, tooltip, tour,
 ]
 

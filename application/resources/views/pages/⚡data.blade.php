@@ -46,6 +46,16 @@ new class extends Component
         Ui::toast(count($this->selected).' users would be exported');
     }
 
+    public function restartSale(): void
+    {
+        Ui::countdown('flash-sale', 10);
+    }
+
+    public function saleEnded(): void
+    {
+        Ui::toast('The flash sale has ended', type: 'info');
+    }
+
     public function next(): void
     {
         $this->step = min(4, $this->step + 1);
@@ -190,6 +200,21 @@ new class extends Component
                 <x-ui::statistic.label>Storage</x-ui::statistic.label>
                 <x-ui::statistic.value>38.6 <span class="text-base font-normal text-muted-foreground">/ 100 GB</span></x-ui::statistic.value>
             </x-ui::statistic>
+        </div>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Countdown</h2>
+        <div class="flex flex-wrap items-end gap-x-12 gap-y-6">
+            <x-ui::statistic>
+                <x-ui::statistic.label>Flash sale ends in</x-ui::statistic.label>
+                <x-ui::statistic.value><x-ui::countdown name="flash-sale" :seconds="90" format="mm:ss" wire:finish="saleEnded" /></x-ui::statistic.value>
+            </x-ui::statistic>
+            <x-ui::statistic>
+                <x-ui::statistic.label>Until the new year</x-ui::statistic.label>
+                <x-ui::statistic.value><x-ui::countdown :until="now()->addYear()->startOfYear()" format="D [days] HH:mm:ss" /></x-ui::statistic.value>
+            </x-ui::statistic>
+            <x-ui::button variant="outline" size="sm" wire:click="restartSale">Restart the sale at 10s</x-ui::button>
         </div>
     </section>
 

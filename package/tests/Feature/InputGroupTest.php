@@ -58,3 +58,17 @@ it('does not leak one group\'s error into the next', function () {
 
     expect(substr_count($html, 'Error A.'))->toBe(1);
 });
+
+it('renders a character count for the script to keep up to date', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::input-group>
+            <x-ui::input-group.textarea wire:model="bio" maxlength="280" />
+            <x-ui::input-group.addon align="block-end"><x-ui::input-group.count /></x-ui::input-group.addon>
+        </x-ui::input-group>
+        BLADE)
+        ->assertSee('<eso-input-group-count data-slot="input-group-count" data-label=":count characters" data-label-max=":count/:max characters" wire:key="input-group-count" wire:ignore>0 characters</eso-input-group-count>', false);
+
+    app()->setLocale('zh_CN');
+    $this->blade('<x-ui::input-group.count :max="140" />')
+        ->assertSee('data-max="140" data-label=":count 字" data-label-max=":count/:max 字" wire:key="input-group-count" wire:ignore>0/140 字</eso-input-group-count>', false);
+});

@@ -93,6 +93,14 @@
         @apply flex items-center gap-2 text-sm text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4;
     }
 
+    :where([data-slot="input-group-count"]) {
+        @apply text-sm text-muted-foreground tabular-nums;
+    }
+
+    :where([data-slot="input-group-count"][data-over]) {
+        @apply text-destructive;
+    }
+
     /* Buttons inside a group are compact ghost buttons. */
     [data-slot="input-group"] :where([data-slot="button"]) {
         @apply flex items-center gap-2 text-sm shadow-none;

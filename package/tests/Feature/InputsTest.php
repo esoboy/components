@@ -1,10 +1,12 @@
 <?php
 
 use Esoboy\Ui\Facades\Ui;
+use Esoboy\Ui\Support\Countdown;
+use Illuminate\Support\Facades\Date;
 use Livewire\Component;
 
 /*
- * Tags Input and Number Input.
+ * Tags Input, Number Input, Password Input, Verification Code Button, Countdown.
  */
 
 it('renders tags as chips before the input, with a template for new ones', function () {
@@ -62,6 +64,37 @@ it('renders a verification code button around a button', function () {
     expect($html)
         ->toContain('<eso-verification-code-button data-slot="verification-code-button" data-name="sms" data-seconds="30" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">')
         ->toMatch('/data-variant="outline" data-size="default" wire:click="send">\s*<span data-verification-code-label>Send code<\/span>/');
+});
+
+it('renders a countdown with the time left, to a time or for seconds', function () {
+    Date::setTestNow('2026-10-29 10:00:00');
+
+    $this->blade('<x-ui::countdown until="2026-10-29 11:02:03" wire:finish="refresh" />')
+        ->assertSee('<eso-countdown role="timer" data-slot="countdown" data-remaining="3723000" data-format="HH:mm:ss" wire:finish="refresh">01:02:03</eso-countdown>', false);
+
+    $this->blade('<x-ui::countdown name="sale" :seconds="90" format="mm:ss" />')
+        ->assertSee('data-remaining="90000" data-seconds="90" data-name="sale" data-format="mm:ss">01:30</eso-countdown>', false);
+
+    $this->blade('<x-ui::countdown until="2026-10-29 09:00:00" />')
+        ->assertSee('data-remaining="0"', false)
+        ->assertSee('>00:00:00</eso-countdown>', false);
+
+    Date::setTestNow();
+});
+
+it('formats countdowns, the largest unit taking all above it', function (int $seconds, string $format, string $text) {
+    expect(Countdown::format($seconds * 1000, $format))->toBe($text);
+})->with([
+    [90061, 'HH:mm:ss', '25:01:01'],
+    [90061, 'D [days] HH:mm:ss', '1 days 01:01:01'],
+    [90061, 'D天H时m分s秒', '1天1时1分1秒'],
+    [61, 'ss', '61'],
+    [0, 'mm:ss', '00:00'],
+]);
+
+it('rounds a countdown up to the second it is in', function () {
+    expect(Countdown::format(1500, 'ss'))->toBe('02')
+        ->and(Countdown::format(1000, 'ss'))->toBe('01');
 });
 
 it('starts countdowns from Livewire', function () {
