@@ -13,8 +13,8 @@ it('renders a description list as dl with groups', function () {
             </x-ui::description-list.item>
         </x-ui::description-list>
         BLADE)->assertSeeInOrder([
-        '<dl data-slot="description-list" data-orientation="horizontal" style="--columns: 2">',
-        '<div data-slot="description-list-item" style="--span: 2">',
+        '<dl data-slot="description-list" data-orientation="horizontal" style="--columns: 2;">',
+        '<div data-slot="description-list-item" style="--span: 2;">',
         '<dt data-slot="description-list-term">Order</dt>',
         '<dd data-slot="description-list-details">#4189</dd>',
     ], false);

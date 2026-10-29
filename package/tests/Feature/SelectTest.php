@@ -21,7 +21,7 @@ it('renders a select with its parts linked by id', function () {
 
     expect($html)
         ->toContain('<eso-select data-slot="select" data-value="apple" data-name="fruit" wire:model="fruit">')
-        ->toContain("<button type=\"button\" data-slot=\"select-trigger\" data-size=\"sm\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"{$id}\" style=\"anchor-name: --{$id}\" class=\"w-48\">")
+        ->toContain("<button type=\"button\" data-slot=\"select-trigger\" data-size=\"sm\" aria-haspopup=\"listbox\" aria-expanded=\"false\" aria-controls=\"{$id}\" style=\"anchor-name: --{$id};\" class=\"w-48\">")
         ->toContain('<span data-slot="select-value" data-placeholder="Select a fruit">Select a fruit</span>')
         ->toContain("<div id=\"{$id}\" popover=\"auto\" role=\"listbox\" tabindex=\"-1\" data-slot=\"select-content\" data-align-trigger=\"false\" data-side=\"top\"")
         ->toContain('<div role="group" data-slot="select-group">')

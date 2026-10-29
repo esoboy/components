@@ -178,7 +178,7 @@ describe('sidebar', function () {
             BLADE);
 
         $view->assertSeeInOrder([
-            '<eso-sidebar-provider data-slot="sidebar-wrapper" style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem">',
+            '<eso-sidebar-provider data-slot="sidebar-wrapper" style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem;">',
             '<div data-slot="sidebar" data-state="expanded" data-collapsible="" data-collapsible-mode="icon" data-variant="sidebar" data-side="left">',
             '<div data-slot="sidebar-gap"></div>',
             '<div data-slot="sidebar-container" data-side="left" popover="manual" class="border-0">',
@@ -231,7 +231,7 @@ describe('sidebar', function () {
         [$anchor] = idsOf($html, 'data-tooltip');
 
         expect($html)
-            ->toContain('<a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="default" data-active="data-active" data-tooltip="'.$anchor.'" style="anchor-name: --'.$anchor.'" href="/"><span>Home</span></a>')
+            ->toContain('<a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="default" data-active="data-active" data-tooltip="'.$anchor.'" style="anchor-name: --'.$anchor.';" href="/"><span>Home</span></a>')
             ->toContain('id="'.$anchor.'" popover="manual" role="tooltip"')
             ->toContain('data-sidebar="menu-tooltip"')
             ->toContain('<button type="button" data-slot="sidebar-menu-action" data-sidebar="menu-action" data-show-on-hover="data-show-on-hover">')

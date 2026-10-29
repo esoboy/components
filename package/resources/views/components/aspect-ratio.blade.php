@@ -4,4 +4,4 @@
     'ratio' => 1,
 ])
 
-<div {{ $attributes->merge(['data-slot' => 'aspect-ratio', 'style' => "--ratio: {$ratio}"]) }}>{{ $slot }}</div>
+<div {{ $attributes->merge(['data-slot' => 'aspect-ratio', 'style' => "--ratio: {$ratio};"]) }}>{{ $slot }}</div>

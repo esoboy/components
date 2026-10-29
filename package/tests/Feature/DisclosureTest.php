@@ -108,7 +108,7 @@ it('renders a circle progress with its value in the middle', function () {
 
 it('renders an aspect ratio box', function () {
     $this->blade('<x-ui::aspect-ratio :ratio="16 / 9">x</x-ui::aspect-ratio>')
-        ->assertSee('<div data-slot="aspect-ratio" style="--ratio: 1.7777777777778">x</div>', false);
+        ->assertSee('<div data-slot="aspect-ratio" style="--ratio: 1.7777777777778;">x</div>', false);
 });
 
 it('renders a scroll area with both scrollbars, hidden until JS measures', function () {
@@ -133,9 +133,9 @@ it('renders resizable panels and handles', function () {
 
     expect($html)
         ->toContain('<eso-resizable-panel-group data-slot="resizable-panel-group" aria-orientation="vertical" data-orientation="vertical">')
-        ->toContain('<div data-slot="resizable-panel" data-default-size="25" data-min-size="10" style="flex: 25 1 0px; overflow: hidden" wire:ignore.self>A</div>')
+        ->toContain('<div data-slot="resizable-panel" data-default-size="25" data-min-size="10" style="flex: 25 1 0px; overflow: hidden;" wire:ignore.self>A</div>')
         ->toContain('<div role="separator" tabindex="0" data-slot="resizable-handle" aria-orientation="horizontal" wire:ignore.self>')
-        ->toContain('<div data-slot="resizable-panel" style="flex: 1 1 0px; overflow: hidden" wire:ignore.self>B</div>');
+        ->toContain('<div data-slot="resizable-panel" style="flex: 1 1 0px; overflow: hidden;" wire:ignore.self>B</div>');
 });
 
 it('renders a carousel with its controls', function () {

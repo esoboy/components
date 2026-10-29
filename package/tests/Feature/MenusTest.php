@@ -16,7 +16,7 @@ it('pairs a hover card trigger with its content', function () {
 
     expect($html)
         ->toContain('<a data-slot="button" data-variant="link" data-size="default" style="anchor-name: --'.$id.';" data-hover-card="'.$id.'" data-delay="10" data-close-delay="300" href="/u/nextjs">@nextjs</a>')
-        ->toContain('<div id="'.$id.'" popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 4px">Card</div>');
+        ->toContain('<div id="'.$id.'" popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 4px;">Card</div>');
 });
 
 it('opens a context menu from its trigger area, with dropdown menu items', function () {
@@ -56,8 +56,8 @@ it('renders a menubar whose triggers toggle their menus', function () {
 
     expect($html)
         ->toContain('<div role="menubar" data-slot="menubar">')
-        ->toContain('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" commandfor="'.$id.'" command="toggle-popover" style="anchor-name: --'.$id.'">File</button>')
-        ->toContain('<div id="'.$id.'" popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="position-anchor: --'.$id.'; --side-offset: 8px">')
+        ->toContain('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" commandfor="'.$id.'" command="toggle-popover" style="anchor-name: --'.$id.';">File</button>')
+        ->toContain('<div id="'.$id.'" popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="position-anchor: --'.$id.'; --side-offset: 8px;">')
         ->toContain('<button type="button" commandfor="'.$id.'" command="hide-popover" role="menuitem" data-slot="dropdown-menu-item" data-variant="default">New Tab</button>');
 });
 
@@ -79,8 +79,8 @@ it('renders a navigation menu with trigger-styled links and aligned content', fu
     expect($html)
         ->toContain('<nav data-slot="navigation-menu">')
         ->toContain('<ul data-slot="navigation-menu-list">')
-        ->toContain('<button type="button" aria-expanded="false" aria-controls="'.$id.'" data-slot="navigation-menu-trigger" data-navigation-menu="'.$id.'" style="anchor-name: --'.$id.'">')
-        ->toContain('<div id="'.$id.'" popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 8px">')
+        ->toContain('<button type="button" aria-expanded="false" aria-controls="'.$id.'" data-slot="navigation-menu-trigger" data-navigation-menu="'.$id.'" style="anchor-name: --'.$id.';">')
+        ->toContain('<div id="'.$id.'" popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 8px;">')
         ->toContain('<a data-slot="navigation-menu-link" data-active="data-active" aria-current="page" href="/tabs">Tabs</a>')
         ->toContain('<li data-slot="navigation-menu-item"><a data-slot="navigation-menu-link" href="/docs">Docs</a></li>');
 });

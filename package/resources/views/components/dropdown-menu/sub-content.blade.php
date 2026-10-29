@@ -14,5 +14,5 @@ $id = Overlay::close('dropdown-menu-sub');
     'data-slot' => 'dropdown-menu-sub-content',
     'data-side' => 'right',
     'data-align' => 'start',
-    'style' => "position-anchor: --{$id}; --side-offset: 0px",
+    'style' => "position-anchor: --{$id}; --side-offset: 0px;",
 ]) }}>{{ $slot }}</div>

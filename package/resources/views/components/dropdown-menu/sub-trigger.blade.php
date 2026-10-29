@@ -18,7 +18,7 @@ $id = Overlay::open('dropdown-menu-sub');
     'data-inset' => $inset,
     'commandfor' => $id,
     'command' => 'toggle-popover',
-    'style' => 'anchor-name: --'.$id,
+    'style' => 'anchor-name: --'.$id.';',
 ]) }}>
     {{ $slot }}
     <x-ui::icon name="chevron-right" data-slot="dropdown-menu-sub-trigger-icon" />

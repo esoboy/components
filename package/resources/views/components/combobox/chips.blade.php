@@ -7,7 +7,7 @@ $id = Overlay::open('combobox');
 @endphp
 
 {{-- ui.js renders a chip per chosen item from the template, in front of the input. --}}
-<div {{ $attributes->merge(['data-slot' => 'combobox-chips', 'data-combobox-anchor' => true, 'style' => 'anchor-name: --'.$id]) }}>
+<div {{ $attributes->merge(['data-slot' => 'combobox-chips', 'data-combobox-anchor' => true, 'style' => 'anchor-name: --'.$id.';']) }}>
     <template data-combobox-chip>
         <div data-slot="combobox-chip">
             <span data-combobox-chip-label></span>

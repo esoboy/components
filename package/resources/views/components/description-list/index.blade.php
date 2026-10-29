@@ -5,4 +5,4 @@
     'columns' => 1,
 ])
 
-<dl {{ $attributes->merge(['data-slot' => 'description-list', 'data-orientation' => $orientation, 'style' => "--columns: {$columns}"]) }}>{{ $slot }}</dl>
+<dl {{ $attributes->merge(['data-slot' => 'description-list', 'data-orientation' => $orientation, 'style' => "--columns: {$columns};"]) }}>{{ $slot }}</dl>

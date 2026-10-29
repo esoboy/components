@@ -17,7 +17,7 @@ $id = Overlay::open('select');
     'aria-haspopup' => 'listbox',
     'aria-expanded' => 'false',
     'aria-controls' => $id,
-    'style' => 'anchor-name: --'.$id,
+    'style' => 'anchor-name: --'.$id.';',
 ]) }}>
     {{ $slot }}
     <x-ui::icon name="chevron-down" data-slot="select-icon" />

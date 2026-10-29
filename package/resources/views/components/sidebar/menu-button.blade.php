@@ -19,7 +19,7 @@ $attributes = $attributes->merge([
     'data-variant' => $variant,
     'data-size' => $size,
     'data-active' => $isActive,
-    ...($tooltipId ? ['data-tooltip' => $tooltipId, 'style' => "anchor-name: --{$tooltipId}"] : []),
+    ...($tooltipId ? ['data-tooltip' => $tooltipId, 'style' => "anchor-name: --{$tooltipId};"] : []),
 ]);
 @endphp
 

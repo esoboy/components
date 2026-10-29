@@ -26,7 +26,7 @@ $rows = $code === null ? null : implode('', array_map(
     'data-numbered' => (bool) $lineNumbers,
     'dir' => 'ltr',
     'tabindex' => '0',
-    'style' => 'counter-reset: line '.($startLine - 1),
+    'style' => 'counter-reset: line '.($startLine - 1).';',
 ]) }}><code data-slot="code-block-code">{!! $rows ?? $slot !!}</code></pre>
 
 {{-- Livewire loads this once per page, also when the block arrives in a later update. --}}

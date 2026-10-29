@@ -14,7 +14,7 @@ it('renders the parts the script fills, with the data for the app\'s language', 
         BLADE);
 
     expect($html)
-        ->toContain('<eso-emoji-picker data-slot="emoji-picker" data-src="http://localhost/esoboy-ui/emoji/en.json?id=1111aaaa2222" data-columns="9" style="--emoji-picker-columns: 9" class="h-[342px]" wire:emoji-select="react($event.detail.emoji)">')
+        ->toContain('<eso-emoji-picker data-slot="emoji-picker" data-src="http://localhost/esoboy-ui/emoji/en.json?id=1111aaaa2222" data-columns="9" style="--emoji-picker-columns: 9;" class="h-[342px]" wire:emoji-select="react($event.detail.emoji)">')
         ->toContain('<div data-slot="emoji-picker-search-wrapper" wire:ignore>')
         ->toContain('<input type="text" data-slot="emoji-picker-search" placeholder="Search…" aria-label="Search…" autocomplete="off" spellcheck="false">')
         ->toContain('<div data-slot="emoji-picker-viewport" wire:ignore>')
@@ -37,7 +37,7 @@ it('passes the class to the search wrapper and the rest to the input', function 
 
 it('lays out the columns asked for', function () {
     $this->blade('<x-ui::emoji-picker :columns="8" />')
-        ->assertSee('data-columns="8" style="--emoji-picker-columns: 8"', false);
+        ->assertSee('data-columns="8" style="--emoji-picker-columns: 8;"', false);
 });
 
 it('loads Chinese emoji data and labels under zh_CN', function () {

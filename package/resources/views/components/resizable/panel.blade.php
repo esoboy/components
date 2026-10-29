@@ -17,5 +17,5 @@ $size = $defaultSize === null ? null : (float) $defaultSize;
     'data-default-size' => $size ?? false,
     'data-min-size' => $minSize === null ? false : (float) $minSize,
     'data-max-size' => $maxSize === null ? false : (float) $maxSize,
-    'style' => 'flex: '.($size ?? 1).' 1 0px; overflow: hidden',
+    'style' => 'flex: '.($size ?? 1).' 1 0px; overflow: hidden;',
 ]) }} wire:ignore.self>{{ $slot }}</div>

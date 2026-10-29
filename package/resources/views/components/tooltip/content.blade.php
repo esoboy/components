@@ -19,5 +19,5 @@ $id = Overlay::close('tooltip');
     'data-slot' => 'tooltip-content',
     'data-side' => $side,
     'data-align' => $align,
-    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px",
+    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px;",
 ]) }}>{{ $slot }}</div>

@@ -22,7 +22,7 @@ it('links a popover trigger to its content', function () {
 
     expect($id)->toStartWith('popover-')
         ->and($html)->toContain("<button type=\"button\" style=\"anchor-name: --{$id};\" data-slot=\"button\" data-variant=\"outline\" data-size=\"default\" commandfor=\"{$id}\" command=\"toggle-popover\">Open</button>")
-        ->and($html)->toContain("<div id=\"{$id}\" popover=\"auto\" data-slot=\"popover-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 8px\">")
+        ->and($html)->toContain("<div id=\"{$id}\" popover=\"auto\" data-slot=\"popover-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 8px;\">")
         ->and($html)->toContain('<h2 data-slot="popover-title">Dimensions</h2>')
         ->and($html)->toContain('<p data-slot="popover-description">Set them.</p>');
 });
@@ -59,7 +59,7 @@ it('renders a tooltip shown on hover', function () {
     [$id] = idsOf($html, 'data-tooltip');
 
     expect($html)->toContain("style=\"anchor-name: --{$id};\" data-slot=\"button\" data-variant=\"outline\" data-size=\"default\" data-tooltip=\"{$id}\" aria-describedby=\"{$id}\">Hover</button>")
-        ->and($html)->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"tooltip\" data-slot=\"tooltip-content\" data-side=\"top\" data-align=\"center\" style=\"position-anchor: --{$id}; --side-offset: 4px\">Add to library</div>");
+        ->and($html)->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"tooltip\" data-slot=\"tooltip-content\" data-side=\"top\" data-align=\"center\" style=\"position-anchor: --{$id}; --side-offset: 4px;\">Add to library</div>");
 });
 
 it('renders a dropdown menu whose items close the root menu', function () {
@@ -95,7 +95,7 @@ it('renders a dropdown menu whose items close the root menu', function () {
         ->and($html)->toContain('<span data-slot="dropdown-menu-shortcut">⌘P</span>')
         ->and($html)->toContain('<a role="menuitem" data-slot="dropdown-menu-item" data-variant="default" href="/billing">Billing</a>')
         ->and($html)->toContain('<div role="separator" data-slot="dropdown-menu-separator"></div>')
-        ->and($html)->toContain("aria-haspopup=\"menu\" data-slot=\"dropdown-menu-sub-trigger\" commandfor=\"{$sub}\" command=\"toggle-popover\" style=\"anchor-name: --{$sub}\">")
+        ->and($html)->toContain("aria-haspopup=\"menu\" data-slot=\"dropdown-menu-sub-trigger\" commandfor=\"{$sub}\" command=\"toggle-popover\" style=\"anchor-name: --{$sub};\">")
         ->and($html)->toContain("<div id=\"{$sub}\" popover=\"auto\" role=\"menu\" tabindex=\"-1\" data-slot=\"dropdown-menu-sub-content\" data-side=\"right\" data-align=\"start\"")
         ->and($html)->toContain('data-variant="destructive"');
 
@@ -115,4 +115,12 @@ it('binds checkbox and radio items with wire:model', function () {
         ->and($html)->toContain('<input type="checkbox" role="menuitemcheckbox" wire:model.live="statusBar">')
         ->and($html)->toContain('<eso-radio-group role="group" data-slot="dropdown-menu-radio-group" wire:model.live="position">')
         ->and($html)->toContain('<input type="radio" role="menuitemradio" value="top">');
+});
+
+it('keeps a style given to a component after its own', function () {
+    $this->blade('<x-ui::popover><x-ui::popover.trigger style="color: red">Open</x-ui::popover.trigger><x-ui::popover.content style="width: 10rem">x</x-ui::popover.content></x-ui::popover>')
+        ->assertSeeInOrder(['; color: red;"', '--side-offset: 4px; width: 10rem;"'], false);
+
+    $this->blade('<x-ui::sidebar.provider style="--sidebar-width: 20rem">x</x-ui::sidebar.provider>')
+        ->assertSee('style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem; --sidebar-width: 20rem;"', false);
 });

@@ -11,7 +11,7 @@
 $id = Overlay::open('combobox');
 @endphp
 
-<div {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'input-group', 'role' => 'group', 'data-combobox-anchor' => true, 'style' => 'anchor-name: --'.$id]) }}>
+<div {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'input-group', 'role' => 'group', 'data-combobox-anchor' => true, 'style' => 'anchor-name: --'.$id.';']) }}>
     <input {{ $attributes->except(['class', 'style'])->merge([
         'type' => 'text',
         'data-slot' => 'input-group-control',

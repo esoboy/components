@@ -16,5 +16,5 @@ $id = Overlay::close('navigation-menu');
     'data-slot' => 'navigation-menu-content',
     'data-side' => 'bottom',
     'data-align' => $align,
-    'style' => "position-anchor: --{$id}; --side-offset: 8px",
+    'style' => "position-anchor: --{$id}; --side-offset: 8px;",
 ]) }}>{{ $slot }}</div>

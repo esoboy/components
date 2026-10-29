@@ -21,7 +21,7 @@ it('renders a single toggle group as a deselectable radio group', function () {
         </x-ui::toggle-group>
         BLADE);
 
-    $view->assertSee('<eso-radio-group role="group" data-slot="toggle-group" data-variant="outline" data-size="default" data-spacing="0" data-orientation="horizontal" data-deselectable="data-deselectable" style="--gap: 0" wire:model="align">', false)
+    $view->assertSee('<eso-radio-group role="group" data-slot="toggle-group" data-variant="outline" data-size="default" data-spacing="0" data-orientation="horizontal" data-deselectable="data-deselectable" style="--gap: 0;" wire:model="align">', false)
         ->assertSee('<label data-slot="toggle-group-item" data-variant="outline" data-size="default" data-spacing="0">', false)
         ->assertSee('<input type="radio" value="left" checked="checked">', false)
         ->assertSee('<label data-slot="toggle-group-item" data-variant="default"', false)

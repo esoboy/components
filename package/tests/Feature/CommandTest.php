@@ -64,12 +64,12 @@ it('renders a combobox with its input, trigger and clear', function () {
 
     expect($html)
         ->toContain('<eso-combobox data-slot="combobox" data-should-filter="true" data-value="&quot;next&quot;" wire:model="framework">')
-        ->toContain("<div data-slot=\"input-group\" role=\"group\" data-combobox-anchor=\"data-combobox-anchor\" style=\"anchor-name: --{$id}\">")
+        ->toContain("<div data-slot=\"input-group\" role=\"group\" data-combobox-anchor=\"data-combobox-anchor\" style=\"anchor-name: --{$id};\">")
         ->toContain("<input type=\"text\" data-slot=\"input-group-control\" data-combobox-input=\"data-combobox-input\" role=\"combobox\" autocomplete=\"off\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"{$id}\" placeholder=\"Select a framework\">")
         ->toContain('data-combobox-trigger')
         ->toContain('data-combobox-clear')
         ->toContain('aria-label="Clear"')
-        ->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"listbox\" data-slot=\"combobox-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 6px\">")
+        ->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"listbox\" data-slot=\"combobox-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 6px;\">")
         ->toContain('<div role="option" data-slot="combobox-item" data-value="next" aria-selected="false">')
         ->toContain('<div data-slot="combobox-label">Frameworks</div>');
 });

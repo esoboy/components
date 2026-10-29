@@ -17,5 +17,5 @@ $data = collect(["emoji/{$locale}.json", 'emoji/'.strtok($locale, '-').'.json', 
     'data-slot' => 'emoji-picker',
     'data-src' => $assets->url($data),
     'data-columns' => $columns,
-    'style' => "--emoji-picker-columns: {$columns}",
+    'style' => "--emoji-picker-columns: {$columns};",
 ]) }}>{{ $slot }}</eso-emoji-picker>

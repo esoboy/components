@@ -18,5 +18,5 @@ $id = Overlay::close('hover-card');
     'data-slot' => 'hover-card-content',
     'data-side' => $side,
     'data-align' => $align,
-    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px",
+    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px;",
 ]) }}>{{ $slot }}</div>

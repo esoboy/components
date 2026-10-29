@@ -13,5 +13,5 @@ $id = Overlay::open('dropdown-menu');
     'data-slot' => 'menubar-trigger',
     'commandfor' => $id,
     'command' => 'toggle-popover',
-    'style' => 'anchor-name: --'.$id,
+    'style' => 'anchor-name: --'.$id.';',
 ]) }}>{{ $slot }}</button>

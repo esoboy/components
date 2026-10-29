@@ -22,5 +22,5 @@ $tag = $type === 'multiple' ? 'eso-checkbox-group' : 'eso-radio-group';
     'data-spacing' => $spacing,
     'data-orientation' => $orientation,
     'data-deselectable' => $type !== 'multiple',
-    'style' => '--gap: '.$spacing,
+    'style' => '--gap: '.$spacing.';',
 ]) }}>{{ $slot }}</{{ $tag }}>

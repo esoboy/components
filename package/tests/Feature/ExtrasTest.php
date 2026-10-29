@@ -45,7 +45,7 @@ describe('code block', function () {
             '<div data-slot="code-block-title">app.php</div>',
             'data-code-block-copy="data-code-block-copy" aria-label="Copy" data-label-copy="Copy" data-label-copied="Copied"',
             '<span aria-live="polite" class="sr-only" data-code-block-status></span>',
-            '<pre data-slot="code-block-content" data-language="php" data-numbered="data-numbered" dir="ltr" tabindex="0" style="counter-reset: line 9">',
+            '<pre data-slot="code-block-content" data-language="php" data-numbered="data-numbered" dir="ltr" tabindex="0" style="counter-reset: line 9;">',
             '<code data-slot="code-block-code"><span data-slot="code-block-line" data-variant="default"><span data-slot="code-block-line-content">&lt;?php</span></span>'
                 ."<span data-slot=\"code-block-line\" data-variant=\"default\"><span data-slot=\"code-block-line-content\">\n</span></span>"
                 .'<span data-slot="code-block-line" data-variant="default"><span data-slot="code-block-line-content">echo &#039;a &lt; b&#039;;</span></span></code></pre>',
@@ -55,7 +55,7 @@ describe('code block', function () {
 
     it('takes hand-written rows for diffs', function () {
         $this->blade('<x-ui::code-block.content wrap><x-ui::code-block.line variant="removed">a</x-ui::code-block.line><x-ui::code-block.line variant="added" /></x-ui::code-block.content>')
-            ->assertSee('<pre data-slot="code-block-content" data-wrap="data-wrap" dir="ltr" tabindex="0" style="counter-reset: line 0"><code data-slot="code-block-code"><span data-slot="code-block-line" data-variant="removed"><span data-slot="code-block-line-content">a</span></span>', false)
+            ->assertSee('<pre data-slot="code-block-content" data-wrap="data-wrap" dir="ltr" tabindex="0" style="counter-reset: line 0;"><code data-slot="code-block-code"><span data-slot="code-block-line" data-variant="removed"><span data-slot="code-block-line-content">a</span></span>', false)
             ->assertSee("<span data-slot=\"code-block-line\" data-variant=\"added\"><span data-slot=\"code-block-line-content\">\n</span></span></code></pre>", false);
     });
 
