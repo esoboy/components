@@ -142,6 +142,11 @@ export const COMMANDS = {
         (node, align) => restyle(node.attrs.style, MARGINS[align] ?? MARGINS.left),
         (node, align) => alignOf(node.attrs.style) === align,
     ),
+    // An embed's shape: its aspect ratio, 16:9 by default.
+    'embed-ratio': media(
+        (node, ratio) => node.type.name === 'embed' ? restyle(node.attrs.style ?? EMBED_STYLE, { 'aspect-ratio': ratio || null }) : node.attrs.style,
+        (node, ratio) => node.type.name === 'embed' && same(computed(node.attrs.style ?? EMBED_STYLE, 'aspect-ratio'), ratio),
+    ),
     'caption': {
         run: chain => chain.toggleCaption(),
         active: editor => selected(editor)?.type.name === 'image' && editor.state.doc.resolve(editor.state.selection.from).parent.type.name === 'figure',

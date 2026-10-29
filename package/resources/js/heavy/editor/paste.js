@@ -1,13 +1,16 @@
 /*
- * Lists pasted from Word and WPS: paragraphs marked mso-list (their level in it), each
- * opening with a marker the app drew (a bullet, "1.", "a)") instead of a list. They
- * become real lists, nested by level, numbered when the marker was a number or letter.
+ * Lists pasted from Word and WPS: paragraphs marked mso-list (the list, their level in
+ * it), each opening with a marker the app drew (a bullet, "1.", "a)") and indented to
+ * look like a list. They become real lists, nested by level, numbered when the marker
+ * was a number or letter, without the marker or the indent.
  */
 
 const LEVEL = /mso-list:\s*l\d+\s+level(\d+)/i
+const LIST = /mso-list:\s*(l\d+)/i
 const ORDERED = /^\s*(\d+|[a-z]|[ivxlcdm]+)[.)、．]/i
 
 const levelOf = paragraph => Number(paragraph.getAttribute('style')?.match(LEVEL)?.[1] ?? 1)
+const listOf = paragraph => paragraph.getAttribute('style')?.match(LIST)?.[1] ?? null
 
 const isItem = node => node instanceof Element && node.matches('p') && (LEVEL.test(node.getAttribute('style') ?? '') || /MsoListParagraph/i.test(node.className))
 
@@ -38,27 +41,40 @@ export function wordLists(html) {
 
         // The run of items from here, as lists by level.
         const stack = []
+        let current = null
         let paragraph = first
 
         while (isItem(paragraph)) {
             const next = paragraph.nextElementSibling
             const level = levelOf(paragraph)
+            const list = listOf(paragraph)
             const ordered = unmark(paragraph)
             const item = document.createElement('li')
 
+            // Another list (Word's next one, say numbered after bullets) starts afresh.
+            if (list !== current) stack.length = 0
+            current = list
+
             while (stack.length > level) stack.pop()
+
+            // A list of the other kind at this level ends here.
+            if (stack.length === level && stack.at(-1).tagName !== (ordered ? 'OL' : 'UL')) stack.pop()
 
             // A deeper level opens a list in the item before it.
             while (stack.length < level) {
-                const list = document.createElement(ordered ? 'ol' : 'ul')
+                const opened = document.createElement(ordered ? 'ol' : 'ul')
                 const parent = stack.at(-1)
 
-                if (parent) (parent.lastElementChild ?? parent).append(list)
-                else paragraph.before(list)
+                if (parent) (parent.lastElementChild ?? parent).append(opened)
+                else paragraph.before(opened)
 
-                stack.push(list)
+                stack.push(opened)
             }
 
+            // The list indents it now.
+            paragraph.style.removeProperty('margin-left')
+            paragraph.style.removeProperty('text-indent')
+            if (! paragraph.style.length) paragraph.removeAttribute('style')
             paragraph.removeAttribute('class')
             item.append(paragraph)
             stack.at(-1).append(item)

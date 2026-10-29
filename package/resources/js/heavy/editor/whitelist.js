@@ -1,8 +1,9 @@
 /*
- * The format's whitelist in the editor, as the server applies it (RichTextFormat): the
- * tags kept, each with the attributes kept on it, and the CSS properties kept in their
- * style, values as written unless they could run or load something. Pasted and loaded
- * HTML keeps exactly that; what the editor writes itself is within it.
+ * The format's whitelist in the editor, as the server applies it (RichTextWhitelist): the
+ * tags kept, each with the attributes kept on it and their values ('*' for any; for
+ * style, the CSS properties kept, values as written unless they could run or load
+ * something), or '*' for all the standard's attributes. Pasted and loaded HTML keeps
+ * exactly that; what the editor writes itself is within it.
  */
 
 import { Extension, Mark, Node } from '@tiptap/core'
@@ -85,30 +86,83 @@ export function getProperty(style, property) {
     return new Map(declarations(style)).get(property) ?? null
 }
 
+// The attributes that hold an address: http(s) or relative only (Symfony's list).
+const ADDRESSES = new Set(['src', 'href', 'lowsrc', 'background', 'ping', 'action', 'formaction', 'poster', 'cite', 'data', 'codebase', 'archive', 'longdesc'])
+
+const webAddress = url => {
+    const scheme = String(url).trim().match(/^([a-z][a-z\d+.-]*):/i)?.[1]
+
+    return ! scheme || ['http', 'https'].includes(scheme.toLowerCase())
+}
+
 /**
- * The format's whitelist: allows(tag, attribute), style(element) for what of an
+ * The format's whitelist: allows(tag, attribute, value), style(element) for what of an
  * element's style is kept, extras(element) for its other kept attributes.
  */
 export function whitelist(format) {
-    const tags = new Map(Object.entries(format.allow ?? {}).map(([tag, attributes]) => [tag, new Set(attributes)]))
-    const css = new Set(format.css ?? [])
+    const tags = new Map(Object.entries(format.allow ?? {}))
+    const standard = new Set(format.attributes ?? [])
 
-    const allows = (tag, attribute) => attribute ? !! tags.get(tag)?.has(attribute) : tags.has(tag)
+    // An attribute's values kept ('*' for any), or null when it isn't kept at all. A
+    // style's CSS properties come once for the tags sharing them: its own is an index.
+    const values = (tag, attribute) => {
+        const rules = tags.get(tag)
+
+        if (! rules || /^on/i.test(attribute)) return null
+        if (rules === '*') return standard.has(attribute) ? '*' : null
+
+        return typeof rules[attribute] === 'number' ? format.css?.[rules[attribute]] ?? null : rules[attribute] ?? null
+    }
+
+    const allows = (tag, attribute, value) => {
+        if (! attribute) return tags.has(tag)
+
+        const kept = values(tag, attribute)
+
+        if (! kept) return false
+        if (value === undefined || attribute === 'style') return true
+        if (ADDRESSES.has(attribute) && ! webAddress(value)) return false
+
+        return kept === '*' || kept.some(one => one.toLowerCase() === String(value).trim().toLowerCase())
+    }
 
     // As the browser writes it, so the same style written two ways (the server's hex,
-    // the editor's rgb()) is the same.
-    const clean = value => restyle(stringify(declarations(value).filter(([property, declared]) => css.has(property) && safe(declared))), {})
+    // the editor's rgb()) is the same; kept to the whitelist again after, as the browser
+    // can write a shorthand as its parts (border: none as border-width, …, border-image).
+    const keep = (tag, value) => {
+        const css = values(tag, 'style')
+
+        return css ? stringify(declarations(value).filter(([property, declared]) => (css === '*' || css.includes(property)) && safe(declared))) : null
+    }
+    const clean = (tag, value) => keep(tag, restyle(keep(tag, value), {}))
 
     return {
         tags,
-        css,
         allows,
         clean,
-        style: element => allows(element.tagName.toLowerCase(), 'style') ? clean(element.getAttribute('style')) : null,
+        // HTML coming in (pasted, from the source, the server's to insert) with attributes
+        // whose values the whitelist lists keeping only those: an editor node reading an
+        // attribute itself (a list's type, a link's target) keeps no other.
+        restrict(html) {
+            const template = document.createElement('template')
+
+            template.innerHTML = html
+
+            for (const element of template.content.querySelectorAll('*')) {
+                for (const { name, value } of [...element.attributes]) {
+                    const kept = name === 'style' ? null : values(element.tagName.toLowerCase(), name)
+
+                    if (Array.isArray(kept) && ! kept.some(one => one.toLowerCase() === value.trim().toLowerCase())) element.removeAttribute(name)
+                }
+            }
+
+            return template.innerHTML
+        },
+        style: element => clean(element.tagName.toLowerCase(), element.getAttribute('style')),
         // The whitelisted attributes the node doesn't read itself, or null.
         extras(element, own = OWN) {
             const tag = element.tagName.toLowerCase()
-            const kept = [...element.attributes].filter(({ name }) => ! own.has(name) && allows(tag, name))
+            const kept = [...element.attributes].filter(({ name, value }) => ! own.has(name) && allows(tag, name, value))
 
             return kept.length ? Object.fromEntries(kept.map(({ name, value }) => [name, value])) : null
         },
@@ -116,8 +170,8 @@ export function whitelist(format) {
         attributes(element) {
             const tag = element.tagName.toLowerCase()
             const kept = [...element.attributes]
-                .filter(({ name }) => allows(tag, name))
-                .map(({ name, value }) => [name, name === 'style' ? clean(value) : value])
+                .filter(({ name, value }) => allows(tag, name, value))
+                .map(({ name, value }) => [name, name === 'style' ? clean(tag, value) : value])
                 .filter(([, value]) => value !== null)
 
             return Object.fromEntries(kept)

@@ -1,11 +1,11 @@
 /*
  * The drag handle: a grip beside the block under the pointer (a mouse or a pen).
  * Dragging it moves the block, as ProseMirror moves a dragged node; clicking it selects
- * the block.
+ * the block. From the keyboard, Mod-Shift-↑/↓ moves the block the selection is in.
  */
 
 import { Extension } from '@tiptap/core'
-import { NodeSelection, Plugin } from '@tiptap/pm/state'
+import { NodeSelection, Plugin, Selection, TextSelection } from '@tiptap/pm/state'
 
 // The top-level block at a height of the document, as its position, or null.
 function blockAt(view, y) {
@@ -108,3 +108,44 @@ export function dragHandle(handle) {
         ],
     })
 }
+
+/**
+ * Moves the top-level block the selection is in (or the one selected) past the one
+ * before it (-1) or after it (1), the selection going with it.
+ */
+export function moveBlock(direction) {
+    return ({ state, dispatch }) => {
+        const { selection, doc } = state
+        const $from = selection.$from
+        const whole = selection instanceof NodeSelection && $from.depth === 0
+
+        if (! whole && $from.depth < 1) return false
+
+        const from = whole ? selection.from : $from.before(1)
+        const node = whole ? selection.node : $from.node(1)
+        const index = doc.resolve(from).index(0)
+        const other = doc.maybeChild(index + direction)
+
+        if (! other) return false
+
+        if (dispatch) {
+            const start = direction < 0 ? from - other.nodeSize : from + other.nodeSize
+            const tr = state.tr.delete(from, from + node.nodeSize).insert(start, node)
+            const [anchor, head] = [selection.anchor - from + start, selection.head - from + start]
+
+            tr.setSelection(whole ? NodeSelection.create(tr.doc, start) : selection instanceof TextSelection ? TextSelection.create(tr.doc, anchor, head) : Selection.near(tr.doc.resolve(start + 1)))
+            dispatch(tr.scrollIntoView())
+        }
+
+        return true
+    }
+}
+
+export const MoveBlocks = Extension.create({
+    name: 'moveBlocks',
+
+    addKeyboardShortcuts: () => ({
+        'Mod-Shift-ArrowUp': ({ editor }) => editor.commands.command(moveBlock(-1)),
+        'Mod-Shift-ArrowDown': ({ editor }) => editor.commands.command(moveBlock(1)),
+    }),
+})

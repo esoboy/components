@@ -6,18 +6,24 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\Visitor\AttributeSanitizer\AttributeSanitizerInterface;
 
 /**
- * Keeps a style's declarations whose property is whitelisted, their values as written
- * unless they could run or load something (expression(), javascript:, a url() that isn't
- * http(s) or relative, escapes, comments); and embeds' players on their hosts only.
+ * Keeps what the whitelist says of an attribute: one of its values (any for '*'); for
+ * style, the declarations whose property it names, their values as written unless they
+ * could run or load something (expression(), javascript:, a url() that isn't http(s) or
+ * relative, escapes, comments). Embeds' players only on their hosts, never playing by
+ * themselves; data: addresses only as an image's picture (PNG, JPEG, GIF, WebP, BMP,
+ * AVIF: not SVG, which holds markup).
  */
 final class RichTextAttributes implements AttributeSanitizerInterface
 {
+    // The attributes that hold an address (as Symfony's UrlAttributeSanitizer has them).
+    private const ADDRESSES = ['src', 'href', 'lowsrc', 'background', 'ping', 'action', 'formaction', 'poster', 'cite', 'data', 'codebase', 'archive', 'longdesc'];
+
     /**
-     * @param  list<string>  $css
+     * @param  array<string, '*'|array<string, '*'|list<string>>>  $whitelist
      * @param  list<string>  $hosts
      */
     public function __construct(
-        private readonly array $css,
+        private readonly array $whitelist,
         private readonly array $hosts,
     ) {}
 
@@ -26,21 +32,43 @@ final class RichTextAttributes implements AttributeSanitizerInterface
         return null;
     }
 
-    public function getSupportedAttributes(): array
+    public function getSupportedAttributes(): ?array
     {
-        return ['style', 'src'];
+        return null;
     }
 
     public function sanitizeAttribute(string $element, string $attribute, string $value, HtmlSanitizerConfig $config): ?string
     {
-        if ($attribute === 'src') {
-            return $element !== 'iframe' || $this->plays($value) ? $value : null;
+        $rules = $this->whitelist[$element] ?? [];
+        $values = $rules === '*' ? '*' : ($rules[$attribute] ?? '*');
+
+        if (in_array($attribute, self::ADDRESSES, true) && str_starts_with(strtolower(trim($value)), 'data:')) {
+            return $element === 'img' && $attribute === 'src' && preg_match('~^data:image/(?:png|jpeg|jpg|gif|webp|bmp|avif);base64,[a-z0-9+/]++={0,2}$~i', $value) ? $value : null;
         }
 
+        if ($element === 'iframe' && $attribute === 'src') {
+            return $this->plays($value) ? RichText::still($value) : null;
+        }
+
+        if ($attribute === 'style') {
+            return self::style($value, $values);
+        }
+
+        return $values === '*' || in_array(strtolower(trim($value)), array_map('strtolower', $values), true) ? $value : null;
+    }
+
+    /**
+     * The declarations of a style kept: their property among these ('*' for any), their
+     * value safe.
+     *
+     * @param  '*'|list<string>  $properties
+     */
+    private static function style(string $style, string|array $properties): ?string
+    {
         $kept = [];
 
-        foreach (self::declarations($value) as [$property, $declared]) {
-            if (in_array($property, $this->css, true) && self::safe($declared)) {
+        foreach (self::declarations($style) as [$property, $declared]) {
+            if (($properties === '*' || in_array($property, $properties, true)) && self::safe($declared)) {
                 $kept[$property] = "{$property}:{$declared}";
             }
         }

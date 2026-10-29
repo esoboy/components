@@ -34,12 +34,40 @@
     }
 
     /* Sticks to the top of the page while the text scrolls by under it, below a fixed
-       header of --editor-sticky-top. */
+       header of --editor-sticky-top. One line, what doesn't fit in More (a toolbar of
+       one's own without it wraps). */
     :where([data-slot="editor-toolbar"]) {
         @apply sticky top-(--editor-sticky-top,0px) z-10 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b border-input bg-background p-1;
 
+        /* As wide as the editor, never widening it (or the page) to fit its controls. */
+        &:has(> [data-editor-more]) {
+            @apply flex-nowrap overflow-hidden [contain:inline-size];
+        }
+
         & > [data-slot="separator"] {
-            @apply mx-1 h-5;
+            @apply mx-1 h-5 shrink-0;
+        }
+
+        & [data-slot="button"] {
+            @apply shrink-0;
+        }
+    }
+
+    /* A control is its button (and its menu): laid out as if the wrapper weren't there. */
+    :where([data-slot="editor-control"]:not([hidden])) {
+        display: contents;
+    }
+
+    /* More: what the toolbar had no room for, a row for each of its groups. */
+    [data-slot="popover-content"][data-editor-more-content] {
+        @apply w-max max-w-[min(22rem,calc(100vw-1rem))] gap-1 p-1;
+    }
+
+    :where([data-slot="editor-more-group"]) {
+        @apply flex flex-wrap items-center gap-0.5;
+
+        & + & {
+            @apply border-t border-border pt-1;
         }
     }
 
@@ -48,12 +76,21 @@
             @apply bg-muted text-foreground;
         }
 
-        /* A menu's button: its current value, kept short, and a small chevron. */
+        /* A menu's button: its current value, kept short, and a small chevron. The font's
+           and size's as wide whatever they show, so the toolbar doesn't shift. */
         & [data-editor-menu] {
             @apply gap-0.5 px-1.5;
 
             & [data-editor-current] {
-                @apply max-w-24 truncate font-normal;
+                @apply max-w-24 truncate text-left font-normal;
+            }
+
+            &[data-editor-menu="font-family"] [data-editor-current] {
+                @apply w-14;
+            }
+
+            &[data-editor-menu="font-size"] [data-editor-current] {
+                @apply w-8;
             }
 
             & [data-editor-chevron] {
@@ -80,12 +117,17 @@
         @apply w-max;
     }
 
-    /* Fields in a row: outside :where to beat popover.css, imported after this file. */
+    /* Fields in a row: outside :where to beat popover.css, imported after this file. An
+       upload above them, the width of the row. */
     [data-slot="popover-content"][data-editor-field-content] {
-        @apply w-80 flex-row flex-wrap items-center gap-1 p-1.5;
+        @apply w-80 max-w-[calc(100vw-1rem)] flex-row flex-wrap items-center gap-1 p-1.5;
 
         & > [data-slot="input"] {
             @apply min-w-0 flex-1;
+        }
+
+        & > [data-editor-upload] {
+            @apply mb-1 w-full;
         }
     }
 
@@ -123,7 +165,7 @@
         @apply hidden w-full px-1 text-xs text-destructive;
     }
 
-    :where([aria-invalid="true"] ~ [data-slot="editor-field-error"], [data-slot="editor-field-error"][data-editor-math-error]:not([hidden])) {
+    :where([aria-invalid="true"] ~ [data-slot="editor-field-error"], [data-slot="editor-field-error"]:is([data-editor-math-error], [data-editor-image-error]):not([hidden])) {
         @apply block;
     }
 
@@ -187,9 +229,10 @@
     }
 
     /* Menus over the text: bubbles by the selection, suggestions at the cursor. */
-    /* As wide as its controls from the start, which it is placed by. */
+    /* As wide as its controls from the start, which it is placed by; on a phone, no wider
+       than the screen, wrapping as the toolbar does. */
     :where([data-slot="editor-bubble"]) {
-        @apply z-40 flex w-max items-center gap-0.5 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10;
+        @apply z-40 flex w-max max-w-[calc(100vw-1rem)] flex-wrap items-center gap-0.5 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10;
 
         & > [data-slot="separator"] {
             @apply mx-1 h-5;
@@ -240,14 +283,19 @@
             @apply min-h-[inherit] outline-none;
         }
 
-        /* Tiptap's placeholder, on the empty first paragraph and an empty caption. */
-        & :is(p.is-editor-empty:first-child, figcaption.is-empty)::before {
-            @apply pointer-events-none float-left h-0 text-muted-foreground;
+        /* Tiptap's placeholder, on the empty first paragraph and an empty caption: a
+           caption's where its text will be, centered. */
+        & p.is-editor-empty:first-child::before, & figcaption.is-empty::before {
+            @apply pointer-events-none h-0 text-muted-foreground;
             content: attr(data-placeholder);
         }
 
+        & p.is-editor-empty:first-child::before {
+            @apply float-left;
+        }
+
         & figcaption.is-empty::before {
-            @apply float-none block text-center;
+            @apply block text-center;
         }
 
         /* Picking a format to paint: the cursor says so. */
@@ -264,12 +312,25 @@
             }
 
             & button {
-                @apply rounded-sm p-0.5 hover:bg-background hover:text-foreground [&_svg]:size-3;
+                @apply rounded-sm p-0.5 outline-none hover:bg-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 [&_svg]:size-3;
+            }
+
+            /* A picture that couldn't be pasted: outlined, its upload a link. */
+            &[data-editor-missing] {
+                @apply border border-dashed border-border bg-transparent;
+
+                & > svg {
+                    @apply size-3.5;
+                }
+
+                & [data-editor-action="upload-missing"] {
+                    @apply px-1 font-medium text-primary underline underline-offset-2;
+                }
             }
         }
 
-        /* Images being imported: dimmed, pulsing, until the app's copy takes their place. */
-        & [data-editor-importing] [data-editor-media-box] {
+        /* Images being saved: dimmed, pulsing, until the app's copy takes their place. */
+        & [data-editor-saving] [data-editor-media-box] {
             @apply animate-pulse opacity-60;
         }
 
@@ -422,7 +483,7 @@
     /* With a drag handle: the grip in the left margin, by the block pointed at (on
        screens with a pointer to point: touch screens get no margin for it). */
     @media (hover: hover) {
-        :where([data-slot="editor"][data-tools~="drag-handle"]) > [data-slot="editor-content"] {
+        :where([data-slot="editor"]:has(> template[data-template="drag-handle"])) > [data-slot="editor-content"] {
             @apply pl-8;
         }
     }
@@ -439,16 +500,30 @@
         @apply min-h-32 w-full flex-1 resize-y bg-transparent px-3 py-2 font-mono text-sm outline-none;
     }
 
+    /* Images not saved yet on the left, the count on the right; gone with neither. */
     :where([data-slot="editor-footer"]) {
-        @apply flex justify-end gap-1 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
+        @apply flex items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
 
-        &:has([data-full]) {
+        &:not(:has(> :not([hidden]))) {
+            @apply hidden;
+        }
+
+        & [data-editor-unsaved] {
+            @apply mr-auto flex items-center gap-1;
+
+            & [data-slot="button"] {
+                @apply h-auto p-0 text-xs;
+            }
+        }
+
+        & [data-editor-characters]:has([data-full]) {
             @apply text-destructive;
         }
     }
 
-    /* The content, in the editor and in Rich Text. */
-    :where([data-slot="editor-content"], [data-slot="rich-text"]) {
+    /* The content, in the editor (the text box once it runs, the HTML it starts from until
+       then: not the bubble menus beside the text box) and in Rich Text. */
+    :where([data-slot="editor-input"], [data-slot="editor-content"]:not(:has(> [data-slot="editor-input"])), [data-slot="rich-text"]) {
         & :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div, section, aside, figure, table, details, img, video, audio, iframe, a[download], math[display="block"]) + :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div, section, aside, figure, table, details, img, video, audio, iframe, a[download], math[display="block"]) {
             @apply mt-3;
         }

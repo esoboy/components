@@ -13,10 +13,10 @@ new class extends Component
     use WithFileUploads;
 
     #[Sanitize('text')]
-    public string $note = '<p>Plain text only: paragraphs and line breaks.</p>';
+    public string $note = '<h3>Text</h3><p>Text and its layout: <strong>marks</strong>, <span style="color:#dc2626">colors</span>, <span style="font-size:18px">sizes</span>, alignment, indents and lists; no images.</p>';
 
     #[Sanitize('basic')]
-    public string $intro = '<h2>Basic</h2><p style="text-indent:2em;line-height:1.75">Text and its layout: <strong>marks</strong>, <span style="color:#dc2626">colors</span>, <mark style="background-color:#fef08a;color:#171717">highlights</mark>, <span style="font-size:20px">sizes</span>, alignment, indents and lists.</p><ul style="list-style-type:none;padding-left:0"><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" checked disabled><div><p>A task done</p></div></li><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" disabled><div><p>A task to do</p></div></li></ul>';
+    public string $intro = '<h2>Basic</h2><p style="text-indent:2em;line-height:1.75">Everything text has (<strong>marks</strong>, <mark style="background-color:#fef08a;color:#171717">highlights</mark>, <span style="font-size:20px">sizes</span>, …), and images, video, audio, files and emoji 😀.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:40%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><ul style="list-style-type:none;padding-left:0"><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" checked disabled><div><p>A task done</p></div></li><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" disabled><div><p>A task to do</p></div></li></ul>';
 
     #[Sanitize]
     #[Validate('required')]
@@ -41,6 +41,8 @@ new class extends Component
     public array $accept = [];
 
     public array $drops = [];
+
+    public array $pasted = [];
 
     // editor-media without files: the picker opens, filtered to what the editor takes.
     public function pickMedia(array $accept): void
@@ -95,6 +97,18 @@ new class extends Component
         }, $urls));
     }
 
+    // editor-data-images: pasted data: images and Word's pictures, uploaded as files.
+    public function savePasted(): void
+    {
+        Ui::editor('article')->replaceDataImages(collect($this->pasted)->map(fn ($file) => [
+            'url' => $file->temporaryUrl(),
+            'name' => $file->getClientOriginalName(),
+            'mime' => $file->getMimeType(),
+        ])->all());
+
+        $this->pasted = [];
+    }
+
     public function kind(array $attachment): string
     {
         return in_array(strtok($attachment['mime'], '/'), ['image', 'audio', 'video'], true) ? strtok($attachment['mime'], '/') : 'file';
@@ -122,7 +136,7 @@ new class extends Component
 
     <section class="space-y-2">
         <h2 class="text-lg font-semibold">A list of features</h2>
-        <x-ui::editor :format="['bold', 'italic', 'link', 'emoji']" :tools="['bubble-menu', 'character-count']" :max-length="140" placeholder="Bold, italic, links and emoji; select text for its menu, type : for emoji" />
+        <x-ui::editor :format="['bold', 'italic', 'link', 'emoji', 'bubble-menu', 'character-count']" :max-length="140" placeholder="Bold, italic, links and emoji; select text for its menu, type : for emoji" />
     </section>
 
     <form wire:submit="publish" class="space-y-4">
@@ -130,8 +144,9 @@ new class extends Component
             <x-ui::field.label>format="full"</x-ui::field.label>
             <x-ui::editor id="article" wire:model="article"
                 x-on:editor-media="$event.detail.files.length ? $wire.uploadMultiple('drops', $event.detail.files, () => $wire.insertDrops()) : $wire.pickMedia($event.detail.accept)"
-                x-on:editor-external-images="$wire.importImages($event.detail.urls)" />
-            <x-ui::field.description>The media button asks the app (editor-media): here a library picker in a dialog, many at once; files dropped or pasted are uploaded first. Type / for blocks.</x-ui::field.description>
+                x-on:editor-external-images="$wire.importImages($event.detail.urls)"
+                x-on:editor-data-images="$wire.uploadMultiple('pasted', $event.detail.files, () => $wire.savePasted())" />
+            <x-ui::field.description>The image, video, audio and file buttons ask the app (editor-media): here a library picker in a dialog, many at once; files dropped or pasted are uploaded first. Images from other sites and pasted ones are saved from their menu, or all at once from the footer. Type / for blocks.</x-ui::field.description>
         </x-ui::field>
         <x-ui::button type="submit">Publish</x-ui::button>
     </form>

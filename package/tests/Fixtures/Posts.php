@@ -49,6 +49,13 @@ class Posts extends Component
         Ui::editor('body')->insertContent('<p>Hello</p>');
     }
 
+    // As an app would answer editor-external-images and editor-data-images.
+    public function saveImages(): void
+    {
+        Ui::editor('body')->replaceImages([['url' => '/copied.png'], null]);
+        Ui::editor('body')->replaceDataImages([['url' => '/uploaded.png']]);
+    }
+
     public function render(): string
     {
         return '<div><x-ui::editor id="body" wire:model="body" /></div>';

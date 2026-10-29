@@ -6,14 +6,12 @@
 
 @aware([
     'format' => 'full',
-    'tools' => null,
 ])
 
 {{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a link, a formula), the / and : suggestions, the upload placeholder, the drag handle. --}}
 @php
 $rich = RichText::resolve($format);
-$tools = $rich->tools($tools);
-$toolbar = in_array('toolbar', $tools, true);
+$toolbar = $rich->has('toolbar');
 $names = [
     'gray' => __('ui::editor.color-gray'),
     'red' => __('ui::editor.color-red'),
@@ -41,18 +39,25 @@ $slash = [
     'callout' => ['message-square-warning', __('ui::editor.callout'), ['data-editor-command' => 'callout', 'data-editor-value' => RichText::CALLOUTS['info']]],
     'code-block' => ['square-code', __('ui::editor.code-block'), ['data-editor-command' => 'code-block']],
     'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), ['data-editor-command' => 'horizontal-rule']],
-    'media' => ['image-plus', __('ui::editor.media'), ['data-editor-action' => 'media']],
-    'embed' => ['square-play', __('ui::editor.embed'), ['data-editor-action' => 'open', 'data-editor-value' => 'embed']],
+    'image' => ['image', __('ui::editor.image'), ['data-editor-action' => 'media', 'data-editor-value' => 'image']],
+    // The toolbar's popover, for a link too; without it, an upload.
+    'video' => ['video', __('ui::editor.video'), $toolbar ? ['data-editor-action' => 'open', 'data-editor-value' => 'video'] : ['data-editor-action' => 'media', 'data-editor-value' => 'video']],
+    'audio' => ['eighth-notes', __('ui::editor.audio'), ['data-editor-action' => 'media', 'data-editor-value' => 'audio']],
+    'file' => ['paperclip', __('ui::editor.file'), ['data-editor-action' => 'media', 'data-editor-value' => 'file']],
     'table' => ['table', __('ui::editor.table'), ['data-editor-command' => 'table']],
     'details' => ['list-chevrons-down-up', __('ui::editor.details'), ['data-editor-command' => 'details']],
     'math' => ['radical', __('ui::editor.math'), ['data-editor-action' => 'open', 'data-editor-value' => 'math']],
 ];
 
-// Embeds and formulas open the toolbar's popover.
-$slash = array_filter($slash, fn (string $control) => EditorControls::allowed($control, $rich, $tools) && ($toolbar || ! in_array($control, ['embed', 'math'], true)), ARRAY_FILTER_USE_KEY);
+// Formulas open the toolbar's popover; a video does without it when it can be uploaded.
+$slash = array_filter($slash, fn (string $control) => EditorControls::allowed($control, $rich) && match ($control) {
+    'math' => $toolbar,
+    'video' => $toolbar || $rich->has('video'),
+    default => true,
+}, ARRAY_FILTER_USE_KEY);
 @endphp
 
-@if (in_array('bubble-menu', $tools, true))
+@if ($rich->has('bubble-menu'))
 <template data-template="bubble-text">
     <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.formatting') }}">
         @foreach (['bold', 'italic', 'underline', 'strike', 'code', 'link', 'color'] as $control)
@@ -87,7 +92,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
     </div>
 </template>
 @endif
-{{-- A selected block (media, a divider, a block picked by its drag handle): what fits it, and delete. --}}
+{{-- A selected block (media, a divider, a block picked by its drag handle): what fits it, and delete. An image the app has no copy of (from another site, pasted as data, turned) can be saved to it. --}}
 <template data-template="bubble-node">
     <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.selection') }}">
         @if ($rich->has('image'))
@@ -101,8 +106,13 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
             <x-ui::button variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="right" aria-pressed="false" :aria-label="__('ui::editor.align-right')"><x-ui::icon name="text-align-end" /></x-ui::button>
         </div>
         @endif
+        @if ($rich->has('embed'))
+        <x-ui::editor.menu name="embed-ratio" data-editor-for="embed" />
+        @endif
         @if ($rich->has('image'))
         <div data-slot="editor-bubble-group" data-editor-for="image">
+            <x-ui::editor.button command="rotate-left" />
+            <x-ui::editor.button command="rotate-right" />
             <x-ui::editor.button command="caption" />
             <x-ui::popover>
                 <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::popover.trigger>
@@ -112,12 +122,16 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
                     <x-ui::button variant="ghost" size="icon-sm" data-editor-action="image-link-remove" :aria-label="__('ui::editor.link-remove')"><x-ui::icon name="trash" /></x-ui::button>
                 </x-ui::popover.content>
             </x-ui::popover>
+            <x-ui::editor.button command="save-image" hidden />
         </div>
         @endif
         @if ($rich->has('image', 'audio', 'video', 'file'))
         <x-ui::button variant="ghost" size="icon-sm" data-editor-action="media" data-editor-for="image video audio file" :aria-label="__('ui::editor.replace-media')"><x-ui::icon name="replace" /></x-ui::button>
         @endif
         <x-ui::editor.button command="delete-node" />
+        @if ($rich->has('image'))
+        <p data-slot="editor-field-error" data-editor-image-error role="alert" hidden>{{ __('ui::editor.image-unreadable') }}</p>
+        @endif
     </div>
 </template>
 @if ($rich->has('link'))
@@ -140,7 +154,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 @endif
 @endif
 
-@if (in_array('slash-menu', $tools, true) && $slash)
+@if ($rich->has('slash-menu') && $slash)
 <template data-template="slash">
     <div data-slot="editor-suggestion" role="listbox" aria-label="{{ __('ui::editor.insert') }}">
         @foreach ($slash as $control => [$icon, $itemLabel, $item])
@@ -165,7 +179,14 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 </template>
 @endif
 
-@if (in_array('drag-handle', $tools, true))
+@if ($rich->has('image'))
+{{-- Where a pasted picture couldn't be read (Word's chart, WPS's picture): upload it there, or dismiss. --}}
+<template data-template="missing-image">
+    <span data-slot="editor-uploading" data-editor-missing contenteditable="false" role="group" aria-label="{{ __('ui::editor.image-missing') }}"><x-ui::icon name="image-off" /><span>{{ __('ui::editor.image-missing') }}</span><button type="button" data-editor-action="upload-missing">{{ __('ui::editor.upload') }}</button><button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
+</template>
+@endif
+
+@if ($rich->has('drag-handle'))
 <template data-template="drag-handle">
     <button type="button" data-slot="editor-drag-handle" draggable="true" tabindex="-1" aria-label="{{ __('ui::editor.drag-handle') }}"><x-ui::icon name="grip-vertical" /></button>
 </template>

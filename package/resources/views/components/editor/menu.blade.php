@@ -2,7 +2,7 @@
 
 @use('Esoboy\Ui\Support\RichText')
 
-{{-- A control's dropdown: a choice of values (paragraph style, font, size, alignment, line height, callout, media size, cell alignment), its button showing the current one, or the table's row and column commands. An item without a command labels the items after it. --}}
+{{-- A control's dropdown: a choice of values (paragraph style, font, size, alignment, line height, callout, media size, an embed's shape, cell alignment), its button showing the current one (the control's name for none: font and size), or the table's row and column commands. An item without a command labels the items after it. --}}
 @props([
     'name',
 ])
@@ -55,6 +55,12 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
         ['media-size', '75%', __('ui::editor.size-large'), null, null],
         ['media-size', '100%', __('ui::editor.size-full'), null, null],
     ], true],
+    'embed-ratio' => [__('ui::editor.embed-ratio'), 'label', [
+        ['embed-ratio', '16 / 9', '16:9', null, null],
+        ['embed-ratio', '4 / 3', '4:3', null, null],
+        ['embed-ratio', '1 / 1', '1:1', null, null],
+        ['embed-ratio', '9 / 16', '9:16', null, null],
+    ], true],
     'callout' => [__('ui::editor.callout'), 'message-square-warning', [
         ['callout', '', __('ui::editor.callout-none'), 'ban', null],
         ['callout', RichText::CALLOUTS['info'], __('ui::editor.callout-info'), 'info', null],
@@ -79,7 +85,15 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
         ['header-column', '', __('ui::editor.header-column'), 'panel-left', null],
         ['delete-column', '', __('ui::editor.delete-column'), 'trash', null],
     ], false],
-    default => throw new InvalidArgumentException("[{$name}] is not an Editor menu; use heading, font-family, font-size, text-align, line-height, callout, media-size, cell-align, table-rows or table-columns."),
+    default => throw new InvalidArgumentException("[{$name}] is not an Editor menu; use heading, font-family, font-size, text-align, line-height, callout, media-size, embed-ratio, cell-align, table-rows or table-columns."),
+};
+
+// What a label button shows for no value (or a shape of its own): the font, size and
+// shape buttons their name, kept short.
+$none = match ($name) {
+    'font-family', 'embed-ratio' => $label,
+    'font-size' => __('ui::editor.size'),
+    default => $items[0][2],
 };
 @endphp
 
@@ -90,7 +104,7 @@ $headings = [1 => __('ui::editor.heading-1'), 2 => __('ui::editor.heading-2'), 3
         <x-ui::icon :name="$icon" data-editor-icon="{{ $value }}" :hidden="! $loop->first" />
         @endforeach
         @elseif ($trigger === 'label')
-        <span data-editor-current data-editor-default="{{ $items[0][2] }}">{{ $items[0][2] }}</span>
+        <span data-editor-current data-editor-default="{{ $none }}">{{ $none }}</span>
         @else
         <x-ui::icon :name="$trigger" />
         @endif

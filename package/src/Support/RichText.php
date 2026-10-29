@@ -8,33 +8,38 @@ use InvalidArgumentException;
  * Rich text formats: what an Editor lets people write, and what sanitize() keeps.
  *
  * A format is a preset (text, basic, full), a name registered with format(), or a list
- * of features and presets. Its features make a whitelist, as UEditor's: the tags kept,
- * each with the attributes kept on it, and the CSS properties kept in their style. The
- * rest goes: other tags are unwrapped (their text stays), other attributes and CSS
- * properties dropped. Content is plain HTML with inline style, so it looks the same
- * wherever it is pasted.
+ * of features and presets. It decides all an Editor does: what can be written, and the
+ * tools it offers to write it. What can be written is a set of tags, each kept as the
+ * one whitelist says (RichTextWhitelist, as UEditor's): its attributes and their values,
+ * the CSS properties of its style. The rest goes: other tags are unwrapped (their text
+ * stays), other attributes, values and CSS properties dropped. Content is plain HTML
+ * with inline style, so it looks the same wherever it is pasted.
  */
 final class RichText
 {
     /**
-     * Each preset's features; a preset named in a list brings its own.
+     * Each preset's features; a preset named in a list brings its own. text is text and
+     * its layout; basic adds media and emoji, the / menu and the drag handle; full adds
+     * the blocks of long documents and the HTML source.
      */
     public const PRESETS = [
-        'text' => [],
-        'basic' => ['heading', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'emoji'],
-        'full' => ['basic', 'code-block', 'image', 'audio', 'video', 'file', 'embed', 'table', 'details', 'math', 'callout', 'layout'],
+        'text' => ['heading', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'toolbar', 'bubble-menu', 'find-replace', 'fullscreen', 'character-count', 'format-painter', 'markdown'],
+        'basic' => ['text', 'image', 'audio', 'video', 'file', 'embed', 'emoji', 'slash-menu', 'drag-handle'],
+        'full' => ['basic', 'code-block', 'table', 'details', 'math', 'callout', 'layout', 'source'],
     ];
 
     /**
-     * Every feature; paragraphs and line breaks come with all of them. layout keeps the
-     * tags no feature writes (section, div, span, small, …) and style on every tag.
-     */
-    public const FEATURES = ['heading', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'emoji', 'code-block', 'image', 'audio', 'video', 'file', 'embed', 'table', 'details', 'math', 'callout', 'layout'];
-
-    /**
-     * What an Editor can offer besides its formats.
+     * The features that are tools: what an Editor offers to write with, writing nothing
+     * of its own.
      */
     public const TOOLS = ['toolbar', 'bubble-menu', 'slash-menu', 'drag-handle', 'find-replace', 'source', 'fullscreen', 'character-count', 'format-painter', 'typography', 'markdown'];
+
+    /**
+     * Every feature: what can be written, then the tools. Paragraphs and line breaks come
+     * with all of them; layout keeps the tags no feature writes (section, div, span,
+     * small, …) and style on every tag.
+     */
+    public const FEATURES = ['heading', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'emoji', 'code-block', 'image', 'audio', 'video', 'file', 'embed', 'table', 'details', 'math', 'callout', 'layout', ...self::TOOLS];
 
     public const HEADINGS = [1, 2, 3, 4, 5, 6];
 
@@ -111,57 +116,81 @@ final class RichText
     ];
 
     /**
-     * Video platforms an embed may play from: a share link's pattern (a JavaScript
-     * regular expression) and the player address it becomes, $1 its first capture.
+     * Video platforms an embed may play from: the player's address, on whose host the
+     * platform's embed code plays; the pattern of its share links (a JavaScript regular
+     * expression) that become that address, $1 their first capture, null for a platform
+     * whose embed code is the only way in; and the query that keeps its player from
+     * playing by itself, set on every address of its.
      */
     public const PLATFORMS = [
-        'youtube' => ['^https?://(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|live/)|youtu\.be/)([\w-]{11})', 'https://www.youtube-nocookie.com/embed/$1'],
-        'bilibili' => ['^https?://(?:www\.|m\.)?bilibili\.com/video/(BV\w{10})', 'https://player.bilibili.com/player.html?bvid=$1&autoplay=0'],
-        'vimeo' => ['^https?://(?:www\.)?vimeo\.com/(\d+)', 'https://player.vimeo.com/video/$1'],
-        'tencent' => ['^https?://v\.qq\.com/x/(?:cover/\w+/|page/)(\w+)\.html', 'https://v.qq.com/txp/iframe/player.html?vid=$1'],
-        'youku' => ['^https?://v\.youku\.com/v_show/id_([\w=]+)\.html', 'https://player.youku.com/embed/$1'],
+        'youtube' => ['https://www.youtube-nocookie.com/embed/$1', '^https?://(?:www\.|m\.)?(?:youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|live/)|youtu\.be/)([\w-]{11})', 'autoplay=0'],
+        'bilibili' => ['https://player.bilibili.com/player.html?bvid=$1', '^https?://(?:www\.|m\.)?bilibili\.com/video/(BV\w{10})', 'autoplay=0'],
+        'vimeo' => ['https://player.vimeo.com/video/$1', '^https?://(?:www\.)?vimeo\.com/(\d+)', 'autoplay=0'],
+        'tencent' => ['https://v.qq.com/txp/iframe/player.html?vid=$1', '^https?://v\.qq\.com/x/(?:cover/\w+/|page/)(\w+)\.html', 'autoplay=false&auto=0'],
+        'youku' => ['https://player.youku.com/embed/$1', '^https?://v\.youku\.com/v_show/id_([\w=]+)\.html', 'autoplay=false'],
+        'acfun' => ['https://www.acfun.cn/player/ac$1', '^https?://(?:www\.|m\.)?acfun\.cn/v/ac(\d+)', 'autoplay=false'],
+        'dailymotion' => ['https://www.dailymotion.com/embed/video/$1', '^https?://(?:www\.)?(?:dailymotion\.com/video|dai\.ly)/([a-zA-Z0-9]+)', 'autoplay=0'],
+        'iqiyi' => ['https://open.iqiyi.com/', null, 'autoplay=false'],
     ];
 
-    /** @var array<string, array{list<string>, array<string, list<string>>, list<string>}> */
+    /** @var array<string, array{list<string>, list<string>}> */
     private static array $formats = [];
 
-    /** @var array<string, array{string, string}> */
+    /** @var array<string, array{string, string|null, string}> */
     private static array $platforms = [];
 
     /** @var array<string, RichTextFormat> */
     private static array $resolved = [];
 
     /**
-     * Names a format, for format="…" and #[Sanitize('…')]: features and presets, and
-     * more for its whitelist: tags with the attributes kept on them (['section' =>
-     * ['style'], 'img' => ['data-ratio']]) and CSS properties.
+     * Names a format, for format="…" and #[Sanitize('…')]: features and presets, and the
+     * whitelist's tags it keeps besides theirs (['section', 'small']), as the whitelist
+     * keeps them.
      *
      * @param  list<string>  $features  features and presets
-     * @param  array<string, list<string>>  $allow
-     * @param  list<string>  $css
+     * @param  list<string>  $tags
      */
-    public static function format(string $name, array $features, array $allow = [], array $css = []): void
+    public static function format(string $name, array $features, array $tags = []): void
     {
         if (isset(self::PRESETS[$name])) {
             throw new InvalidArgumentException("[{$name}] is a preset; name the format something else.");
         }
 
-        self::$formats[$name] = [$features, $allow, $css];
+        foreach ($tags as $tag) {
+            if (! isset(RichTextWhitelist::rules()[$tag])) {
+                throw new InvalidArgumentException("[{$tag}] is not in the whitelist; add it with Ui::editorWhitelist() first.");
+            }
+        }
+
+        self::$formats[$name] = [$features, $tags];
         self::$resolved = [];
     }
 
     /**
-     * Lets embeds play from another platform: share links matching the pattern become
-     * the player address, which sanitize() then lets through for its host.
+     * Adds tags, attributes and values to the whitelist, for every format that keeps
+     * the tag ('*' for all): ['img' => ['data-ratio' => '*'], 'section' => '*'].
+     *
+     * @param  array<string, '*'|array<string, '*'|list<string>>>  $rules
      */
-    public static function platform(string $name, string $pattern, string $src): void
+    public static function whitelist(array $rules): void
     {
-        self::$platforms[$name] = [$pattern, $src];
+        RichTextWhitelist::add($rules);
         self::$resolved = [];
     }
 
     /**
-     * @return array<string, array{string, string}>
+     * Lets embeds play from another platform: its embed code plays when its player is on
+     * the host of $src, which sanitize() then lets through; share links matching the
+     * pattern, if any, become $src. $still keeps its player from playing by itself.
+     */
+    public static function platform(string $name, string $src, ?string $pattern = null, string $still = 'autoplay=0'): void
+    {
+        self::$platforms[$name] = [$src, $pattern, $still];
+        self::$resolved = [];
+    }
+
+    /**
+     * @return array<string, array{string, string|null, string}>
      */
     public static function platforms(): array
     {
@@ -169,16 +198,44 @@ final class RichText
     }
 
     /**
+     * A player's address that doesn't play by itself: its platform's still query set on
+     * it, over what the address said, the rest as it was.
+     */
+    public static function still(string $src): string
+    {
+        $host = parse_url($src, PHP_URL_HOST);
+
+        foreach (self::platforms() as [$player, , $still]) {
+            if ($host !== parse_url($player, PHP_URL_HOST)) {
+                continue;
+            }
+
+            foreach (explode('&', $still) as $pair) {
+                [$name] = explode('=', $pair);
+                $pattern = '~([?&])'.preg_quote($name, '~').'=[^&#]*~';
+
+                $src = preg_match($pattern, $src)
+                    ? (string) preg_replace($pattern, '${1}'.$pair, $src, 1)
+                    : (string) preg_replace('~(?=#)|$~', (str_contains($src, '?') ? '&' : '?').$pair, $src, 1);
+            }
+
+            break;
+        }
+
+        return $src;
+    }
+
+    /**
      * @param  string|list<string>|null  $format  null for full
      */
     public static function resolve(string|array|null $format = null): RichTextFormat
     {
-        [$features, $allow, $css] = self::collect($format ?? 'full');
+        [$features, $tags] = self::collect($format ?? 'full');
 
         // In FEATURES order, so a format doesn't depend on how it was listed.
         $features = array_values(array_intersect(self::FEATURES, $features));
 
-        return self::$resolved[(string) json_encode([$features, $allow, $css])] ??= new RichTextFormat($features, $allow, $css);
+        return self::$resolved[(string) json_encode([$features, $tags])] ??= new RichTextFormat($features, $tags);
     }
 
     /**
@@ -215,10 +272,10 @@ final class RichText
     }
 
     /**
-     * A format's features, with the tags and CSS properties named formats add.
+     * A format's features, with the tags named formats add.
      *
      * @param  string|list<string>  $format
-     * @return array{list<string>, array<string, list<string>>, list<string>}
+     * @return array{list<string>, list<string>}
      */
     private static function collect(string|array $format, int $depth = 0): array
     {
@@ -226,8 +283,8 @@ final class RichText
             throw new InvalidArgumentException('Rich text formats name each other in a loop.');
         }
 
-        [$names, $allow, $css] = is_array($format) ? [$format, [], []] : match (true) {
-            isset(self::PRESETS[$format]) => [self::PRESETS[$format], [], []],
+        [$names, $tags] = is_array($format) ? [$format, []] : match (true) {
+            isset(self::PRESETS[$format]) => [self::PRESETS[$format], []],
             isset(self::$formats[$format]) => self::$formats[$format],
             default => throw new InvalidArgumentException("[{$format}] is not a rich text format; use text, basic, full, a list of features or a name given to Ui::editorFormat()."),
         };
@@ -238,18 +295,17 @@ final class RichText
             if (in_array($name, self::FEATURES, true)) {
                 $features[] = $name;
             } elseif (isset(self::PRESETS[$name]) || isset(self::$formats[$name])) {
-                [$more, $tags, $properties] = self::collect($name, $depth + 1);
+                [$more, $added] = self::collect($name, $depth + 1);
                 array_push($features, ...$more);
-                $allow = array_merge_recursive($tags, $allow);
-                $css = [...$properties, ...$css];
+                array_push($tags, ...$added);
             } else {
                 throw new InvalidArgumentException("[{$name}] is not a rich text feature; use one of: ".implode(', ', self::FEATURES).'.');
             }
         }
 
-        ksort($allow);
-        sort($css);
+        $tags = array_values(array_unique($tags));
+        sort($tags);
 
-        return [$features, array_map(fn (array $attributes) => array_values(array_unique($attributes)), $allow), array_values(array_unique($css))];
+        return [$features, $tags];
     }
 }

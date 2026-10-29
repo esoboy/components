@@ -32,10 +32,12 @@ export function register() {
         if (trigger && leaves(trigger, relatedTarget)) hide(trigger)
     })
 
+    // Focus can come back to a trigger while a popover is hiding, when no popover may be
+    // shown: after that, if it is still there.
     document.addEventListener('focusin', ({ target }) => {
         const trigger = target.closest?.('[data-tooltip]')
 
-        if (trigger) show(trigger)
+        if (trigger) queueMicrotask(() => trigger.contains(document.activeElement) && show(trigger))
     })
 
     document.addEventListener('focusout', ({ target, relatedTarget }) => {

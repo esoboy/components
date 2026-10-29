@@ -32,10 +32,10 @@ const format = (features, allow = null) => ({
 const COMMANDS = ['undo', 'redo', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'clear-formatting', 'indent', 'outdent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'horizontal-rule', 'table', 'details']
 const TOGGLES = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'code-block', 'details']
 
-function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.features, tools = 'toolbar find-replace source fullscreen character-count markdown', attributes = '' } = {}) {
+function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.features, attributes = '', whitelist = null } = {}) {
     document.body.innerHTML = `
         <form>
-            <eso-editor id="body" data-slot="editor" data-format='${JSON.stringify(format(features)).replaceAll("'", '&#39;')}' data-tools="${tools}" data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
+            <eso-editor id="body" data-slot="editor" data-labels='{"keyboard":"Alt+F10"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
                 <div data-slot="editor-toolbar" role="toolbar">
                     ${COMMANDS.map(command => `<button type="button" data-editor-command="${command}" aria-label="${command}" ${TOGGLES.includes(command) ? 'aria-pressed="false"' : ''}></button>`).join('')}
                     <button type="button" data-editor-action="media" aria-label="Media"></button>
@@ -77,8 +77,9 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                 </div>
                 <div data-slot="editor-content">${html}</div>
                 <textarea data-slot="editor-source" hidden></textarea>
-                <div data-slot="editor-footer"><span data-editor-count></span></div>
+                <div data-slot="editor-footer"><span data-editor-unsaved data-editor-label=":count unsaved" hidden><span data-editor-unsaved-label></span><button type="button" data-editor-action="save-images"></button></span><span data-editor-count></span></div>
                 <template data-template="uploading"><span data-slot="editor-uploading"><span>Uploading…</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
+                <template data-template="missing-image"><span data-slot="editor-uploading" data-editor-missing><button type="button" data-editor-action="upload-missing"></button><button type="button" data-editor-action="dismiss-upload"></button></span></template>
                 <div id="tip" popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label></span><kbd data-editor-tip-keys hidden></kbd></div>
             </eso-editor>
         </form>`
@@ -272,8 +273,33 @@ describe('styles', () => {
             + '<p class="MsoListParagraph" style="mso-list:l0 level2 lfo1"><span style="font-family:Symbol"><span style="mso-list:Ignore">·</span></span>Inner</p>'
             + '<p class="MsoListParagraph" style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p><p>After</p>'
 
-        expect(wordLists(word).replace(/<!--.*?-->/g, '')).toBe('<ol><li><p style="mso-list:l0 level1 lfo1">One</p><ul><li><p style="mso-list:l0 level2 lfo1">Inner</p></li></ul></li><li><p style="mso-list:l0 level1 lfo1">Two</p></li></ol><p>After</p>')
+        expect(wordLists(word).replace(/<!--.*?-->/g, '')).toBe('<ol><li><p>One</p><ul><li><p>Inner</p></li></ul></li><li><p>Two</p></li></ol><p>After</p>')
         expect(wordLists('<p>Plain</p>')).toBe('<p>Plain</p>')
+    })
+
+    it('keeps Word lists apart, without the indent that drew them', async () => {
+        const { wordLists } = await import('../../resources/js/heavy/editor/paste.js')
+        const item = (list, level, marker, text) => `<p class="MsoListParagraphCxSpMiddle" style="margin-left:${18 * level}pt;text-indent:-18pt;line-height:150%;mso-list:${list} level${level} lfo1"><span style="mso-list:Ignore">${marker}</span>${text}</p>`
+        const word = item('l0', 1, '·', 'Bullet') + item('l1', 1, '1.', 'First') + item('l1', 2, '·', 'Inner') + item('l1', 1, '2.', 'Second') + item('l1', 1, '·', 'Bullet after')
+
+        expect(wordLists(word)).toBe('<ul><li><p style="line-height: 150%;">Bullet</p></li></ul>'
+            + '<ol><li><p style="line-height: 150%;">First</p><ul><li><p style="line-height: 150%;">Inner</p></li></ul></li><li><p style="line-height: 150%;">Second</p></li></ol>'
+            + '<ul><li><p style="line-height: 150%;">Bullet after</p></li></ul>')
+    })
+
+    it('keeps the style of blocks pasted on an empty line, and runs them into text elsewhere', () => {
+        const [element] = mount('<p>Hello</p><p></p>')
+        const html = '<p style="text-align: center;">One</p><p style="text-align: right;">Two</p>'
+
+        element.editor.commands.setTextSelection(8)
+        paste(element, { 'text/html': html })
+
+        expect(element.value).toBe('<p>Hello</p><p style="text-align: center;">One</p><p style="text-align: right;">Two</p>')
+
+        element.editor.commands.setTextSelection(3)
+        paste(element, { 'text/html': html })
+
+        expect(element.value).toBe('<p>HeOne</p><p style="text-align: right;">Twollo</p><p style="text-align: center;">One</p><p style="text-align: right;">Two</p>')
     })
 })
 
@@ -282,17 +308,19 @@ describe('blocks', () => {
         const [element] = mount('<ul><li><input type="checkbox" checked> Done</li><li><label><input type="checkbox"></label><div><p>Todo</p></div></li></ul><ul data-type="taskList"><li data-type="taskItem" data-checked="true"><label><input type="checkbox" checked><span></span></label><div><p>Tiptap</p></div></li></ul><ul><li><p>Plain</p></li></ul>')
         const tasks = element.editor.getJSON().content
 
-        expect(tasks.map(node => node.type)).toEqual(['taskList', 'taskList', 'bulletList'])
+        expect(tasks.map(node => node.type)).toEqual(['taskList', 'taskList', 'bulletList', 'paragraph'])
         expect(tasks[0].content.map(item => [item.attrs.checked, item.content[0].content[0].text])).toEqual([[true, 'Done'], [false, 'Todo']])
         expect(tasks[1].content[0].attrs.checked).toBe(true)
     })
 
+    // From the start: on phones Tiptap focuses in the middle of a command, which the
+    // paragraph added then would fail.
     it('keeps a paragraph after a last table or image to write in, out of its value', () => {
         const [element, events] = mount('<p>Intro</p><img src="/a.png">')
 
-        element.editor.commands.setTextSelection(1)
-
         expect(element.editor.state.doc.lastChild.type.name).toBe('paragraph')
+
+        element.editor.commands.setTextSelection(1)
         expect(element.value).toBe('<p>Intro</p><img src="/a.png">')
         expect(events).toEqual([])
 
@@ -306,7 +334,8 @@ describe('blocks', () => {
 
         expect(element.value).toBe('<h5>Five</h5><h6>Six</h6><pre><code>a</code></pre>')
 
-        element.editor.commands.setTextSelection(element.editor.state.doc.content.size - 2)
+        select(element, 'a')
+        element.editor.commands.setTextSelection(element.editor.state.selection.from)
         element.editor.view.dom.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }))
 
         expect(element.value).toContain('<pre><code>    a</code></pre>')
@@ -356,14 +385,15 @@ describe('blocks', () => {
         expect(element.editor.getJSON().content[0].content[0].content[0].attrs.colwidth).toEqual([120])
     })
 
-    it('keeps media on web addresses with their style, and no data: images', () => {
-        const [element] = mount('<img src="/a.png" alt="A" width="1200" height="800" style="width: 50%; margin-left: auto; border-radius: 8px;"><img src="data:image/png;base64,AAAA"><video src="https://cdn.test/v.mp4" poster="/p.jpg"></video><audio src="/a.mp3"></audio><a href="/f.pdf" download="f.pdf" type="application/pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a><iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe><iframe src="https://evil.test/x"></iframe>')
+    it('keeps media on web addresses with their style, and data: images until uploaded', () => {
+        const [element] = mount('<img src="/a.png" alt="A" width="1200" height="800" style="width: 50%; margin-left: auto; border-radius: 8px;"><img src="data:image/png;base64,AAAA"><img src="data:image/svg+xml;base64,PHN2Zz4="><video src="data:video/mp4;base64,AAAA"></video><video src="https://cdn.test/v.mp4" poster="/p.jpg"></video><audio src="/a.mp3"></audio><a href="/f.pdf" download="f.pdf" type="application/pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a><iframe src="https://www.youtube-nocookie.com/embed/abc?autoplay=1"></iframe><iframe src="https://evil.test/x"></iframe><iframe src="//player.vimeo.com/video/1"></iframe>')
 
-        expect(element.value).toBe('<img style="width: 50%; margin-left: auto; border-radius: 8px;" src="/a.png" alt="A" width="1200" height="800">'
+        expect(element.value).toBe('<img style="width: 50%; margin-left: auto; border-radius: 8px;" src="/a.png" alt="A" width="1200" height="800"><img src="data:image/png;base64,AAAA">'
             + '<video src="https://cdn.test/v.mp4" poster="/p.jpg" controls="controls" preload="metadata"></video>'
             + '<audio src="/a.mp3" controls="controls" preload="metadata"></audio>'
-            + '<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>f.pdf</span><span style="opacity: 0.6;">1 KB</span></a>'
-            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://www.youtube-nocookie.com/embed/abc" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
+            + '<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">f.pdf</span><span style="flex-shrink: 0; white-space: nowrap; opacity: 0.6;">1 KB</span></a>'
+            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://www.youtube-nocookie.com/embed/abc?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>'
+            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://player.vimeo.com/video/1?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
     })
 
     it('captions images, links them, and wraps blocks in callouts', () => {
@@ -430,7 +460,7 @@ describe('media', () => {
 
         expect(element.value).toBe('<img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/a.png" alt="A" width="10" height="20">'
             + '<audio style="display: block; width: 100%;" src="/b.mp3" title="b.mp3" controls="controls" preload="metadata"></audio>'
-            + '<a href="/c.zip" download="c.zip" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>c.zip</span><span style="opacity: 0.6;">1.5 KB</span></a>'
+            + '<a href="/c.zip" download="c.zip" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">c.zip</span><span style="flex-shrink: 0; white-space: nowrap; opacity: 0.6;">1.5 KB</span></a>'
             + '<p> world!</p>')
     })
 
@@ -447,7 +477,7 @@ describe('media', () => {
         window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'other', action: 'insert', attachments: [{ url: '/x.png' }], html: null } }))
         window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'insert', attachments: [{ url: '/x.png', mime: 'image/png' }], html: null } }))
 
-        expect(element.value).toBe('<p>Hello</p><a href="/x.png" download="x.png" type="image/png" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>x.png</span></a>')
+        expect(element.value).toBe('<p>Hello</p><a href="/x.png" download="x.png" type="image/png" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">x.png</span></a>')
 
         window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'insert-content', attachments: [], html: '<p><strong>Hi</strong></p>' } }))
 
@@ -468,7 +498,7 @@ describe('media', () => {
         paste(element, { 'text/plain': '## Heading\n\n- [x] Done\n\n**bold**' })
         paste(element, { 'text/plain': 'https://youtu.be/dQw4w9WgXcQ' })
 
-        expect(element.value).toContain('src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"')
+        expect(element.value).toContain('src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0"')
         expect(element.value).toContain('<h2>Heading</h2><ul style="list-style-type: none; padding-left: 0px;"><li style="display: flex; align-items: baseline; gap: 0.5em;"><input type="checkbox" disabled="disabled" checked="checked"><div><p>Done</p></div></li></ul><p><strong>bold</strong></p>')
     })
 
@@ -494,31 +524,143 @@ describe('media', () => {
         expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
     })
 
-    it('asks the app to import images from elsewhere, and puts its copies in their place', () => {
-        const [element] = mount('<p>Hello</p>', { attributes: 'data-image-hosts="cdn.app.test"' })
+    it('asks for media of the kind its button says, or of the selected one to replace it', () => {
+        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video>')
         const requests = []
+        const image = Object.assign(document.createElement('button'), { type: 'button' })
 
-        element.addEventListener('editor-external-images', event => requests.push(event.detail))
-        element.editor.commands.setTextSelection(6)
-        paste(element, { 'text/html': '<p><img src="https://other.test/a.png"><img src="https://other.test/a.png"><img src="https://cdn.app.test/b.png"><img src="/c.png"><img src="https://other.test/d.png"></p>' })
+        image.dataset.editorAction = 'media'
+        image.dataset.editorValue = 'image'
+        element.querySelector('[data-slot="editor-toolbar"]').append(image)
+        element.addEventListener('editor-media', event => requests.push(event.detail.accept))
+        image.click()
+        element.editor.commands.setNodeSelection(7)
+        control(element, '[data-editor-action="media"]').click()
 
-        return new Promise(resolve => queueMicrotask(resolve)).then(() => {
-            expect(requests.map(request => request.urls)).toEqual([['https://other.test/a.png', 'https://other.test/d.png']])
-            expect(element.querySelectorAll('[data-editor-importing]')).toHaveLength(3)
-
-            requests[0].replace([{ url: '/uploads/a.png', name: 'a.png', mime: 'image/png' }, null])
-
-            expect(element.value.match(/src="[^"]+"/g)).toEqual(['src="/uploads/a.png"', 'src="/uploads/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"'])
-            expect(element.querySelectorAll('[data-editor-importing]')).toHaveLength(0)
-
-            window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'replace-images', attachments: [{ url: '/x.png' }], html: null } }))
-
-            expect(element.value).toContain('src="https://other.test/d.png"')
-        })
+        expect(requests).toEqual([['image'], ['video']])
     })
 
-    it('reads attachments and embed links', async () => {
-        const { attachmentNode, embedSource, formatSize, kindOf } = await import('../../resources/js/heavy/editor/media.js')
+    it('saves images it has no copy of when asked, one or all, two kinds two ways', () => {
+        const [element] = mount('<p>Hello</p>', { attributes: 'data-image-hosts="cdn.app.test"' })
+        const external = []
+        const data = []
+        const save = Object.assign(document.createElement('button'), { type: 'button' })
+        const notice = element.querySelector('[data-editor-unsaved]')
+        const images = () => element.value.match(/src="[^"]+"/g)
+        const at = src => {
+            let found = null
+
+            element.editor.state.doc.descendants((node, position) => {
+                if (found === null && node.attrs.src === src) found = position
+            })
+
+            return found
+        }
+
+        save.dataset.editorAction = 'save-image'
+        element.querySelector('[data-slot="editor-toolbar"]').append(save)
+        element.addEventListener('editor-external-images', event => external.push(event.detail))
+        element.addEventListener('editor-data-images', event => data.push(event.detail))
+        element.editor.commands.setTextSelection(6)
+        paste(element, { 'text/html': '<p><img src="https://other.test/a.png"><img src="https://other.test/a.png"><img src="https://cdn.app.test/b.png"><img src="/c.png"><img src="https://other.test/d.png"><img src="data:image/png;base64,iVBORw0KGgo="></p>' })
+
+        // Nothing goes until someone asks: the footer says how many wait.
+        expect(external).toEqual([])
+        expect(notice.hidden).toBe(false)
+        expect(notice.textContent).toBe('3 unsaved')
+
+        element.editor.commands.setNodeSelection(at('https://cdn.app.test/b.png'))
+        expect(save.hidden).toBe(true)
+
+        element.editor.commands.setNodeSelection(at('https://other.test/a.png'))
+        expect(save.hidden).toBe(false)
+        save.click()
+
+        expect(external.map(request => request.urls)).toEqual([['https://other.test/a.png']])
+        expect(data).toEqual([])
+        expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(2)
+
+        external[0].replace([{ url: '/uploads/a.png', name: 'a.png', mime: 'image/png' }])
+
+        expect(images()).toEqual(['src="/uploads/a.png"', 'src="/uploads/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"', 'src="data:image/png;base64,iVBORw0KGgo="'])
+        expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(0)
+        expect(notice.textContent).toBe('2 unsaved')
+
+        // All at once: external ones by address, data ones as files.
+        control(element, '[data-editor-action="save-images"]').click()
+
+        expect(external.map(request => request.urls)).toEqual([['https://other.test/a.png'], ['https://other.test/d.png']])
+        expect(data[0].files.map(file => [file.name, file.type, file.size])).toEqual([['image-1.png', 'image/png', 8]])
+        expect(control(element, '[data-editor-action="save-images"]').disabled).toBe(true)
+
+        window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'replace-data-images', attachments: [{ url: '/uploads/e.png' }], html: null } }))
+        external[1].replace([null])
+
+        expect(images().slice(4)).toEqual(['src="https://other.test/d.png"', 'src="/uploads/e.png"'])
+        expect(notice.textContent).toBe('1 unsaved')
+
+        // Undone, it is as it was; saved again, it takes the copy it had at once.
+        element.editor.commands.undo()
+        expect(images()[5]).toBe('src="data:image/png;base64,iVBORw0KGgo="')
+
+        element.editor.commands.setNodeSelection(at('data:image/png;base64,iVBORw0KGgo='))
+        save.click()
+
+        expect(data).toHaveLength(1)
+        expect(images()[5]).toBe('src="/uploads/e.png"')
+    })
+
+    it('puts back the pictures of what Word copied, from its RTF', async () => {
+        const { rtfImages, wordImages } = await import('../../resources/js/heavy/editor/images.js')
+        const png = `89504e470d0a1a0a${'00'.repeat(70)}`
+        const jpeg = `ffd8ffe0${'11'.repeat(70)}`
+        const rtf = `{\\rtf1{\\*\\shppict{\\pict{\\*\\picprop\\shplid1025{\\sp{\\sn shapeType}{\\sv 75}}}\\picscalex100\\picw10\\pich10\\pngblip\\bliptag-12{\\*\\blipuid 0123456789abcdef0123456789abcdef}\n${png}}}{\\nonshppict{\\pict\\wmetafile8\\picw10 0102}}{\\pict\\jpegblip\\picw2 ${jpeg}}}`
+        const base64 = hex => btoa(hex.match(/../g).map(pair => String.fromCharCode(parseInt(pair, 16))).join(''))
+        const [element] = mount('<p>Hello</p>')
+
+        expect(rtfImages(rtf)).toEqual([`data:image/png;base64,${base64(png)}`, `data:image/jpeg;base64,${base64(jpeg)}`])
+        expect(wordImages('<p><img src="file:///C:/a.png"></p>', rtf)).toBe('<p>\uFFFC</p>')
+
+        element.editor.commands.setTextSelection(6)
+        paste(element, { 'text/html': '<p>A<img src="file:///C:/x/clip_image001.png" width="10" height="10">B<img src="file:///C:/x/clip_image002.jpg"></p>', 'text/rtf': rtf })
+
+        expect(element.value).toContain(`<img src="data:image/png;base64,${base64(png)}" width="10" height="10">`)
+        expect(element.value).toContain(`<img src="data:image/jpeg;base64,${base64(jpeg)}">`)
+    })
+
+    it('leaves a placeholder, never content, where a pasted picture could not be read, to upload it there', () => {
+        const [element] = mount('<p>Hello</p>')
+        const requests = []
+
+        element.addEventListener('editor-media', event => requests.push(event.detail))
+        element.editor.commands.setTextSelection(6)
+        paste(element, { 'text/html': '<p>A<img src="file:///C:/x/chart.png">B</p><p><img src="file:///C:/x/two.png"></p>' })
+
+        const placeholders = () => element.querySelectorAll('[data-editor-missing]')
+
+        expect(element.value).toBe('<p>HelloAB</p>')
+        expect(element.value).not.toContain('\uFFFC')
+        expect(placeholders()).toHaveLength(2)
+
+        // Uploaded where it stands; nothing chosen, it stays.
+        placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
+        expect(requests[0].accept).toEqual(['image'])
+
+        requests[0].insert([])
+        expect(placeholders()).toHaveLength(2)
+
+        placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
+        requests[1].insert([{ url: '/chart.png', mime: 'image/png' }])
+
+        expect(placeholders()).toHaveLength(1)
+        expect(element.value).toContain('<p>HelloA</p><img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/chart.png" alt=""><p>B</p>')
+
+        placeholders()[0].querySelector('[data-editor-action="dismiss-upload"]').click()
+        expect(placeholders()).toHaveLength(0)
+    })
+
+    it('reads attachments and video links', async () => {
+        const { EMBED_STYLE, MEDIA_STYLE, attachmentNode, embedSource, formatSize, kindOf, videoNode } = await import('../../resources/js/heavy/editor/media.js')
         const platforms = format([]).platforms
 
         expect([{ mime: 'image/webp' }, { type: 'video/mp4' }, { url: '/a/b.MP3?x=1' }, { url: '/a.pdf' }, { mime: 'application/zip', url: '/a.png' }].map(kindOf)).toEqual(['image', 'video', 'audio', 'file', 'file'])
@@ -526,10 +668,109 @@ describe('media', () => {
         expect(attachmentNode({ url: '/v.mp4', mime: 'video/mp4' }, ['image', 'file'])).toMatchObject({ type: 'file', attrs: { name: 'v.mp4' } })
         expect(attachmentNode({ url: '/v.mp4', mime: 'video/mp4' }, ['image'])).toBeNull()
         expect(attachmentNode({ url: 'data:image/png;base64,AA', mime: 'image/png' }, ['image'])).toBeNull()
-        expect(embedSource('https://www.youtube.com/watch?t=1&v=dQw4w9WgXcQ', platforms)).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
+        expect(embedSource('https://www.youtube.com/watch?t=1&v=dQw4w9WgXcQ', platforms)).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0')
         expect(embedSource('https://www.bilibili.com/video/BV1GJ411x7h7?spm=1', platforms)).toBe('https://player.bilibili.com/player.html?bvid=BV1GJ411x7h7&autoplay=0')
-        expect(embedSource('<iframe src="https://player.bilibili.com/player.html?bvid=BV1&amp;page=1" allowfullscreen></iframe>', platforms)).toBe('https://player.bilibili.com/player.html?bvid=BV1&page=1')
+        expect(embedSource('<iframe src="https://player.bilibili.com/player.html?bvid=BV1&amp;autoplay=1&amp;page=1#t=3" allowfullscreen></iframe>', platforms)).toBe('https://player.bilibili.com/player.html?bvid=BV1&autoplay=0&page=1#t=3')
+        expect(embedSource('https://v.qq.com/x/page/abc.html', platforms)).toBe('https://v.qq.com/txp/iframe/player.html?vid=abc&autoplay=false&auto=0')
         expect(embedSource('https://evil.test/x', platforms)).toBeNull()
+
+        // A video file's address plays in a player; a platform's link or code in its own,
+        // shaped as its code is.
+        expect(videoNode('https://cdn.test/a.mp4?t=1', ['video', 'embed'], platforms)).toEqual({ type: 'video', attrs: { src: 'https://cdn.test/a.mp4?t=1', style: MEDIA_STYLE } })
+        expect(videoNode('https://cdn.test/watch', ['video', 'embed'], platforms)).toBeNull()
+        expect(videoNode('https://youtu.be/dQw4w9WgXcQ', ['video'], platforms)).toBeNull()
+        expect(videoNode('https://www.acfun.cn/v/ac123', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://www.acfun.cn/player/ac123?autoplay=false', style: null } })
+        expect(videoNode('<iframe src="https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&amp;tvId=2" width="640" height="360"></iframe>', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&tvId=2&autoplay=false', style: null } })
+        expect(videoNode('<iframe width="360" height="640" src="//player.bilibili.com/player.html?bvid=BV1&amp;page=1"></iframe>', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://player.bilibili.com/player.html?bvid=BV1&page=1&autoplay=0', style: EMBED_STYLE.replace('16 / 9', '9 / 16') } })
+        expect(videoNode('<iframe width="500" height="300" src="https://player.vimeo.com/video/1"></iframe>', ['embed'], platforms).attrs.style).toBe(EMBED_STYLE.replace('16 / 9', '500 / 300'))
+        expect(videoNode('<iframe src="https://evil.test/x"></iframe>', ['video', 'embed'], platforms)).toBeNull()
+    })
+
+    it('puts what the toolbar has no room for into More, the least used first', async () => {
+        const { overflow } = await import('../../resources/js/heavy/editor/toolbar.js')
+        const control = (name, priority) => `<div data-slot="editor-control" data-priority="${priority}"><button type="button">${name}</button></div>`
+
+        document.body.innerHTML = `<div data-slot="editor-toolbar">${control('undo', 1)}<div data-slot="separator"></div>${control('bold', 1)}${control('code', 3)}${control('color', 2)}<div data-slot="separator"></div>${control('table', 2)}<button type="button" data-editor-more commandfor="more" hidden></button><div id="more" popover></div></div>`
+
+        const toolbar = document.querySelector('[data-slot="editor-toolbar"]')
+        const more = toolbar.querySelector('[data-editor-more]')
+        const panel = document.getElementById('more')
+        const shown = () => [...toolbar.children].filter(child => ! child.hidden && ! child.matches('[popover]')).map(child => child.textContent || (child === more ? '…' : '|'))
+        const rows = () => [...panel.children].map(row => row.textContent)
+        let width = 100
+
+        // 20px a part.
+        Object.defineProperty(toolbar, 'clientWidth', { get: () => width })
+        Object.defineProperty(toolbar, 'scrollWidth', { get: () => shown().length * 20 })
+        globalThis.ResizeObserver ??= class { observe() {} disconnect() {} }
+
+        const { layout } = overflow(toolbar)
+
+        expect(shown()).toEqual(['undo', '|', 'bold', 'color', '…'])
+        expect(rows()).toEqual(['code', 'table'])
+
+        width = 60
+        layout()
+
+        expect(shown()).toEqual(['undo', '…'])
+        expect(rows()).toEqual(['boldcodecolor', 'table'])
+
+        width = 1000
+        layout()
+
+        expect(shown()).toEqual(['undo', '|', 'bold', 'code', 'color', '|', 'table'])
+        expect(more.hidden).toBe(true)
+        expect(rows()).toEqual([])
+    })
+})
+
+describe('whitelist', () => {
+    it('keeps each tag as the whitelist says: its attributes, their values, its CSS', () => {
+        const [element] = mount('', {
+            features: ['ordered-list', 'layout'],
+            whitelist: { allow: { p: { style: 0 }, br: [], div: [], section: '*', ol: { start: '*', type: ['1', 'a'] }, li: [] }, css: [['text-align']], attributes: ['class', 'title'] },
+        })
+
+        element.editor.commands.setTextSelection(1)
+        paste(element, { 'text/html': '<p style="text-align: center; color: red; position: fixed">A</p><section class="box" title="T" data-x="1" onclick="steal()"><p>B</p></section><ol type="Q" start="3"><li><p>C</p></li></ol><ol type="a"><li><p>D</p></li></ol>' })
+
+        expect(element.value).toBe('<p style="text-align: center;">A</p><section class="box" title="T"><p>B</p></section><ol start="3"><li><p>C</p></li></ol><ol type="a"><li><p>D</p></li></ol>')
+    })
+})
+
+describe('keyboard', () => {
+    it('goes from the text to the toolbar with Alt+F10, and back with Escape, where it was', () => {
+        const [element] = mount()
+        const text = element.editor.view.dom
+
+        select(element, 'world')
+        text.focus()
+        text.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', altKey: true, bubbles: true, cancelable: true }))
+
+        expect(document.activeElement).toBe(button(element, 'bold'))
+        expect(text.getAttribute('aria-description')).toBe('Alt+F10')
+
+        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+
+        expect(element.editor.view.hasFocus()).toBe(true)
+        expect(element.editor.state.doc.textBetween(element.editor.state.selection.from, element.editor.state.selection.to)).toBe('world')
+    })
+
+    it('moves the block the selection is in with Mod-Shift-Up and Down', () => {
+        const [element] = mount('<p>One</p><p>Two</p><p>Three</p>')
+        const press = key => element.editor.view.dom.dispatchEvent(new KeyboardEvent('keydown', { key, ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true }))
+
+        select(element, 'Tw')
+        press('ArrowDown')
+
+        expect(element.value).toBe('<p>One</p><p>Three</p><p>Two</p>')
+        expect(element.editor.state.doc.textBetween(element.editor.state.selection.from, element.editor.state.selection.to)).toBe('Tw')
+
+        press('ArrowUp')
+        press('ArrowUp')
+        press('ArrowUp')
+
+        expect(element.value).toBe('<p>Two</p><p>One</p><p>Three</p>')
     })
 })
 
@@ -684,6 +925,11 @@ describe('the value', () => {
 
         element.editor.commands.setTextSelection(3)
         element.value = '<p style="text-align:center"><span style="color:#dc2626">Hello</span></p>'
+
+        expect(element.editor.state.selection.from).toBe(3)
+
+        // Content that differs replaces it, the cursor where it was.
+        element.value = '<p style="text-align: right;">Hello</p>'
 
         expect(element.editor.state.selection.from).toBe(3)
 

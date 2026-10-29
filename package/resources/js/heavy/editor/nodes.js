@@ -12,7 +12,8 @@ import Image from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Table, TableCell, TableHeader, TableRow, createColGroup } from '@tiptap/extension-table'
 import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state'
-import { EMBED_STYLE, playable, safeUrl } from './media.js'
+import { dataImage } from './images.js'
+import { EMBED_STYLE, playable, safeUrl, secure, still } from './media.js'
 import { resizable } from './resize.js'
 import { computed, restyle } from './styles.js'
 import { declarations } from './whitelist.js'
@@ -142,9 +143,12 @@ export function tables(styles, list) {
 // The image of a link that holds nothing else.
 const linked = link => link.children.length === 1 && link.firstElementChild.matches('img[src]') && ! link.textContent.trim() ? link.firstElementChild : null
 
+// A web address, or a picture in a data: one (pasted, until it is uploaded).
+const picturable = src => safeUrl(src) || dataImage(src)
+
 /**
- * Images: never a data: address (pasted screenshots go to the app as files instead);
- * a link around one alone is its link. Sized and placed by their style.
+ * Images: on a web address, or data: until uploaded (images.js); a link around one
+ * alone is its link. Sized and placed by their style.
  */
 export function picture(list) {
     const attributes = image => ({ src: image.getAttribute('src'), alt: image.getAttribute('alt'), title: image.getAttribute('title'), width: image.getAttribute('width'), height: image.getAttribute('height'), style: list.style(image), extras: list.extras(image) })
@@ -154,8 +158,8 @@ export function picture(list) {
             return { ...this.parent?.(), href: own(null, () => null) }
         },
         parseHTML: () => [
-            { tag: 'a[href]', priority: 70, getAttrs: link => linked(link) && safeUrl(linked(link).getAttribute('src')) && safeUrl(link.getAttribute('href')) ? { ...attributes(linked(link)), href: link.getAttribute('href') } : false },
-            { tag: 'img[src]', getAttrs: image => safeUrl(image.getAttribute('src')) ? null : false },
+            { tag: 'a[href]', priority: 70, getAttrs: link => linked(link) && picturable(linked(link).getAttribute('src')) && safeUrl(link.getAttribute('href')) ? { ...attributes(linked(link)), href: link.getAttribute('href') } : false },
+            { tag: 'img[src]', getAttrs: image => picturable(image.getAttribute('src')) ? null : false },
         ],
         renderHTML: ({ node, HTMLAttributes }) => node.attrs.href ? ['a', { href: node.attrs.href }, ['img', HTMLAttributes]] : ['img', HTMLAttributes],
         // Images from elsewhere show while editing, whatever their host thinks of the page.
@@ -284,18 +288,21 @@ export const file = card => Node.create({
 
     parseHTML: () => [{ tag: 'a[download][href]', priority: 80, getAttrs: link => safeUrl(link.getAttribute('href')) ? null : false }],
 
+    // Its parts styled (a long name wraps, the icon and size keep their size), never bare
+    // spans, which filtering takes out.
     renderHTML: ({ node, HTMLAttributes }) => [
         'a',
         mergeAttributes({ href: node.attrs.href, download: node.attrs.name ?? '', type: node.attrs.mime, style: card }, HTMLAttributes),
-        ['span', {}, '📎'],
-        ['span', {}, node.attrs.name ?? ''],
-        ...node.attrs.size ? [['span', { style: 'opacity:0.6' }, node.attrs.size]] : [],
+        ['span', { style: 'flex-shrink:0' }, '📎'],
+        ['span', { style: 'min-width:0px;overflow-wrap:anywhere' }, node.attrs.name ?? ''],
+        ...node.attrs.size ? [['span', { style: 'flex-shrink:0;white-space:nowrap;opacity:0.6' }, node.attrs.size]] : [],
     ],
 })
 
 /**
- * Embeds: a platform's player in a 16:9 iframe; other addresses don't load. While
- * editing it takes no clicks until selected, so a click selects it.
+ * Embeds: a platform's player in an iframe, 16:9 unless its style has another shape,
+ * never playing by itself; other addresses don't load. While editing it takes no clicks until selected, so a
+ * click selects it.
  */
 export function embed(platforms) {
     return Node.create({
@@ -304,12 +311,13 @@ export function embed(platforms) {
         atom: true,
         draggable: true,
 
+        // Never playing by itself, whatever its address said.
         addAttributes: () => ({
-            src: { default: null },
+            src: { default: null, parseHTML: frame => still(secure(frame.getAttribute('src')), platforms) },
             title: { default: null },
         }),
 
-        parseHTML: () => [{ tag: 'iframe[src]', getAttrs: frame => playable(frame.getAttribute('src'), platforms) ? null : false }],
+        parseHTML: () => [{ tag: 'iframe[src]', getAttrs: frame => playable(secure(frame.getAttribute('src')), platforms) ? null : false }],
 
         // A 16:9 player as wide as the page, unless its style says otherwise.
         renderHTML: ({ HTMLAttributes }) => ['iframe', mergeAttributes({ style: EMBED_STYLE }, HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy' })],

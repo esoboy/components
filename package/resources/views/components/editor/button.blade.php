@@ -1,6 +1,6 @@
 @blaze
 
-{{-- One control's button: its icon, label and shortcut come with it; marks and blocks show aria-pressed. A command runs on the text; an action is the editor's own (media, find, source, full screen). --}}
+{{-- One control's button: its icon, label and shortcut come with it; marks and blocks show aria-pressed. A command runs on the text; an action is the editor's own (media, find, source, full screen), or names the action it runs with the button's name as its value. --}}
 @props([
     'command',
 ])
@@ -35,7 +35,12 @@ $buttons = [
     'delete-table' => ['trash', __('ui::editor.delete-table'), false, null],
     'delete-node' => ['trash', __('ui::editor.delete'), false, null],
     'caption' => ['captions', __('ui::editor.caption'), true, null],
-    'media' => ['image-plus', __('ui::editor.media'), false, null, true],
+    'rotate-left' => ['rotate-ccw', __('ui::editor.rotate-left'), false, null, true],
+    'rotate-right' => ['rotate-cw', __('ui::editor.rotate-right'), false, null, true],
+    'save-image' => ['image-up', __('ui::editor.save-image'), false, null, true],
+    'image' => ['image', __('ui::editor.image'), false, null, 'media'],
+    'audio' => ['eighth-notes', __('ui::editor.audio'), false, null, 'media'],
+    'file' => ['paperclip', __('ui::editor.file'), false, null, 'media'],
     'find' => ['text-search', __('ui::editor.find'), true, 'Mod-f', true],
     'source' => ['code-xml', __('ui::editor.source'), true, null, true],
     'fullscreen' => [['maximize', 'minimize'], __('ui::editor.fullscreen'), true, null, true],
@@ -44,7 +49,8 @@ $buttons = [
 @endphp
 
 <x-ui::button variant="ghost" size="icon-sm" :attributes="$attributes->merge([
-    $action ? 'data-editor-action' : 'data-editor-command' => $command,
+    $action ? 'data-editor-action' : 'data-editor-command' => is_string($action) ? $action : $command,
+    'data-editor-value' => is_string($action) ? $command : false,
     'aria-label' => $label,
     'aria-pressed' => $toggles ? 'false' : false,
     'data-editor-keys' => $keys ?? false,

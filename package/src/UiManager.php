@@ -95,26 +95,39 @@ final class UiManager
 
     /**
      * Names a format of features and presets, for format="…", #[Sanitize('…')] and
-     * sanitize(), with more for its whitelist: tags and the attributes kept on them
-     * (['section' => ['style']]), and CSS properties. Register it in a service
-     * provider's boot().
+     * sanitize(), with the whitelist's tags it keeps besides theirs (['section']).
+     * Register it in a service provider's boot().
      *
      * @param  list<string>  $features
-     * @param  array<string, list<string>>  $allow
-     * @param  list<string>  $css
+     * @param  list<string>  $tags
      */
-    public function editorFormat(string $name, array $features, array $allow = [], array $css = []): void
+    public function editorFormat(string $name, array $features, array $tags = []): void
     {
-        RichText::format($name, $features, $allow, $css);
+        RichText::format($name, $features, $tags);
     }
 
     /**
-     * Lets embeds play from another video platform: share links matching the pattern (a
-     * JavaScript regular expression) become the player address, $1 its first capture.
+     * Adds to the whitelist every format keeps its tags by: tags, their attributes and
+     * those's values ('*' for all; for style, CSS properties), as ['img' =>
+     * ['data-ratio' => '*'], 'span' => ['style' => ['transform']], 'section' => '*'].
+     * Register it in a service provider's boot().
+     *
+     * @param  array<string, '*'|array<string, '*'|list<string>>>  $rules
      */
-    public function embedPlatform(string $name, string $pattern, string $src): void
+    public function editorWhitelist(array $rules): void
     {
-        RichText::platform($name, $pattern, $src);
+        RichText::whitelist($rules);
+    }
+
+    /**
+     * Lets embeds play from another video platform: its embed code, when its player is
+     * on the host of $src; and its share links, when they match the pattern (a
+     * JavaScript regular expression), as $src with $1 their first capture. $still is
+     * the query that keeps its player from playing by itself.
+     */
+    public function embedPlatform(string $name, string $src, ?string $pattern = null, string $still = 'autoplay=0'): void
+    {
+        RichText::platform($name, $src, $pattern, $still);
     }
 
     /**

@@ -22,7 +22,7 @@ function controls(string $html): array
     $controls = $document->querySelectorAll('[data-slot="editor-toolbar"] :is([data-editor-command], [data-editor-action], [data-editor-opens], [data-editor-menu])');
 
     return array_values(array_map(
-        fn (Element $control) => $control->getAttribute('data-editor-menu') ?? $control->getAttribute('data-editor-opens') ?? $control->getAttribute('data-editor-command') ?? $control->getAttribute('data-editor-action'),
+        fn (Element $control) => $control->getAttribute('data-editor-menu') ?? $control->getAttribute('data-editor-opens') ?? $control->getAttribute('data-editor-command') ?? ($control->getAttribute('data-editor-action') === 'media' ? $control->getAttribute('data-editor-value') : $control->getAttribute('data-editor-action')),
         array_filter(iterator_to_array($controls), fn (Element $control) => $control->closest('[popover]') === null),
     ));
 }
@@ -31,12 +31,16 @@ describe('formats', function () {
     it('resolves presets, lists of features and presets, and named formats', function () {
         RichText::format('comment', ['bold', 'italic', 'link', 'emoji']);
 
-        expect(RichText::resolve('text')->features)->toBe([])
-            ->and(RichText::resolve('basic')->has('color', 'image'))->toBeTrue()
-            ->and(RichText::resolve('basic')->has('image'))->toBeFalse()
-            ->and(RichText::resolve()->features)->toBe(RichText::FEATURES)
+        $text = RichText::resolve('text');
+        $basic = RichText::resolve('basic');
+
+        expect($text->has('heading', 'bold', 'color', 'font-size', 'text-indent', 'task-list', 'blockquote', 'link'))->toBeTrue()
+            ->and($text->has('image', 'emoji', 'table'))->toBeFalse()
+            ->and(array_values(array_diff($basic->features, $text->features)))->toBe(['emoji', 'image', 'audio', 'video', 'file', 'embed', 'slash-menu', 'drag-handle'])
+            ->and(array_values(array_diff(RichText::resolve('full')->features, $basic->features)))->toBe(['code-block', 'table', 'details', 'math', 'callout', 'layout', 'source'])
+            ->and(RichText::resolve()->features)->toBe(array_values(array_diff(RichText::FEATURES, ['typography'])))
             ->and(RichText::resolve(['link', 'bold', 'link'])->features)->toBe(['bold', 'link'])
-            ->and(RichText::resolve(['basic', 'table'])->features)->toBe([...RichText::PRESETS['basic'], 'table'])
+            ->and(RichText::resolve(['basic', 'table'])->has('table', 'image', 'bold'))->toBeTrue()
             ->and(RichText::resolve('comment')->features)->toBe(['bold', 'italic', 'link', 'emoji'])
             ->and(RichText::resolve(['comment', 'image'])->has('image', 'bold'))->toBeTrue();
     });
@@ -52,42 +56,71 @@ describe('formats', function () {
         Ui::editorFormat('basic', ['bold']);
     })->throws(InvalidArgumentException::class, '[basic] is a preset');
 
-    it('offers every tool but typography, and plain text only the plain ones', function () {
-        expect(RichText::resolve('full')->tools())->toBe(['toolbar', 'bubble-menu', 'slash-menu', 'drag-handle', 'find-replace', 'source', 'fullscreen', 'character-count', 'format-painter', 'markdown'])
-            ->and(RichText::resolve('text')->tools())->toBe(['toolbar', 'find-replace', 'fullscreen', 'character-count'])
-            ->and(RichText::resolve('text')->tools(['typography']))->toBe(['typography'])
-            ->and(fn () => RichText::resolve()->tools(['spellcheck']))->toThrow(InvalidArgumentException::class, '[spellcheck] is not an Editor tool');
+    it('decides the tools too: the HTML source only in full, typography only when named', function () {
+        expect(RichText::resolve('text')->has('toolbar', 'bubble-menu', 'find-replace', 'fullscreen', 'character-count', 'format-painter', 'markdown'))->toBeTrue()
+            ->and(RichText::resolve('text')->has('slash-menu', 'drag-handle', 'source'))->toBeFalse()
+            ->and(RichText::resolve('basic')->has('source'))->toBeFalse()
+            ->and(RichText::resolve('full')->has('source'))->toBeTrue()
+            ->and(RichText::resolve('full')->has('typography'))->toBeFalse()
+            ->and(RichText::resolve(['full', 'typography'])->has('typography'))->toBeTrue()
+            ->and(RichText::resolve(['bold'])->has('toolbar'))->toBeFalse()
+            ->and(fn () => RichText::resolve(['bold', 'spellcheck']))->toThrow(InvalidArgumentException::class, '[spellcheck] is not a rich text feature');
     });
 });
 
 describe('the view', function () {
-    it('renders the editor with its format, tools and sanitized content', function () {
+    it('renders the editor with its format and sanitized content', function () {
         $html = (string) $this->blade('<x-ui::editor wire:model="body" placeholder="Write" :max-length="500" default-value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
 
         expect($html)
             ->toContain('<eso-editor data-slot="editor" data-format="{&quot;features&quot;:[&quot;heading&quot;,')
-            ->toContain('data-tools="toolbar bubble-menu slash-menu drag-handle find-replace source fullscreen character-count format-painter markdown" data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;}" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
-            ->toContain('&quot;allow&quot;:{&quot;a&quot;:[&quot;href&quot;,&quot;target&quot;,&quot;rel&quot;,&quot;title&quot;,&quot;download&quot;,&quot;type&quot;,&quot;style&quot;],')
-            ->toContain('&quot;section&quot;:[&quot;style&quot;]')
+            ->toContain('&quot;layout&quot;,&quot;toolbar&quot;,&quot;bubble-menu&quot;,&quot;slash-menu&quot;,&quot;drag-handle&quot;,&quot;find-replace&quot;,&quot;source&quot;,')
+            ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
+            ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
+            ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
             ->toContain('data-placeholder="Write" data-label="Rich text editor" wire:model="body">')
             ->toContain('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" wire:ignore>')
+            ->toContain('<div data-slot="editor-control" data-priority="1">')
             ->toContain('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
+            ->toContain('data-editor-action="media" data-editor-value="image" aria-label="Image"><svg')
+            ->toContain('command="toggle-popover" data-editor-more="data-editor-more" hidden="hidden" aria-label="More"')
+            ->toContain('data-editor-more-content="data-editor-more-content" aria-label="More"')
             ->toContain('<div data-slot="editor-find" role="search" aria-label="Find and replace" hidden wire:ignore>')
             ->toContain('<div data-slot="editor-content" wire:ignore><p>Hi <b>there</b></p></div>')
             ->toContain('<textarea data-slot="editor-source" aria-label="HTML source" spellcheck="false" hidden wire:ignore></textarea>')
-            ->toContain('<div data-slot="editor-footer" wire:ignore><span data-editor-count></span> characters</div>')
+            ->toContain('<div data-slot="editor-footer" wire:ignore>')
+            ->toContain('<span data-editor-unsaved data-editor-label="Images not on this site: :count" hidden><span data-editor-unsaved-label></span>')
+            ->toContain('data-editor-action="save-images">Save all</button>')
+            ->toContain('<span data-editor-characters><span data-editor-count></span> characters</span>')
             ->toContain('data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip')
             ->not->toContain('onclick')
-            ->not->toContain('alert')
-            ->and(controls($html))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'color', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule', 'media', 'embed', 'table', 'details', 'math', 'emoji', 'find', 'source', 'fullscreen']);
+            ->not->toContain('alert(1)')
+            ->and(controls($html))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'color', 'code', 'superscript', 'subscript', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule', 'image', 'video', 'audio', 'file', 'table', 'emoji', 'math', 'details', 'find', 'source', 'fullscreen']);
     });
 
-    it('fits its toolbar and menus to the format and tools', function () {
-        $text = (string) $this->blade('<x-ui::editor format="text" />');
-        $comment = (string) $this->blade('<x-ui::editor :format="[\'bold\', \'link\']" :tools="[\'toolbar\', \'bubble-menu\']" />');
+    it('ranks its controls, the least used going into More first', function () {
+        $toolbar = strstr((string) $this->blade('<x-ui::editor />'), 'data-slot="editor-content"', true);
 
-        expect(controls($text))->toBe(['undo', 'redo', 'find', 'fullscreen'])
-            ->and($text)->not->toContain('data-editor-tools')->not->toContain('<template')->not->toContain('data-emoji')
+        preg_match_all('~data-priority="(\d)">\s*<button[^>]*?data-editor-(?:command|action|opens|menu)="([\w-]+)"(?: data-editor-value="([\w-]+)")?~', $toolbar, $controls, PREG_SET_ORDER);
+
+        $ranked = [];
+
+        foreach ($controls as $control) {
+            $ranked[(int) $control[1]][] = ($control[3] ?? '') !== '' && $control[2] === 'media' ? $control[3] : $control[2];
+        }
+
+        expect($ranked[1])->toBe(['undo', 'redo', 'heading', 'bold', 'italic', 'link', 'image']);
+    });
+
+    it('fits its toolbar and menus to the format', function () {
+        $text = (string) $this->blade('<x-ui::editor format="text" />');
+        $basic = (string) $this->blade('<x-ui::editor format="basic" />');
+        $comment = (string) $this->blade('<x-ui::editor :format="[\'bold\', \'link\', \'toolbar\', \'bubble-menu\']" />');
+
+        expect(controls($text))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'color', 'code', 'superscript', 'subscript', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'find', 'fullscreen'])
+            ->and($text)->not->toContain('data-template="slash"')->not->toContain('data-template="drag-handle"')->not->toContain('data-emoji')->not->toContain('data-slot="editor-source"')->not->toContain('data-editor-unsaved')
+            ->and(array_slice(controls($basic), -9))->toBe(['blockquote', 'horizontal-rule', 'image', 'video', 'audio', 'file', 'emoji', 'find', 'fullscreen'])
+            ->and($basic)->toContain('data-template="slash"')->toContain('data-template="drag-handle"')->not->toContain('data-slot="editor-source"')
             ->and(controls($comment))->toBe(['undo', 'redo', 'bold', 'clear-formatting', 'link'])
             ->and($comment)->toContain('<template data-template="bubble-text">')
             ->not->toContain('data-template="bubble-table"')
@@ -96,17 +129,19 @@ describe('the view', function () {
     });
 
     it('lists in its slash menu the blocks and media the format has', function () {
-        $html = (string) $this->blade('<x-ui::editor :format="[\'heading\', \'bullet-list\', \'image\', \'math\']" />');
+        $html = (string) $this->blade('<x-ui::editor :format="[\'heading\', \'bullet-list\', \'image\', \'video\', \'math\', \'toolbar\', \'slash-menu\']" />');
 
         preg_match('~<template data-template="slash">(.*?)</template>~s', $html, $slash);
         preg_match_all('~data-keywords="([^"]+)"~', $slash[1], $items);
 
-        expect($items[1])->toBe(['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'media', 'math'])
-            ->and($slash[1])->toContain('data-editor-action="open" data-editor-value="math"');
+        expect($items[1])->toBe(['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'image', 'video', 'math'])
+            ->and($slash[1])->toContain('data-editor-action="media" data-editor-value="image"')
+            ->toContain('data-editor-action="open" data-editor-value="video"')
+            ->toContain('data-editor-action="open" data-editor-value="math"');
     });
 
     it('offers the palette, fonts, sizes and line heights', function () {
-        $html = (string) $this->blade('<x-ui::editor format="basic" :tools="[\'toolbar\']" />');
+        $html = (string) $this->blade('<x-ui::editor :format="[\'heading\', \'color\', \'highlight\', \'font-family\', \'font-size\', \'line-height\', \'toolbar\']" />');
 
         expect(substr_count($html, 'data-editor-command="color"'))->toBe(9)
             ->and(substr_count($html, 'data-editor-command="highlight"'))->toBe(9)
@@ -117,6 +152,7 @@ describe('the view', function () {
             ->toContain('role="menuitemradio" data-slot="dropdown-menu-item" data-variant="default" aria-checked="false" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun"')
             ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"')
             ->toContain('data-editor-command="heading" data-editor-value="6" data-editor-label="Heading 6"')
+            ->toContain('data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')
             ->and(substr_count($html, 'data-editor-command="heading"'))->toBe(6);
     });
 
@@ -145,6 +181,23 @@ describe('the view', function () {
             ->toContain('data-editor-action="format-painter" aria-label="Format painter" aria-pressed="false"');
     });
 
+    it('turns, saves and shapes media from their menu, and takes videos uploaded or from a link', function () {
+        $html = (string) $this->blade('<x-ui::editor />');
+
+        preg_match('~<template data-template="bubble-node">(.*?)</template>~s', $html, $node);
+
+        expect($node[1])->toContain('data-editor-action="rotate-left" aria-label="Rotate left"')
+            ->toContain('data-editor-action="rotate-right" aria-label="Rotate right"')
+            ->toContain('data-editor-action="save-image" aria-label="Save to this site" hidden="hidden"')
+            ->toContain('data-editor-menu="embed-ratio" aria-label="Shape" data-editor-for="embed"')
+            ->toContain('data-editor-command="embed-ratio" data-editor-value="9 / 16" data-editor-label="9:16"')
+            ->toContain('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden>')
+            ->and($html)->toContain('data-editor-opens="video" aria-label="Video"')
+            ->toContain('data-editor-action="media" data-editor-value="video" data-editor-upload="data-editor-upload">')
+            ->toContain('data-editor-video-input')
+            ->toContain('placeholder="A video file’s address, a share link or embed code"');
+    });
+
     it('takes a toolbar of its own, its controls rendering only when the format has them', function () {
         $html = (string) $this->blade(<<<'BLADE'
             <x-ui::editor format="text">
@@ -158,7 +211,8 @@ describe('the view', function () {
             BLADE);
 
         expect($html)->toContain('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" class="justify-end" wire:ignore>')
-            ->and(controls($html))->toBe(['undo', 'fullscreen']);
+            ->toContain('data-editor-more="data-editor-more" hidden="hidden"')
+            ->and(controls($html))->toBe(['undo', 'bold', 'fullscreen']);
     });
 
     it('refuses a button or a menu it does not have', function (string $blade, string $message) {
@@ -212,8 +266,8 @@ describe('the view', function () {
         $this->blade('<x-ui::rich-text class="prose" html="<h2 style=\'color:red;position:fixed\'>Hi</h2><p>a<script>x</script></p>" />')
             ->assertSee('<div data-slot="rich-text" class="prose"><h2 style="color:red">Hi</h2><p>a</p></div>', false);
 
-        $this->blade('<x-ui::rich-text format="text" html="<h2>Hi</h2><p><b>a</b></p>" />')
-            ->assertSee('<div data-slot="rich-text">Hi<p>a</p></div>', false);
+        $this->blade('<x-ui::rich-text format="text" html="<h2>Hi</h2><p><b>a</b><img src=\'/a.png\'></p>" />')
+            ->assertSee('<div data-slot="rich-text"><h2>Hi</h2><p><b>a</b></p></div>', false);
     });
 });
 
@@ -241,17 +295,28 @@ describe('sanitizing', function () {
             ->toBe('<p style="color:red;background-image:linear-gradient(rgba(0,0,0,.5), red)">a</p><p style="color:red">b</p>');
     });
 
-    it('keeps tags, attributes and CSS by the format, and what a named format adds', function () {
-        $html = '<h2 style="text-align:center">A</h2><p style="text-indent:2em;border:1px solid red"><span style="color:#dc2626;font-size:18px;transform:rotate(3deg)"><strong>b</strong></span></p><section style="padding:8px"><img src="/a.png" data-ratio="0.5"></section>';
+    it('keeps the tags of the format, each as the one whitelist says: attributes, values, CSS', function () {
+        $html = '<h2 style="text-align:center;position:fixed">A</h2><p style="text-indent:2em;border:1px solid red;z-index:9"><span style="color:#dc2626;font-size:18px;transform:rotate(3deg)"><strong>b</strong></span> <a href="/x" target="_top">l</a> <a href="/y" target="_blank">m</a></p><ol type="Q" start="3"><li>x</li></ol><center class="c" id="i">c</center>';
 
-        Ui::editorFormat('wechat', ['full'], ['img' => ['data-ratio']], ['transform']);
+        expect(RichText::sanitize($html, ['heading', 'font-size']))->toBe('<h2 style="text-align:center">A</h2><p style="text-indent:2em;border:1px solid red"><span style="color:#dc2626;font-size:18px">b</span> l m</p>xc')
+            ->and(RichText::sanitize($html, 'text'))->toBe('<h2 style="text-align:center">A</h2><p style="text-indent:2em;border:1px solid red"><span style="color:#dc2626;font-size:18px"><strong>b</strong></span> <a href="/x" rel="noopener noreferrer nofollow">l</a> <a href="/y" target="_blank" rel="noopener noreferrer nofollow">m</a></p><ol start="3"><li>x</li></ol>c')
+            ->and(Ui::sanitize($html, 'full'))->toEndWith('<ol start="3"><li>x</li></ol><center>c</center>')
+            ->and(RichText::resolve('text')->whitelist()['a'])->toBe(['href' => '*', 'target' => ['_blank', '_self'], 'rel' => '*', 'title' => '*', 'download' => '*', 'type' => '*', 'style' => RichText::resolve('text')->whitelist()['span']['style']])
+            ->and(RichText::resolve('text')->whitelist())->not->toHaveKey('img');
+    });
 
-        expect(RichText::sanitize($html, ['heading', 'font-size']))->toBe('<h2>A</h2><p><span style="font-size:18px">b</span></p>')
-            ->and(RichText::sanitize($html, 'text'))->toBe('A<p>b</p>')
-            ->and(Ui::sanitize($html, 'basic'))->toBe('<h2 style="text-align:center">A</h2><p style="text-indent:2em"><span style="color:#dc2626;font-size:18px"><strong>b</strong></span></p>')
-            ->and(Ui::sanitize($html, 'full'))->toBe('<h2 style="text-align:center">A</h2><p style="text-indent:2em;border:1px solid red"><span style="color:#dc2626;font-size:18px"><strong>b</strong></span></p><section style="padding:8px"><img src="/a.png" /></section>')
-            ->and(Ui::sanitize($html, 'wechat'))->toBe('<h2 style="text-align:center">A</h2><p style="text-indent:2em;border:1px solid red"><span style="color:#dc2626;font-size:18px;transform:rotate(3deg)"><strong>b</strong></span></p><section style="padding:8px"><img src="/a.png" data-ratio="0.5" /></section>')
-            ->and(RichText::resolve('wechat')->whitelist()['img'])->toBe(['src', 'alt', 'title', 'width', 'height', 'style', 'data-ratio']);
+    it('takes tags, attributes and values the app adds, for the formats that name the tags', function () {
+        Ui::editorWhitelist(['img' => ['data-ratio' => '*'], 'span' => ['style' => ['transform']], 'center' => '*']);
+        Ui::editorFormat('notes', ['bold'], ['center']);
+
+        $html = '<p><span style="color:red;transform:rotate(3deg)"><strong>b</strong></span><img src="/a.png" data-ratio="0.5" data-x="1"></p><center class="c" id="i" onclick="x()" data-y="1">c</center>';
+
+        expect(RichText::sanitize($html, 'notes'))->toBe('<p><strong>b</strong></p><center class="c" id="i">c</center>')
+            ->and(RichText::sanitize($html, 'full'))->toBe('<p><span style="color:red;transform:rotate(3deg)"><strong>b</strong></span><img src="/a.png" data-ratio="0.5" /></p><center class="c" id="i">c</center>')
+            ->and(RichText::resolve('notes')->client()['allow']['center'])->toBe('*')
+            ->and(RichText::resolve('notes')->client()['attributes'])->toContain('class', 'id')->not->toContain('onclick')
+            ->and(fn () => Ui::editorFormat('wrong', ['bold'], ['marquee']))->toThrow(InvalidArgumentException::class, '[marquee] is not in the whitelist')
+            ->and(fn () => Ui::editorWhitelist(['p' => ['onclick' => '*']]))->toThrow(InvalidArgumentException::class, '[onclick] runs script');
     });
 
     it('keeps captions, image links and callouts', function () {
@@ -263,34 +328,46 @@ describe('sanitizing', function () {
     it('keeps task lists as disabled boxes, never fields', function () {
         $html = '<ul style="list-style-type: none; padding-left: 0px;"><li style="display: flex; align-items: baseline; gap: 0.5em;"><input type="text" name="admin" value="1" checked="checked" form="f" /><div><p>Done</p></div></li></ul>';
 
-        expect(RichText::sanitize($html))->toBe('<ul style="list-style-type:none;padding-left:0px"><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" checked="checked" disabled="disabled" /><div><p>Done</p></div></li></ul>')
+        expect(RichText::sanitize($html))->toBe('<ul style="list-style-type:none;padding-left:0px"><li style="display:flex;align-items:baseline;gap:0.5em"><input checked="checked" type="checkbox" disabled="disabled" /><div><p>Done</p></div></li></ul>')
             ->and(RichText::sanitize('<p><input type="text" name="admin" value="1"></p>', 'basic'))->toBe('<p><input type="checkbox" disabled="disabled" /></p>')
-            ->and(RichText::sanitize('<p><input type="text" name="admin"></p>', 'text'))->toBe('<p></p>');
+            ->and(RichText::sanitize('<p><input type="text" name="admin"></p>', ['bold']))->toBe('<p></p>');
     });
 
-    it('keeps media and files on web addresses, as players', function () {
+    it('keeps media and files on web addresses, as players, and data: images until uploaded', function () {
         $html = '<img src="/a.png" alt="A" width="1200" height="800" style="display: block; width: 50%; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;">'
-            .'<img src="data:image/png;base64,AAAA" style="width: 50%"><img src="javascript:alert(1)">'
-            .'<video src="https://cdn.test/v.mp4" poster="/p.jpg" autoplay onplay="x()" style="display: block; width: 480px;"></video>'
+            .'<img src="data:image/png;base64,AAAA" style="width: 50%"><img src="data:image/svg+xml;base64,PHN2Zz4="><img src="javascript:alert(1)">'
+            .'<video src="https://cdn.test/v.mp4" poster="/p.jpg" autoplay onplay="x()" style="display: block; width: 480px;"></video><video src="/v.mp4" poster="data:image/png;base64,AAAA"></video>'
             .'<audio src="/a.mp3" title="Song" loop></audio><audio src="data:audio/wav;base64,AA"></audio>'
-            .'<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span>📎</span><span>f.pdf</span><span style="opacity: 0.6;">1 KB</span></a>';
+            .'<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">f.pdf</span><span style="flex-shrink: 0; white-space: nowrap; opacity: 0.6;">1 KB</span></a>';
 
         expect(RichText::sanitize($html))->toBe(
             '<img src="/a.png" alt="A" width="1200" height="800" style="display:block;width:50%;max-width:100%;height:auto;margin-left:auto;margin-right:auto" />'
-            .'<video src="https://cdn.test/v.mp4" poster="/p.jpg" style="display:block;width:480px" controls="controls" preload="metadata"></video>'
+            .'<img src="data:image/png;base64,AAAA" style="width:50%" />'
+            .'<video src="https://cdn.test/v.mp4" poster="/p.jpg" style="display:block;width:480px" controls="controls" preload="metadata"></video><video src="/v.mp4" controls="controls" preload="metadata"></video>'
             .'<audio src="/a.mp3" title="Song" controls="controls" preload="metadata"></audio>'
-            .'<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(128, 128, 128, 0.4);border-radius:8px;color:inherit;text-decoration:none" rel="noopener noreferrer nofollow">📎f.pdf<span style="opacity:0.6">1 KB</span></a>'
-        );
+            .'<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(128, 128, 128, 0.4);border-radius:8px;color:inherit;text-decoration:none" rel="noopener noreferrer nofollow"><span style="flex-shrink:0">📎</span><span style="min-width:0px;overflow-wrap:anywhere">f.pdf</span><span style="flex-shrink:0;white-space:nowrap;opacity:0.6">1 KB</span></a>'
+        )
+            ->and(RichText::sanitize('<p>a</p><img src="data:image/png;base64,AAAA">', ['bold']))->toBe('<p>a</p>');
+    });
+
+    it('keeps a file card whole in a format without layout', function () {
+        $card = '<a href="/f.pdf" download="f.pdf" style="display:flex;gap:8px"><span style="flex-shrink:0">📎</span><span style="min-width:0px;overflow-wrap:anywhere">f.pdf</span></a>';
+
+        expect(RichText::sanitize($card, ['file']))->toBe('<a href="/f.pdf" download="f.pdf" style="display:flex;gap:8px" rel="noopener noreferrer nofollow"><span style="flex-shrink:0">📎</span><span style="min-width:0px;overflow-wrap:anywhere">f.pdf</span></a>');
     });
 
     it('plays embeds from known platforms only', function () {
-        Ui::embedPlatform('acme', '^https://acme\.test/v/(\w+)', 'https://player.acme.test/$1');
+        Ui::embedPlatform('acme', 'https://player.acme.test/$1', '^https://acme\.test/v/(\w+)');
+        Ui::embedPlatform('code', 'https://embed.code.test/');
 
         $style = 'style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;"';
 
-        expect(RichText::sanitize("<iframe src=\"https://www.youtube-nocookie.com/embed/abc\" {$style} onload=\"x()\"></iframe><iframe src=\"https://player.acme.test/1\"></iframe><iframe src=\"https://evil.test/x\"></iframe><iframe src=\"http://player.bilibili.com/player.html\"></iframe>"))
-            ->toBe('<iframe src="https://www.youtube-nocookie.com/embed/abc" style="display:block;width:100%;max-width:100%;height:auto;aspect-ratio:16 / 9;border:0px" allowfullscreen="allowfullscreen" loading="lazy"></iframe><iframe src="https://player.acme.test/1" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
-            ->and(RichText::sanitize('<iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe><p>a</p>', 'basic'))->toBe('<p>a</p>');
+        expect(RichText::sanitize("<iframe src=\"https://www.youtube-nocookie.com/embed/abc\" {$style} onload=\"x()\"></iframe><iframe src=\"https://player.acme.test/1\"></iframe><iframe src=\"https://embed.code.test/v?id=2\"></iframe><iframe src=\"https://evil.test/x\"></iframe><iframe src=\"http://player.bilibili.com/player.html\"></iframe>"))
+            ->toBe('<iframe src="https://www.youtube-nocookie.com/embed/abc?autoplay&#61;0" style="display:block;width:100%;max-width:100%;height:auto;aspect-ratio:16 / 9;border:0px" allowfullscreen="allowfullscreen" loading="lazy"></iframe><iframe src="https://player.acme.test/1?autoplay&#61;0" allowfullscreen="allowfullscreen" loading="lazy"></iframe><iframe src="https://embed.code.test/v?id&#61;2&amp;autoplay&#61;0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
+            ->and(RichText::sanitize('<iframe src="https://player.bilibili.com/player.html?bvid=BV1&amp;autoplay=1#t=3"></iframe>'))->toBe('<iframe src="https://player.bilibili.com/player.html?bvid&#61;BV1&amp;autoplay&#61;0#t&#61;3" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
+            ->and(RichText::still('https://v.qq.com/txp/iframe/player.html?vid=x&autoplay=true'))->toBe('https://v.qq.com/txp/iframe/player.html?vid=x&autoplay=false&auto=0')
+            ->and(RichText::sanitize('<iframe src="https://www.youtube-nocookie.com/embed/abc"></iframe><p>a</p>', 'text'))->toBe('<p>a</p>')
+            ->and(RichText::resolve()->client()['platforms'])->toContain(['https://open.iqiyi.com/', null, 'autoplay=false'], ['https://embed.code.test/', null, 'autoplay=0']);
     });
 
     it('keeps tables with their widths and cell styles', function () {
@@ -299,7 +376,7 @@ describe('sanitizing', function () {
 
         expect(RichText::sanitize($html))->toBe('<div style="overflow-x:auto"><table style="border-collapse:collapse;width:360px"><colgroup><col style="width:120px" /><col style="min-width:48px" /></colgroup><tbody><tr><th colspan="2" style="border:1px solid rgba(128, 128, 128, 0.4);padding:6px 10px;vertical-align:top;background-color:rgba(128, 128, 128, 0.1);text-align:left"><p>H</p></th></tr><tr><td style="border:1px solid rgba(128, 128, 128, 0.4);padding:6px 10px;vertical-align:top;color:red"><p>1</p></td><td style="border:1px solid rgba(128, 128, 128, 0.4);padding:6px 10px;vertical-align:top"><p>2</p></td></tr></tbody></table></div>')
             ->and(RichText::sanitize('<table style="border-collapse: collapse; border: 1px solid red"><tbody><tr><td style="padding: 4px; color: red"><p>1</p></td></tr></tbody></table>', ['table']))
-            ->toBe('<table style="border-collapse:collapse;border:1px solid red"><tbody><tr><td style="padding:4px"><p>1</p></td></tr></tbody></table>');
+            ->toBe('<table style="border-collapse:collapse;border:1px solid red"><tbody><tr><td style="padding:4px;color:red"><p>1</p></td></tr></tbody></table>');
     });
 
     it('keeps formulas as MathML, their LaTeX with them', function () {
@@ -318,7 +395,7 @@ describe('sanitizing', function () {
         $html = '<p class="x" style="color:red" onclick="steal()">Hi <span data-a="1">there</span><img src="x" onerror="alert(1)"></p><script>alert(2)</script><iframe src="https://evil.test"></iframe><svg><circle /></svg><section><div>kept</div></section><form><button>Go</button></form>';
 
         expect(RichText::sanitize($html))->toBe('<p style="color:red">Hi there<img src="x" /></p><section><div>kept</div></section>')
-            ->and(RichText::sanitize($html, 'basic'))->toBe('<p style="color:red">Hi there</p><div>kept</div>');
+            ->and(RichText::sanitize($html, 'basic'))->toBe('<p style="color:red">Hi there<img src="x" /></p><div>kept</div>');
     });
 
     it('turns nothing into an empty string and keeps long HTML whole', function () {
@@ -350,7 +427,7 @@ Body')
             ->assertSet('body', '<p>Hi</p>')
             ->assertSet('seen', '<p>Hi</p>')
             ->set('intro', '<p>A<img src="/a.png"></p><table><tbody><tr><td>B</td></tr></tbody></table>')
-            ->assertSet('intro', '<p>A</p>B')
+            ->assertSet('intro', '<p>A<img src="/a.png" /></p>B')
             ->set('plain', '<script>kept</script>')
             ->assertSet('plain', '<script>kept</script>');
     });
@@ -369,5 +446,12 @@ describe('the server', function () {
             ->assertDispatched('ui-editor', id: 'body', action: 'insert', attachments: [['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']], html: null)
             ->call('template')
             ->assertDispatched('ui-editor', id: 'body', action: 'insert-content', attachments: [], html: '<p>Hello</p>');
+    });
+
+    it('answers editor-external-images and editor-data-images with the copies, through Ui::editor()', function () {
+        Livewire::test(Posts::class)
+            ->call('saveImages')
+            ->assertDispatched('ui-editor', id: 'body', action: 'replace-images', attachments: [['url' => '/copied.png'], null], html: null)
+            ->assertDispatched('ui-editor', id: 'body', action: 'replace-data-images', attachments: [['url' => '/uploaded.png']], html: null);
     });
 });

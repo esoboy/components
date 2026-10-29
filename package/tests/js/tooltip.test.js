@@ -34,11 +34,23 @@ it('stays while the pointer moves inside the trigger', () => {
     expect(open()).toBe(true)
 })
 
-it('shows on focus and hides on blur', () => {
-    trigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+it('shows on focus and hides on blur', async () => {
+    trigger.focus()
+    await Promise.resolve()
     expect(open()).toBe(true)
 
     trigger.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: document.getElementById('elsewhere') }))
+    expect(open()).toBe(false)
+})
+
+// Shown a moment after focus (a popover hiding gives focus back while none can be shown),
+// if the focus is still there.
+it('shows nothing for focus gone by then', async () => {
+    trigger.focus()
+    document.getElementById('elsewhere').setAttribute('tabindex', '-1')
+    document.getElementById('elsewhere').focus()
+    await Promise.resolve()
+
     expect(open()).toBe(false)
 })
 
