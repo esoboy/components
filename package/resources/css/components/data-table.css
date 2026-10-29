@@ -88,6 +88,27 @@
         @apply ml-auto hidden h-8 lg:flex;
     }
 
+    /* Reorderable View Options: a drag handle before each column's checkbox item. */
+    :where([data-slot="data-table-column-option"]) {
+        @apply flex items-center;
+
+        & > [data-slot="dropdown-menu-checkbox-item"] {
+            @apply min-w-0 flex-1;
+        }
+    }
+
+    :where([data-slot="data-table-column-handle"]) {
+        @apply flex shrink-0 cursor-grab items-center self-stretch px-0.5 text-muted-foreground [&>svg]:size-3.5;
+    }
+
+    :where(.sorting [data-slot="data-table-column-handle"]) {
+        @apply cursor-grabbing;
+    }
+
+    :where([data-slot="data-table-column-option"].sortable-chosen) {
+        @apply rounded-md bg-accent;
+    }
+
     /*
      * shadcn's DataTableFacetedFilter: a dashed button listing the chosen values, and a
      * Command of checkable values with their counts. Outside :where where popover.css

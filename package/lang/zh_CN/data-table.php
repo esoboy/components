@@ -12,6 +12,7 @@ return [
     'no_filter_results' => '没有结果。',
     'no_results' => '暂无结果。',
     'page' => '第 :current 页，共 :total 页',
+    'reset_columns' => '恢复默认列',
     'reset' => '重置',
     'rows_per_page' => '每页行数',
     'select_all' => '全选',

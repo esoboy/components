@@ -179,3 +179,46 @@ it('fixes columns and the header', function () {
         ->assertSee('<td data-slot="table-cell" data-sticky="end">B</td>', false)
         ->assertSee('<td data-slot="table-cell">C</td>', false);
 });
+
+it('orders the columns the user moves, keeps new ones after them, and resets them', function () {
+    $columns = ['name' => 'Name', 'email' => 'Email', 'role' => 'Role'];
+
+    $component = Livewire::test(Payments::class)
+        ->call('moveColumn', 'role', 0, ['name', 'email', 'role'])
+        ->assertSet('columnOrder', ['role', 'name', 'email'])
+        ->call('moveColumn', 'name', 2, ['name', 'email', 'role'])
+        ->assertSet('columnOrder', ['role', 'email', 'name'])
+        ->call('toggleColumn', 'email');
+
+    expect($component->instance()->orderedColumns($columns + ['plan' => 'Plan']))->toBe(['role' => 'Role', 'email' => 'Email', 'name' => 'Name', 'plan' => 'Plan'])
+        ->and($component->instance()->visibleColumns($columns))->toBe(['role' => 'Role', 'name' => 'Name']);
+
+    $component->call('resetColumns')
+        ->assertSet('columnOrder', [])
+        ->assertSet('hiddenColumns', []);
+});
+
+it('keeps the order and visibility of the columns in the session', function () {
+    Livewire::test(Payments::class)
+        ->call('moveColumn', 'amount', 0, ['email', 'amount'])
+        ->call('toggleColumn', 'email');
+
+    Livewire::test(Payments::class)
+        ->assertSet('columnOrder', ['amount', 'email'])
+        ->assertSet('hiddenColumns', ['email']);
+});
+
+it('renders reorderable view options with drag handles, in the user\'s order', function () {
+    $html = Livewire::test(Payments::class)->html();
+
+    expect($html)
+        ->toContain('<div data-slot="data-table-column-list" wire:sort="moveColumn" wire:sort:group-id="email,amount">')
+        ->toContain('<div data-slot="data-table-column-option" wire:sort:item="email" wire:key="data-table-column-email">')
+        ->toContain('<span data-slot="data-table-column-handle" wire:sort:handle aria-hidden="true">')
+        ->not->toContain('data-data-table-reset-columns');
+
+    $html = Livewire::test(Payments::class)->call('moveColumn', 'amount', 0, 'email,amount')->html();
+
+    expect(strpos($html, 'wire:sort:item="amount"'))->toBeLessThan(strpos($html, 'wire:sort:item="email"'))
+        ->and($html)->toMatch('/wire:click="resetColumns" data-data-table-reset-columns="data-data-table-reset-columns">\s*Reset columns/');
+});

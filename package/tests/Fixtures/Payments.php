@@ -51,7 +51,7 @@ class Payments extends Component
                     <x-ui::data-table.toolbar>
                         <x-ui::data-table.faceted-filter column="status" title="Status" :options="['paid' => 'Paid', 'failed' => ['label' => 'Failed', 'icon' => 'x']]" :counts="['paid' => 3]" />
                         <x-ui::data-table.reset />
-                        <x-ui::data-table.view-options :columns="['email' => 'Email', 'amount' => 'Amount']" />
+                        <x-ui::data-table.view-options :columns="['email' => 'Email', 'amount' => 'Amount']" reorderable />
                     </x-ui::data-table.toolbar>
                     <x-ui::data-table.content>
                         <x-ui::table.header>

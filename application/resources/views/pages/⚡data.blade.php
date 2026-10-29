@@ -11,7 +11,10 @@ new class extends Component
 {
     use WithDataTable;
 
-    public const ROLES = ['admin' => ['label' => 'Admin', 'icon' => 'shield'], 'editor' => ['label' => 'Editor', 'icon' => 'pencil'], 'member' => ['label' => 'Member', 'icon' => 'user']];
+    /** The users table's columns the user can hide and reorder, as written. */
+    public const COLUMNS = ['name' => 'Name', 'email' => 'Email', 'role' => 'Role', 'status' => 'Status', 'created_at' => 'Joined'];
+
+    public const ROLES =['admin' => ['label' => 'Admin', 'icon' => 'shield'], 'editor' => ['label' => 'Editor', 'icon' => 'pencil'], 'member' => ['label' => 'Member', 'icon' => 'user']];
 
     public int $step = 2;
 
@@ -120,30 +123,34 @@ new class extends Component
                 <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." class="h-8 w-[150px] lg:w-[250px]" />
                 <x-ui::data-table.faceted-filter column="role" title="Role" :options="$this::ROLES" :counts="$this->roleCounts" />
                 <x-ui::data-table.reset />
-                <x-ui::data-table.view-options :columns="['name' => 'Name', 'email' => 'Email', 'role' => 'Role', 'status' => 'Status', 'created_at' => 'Joined']" />
+                <x-ui::data-table.view-options :columns="$this::COLUMNS" reorderable />
             </x-ui::data-table.toolbar>
 
-            @php $columns = 3 + count(array_filter(['name', 'email', 'role', 'status', 'created_at'], fn ($column) => $this->columnVisible($column))); @endphp
+            {{-- The columns the user shows, in the user's order; the selection, toggle and actions columns stay put. --}}
+            @php
+            $visible = $this->visibleColumns($this::COLUMNS);
+            $columns = 3 + count($visible);
+            @endphp
             <x-ui::data-table.content>
                 <x-ui::table.header>
                     <x-ui::table.row>
                         <x-ui::table.head class="w-8"><x-ui::data-table.select-all /></x-ui::table.head>
                         <x-ui::table.head class="w-8 px-0" />
-                        @if ($this->columnVisible('name'))
-                        <x-ui::table.head><x-ui::data-table.column-header column="name" title="Name" /></x-ui::table.head>
-                        @endif
-                        @if ($this->columnVisible('email'))
-                        <x-ui::table.head><x-ui::data-table.column-header column="email" title="Email" /></x-ui::table.head>
-                        @endif
-                        @if ($this->columnVisible('role'))
-                        <x-ui::table.head><x-ui::data-table.column-header column="role" title="Role" :options="$this::ROLES" /></x-ui::table.head>
-                        @endif
-                        @if ($this->columnVisible('status'))
-                        <x-ui::table.head><x-ui::data-table.column-header column="status" title="Status" :sortable="false" /></x-ui::table.head>
-                        @endif
-                        @if ($this->columnVisible('created_at'))
-                        <x-ui::table.head class="text-right"><x-ui::data-table.column-header column="created_at" title="Joined" class="justify-end" /></x-ui::table.head>
-                        @endif
+                        @foreach ($visible as $column => $title)
+                        @switch ($column)
+                            @case('role')
+                            <x-ui::table.head><x-ui::data-table.column-header :column="$column" :title="$title" :options="$this::ROLES" /></x-ui::table.head>
+                            @break
+                            @case('status')
+                            <x-ui::table.head><x-ui::data-table.column-header :column="$column" :title="$title" :sortable="false" /></x-ui::table.head>
+                            @break
+                            @case('created_at')
+                            <x-ui::table.head class="text-right"><x-ui::data-table.column-header :column="$column" :title="$title" class="justify-end" /></x-ui::table.head>
+                            @break
+                            @default
+                            <x-ui::table.head><x-ui::data-table.column-header :column="$column" :title="$title" /></x-ui::table.head>
+                        @endswitch
+                        @endforeach
                         <x-ui::table.head />
                     </x-ui::table.row>
                 </x-ui::table.header>
@@ -152,23 +159,25 @@ new class extends Component
                     <x-ui::data-table.row :id="$user->id">
                         <x-ui::table.cell><x-ui::data-table.select-row :value="$user->id" /></x-ui::table.cell>
                         <x-ui::table.cell class="px-0"><x-ui::data-table.row-toggle /></x-ui::table.cell>
-                        @if ($this->columnVisible('name'))
-                        <x-ui::table.cell>{{ $user->name }}</x-ui::table.cell>
-                        @endif
-                        @if ($this->columnVisible('email'))
-                        <x-ui::table.cell class="lowercase">{{ $user->email }}</x-ui::table.cell>
-                        @endif
-                        @if ($this->columnVisible('role'))
-                        <x-ui::table.cell><span class="flex items-center gap-2 text-muted-foreground"><x-ui::icon :name="$this::ROLES[$user->role]['icon']" class="size-4" /><span class="text-foreground">{{ $this::ROLES[$user->role]['label'] }}</span></span></x-ui::table.cell>
-                        @endif
-                        @if ($this->columnVisible('status'))
-                        <x-ui::table.cell>
-                            <x-ui::badge :variant="$user->email_verified_at ? 'success' : 'warning'">{{ $user->email_verified_at ? 'Verified' : 'Pending' }}</x-ui::badge>
-                        </x-ui::table.cell>
-                        @endif
-                        @if ($this->columnVisible('created_at'))
-                        <x-ui::table.cell class="text-right">{{ $user->created_at->format('M j, Y') }}</x-ui::table.cell>
-                        @endif
+                        @foreach ($visible as $column => $title)
+                        @switch ($column)
+                            @case('name')
+                            <x-ui::table.cell>{{ $user->name }}</x-ui::table.cell>
+                            @break
+                            @case('email')
+                            <x-ui::table.cell class="lowercase">{{ $user->email }}</x-ui::table.cell>
+                            @break
+                            @case('role')
+                            <x-ui::table.cell><span class="flex items-center gap-2 text-muted-foreground"><x-ui::icon :name="$this::ROLES[$user->role]['icon']" class="size-4" /><span class="text-foreground">{{ $this::ROLES[$user->role]['label'] }}</span></span></x-ui::table.cell>
+                            @break
+                            @case('status')
+                            <x-ui::table.cell><x-ui::badge :variant="$user->email_verified_at ? 'success' : 'warning'">{{ $user->email_verified_at ? 'Verified' : 'Pending' }}</x-ui::badge></x-ui::table.cell>
+                            @break
+                            @case('created_at')
+                            <x-ui::table.cell class="text-right">{{ $user->created_at->format('M j, Y') }}</x-ui::table.cell>
+                            @break
+                        @endswitch
+                        @endforeach
                         <x-ui::table.cell>
                             <x-ui::dropdown-menu>
                                 <x-ui::dropdown-menu.trigger variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::dropdown-menu.trigger>

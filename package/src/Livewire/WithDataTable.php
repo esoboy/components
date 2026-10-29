@@ -3,12 +3,14 @@
 namespace Esoboy\Ui\Livewire;
 
 use Illuminate\Contracts\Database\Query\Builder;
+use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 
 /**
  * Server state for a Data Table, the Livewire counterpart of shadcn's TanStack table
- * features: sorting, filtering, page size, row selection and column visibility. The
+ * features: sorting, filtering, page size, row selection, and the columns' visibility
+ * and order (kept in the session, so they are there when the user comes back). The
  * Data Table parts read and change it; the query stays yours.
  */
 trait WithDataTable
@@ -39,7 +41,16 @@ trait WithDataTable
     public array $selected = [];
 
     /** @var list<string> */
+    #[Session]
     public array $hiddenColumns = [];
+
+    /**
+     * The columns in the order the user put them; empty while they are as written.
+     *
+     * @var list<string>
+     */
+    #[Session]
+    public array $columnOrder = [];
 
     /**
      * Sorts by a column: in the given direction, or ascending then descending.
@@ -61,6 +72,61 @@ trait WithDataTable
     public function columnVisible(string $column): bool
     {
         return ! in_array($column, $this->hiddenColumns, true);
+    }
+
+    /**
+     * Moves a column to a position among the columns (their keys as written, or those
+     * keys comma-separated, as View Options' wire:sort sends them).
+     *
+     * @param  list<string>|string  $columns
+     */
+    public function moveColumn(string $column, int $position, array|string $columns): void
+    {
+        $columns = is_string($columns) ? explode(',', $columns) : $columns;
+        $order = array_values(array_diff(array_keys($this->orderedColumns(array_fill_keys($columns, ''))), [$column]));
+
+        array_splice($order, max(0, min($position, count($order))), 0, [$column]);
+
+        $this->columnOrder = $order;
+    }
+
+    /**
+     * Shows every column again, in the order written.
+     */
+    public function resetColumns(): void
+    {
+        $this->columnOrder = [];
+        $this->hiddenColumns = [];
+    }
+
+    /**
+     * The columns (key => label, in the order written) in the user's order; columns
+     * the order doesn't know yet keep their place after the ones it does.
+     *
+     * @template TLabel
+     *
+     * @param  array<string, TLabel>  $columns
+     * @return array<string, TLabel>
+     */
+    public function orderedColumns(array $columns): array
+    {
+        $known = array_values(array_intersect($this->columnOrder, array_keys($columns)));
+        $keys = [...$known, ...array_values(array_diff(array_keys($columns), $known))];
+
+        return array_combine($keys, array_map(fn (string $key) => $columns[$key], $keys));
+    }
+
+    /**
+     * The columns the user shows, in the user's order: what a table renders.
+     *
+     * @template TLabel
+     *
+     * @param  array<string, TLabel>  $columns
+     * @return array<string, TLabel>
+     */
+    public function visibleColumns(array $columns): array
+    {
+        return array_filter($this->orderedColumns($columns), fn (string $key) => $this->columnVisible($key), ARRAY_FILTER_USE_KEY);
     }
 
     /**

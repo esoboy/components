@@ -12,6 +12,7 @@ return [
     'no_filter_results' => 'No results found.',
     'no_results' => 'No results.',
     'page' => 'Page :current of :total',
+    'reset_columns' => 'Reset columns',
     'reset' => 'Reset',
     'rows_per_page' => 'Rows per page',
     'select_all' => 'Select all',
