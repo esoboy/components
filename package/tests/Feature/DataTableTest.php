@@ -5,6 +5,9 @@
  */
 
 use Esoboy\Ui\Tests\Fixtures\Payments;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 
 it('sorts a column ascending, then descending, back on the first page', function () {
@@ -83,4 +86,96 @@ it('resets to the first page when the page size changes', function () {
         ->call('setPage', 4)
         ->set('perPage', 20)
         ->assertSet('paginators.page', 1);
+});
+
+it('filters columns, back on the first page, and resets filters and search', function () {
+    $component = Livewire::test(Payments::class)
+        ->call('setPage', 3)
+        ->call('toggleFilter', 'status', 'paid')
+        ->assertSet('filters', ['status' => ['paid']])
+        ->assertSet('paginators.page', 1)
+        ->call('toggleFilter', 'status', 'failed')
+        ->assertSet('filters', ['status' => ['paid', 'failed']])
+        ->call('toggleFilter', 'status', 'paid')
+        ->call('toggleFilter', 'status', 'failed')
+        ->assertSet('filters', []);
+
+    expect($component->instance()->filtered())->toBeFalse();
+
+    $component->call('toggleFilter', 'method', 'card')
+        ->call('toggleFilter', 'status', 'paid')
+        ->call('clearFilters', 'method')
+        ->assertSet('filters', ['status' => ['paid']])
+        ->set('search', 'ada')
+        ->call('resetFilters')
+        ->assertSet('filters', [])
+        ->assertSet('search', '');
+});
+
+it('applies only filterable columns, and counts each facet under the other filters', function () {
+    Schema::create('payments', function (Blueprint $table) {
+        $table->id();
+        $table->string('status');
+        $table->string('method');
+    });
+
+    DB::table('payments')->insert([
+        ['status' => 'paid', 'method' => 'card'],
+        ['status' => 'paid', 'method' => 'bank'],
+        ['status' => 'failed', 'method' => 'card'],
+        ['status' => 'pending', 'method' => 'card'],
+    ]);
+
+    $component = Livewire::test(Payments::class)
+        ->call('toggleFilter', 'status', 'paid')
+        ->call('toggleFilter', 'status', 'failed')
+        ->call('toggleFilter', 'method', 'card')
+        ->set('filters.email', ['x']);
+
+    expect($component->instance()->filteredIds())->toBe([1, 3])
+        ->and($component->instance()->statusCounts())->toBe(['failed' => 1, 'paid' => 1, 'pending' => 1]);
+});
+
+it('renders the faceted filter, the reset button and a header filter from the filters', function () {
+    $html = Livewire::test(Payments::class)->html();
+
+    expect($html)
+        ->toMatch('/data-variant="outline" data-size="sm"[^>]*data-data-table-faceted-filter="data-data-table-faceted-filter"/')
+        ->toMatch("/data-value=\"paid\"[^>]*wire:click=\"toggleFilter\\('status', 'paid'\\)\"/")
+        ->toContain('<span data-slot="data-table-filter-count">3</span>')
+        ->not->toContain('data-chosen')
+        ->not->toContain('data-data-table-reset')
+        ->toContain("<input type=\"checkbox\" role=\"menuitemcheckbox\" wire:click=\"toggleFilter('method', 'card')\">");
+
+    $html = Livewire::test(Payments::class)->call('toggleFilter', 'status', 'paid')->html();
+
+    expect($html)
+        ->toMatch('/data-value="paid"[^>]*data-chosen="data-chosen"/')
+        ->toContain('<span data-data-table-filter-values>')
+        ->toContain('Paid</span>')
+        ->toMatch("/wire:click=\"clearFilters\\('status'\\)\">\\s*Clear filters/")
+        ->toMatch('/wire:click="resetFilters" data-data-table-reset="data-data-table-reset">\s*Reset/');
+});
+
+it('renders expandable and tree rows, starting children hidden', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::data-table.row id="eng" :level="1" expanded><x-ui::table.cell><x-ui::data-table.row-toggle /></x-ui::table.cell></x-ui::data-table.row>
+        <x-ui::data-table.row id="eng/api" parent="eng" :level="2"><x-ui::table.cell>API</x-ui::table.cell></x-ui::data-table.row>
+        <x-ui::data-table.row-detail for="eng" :colspan="4" class="p-4">Details</x-ui::data-table.row-detail>
+        BLADE);
+
+    expect($html)
+        ->toContain('<tr data-slot="table-row" style="--level: 1;" wire:key="data-table-row-eng" data-row-id="eng" data-default-expanded="data-default-expanded">')
+        ->toMatch('/data-data-table-row-toggle="data-data-table-row-toggle" aria-expanded="false" aria-label="Expand row"/')
+        ->toContain('<tr data-slot="table-row" style="--level: 2;" wire:key="data-table-row-eng/api" data-row-id="eng/api" data-parent="eng" hidden="hidden">')
+        ->toContain('<tr data-slot="data-table-row-detail" data-detail-for="eng" wire:key="data-table-row-detail-eng" hidden>')
+        ->toContain('<td colspan="4" data-slot="table-cell" class="p-4">Details</td>');
+});
+
+it('fixes columns and the header', function () {
+    $this->blade('<x-ui::data-table.content sticky-header><x-ui::table.row><x-ui::table.head sticky="start">A</x-ui::table.head><x-ui::table.cell sticky="end">B</x-ui::table.cell><x-ui::table.cell>C</x-ui::table.cell></x-ui::table.row></x-ui::data-table.content>')
+        ->assertSee('<div data-slot="data-table-content" data-sticky-header="data-sticky-header">', false)
+        ->assertSee('<th data-slot="table-head" data-sticky="start">A</th>', false)
+        ->assertSee('<td data-slot="table-cell" data-sticky="end">B</td>', false)
+        ->assertSee('<td data-slot="table-cell">C</td>', false);
 });

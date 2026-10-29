@@ -3,30 +3,79 @@
 use App\Models\User;
 use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Livewire\WithDataTable;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new class extends Component
 {
     use WithDataTable;
 
-    #[Url]
-    public string $search = '';
+    public const ROLES = ['admin' => ['label' => 'Admin', 'icon' => 'shield'], 'editor' => ['label' => 'Editor', 'icon' => 'pencil'], 'member' => ['label' => 'Member', 'icon' => 'user']];
 
     public int $step = 2;
 
-    public function updatedSearch(): void
+    /** @var list<string> */
+    public array $teams = [];
+
+    /**
+     * The users the search finds, before the filters: what the facets count.
+     */
+    private function searched(): Builder
     {
-        $this->resetPage();
+        return User::query()->when($this->search, fn ($query) => $query->where('email', 'like', "%{$this->search}%"));
     }
 
     #[Computed]
     public function users()
     {
-        $query = User::query()->when($this->search, fn ($query) => $query->where('email', 'like', "%{$this->search}%"));
+        return $this->sortQuery($this->filterQuery($this->searched(), ['role']), ['name', 'email', 'role', 'created_at'])->paginate($this->perPage);
+    }
 
-        return $this->sortQuery($query, ['name', 'email', 'created_at'])->paginate($this->perPage);
+    /** @return array<string, int> */
+    #[Computed]
+    public function roleCounts(): array
+    {
+        return $this->facetCounts($this->searched(), 'role', ['role']);
+    }
+
+    /**
+     * Budgets by team in $k a quarter, departments summing their teams, flattened for the table.
+     *
+     * @return list<array{id: string, parent: ?string, level: int, name: string, owner: string, quarters: list<int>}>
+     */
+    #[Computed]
+    public function budgets(): array
+    {
+        $tree = [
+            ['Engineering', 'Olivia Martin', [
+                ['Platform', 'Liam Chen', [['API', 'Noah Kim', [120, 130, 125, 140]], ['Data', 'Mia Wang', [80, 85, 95, 100]]]],
+                ['Product', 'Emma Davis', [90, 95, 110, 105]],
+            ]],
+            ['Marketing', 'Ava Wilson', [['Brand', 'Lucas Zhang', [40, 45, 50, 55]], ['Growth', 'Sophia Li', [60, 70, 65, 80]]]],
+            ['Operations', 'Ethan Brown', [['Support', 'Isabella Wu', [30, 30, 35, 35]]]],
+        ];
+
+        $rows = [];
+
+        $walk = function (array $nodes, ?string $parent, int $level) use (&$walk, &$rows): array {
+            $sums = [0, 0, 0, 0];
+
+            foreach ($nodes as [$name, $owner, $budget]) {
+                $id = ($parent ? $parent.'/' : '').strtolower($name);
+                $index = count($rows);
+                $rows[] = ['id' => $id, 'parent' => $parent, 'level' => $level, 'name' => $name, 'owner' => $owner, 'quarters' => []];
+                $quarters = is_int($budget[0]) ? $budget : $walk($budget, $id, $level + 1);
+                $rows[$index]['quarters'] = $quarters;
+                $sums = array_map(fn ($sum, $quarter) => $sum + $quarter, $sums, $quarters);
+            }
+
+            return $sums;
+        };
+
+        $walk($tree, null, 1);
+
+        return $rows;
     }
 
     public function deleteSelected(): void
@@ -68,19 +117,26 @@ new class extends Component
         <h2 class="text-lg font-semibold">Data Table</h2>
         <x-ui::data-table style="anchor-name: --users-table">
             <x-ui::data-table.toolbar>
-                <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." class="max-w-sm" />
-                <x-ui::data-table.view-options :columns="['name' => 'Name', 'email' => 'Email', 'status' => 'Status', 'created_at' => 'Joined']" />
+                <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." class="h-8 w-[150px] lg:w-[250px]" />
+                <x-ui::data-table.faceted-filter column="role" title="Role" :options="$this::ROLES" :counts="$this->roleCounts" />
+                <x-ui::data-table.reset />
+                <x-ui::data-table.view-options :columns="['name' => 'Name', 'email' => 'Email', 'role' => 'Role', 'status' => 'Status', 'created_at' => 'Joined']" />
             </x-ui::data-table.toolbar>
 
+            @php $columns = 3 + count(array_filter(['name', 'email', 'role', 'status', 'created_at'], fn ($column) => $this->columnVisible($column))); @endphp
             <x-ui::data-table.content>
                 <x-ui::table.header>
                     <x-ui::table.row>
-                        <x-ui::table.head><x-ui::data-table.select-all /></x-ui::table.head>
+                        <x-ui::table.head class="w-8"><x-ui::data-table.select-all /></x-ui::table.head>
+                        <x-ui::table.head class="w-8 px-0" />
                         @if ($this->columnVisible('name'))
                         <x-ui::table.head><x-ui::data-table.column-header column="name" title="Name" /></x-ui::table.head>
                         @endif
                         @if ($this->columnVisible('email'))
                         <x-ui::table.head><x-ui::data-table.column-header column="email" title="Email" /></x-ui::table.head>
+                        @endif
+                        @if ($this->columnVisible('role'))
+                        <x-ui::table.head><x-ui::data-table.column-header column="role" title="Role" :options="$this::ROLES" /></x-ui::table.head>
                         @endif
                         @if ($this->columnVisible('status'))
                         <x-ui::table.head><x-ui::data-table.column-header column="status" title="Status" :sortable="false" /></x-ui::table.head>
@@ -93,13 +149,17 @@ new class extends Component
                 </x-ui::table.header>
                 <x-ui::table.body>
                     @forelse ($this->users as $user)
-                    <x-ui::table.row wire:key="user-{{ $user->id }}">
+                    <x-ui::data-table.row :id="$user->id">
                         <x-ui::table.cell><x-ui::data-table.select-row :value="$user->id" /></x-ui::table.cell>
+                        <x-ui::table.cell class="px-0"><x-ui::data-table.row-toggle /></x-ui::table.cell>
                         @if ($this->columnVisible('name'))
                         <x-ui::table.cell>{{ $user->name }}</x-ui::table.cell>
                         @endif
                         @if ($this->columnVisible('email'))
                         <x-ui::table.cell class="lowercase">{{ $user->email }}</x-ui::table.cell>
+                        @endif
+                        @if ($this->columnVisible('role'))
+                        <x-ui::table.cell><span class="flex items-center gap-2 text-muted-foreground"><x-ui::icon :name="$this::ROLES[$user->role]['icon']" class="size-4" /><span class="text-foreground">{{ $this::ROLES[$user->role]['label'] }}</span></span></x-ui::table.cell>
                         @endif
                         @if ($this->columnVisible('status'))
                         <x-ui::table.cell>
@@ -120,9 +180,17 @@ new class extends Component
                                 </x-ui::dropdown-menu.content>
                             </x-ui::dropdown-menu>
                         </x-ui::table.cell>
-                    </x-ui::table.row>
+                    </x-ui::data-table.row>
+                    <x-ui::data-table.row-detail :for="$user->id" :colspan="$columns" class="px-4 py-3">
+                        <x-ui::description-list :columns="4">
+                            <x-ui::description-list.item><x-ui::description-list.term>User ID</x-ui::description-list.term><x-ui::description-list.details>#{{ $user->id }}</x-ui::description-list.details></x-ui::description-list.item>
+                            <x-ui::description-list.item><x-ui::description-list.term>Email verified</x-ui::description-list.term><x-ui::description-list.details>{{ $user->email_verified_at?->format('M j, Y H:i') ?? 'Not yet' }}</x-ui::description-list.details></x-ui::description-list.item>
+                            <x-ui::description-list.item><x-ui::description-list.term>Joined</x-ui::description-list.term><x-ui::description-list.details>{{ $user->created_at->diffForHumans() }}</x-ui::description-list.details></x-ui::description-list.item>
+                            <x-ui::description-list.item><x-ui::description-list.term>Last update</x-ui::description-list.term><x-ui::description-list.details>{{ $user->updated_at->format('M j, Y') }}</x-ui::description-list.details></x-ui::description-list.item>
+                        </x-ui::description-list>
+                    </x-ui::data-table.row-detail>
                     @empty
-                    <x-ui::data-table.empty colspan="6" />
+                    <x-ui::data-table.empty :colspan="$columns" />
                     @endforelse
                 </x-ui::table.body>
             </x-ui::data-table.content>
@@ -152,6 +220,103 @@ new class extends Component
                 <x-ui::button variant="destructive" size="sm" wire:click="deleteSelected" wire:confirm="Delete {{ count($selected) }} users?"><x-ui::icon name="trash" data-icon="inline-start" />Delete</x-ui::button>
             </div>
             @endif
+        </x-ui::data-table>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Tree rows, fixed columns, totals</h2>
+        <p class="text-sm text-muted-foreground">Departments expand into their teams; the header and the totals stay while the table scrolls, the selection and name columns and the actions stay while it scrolls sideways.</p>
+        @php
+        $money = fn (int $amount) => '$'.number_format($amount).'k';
+        $totals = collect($this->budgets)->where('level', 1)->reduce(fn (array $sums, array $row) => array_map(fn ($sum, $quarter) => $sum + $quarter, $sums, $row['quarters']), [0, 0, 0, 0]);
+        @endphp
+        <x-ui::data-table>
+            <x-ui::data-table.content sticky-header class="max-h-80">
+                <x-ui::table.header>
+                    <x-ui::table.row>
+                        <x-ui::table.head sticky="start" class="w-8"><x-ui::data-table.select-all /></x-ui::table.head>
+                        <x-ui::table.head sticky="start" class="min-w-48">Department</x-ui::table.head>
+                        <x-ui::table.head class="min-w-36">Owner</x-ui::table.head>
+                        @foreach (['Q1', 'Q2', 'Q3', 'Q4'] as $quarter)
+                        <x-ui::table.head class="min-w-28 text-right">{{ $quarter }}</x-ui::table.head>
+                        @endforeach
+                        <x-ui::table.head class="min-w-28 text-right">Total</x-ui::table.head>
+                        <x-ui::table.head sticky="end" class="w-12" />
+                    </x-ui::table.row>
+                </x-ui::table.header>
+                <x-ui::table.body>
+                    @foreach ($this->budgets as $row)
+                    <x-ui::data-table.row :id="$row['id']" :parent="$row['parent']" :level="$row['level']" :expanded="$row['level'] === 1">
+                        <x-ui::table.cell sticky="start"><x-ui::data-table.select-row :value="$row['id']" wire:model.live="teams" /></x-ui::table.cell>
+                        <x-ui::table.cell sticky="start"><div class="flex items-center gap-1"><x-ui::data-table.row-toggle /><span @class(['font-medium' => $row['level'] === 1])>{{ $row['name'] }}</span></div></x-ui::table.cell>
+                        <x-ui::table.cell class="text-muted-foreground">{{ $row['owner'] }}</x-ui::table.cell>
+                        @foreach ($row['quarters'] as $amount)
+                        <x-ui::table.cell class="text-right tabular-nums">{{ $money($amount) }}</x-ui::table.cell>
+                        @endforeach
+                        <x-ui::table.cell class="text-right font-medium tabular-nums">{{ $money(array_sum($row['quarters'])) }}</x-ui::table.cell>
+                        <x-ui::table.cell sticky="end">
+                            <x-ui::dropdown-menu>
+                                <x-ui::dropdown-menu.trigger variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::dropdown-menu.trigger>
+                                <x-ui::dropdown-menu.content align="end" class="w-40">
+                                    <x-ui::dropdown-menu.item>Edit budget</x-ui::dropdown-menu.item>
+                                    <x-ui::dropdown-menu.item>View report</x-ui::dropdown-menu.item>
+                                </x-ui::dropdown-menu.content>
+                            </x-ui::dropdown-menu>
+                        </x-ui::table.cell>
+                    </x-ui::data-table.row>
+                    @endforeach
+                </x-ui::table.body>
+                <x-ui::table.footer>
+                    <x-ui::table.row>
+                        <x-ui::table.cell sticky="start" />
+                        <x-ui::table.cell sticky="start">Total</x-ui::table.cell>
+                        <x-ui::table.cell />
+                        @foreach ($totals as $amount)
+                        <x-ui::table.cell class="text-right tabular-nums">{{ $money($amount) }}</x-ui::table.cell>
+                        @endforeach
+                        <x-ui::table.cell class="text-right tabular-nums">{{ $money(array_sum($totals)) }}</x-ui::table.cell>
+                        <x-ui::table.cell sticky="end" />
+                    </x-ui::table.row>
+                </x-ui::table.footer>
+            </x-ui::data-table.content>
+        </x-ui::data-table>
+        <p class="text-sm text-muted-foreground">teams: <span id="teams">{{ implode(', ', $teams) ?: 'none' }}</span></p>
+    </section>
+
+    <section class="space-y-4">
+        <h2 class="text-lg font-semibold">Merged cells</h2>
+        <p class="text-sm text-muted-foreground">colspan and rowspan on heads and cells; a merged cell lights up with whichever of its rows is hovered.</p>
+        @php
+        $sales = ['Hardware' => [['Laptop', 120, 135], ['Monitor', 64, 58], ['Keyboard', 31, 40]], 'Software' => [['License', 210, 240], ['Support plan', 88, 91]]];
+        @endphp
+        <x-ui::data-table>
+            <x-ui::data-table.content>
+                <x-ui::table.header>
+                    <x-ui::table.row>
+                        <x-ui::table.head rowspan="2">Category</x-ui::table.head>
+                        <x-ui::table.head rowspan="2">Product</x-ui::table.head>
+                        <x-ui::table.head colspan="2" class="text-center">Units sold</x-ui::table.head>
+                    </x-ui::table.row>
+                    <x-ui::table.row>
+                        <x-ui::table.head class="text-right">H1</x-ui::table.head>
+                        <x-ui::table.head class="text-right">H2</x-ui::table.head>
+                    </x-ui::table.row>
+                </x-ui::table.header>
+                <x-ui::table.body>
+                    @foreach ($sales as $category => $products)
+                    @foreach ($products as [$product, $first, $second])
+                    <x-ui::table.row wire:key="sales-{{ $product }}">
+                        @if ($loop->first)
+                        <x-ui::table.cell :rowspan="count($products)" class="align-top font-medium">{{ $category }}</x-ui::table.cell>
+                        @endif
+                        <x-ui::table.cell>{{ $product }}</x-ui::table.cell>
+                        <x-ui::table.cell class="text-right tabular-nums">{{ $first }}</x-ui::table.cell>
+                        <x-ui::table.cell class="text-right tabular-nums">{{ $second }}</x-ui::table.cell>
+                    </x-ui::table.row>
+                    @endforeach
+                    @endforeach
+                </x-ui::table.body>
+            </x-ui::data-table.content>
         </x-ui::data-table>
     </section>
 

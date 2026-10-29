@@ -19,6 +19,22 @@ class Payments extends Component
     }
 
     /**
+     * @return list<int>
+     */
+    public function filteredIds(): array
+    {
+        return array_map(fn ($id) => (int) $id, array_values($this->filterQuery(app('db')->table('payments'), ['status', 'method'])->orderBy('id')->pluck('id')->all()));
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function statusCounts(): array
+    {
+        return $this->facetCounts(app('db')->table('payments')->orderBy('id'), 'status', ['status', 'method']);
+    }
+
+    /**
      * @return LengthAwarePaginator<int, array{id: int}>
      */
     public function rows(): LengthAwarePaginator
@@ -33,6 +49,8 @@ class Payments extends Component
                 @php($paginator = $this->rows())
                 <x-ui::data-table>
                     <x-ui::data-table.toolbar>
+                        <x-ui::data-table.faceted-filter column="status" title="Status" :options="['paid' => 'Paid', 'failed' => ['label' => 'Failed', 'icon' => 'x']]" :counts="['paid' => 3]" />
+                        <x-ui::data-table.reset />
                         <x-ui::data-table.view-options :columns="['email' => 'Email', 'amount' => 'Amount']" />
                     </x-ui::data-table.toolbar>
                     <x-ui::data-table.content>
@@ -41,6 +59,7 @@ class Payments extends Component
                                 <x-ui::table.head><x-ui::data-table.select-all /></x-ui::table.head>
                                 <x-ui::table.head><x-ui::data-table.column-header column="email" title="Email" /></x-ui::table.head>
                                 <x-ui::table.head><x-ui::data-table.column-header column="status" title="Status" :sortable="false" /></x-ui::table.head>
+                                <x-ui::table.head><x-ui::data-table.column-header column="method" title="Method" :sortable="false" :hideable="false" :options="['card' => 'Card', 'bank' => 'Bank']" /></x-ui::table.head>
                             </x-ui::table.row>
                         </x-ui::table.header>
                         <x-ui::table.body>
