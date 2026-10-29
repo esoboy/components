@@ -40,7 +40,9 @@ final class EditorControls
             'color' => $format->has('color', 'highlight'),
             'clear-formatting' => $format->has(...self::FORMATTING),
             'indent', 'outdent' => $format->has('indent', 'bullet-list', 'ordered-list', 'task-list'),
-            // Uploaded, or from a link: a file's address, a platform's.
+            // Uploaded with the app's uploader; a video from a link (a file's address, a
+            // platform's) needs none.
+            'image', 'audio', 'file' => $format->has($control) && EditorUploads::enabled(),
             'video' => $format->has('video', 'embed'),
             'find' => $format->has('find-replace'),
             'format-painter' => $format->has('format-painter') && $format->has(...self::FORMATTING),

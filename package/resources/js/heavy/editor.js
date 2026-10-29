@@ -13,12 +13,11 @@
  * and one tab stop, arrow keys moving within it, what doesn't fit in More; one tooltip
  * names whichever control is pointed at.
  *
- * Media: the editor uploads nothing. It asks with editor-media { files, accept, insert }
- * (files dropped or pasted, or none from a button: accept says of which kinds) and
- * inserts what comes back, in place, through detail.insert(attachments) or
- * Ui::editor(id)->insert(): an array of { url, name, mime, size, alt, width, height,
- * poster }, or none for nothing chosen. Images it has no copy of (external, data:) are
- * the app's to save when someone asks (images.js).
+ * Media: what is picked with a media button, dropped or pasted goes to the app's
+ * uploader (config ui.editor.uploader; data-upload, upload.js), and what it answers ({
+ * url, name, mime, size, alt, width, height, poster }) in place; so do images it has no
+ * copy of (external, data:), when saved (images.js). Without an uploader there are no
+ * media buttons. Ui::editor(id)->insert() inserts attachments the app has itself.
  *
  * Built into dist/editor.js; the view loads it through @assets.
  */
@@ -40,13 +39,14 @@ import { clone, readTemplates } from '../support/templates.js'
 import { COMMANDS } from './editor/commands.js'
 import { MoveBlocks, dragHandle } from './editor/drag.js'
 import { Find, findKey } from './editor/find.js'
-import { Saving, dataFile, rotateImage, savingKey, unsaved, unsavedImages, wordImages } from './editor/images.js'
-import { accepted, attachmentNode, safeUrl, videoNode } from './editor/media.js'
+import { Saving, dataFile, imageFile, savingKey, unsaved, unsavedImages, wordImages } from './editor/images.js'
+import { accepted, attachmentNode, kindOf, safeUrl, videoNode } from './editor/media.js'
 import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, picture, tables, tasks, toMathML } from './editor/nodes.js'
 import { wordLists } from './editor/paste.js'
-import { blockStyle, computed, restyle, styleExtensions } from './editor/styles.js'
+import { blockStyle, styleExtensions } from './editor/styles.js'
 import { emojiMenu, slashMenu } from './editor/suggest.js'
 import { overflow } from './editor/toolbar.js'
+import { upload } from './editor/upload.js'
 import { uploads, uploadsKey } from './editor/uploads.js'
 import { generic, passthrough, whitelist } from './editor/whitelist.js'
 
@@ -86,6 +86,8 @@ const TOUCH = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)'
 
 const MEDIA = ['image', 'video', 'audio', 'file']
 
+let uploaded = 0
+
 export class EditorElement extends HTMLElement {
     static observedAttributes = ['aria-invalid', 'aria-describedby', 'data-disabled']
 
@@ -94,9 +96,11 @@ export class EditorElement extends HTMLElement {
     #reported = ''
     #format = null
     #whitelist = null
-    #saves = []
+    #labels = {}
+    #saving = new Set()
     #saved = new Map()
-    #turns = new Map()
+    #failed = new Map()
+    #loaded = new Set()
     #unsaved = { doc: null, images: [] }
     #hosts = []
     #rtf = ''
@@ -126,7 +130,7 @@ export class EditorElement extends HTMLElement {
         this.#hosts = (this.dataset.imageHosts ?? '').split(/\s+/).filter(Boolean)
 
         const html = content.innerHTML
-        const labels = JSON.parse(this.dataset.labels || '{}')
+        const labels = this.#labels = JSON.parse(this.dataset.labels || '{}')
 
         content.replaceChildren()
 
@@ -169,6 +173,7 @@ export class EditorElement extends HTMLElement {
 
                 this.#reported = value
                 this.dispatchEvent(new Event('input', { bubbles: true }))
+                queueMicrotask(() => this.#autoSave())
             },
             onFocus: () => {
                 this.#focused ??= this.value
@@ -194,6 +199,7 @@ export class EditorElement extends HTMLElement {
         this.#editor.view.dispatch(this.#editor.state.tr.setMeta('addToHistory', false).setMeta('preventUpdate', true))
 
         this.#reported = this.value
+        this.#loaded = new Set(this.#unsavedImages())
         this.#listen()
         this.#prepareControls(this)
 
@@ -255,6 +261,7 @@ export class EditorElement extends HTMLElement {
             .command(({ tr }) => !! tr.setSelection(TextSelection.between(near(tr.doc, from), near(tr.doc, to))))
             .run()
         this.#reported = this.value
+        this.#unsavedImages().forEach(src => this.#loaded.add(src))
         writeHidden(this, this.dataset.name, this.value)
     }
 
@@ -270,8 +277,8 @@ export class EditorElement extends HTMLElement {
     }
 
     /**
-     * Inserts attachments where the cursor is, as an answer to editor-media does where it
-     * was asked: images, audio and video as themselves, the rest as files.
+     * Inserts attachments where the cursor is: images, audio and video as themselves, the
+     * rest as files.
      */
     insert(attachments) {
         this.#insert(attachments, null)
@@ -335,7 +342,7 @@ export class EditorElement extends HTMLElement {
             has('embed') && embed(this.#format.platforms),
             has('math') && formulas(),
             has('callout') && callout(styles),
-            accepted(this.#format.features).length && templates.uploading && uploads({ uploading: templates.uploading, missing: has('image') ? templates['missing-image'] : null }),
+            (templates.uploading || templates['missing-image']) && uploads({ uploading: templates.uploading, failed: templates['upload-failed'], missing: has('image') ? templates['missing-image'] : null }),
             has('find-replace') && Find,
             (has('character-count') || max) && CharacterCount.configure({ limit: max, textCounter: characters }),
             has('typography') && Typography,
@@ -452,9 +459,7 @@ export class EditorElement extends HTMLElement {
 
         if (! this.#editor || ! id || id !== this.id) return
 
-        if (action === 'insert') this.#insert(attachments, [...this.#requests].pop() ?? null)
-        if (action === 'replace-images') this.#replaceImages(attachments, this.#saves.findLast(request => request.kind === 'external'))
-        if (action === 'replace-data-images') this.#replaceImages(attachments, this.#saves.findLast(request => request.kind === 'data'))
+        if (action === 'insert') this.#insert(attachments, null)
         if (action === 'insert-content' && html) this.#editor.chain().focus().insertContent(this.#whitelist.restrict(html)).run()
         if (action === 'focus') this.#editor.commands.focus()
     }
@@ -480,10 +485,8 @@ export class EditorElement extends HTMLElement {
         if (['media', 'find', 'source', 'fullscreen', 'format-painter'].includes(action)) done()
 
         // Media of the button's kind, or the selected one's to replace it.
-        if (action === 'media') this.#request([], null, value ? [value] : MEDIA.includes(editor.state.selection.node?.type.name) ? [editor.state.selection.node.type.name] : null)
+        if (action === 'media') this.#media(value)
         if (action === 'video-apply') this.#video(control.closest('[popover]'))
-        if (action === 'rotate-left') this.#rotate(-90)
-        if (action === 'rotate-right') this.#rotate(90)
         if (action === 'save-image') this.#save([editor.state.selection.node?.attrs.src].filter(Boolean))
         if (action === 'save-images') this.#save(this.#unsavedImages())
         if (action === 'find') this.#find(this.#part('editor-find')?.hidden ?? false)
@@ -499,7 +502,7 @@ export class EditorElement extends HTMLElement {
         if (action === 'replace-all') editor.commands.replaceAll(this.#field('editor-replace-input'))
         if (action === 'find-close') this.#find(false)
         if (action === 'format-painter') this.#pick(! this.#painter)
-        if (action === 'dismiss-upload') editor.commands.removeUpload(value)
+        if (action === 'dismiss-upload') this.#dismiss(value)
         if (action === 'upload-missing') this.#uploadMissing(value)
         if (action === 'image-link-apply') this.#imageLink(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-image-link-input]')?.value ?? '')
         if (action === 'image-link-remove') this.#imageLink(control.closest('[popover]'), '')
@@ -741,44 +744,113 @@ export class EditorElement extends HTMLElement {
         if (this.#editor.state.selection.node?.type.name === 'image') this.#editor.commands.updateAttributes('image', { alt })
     }
 
-    /**
-     * Asks for media to insert, at the selection or where files were dropped: the answer,
-     * any time later, goes where that place has moved to. accept is the kinds asked
-     * for (a button's), or all the format takes. A placeholder asking (a picture that
-     * couldn't be pasted) goes with the answer, staying when nothing was chosen.
-     */
-    #request(files = [], range = null, kinds = null, placeholder = null) {
-        const accept = kinds ?? accepted(this.#format.features)
+    // A media button: files of its kind to insert; without one, of the selected media's
+    // kind, one to replace it.
+    #media(kind) {
+        const { selection } = this.#editor.state
+        const selected = MEDIA.includes(selection.node?.type.name) ? selection.node.type.name : null
 
-        if (! accept.length) return
-
-        const { from, to } = range ?? this.#editor.state.selection
-        const request = { from, to, id: placeholder ?? `upload-${Date.now()}-${this.#requests.size}`, keep: !! placeholder }
-
-        this.#requests.add(request)
-        if (this.#requests.size > 20) this.#requests.delete(this.#requests.values().next().value)
-
-        // Files take a while to upload: a placeholder stands where they will go.
-        if (files.length) this.#editor.commands.addUpload?.(request.id, from)
-
-        this.dispatchEvent(new CustomEvent('editor-media', {
-            bubbles: true,
-            detail: { files: [...files], accept: [...accept], insert: attachments => this.#insert(attachments, request) },
-        }))
+        if (kind) this.#choose([kind])
+        else if (selected) this.#choose([selected], { from: selection.from, to: selection.to })
     }
 
-    #insert(attachments, request) {
+    /**
+     * Picks files to upload: of these kinds, many (to insert at the selection) or one (to
+     * replace the range, or for the placeholder of a picture that couldn't be pasted).
+     * They go where that place has moved to by the time they are chosen.
+     */
+    #choose(kinds, range = null, placeholder = null) {
+        const accept = kinds.filter(kind => accepted(this.#format.features).includes(kind))
+
+        if (! this.dataset.upload || ! accept.length) return
+
+        const { from, to } = range ?? this.#editor.state.selection
+        const place = { from, to }
+        const input = document.createElement('input')
+
+        input.type = 'file'
+        input.multiple = ! range
+        input.accept = accept.includes('file') ? '' : accept.map(kind => `${kind}/*`).join(',')
+
+        this.#tracked.add(place)
+        input.addEventListener('cancel', () => this.#tracked.delete(place))
+        input.addEventListener('change', () => {
+            this.#tracked.delete(place)
+            this.#uploadFiles(input.files, place, 'pick', accept, placeholder)
+        })
+        input.click()
+    }
+
+    /**
+     * Uploads files to go at the range (the selection, or where they were dropped): of
+     * the kinds asked for, or any the format takes (a kind it leaves out as a file). A
+     * placeholder stands there meanwhile; what uploads goes in its place, in order, any
+     * time later, wherever that place has moved to; what wouldn't leaves one saying why
+     * (the picture's placeholder, to try again). Dismissed, nothing goes there.
+     */
+    async #uploadFiles(files, range, source, kinds = null, placeholder = null) {
+        const accept = kinds ?? accepted(this.#format.features)
+
+        files = [...files].filter(file => accept.includes(kindOf({ mime: file.type, url: file.name })) || accept.includes('file'))
+
+        if (! this.dataset.upload || ! files.length || ! this.#editor) return
+
+        const request = { from: range.from, to: range.to, id: placeholder ?? `upload-${++uploaded}` }
+
+        this.#requests.add(request)
+        this.#placeholder(request.id, request.from, 'uploading')
+
+        const results = await Promise.allSettled(files.map(file => this.#send({ file, source })))
+
+        if (! this.#requests.delete(request) || ! this.#editor) return
+
+        const attachments = results.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])
+        const reason = results.find(result => result.status === 'rejected')?.reason?.message || this.#labels.failed
+
+        // What wouldn't upload is said after what did.
+        this.#placeholder(request.id)
+        this.#tracked.add(request)
+        this.#insert(attachments, request)
+        this.#tracked.delete(request)
+        if (attachments.length < files.length) this.#placeholder(request.id, request.to, placeholder ? 'missing' : 'failed', reason)
+    }
+
+    // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
+    // taken off for none.
+    #placeholder(id, position, kind = null, message = null) {
+        this.#editor?.view.dispatch(this.#editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, message }] : [] }))
+    }
+
+    // A placeholder dismissed: what it waited for goes nowhere.
+    #dismiss(id) {
+        for (const request of this.#requests) if (request.id === id) this.#requests.delete(request)
+
+        this.#placeholder(id)
+    }
+
+    // To the uploader. The address of its answer is the app's: its copies are never external.
+    async #send(item) {
+        const attachment = await upload(this.dataset.upload, { ...item, context: this.dataset.uploadContext, token: this.dataset.uploadToken })
+
+        if (! attachment?.url || ! safeUrl(attachment.url)) return null
+
+        const { host } = new URL(attachment.url, document.baseURI)
+
+        if (host !== location.host && ! this.#hosts.includes(host)) {
+            this.#hosts.push(host)
+            this.#unsaved = { doc: null, images: [] }
+        }
+
+        return attachment
+    }
+
+    #insert(attachments, range) {
         const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this.#format.features, this.#format.styles.card)).filter(Boolean)
 
-        if (request) this.#requests.delete(request)
-        if (! this.#editor) return
-        if (request && (nodes.length || ! request.keep)) this.#editor.commands.removeUpload?.(request.id)
-
-        // None: nothing was chosen.
-        if (! nodes.length) return this.#editor.commands.focus()
+        if (! this.#editor || ! nodes.length) return
 
         const size = this.#editor.state.doc.content.size
-        const { from, to } = request ?? this.#editor.state.selection
+        const { from, to } = range ?? this.#editor.state.selection
 
         this.#editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
     }
@@ -787,7 +859,7 @@ export class EditorElement extends HTMLElement {
     #uploadMissing(id) {
         const [placeholder] = uploadsKey.getState(this.#editor.state)?.find(undefined, undefined, spec => spec.id === id) ?? []
 
-        if (placeholder) this.#request([], { from: placeholder.from, to: placeholder.from }, ['image'], id)
+        if (placeholder) this.#choose(['image'], { from: placeholder.from, to: placeholder.from }, id)
     }
 
     // The images the app has no copy of, by address, each once (for the footer, kept
@@ -795,58 +867,70 @@ export class EditorElement extends HTMLElement {
     #unsavedImages() {
         const { doc } = this.#editor.state
 
-        if (this.#unsaved.doc !== doc) this.#unsaved = { doc, images: this.#has('image') ? unsavedImages(doc, this.#hosts) : [] }
+        if (this.#unsaved.doc !== doc) this.#unsaved = { doc, images: this.#has('image') && this.dataset.upload ? unsavedImages(doc, this.#hosts) : [] }
 
         return this.#unsaved.images
     }
 
     /**
-     * Asks the app to save these images, someone having asked to: external ones by
-     * address (editor-external-images { urls, replace }), data: ones as files
-     * (editor-data-images { files, replace }). Until it answers they show as saving; the
-     * attachments it answers with, in their order (null for one it didn't save), take
-     * their place wherever they are by then. One it saved before takes its copy at once.
+     * Saves images the app has no copy of (someone asked, or they came in), each to the
+     * uploader as a file: a data: one as itself, another site's as the browser reads it,
+     * or by its address, for the server to fetch, when its site doesn't let the browser
+     * read it. Until then it shows as saving; its copy takes its place wherever it is by
+     * then. One saved before takes its copy at once; one that wouldn't says why in its
+     * menu, saved again only when asked.
      */
     #save(sources) {
-        if (! this.#editor) return
+        if (! this.#editor || ! this.dataset.upload) return
 
         this.#swapImages(new Map(sources.filter(src => this.#saved.has(src)).map(src => [src, this.#saved.get(src)])))
 
-        const waiting = new Set(this.#saves.flatMap(request => request.sources))
+        for (const src of new Set(sources)) {
+            const kind = unsaved(src, this.#hosts)
 
-        sources = [...new Set(sources)].filter(src => ! waiting.has(src) && ! this.#saved.has(src))
+            if (! kind || this.#saving.has(src) || this.#saved.has(src)) continue
 
-        for (const kind of ['external', 'data']) {
-            const asked = sources.filter(src => unsaved(src, this.#hosts) === kind)
+            this.#saving.add(src)
+            this.#failed.delete(src)
+            this.#saveImage(src, kind)
+                .then(attachment => {
+                    if (! attachment) return this.#failed.set(src, this.#labels.failed)
 
-            if (! asked.length) continue
-
-            const request = { kind, sources: asked }
-            const replace = attachments => this.#replaceImages(attachments, request)
-
-            this.#saves.push(request)
-            this.dispatchEvent(new CustomEvent(`editor-${kind}-images`, {
-                bubbles: true,
-                detail: kind === 'external' ? { urls: [...asked], replace } : { files: asked.map(dataFile), replace },
-            }))
+                    this.#saved.set(src, attachment)
+                    this.#swapImages(new Map([[src, attachment]]))
+                })
+                .catch(error => this.#failed.set(src, error.message || this.#labels.failed))
+                .finally(() => {
+                    this.#saving.delete(src)
+                    this.#editor?.commands.setSaving([...this.#saving])
+                })
         }
 
-        this.#editor.commands.setSaving(this.#saves.flatMap(request => request.sources))
+        this.#editor.commands.setSaving([...this.#saving])
     }
 
-    #replaceImages(attachments, request) {
-        if (! request || ! this.#saves.includes(request) || ! this.#editor) return
+    async #saveImage(src, kind) {
+        if (kind === 'data') return this.#send({ file: dataFile(src), source: 'data' })
 
-        const answers = new Map(request.sources.map((src, index) => [src, attachments?.[index]]).filter(([, attachment]) => attachment?.url && safeUrl(attachment.url)))
+        const file = await imageFile(src).catch(() => null)
 
-        // A turned image saved still turns from its first picture.
-        answers.forEach((attachment, src) => {
-            this.#saved.set(src, attachment)
-            if (this.#turns.has(src)) this.#turns.set(attachment.url, this.#turns.get(src))
-        })
-        this.#saves = this.#saves.filter(waiting => waiting !== request)
-        this.#swapImages(answers)
-        this.#editor.commands.setSaving(this.#saves.flatMap(waiting => waiting.sources))
+        return this.#send({ file, url: src, source: 'external' })
+    }
+
+    /**
+     * Images that came in (pasted, dropped, from the source view, inserted) saved as
+     * config ui.editor.auto_upload says (data-auto-upload): not those the content had
+     * when it loaded or the server set it, one put back (undone) after it was saved, or
+     * one that wouldn't save.
+     */
+    #autoSave() {
+        const auto = (this.dataset.autoUpload ?? '').split(' ').filter(Boolean)
+
+        if (! this.#editor || ! auto.length) return
+
+        const sources = this.#unsavedImages().filter(src => auto.includes(unsaved(src, this.#hosts)) && ! this.#loaded.has(src) && ! this.#saved.has(src) && ! this.#failed.has(src) && ! this.#saving.has(src))
+
+        if (sources.length) this.#save(sources)
     }
 
     // The images at these addresses take the app's copies, a step of its own to undo.
@@ -862,61 +946,6 @@ export class EditorElement extends HTMLElement {
         })
 
         if (tr.docChanged) this.#editor.view.dispatch(closeHistory(tr))
-    }
-
-    /**
-     * Turns the selected image by a quarter, as a new picture (data:, to save as pasted
-     * ones are). Turned again, it is turned from the first picture, so it loses nothing;
-     * turned back, it is that picture again. Its width becomes its height, so it stands
-     * as large; one that can't be read (another site's, which doesn't share it) says so.
-     */
-    async #rotate(degrees) {
-        const { selection } = this.#editor.state
-        const node = selection.node
-        const position = { from: selection.from, to: selection.from }
-
-        if (node?.type.name !== 'image') return
-
-        const turn = this.#turns.get(node.attrs.src) ?? { src: node.attrs.src, width: node.attrs.width, height: node.attrs.height, rotation: 0 }
-        const rotation = (turn.rotation + degrees + 360) % 360
-        const box = this.#editor.view.nodeDOM(selection.from)?.querySelector?.('img')?.getBoundingClientRect()
-        let picture = { src: turn.src }
-
-        this.#tracked.add(position)
-
-        try {
-            if (rotation) picture = await rotateImage(turn.src, rotation)
-        } catch {
-            this.#all('[data-editor-image-error]').forEach(error => (error.hidden = false))
-
-            return
-        } finally {
-            this.#tracked.delete(position)
-        }
-
-        const current = this.#editor?.state.doc.nodeAt(position.from)
-
-        // Gone, or changed meanwhile: it is no longer the one to turn.
-        if (current?.type.name !== 'image' || current.attrs.src !== node.attrs.src) return
-
-        if (rotation) this.#turns.set(picture.src, { ...turn, rotation })
-
-        const [width, height] = rotation % 180 ? [turn.height, turn.width] : [turn.width, turn.height]
-        const style = box?.width && box.height ? this.#turned(current.attrs.style, box.height / box.width) : current.attrs.style
-
-        this.#editor.chain().setNodeSelection(position.from).updateAttributes('image', { src: picture.src, width, height, style }).run()
-    }
-
-    // A style's width for the image turned, height over width its shape before: a width
-    // in px is its height now, a percentage scaled the same, up to the full width.
-    #turned(style, shape) {
-        const width = computed(style, 'width')
-
-        if (! width) return style
-        if (width.endsWith('%')) return restyle(style, { width: `${Math.min(100, Math.round(parseFloat(width) * shape))}%` })
-        if (width.endsWith('px')) return restyle(style, { width: `${Math.round(parseFloat(width) * shape)}px` })
-
-        return style
     }
 
     // Sets the selected image's link, or takes it off for none.
@@ -978,10 +1007,10 @@ export class EditorElement extends HTMLElement {
         const text = data.getData('text/plain')
         const html = data.getData('text/html')
 
-        // Files alone (a screenshot, files copied in a file manager): the app's to upload.
+        // Files alone (a screenshot, files copied in a file manager): uploaded.
         if (data.files.length && ! text && ! html) {
             event.preventDefault()
-            this.#request(data.files)
+            this.#uploadFiles(data.files, { from: view.state.selection.from, to: view.state.selection.to }, 'paste')
 
             return true
         }
@@ -1026,8 +1055,9 @@ export class EditorElement extends HTMLElement {
 
         const position = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos ?? view.state.selection.from
 
+        // Taken without an uploader too, so the browser doesn't open the file instead.
         event.preventDefault()
-        this.#request(files, { from: position, to: position })
+        this.#uploadFiles(files, { from: position, to: position }, 'drop')
 
         return true
     }
@@ -1242,7 +1272,7 @@ export class EditorElement extends HTMLElement {
             for (const icon of trigger.querySelectorAll('[data-editor-icon]')) icon.toggleAttribute('hidden', icon.dataset.editorIcon !== (checked?.dataset.editorValue ?? ''))
         }
 
-        for (const control of this.#all('[data-editor-opens], [data-editor-action="media"], [data-editor-action^="rotate-"]')) {
+        for (const control of this.#all('[data-editor-opens], [data-editor-action="media"]')) {
             control.disabled = ! editable || (control.dataset.editorOpens === 'link' && editor.state.selection.empty && ! editor.isActive('link'))
             if (control.dataset.editorOpens === 'link') control.setAttribute('aria-pressed', String(editor.isActive('link')))
         }
@@ -1268,10 +1298,17 @@ export class EditorElement extends HTMLElement {
 
         for (const part of this.#all('[data-editor-for]')) part.hidden = ! part.dataset.editorFor.split(' ').includes(type)
 
-        // An image the app has no copy of can be saved to it.
+        // An image the app has no copy of can be saved to it; one that wouldn't says why.
         for (const save of this.#all('[data-editor-action="save-image"]')) {
             save.hidden = type !== 'image' || ! unsaved(node.attrs.src, this.#hosts)
             save.disabled = ! editor.isEditable || !! savingKey.getState(editor.state)?.pending.has(node?.attrs.src)
+        }
+
+        for (const error of this.#all('[data-editor-image-error]')) {
+            const reason = type === 'image' ? this.#failed.get(node.attrs.src) ?? '' : ''
+
+            if (error.textContent !== reason) error.textContent = reason
+            error.hidden = ! reason
         }
 
         for (const link of this.#all('[data-editor-link-href]')) {
@@ -1282,7 +1319,6 @@ export class EditorElement extends HTMLElement {
         if (node === this.#selected) return
 
         this.#selected = node
-        this.#all('[data-editor-image-error]').forEach(error => (error.hidden = true))
 
         const [alt] = this.#all('[data-editor-alt-input]')
         const math = this.#all('[data-editor-math-form]').find(form => ! form.closest('[popover]'))

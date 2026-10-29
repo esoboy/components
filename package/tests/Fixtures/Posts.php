@@ -38,7 +38,7 @@ class Posts extends Component
         $this->seen = $this->body;
     }
 
-    // As an app's attachment picker would answer editor-media.
+    // As an app's own attachment library would insert.
     public function attach(): void
     {
         Ui::editor('body')->insert([['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']]);
@@ -47,13 +47,6 @@ class Posts extends Component
     public function template(): void
     {
         Ui::editor('body')->insertContent('<p>Hello</p>');
-    }
-
-    // As an app would answer editor-external-images and editor-data-images.
-    public function saveImages(): void
-    {
-        Ui::editor('body')->replaceImages([['url' => '/copied.png'], null]);
-        Ui::editor('body')->replaceDataImages([['url' => '/uploaded.png']]);
     }
 
     public function render(): string

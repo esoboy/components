@@ -19,6 +19,8 @@ beforeAll(async () => {
 
 afterEach(() => {
     document.body.innerHTML = ''
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
 })
 
 // What the view writes into data-format (RichTextFormat::client()): the full format's,
@@ -35,7 +37,7 @@ const TOGGLES = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript',
 function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.features, attributes = '', whitelist = null } = {}) {
     document.body.innerHTML = `
         <form>
-            <eso-editor id="body" data-slot="editor" data-labels='{"keyboard":"Alt+F10"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
+            <eso-editor id="body" data-slot="editor" data-labels='{"keyboard":"Alt+F10","failed":"Upload failed"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
                 <div data-slot="editor-toolbar" role="toolbar">
                     ${COMMANDS.map(command => `<button type="button" data-editor-command="${command}" aria-label="${command}" ${TOGGLES.includes(command) ? 'aria-pressed="false"' : ''}></button>`).join('')}
                     <button type="button" data-editor-action="media" aria-label="Media"></button>
@@ -79,7 +81,8 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                 <textarea data-slot="editor-source" hidden></textarea>
                 <div data-slot="editor-footer"><span data-editor-unsaved data-editor-label=":count unsaved" hidden><span data-editor-unsaved-label></span><button type="button" data-editor-action="save-images"></button></span><span data-editor-count></span></div>
                 <template data-template="uploading"><span data-slot="editor-uploading"><span>Uploading…</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
-                <template data-template="missing-image"><span data-slot="editor-uploading" data-editor-missing><button type="button" data-editor-action="upload-missing"></button><button type="button" data-editor-action="dismiss-upload"></button></span></template>
+                <template data-template="upload-failed"><span data-slot="editor-uploading" data-editor-failed role="alert"><span data-editor-upload-message>Upload failed</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
+                <template data-template="missing-image"><span data-slot="editor-uploading" data-editor-missing><span data-editor-upload-message hidden></span><button type="button" data-editor-action="upload-missing"></button><button type="button" data-editor-action="dismiss-upload"></button></span></template>
                 <div id="tip" popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label></span><kbd data-editor-tip-keys hidden></kbd></div>
             </eso-editor>
         </form>`
@@ -127,6 +130,63 @@ const select = (element, text) => {
 }
 
 // Pastes clipboard data as the browser would.
+// The view's attributes with an uploader (config ui.editor.uploader).
+const UPLOADS = 'data-upload="/upload" data-upload-token="token" data-upload-context="sealed"'
+
+/**
+ * The uploader's route, answered by the test: each post waits for answer(attachment) or
+ * answer(null, status, errors). Images' own addresses answer as their sites would: those
+ * in readable as pictures, the rest not to pages (CORS).
+ */
+function uploader({ readable = [] } = {}) {
+    const posts = []
+
+    vi.stubGlobal('fetch', vi.fn((url, options = {}) => {
+        if (options.method !== 'POST') return readable.includes(url) ? Promise.resolve(new Response('PNG', { headers: { 'Content-Type': 'image/png' } })) : Promise.reject(new TypeError('Failed to fetch'))
+
+        return new Promise(resolve => posts.push({
+            url,
+            headers: options.headers,
+            form: Object.fromEntries(options.body.entries()),
+            answer: (attachment, status = 200, errors = {}) => resolve(new Response(JSON.stringify(status === 200 ? { attachment } : { message: 'The given data was invalid.', errors }), { status, headers: { 'Content-Type': 'application/json' } })),
+        }))
+    }))
+
+    return posts
+}
+
+// The file inputs media buttons open, to choose files in with choose().
+function chooser() {
+    const inputs = []
+
+    vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function () {
+        if (this.type === 'file') inputs.push(this)
+    })
+
+    return inputs
+}
+
+function choose(input, files) {
+    Object.defineProperty(input, 'files', { value: files })
+    input.dispatchEvent(new Event('change'))
+}
+
+// Uploads and their answers take a few turns of the event loop.
+const settle = async () => {
+    for (let turn = 0; turn < 6; turn++) await new Promise(resolve => setTimeout(resolve, 0))
+}
+
+// A media button of a kind, as the toolbar has them.
+function mediaButton(element, kind) {
+    const button = Object.assign(document.createElement('button'), { type: 'button' })
+
+    button.dataset.editorAction = 'media'
+    button.dataset.editorValue = kind
+    element.querySelector('[data-slot="editor-toolbar"]').append(button)
+
+    return button
+}
+
 function paste(element, data) {
     const clipboardData = { getData: type => data[type] ?? '', files: data.files ?? [], types: Object.keys(data) }
     const event = new Event('paste', { bubbles: true, cancelable: true })
@@ -438,38 +498,53 @@ describe('blocks', () => {
 })
 
 describe('media', () => {
-    it('asks for media with editor-media, and inserts the answer where it was asked', () => {
-        const [element] = mount('<p>Hello world</p>')
-        const requests = []
+    it('uploads what a media button picks, three at a time, and inserts the answers where the selection was', async () => {
+        const [element] = mount('<p>Hello world</p>', { attributes: UPLOADS })
+        const posts = uploader()
+        const inputs = chooser()
 
-        element.addEventListener('editor-media', event => requests.push(event.detail))
         select(element, 'Hello')
-        control(element, '[data-editor-action="media"]').click()
+        mediaButton(element, 'file').click()
         element.editor.chain().setTextSelection(12).insertContent('!').run()
 
-        expect(requests).toHaveLength(1)
-        expect(requests[0].files).toEqual([])
-        expect(requests[0].accept).toEqual(['image', 'audio', 'video', 'file'])
+        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['', true]])
 
-        requests[0].insert([
-            { url: '/a.png', name: 'a.png', mime: 'image/png', alt: 'A', width: 10, height: 20 },
-            { url: '/b.mp3', name: 'b.mp3' },
-            { url: '/c.zip', name: 'c.zip', size: 1536 },
-            { url: 'javascript:alert(1)', name: 'x.png' },
+        choose(inputs[0], ['a.png', 'b.mp3', 'c.zip', 'x.png'].map(name => new File(['x'], name)))
+        await settle()
+
+        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(1)
+        expect(posts.map(post => [post.url, post.form.source, post.form.file.name, post.form.context, post.headers['X-CSRF-TOKEN']])).toEqual([
+            ['/upload', 'pick', 'a.png', 'sealed', 'token'],
+            ['/upload', 'pick', 'b.mp3', 'sealed', 'token'],
+            ['/upload', 'pick', 'c.zip', 'sealed', 'token'],
         ])
+
+        posts[0].answer({ url: '/a.png', name: 'a.png', mime: 'image/png', alt: 'A', width: 10, height: 20 })
+        await settle()
+
+        expect(posts).toHaveLength(4)
+
+        posts[1].answer({ url: '/b.mp3', name: 'b.mp3' })
+        posts[2].answer({ url: '/c.zip', name: 'c.zip', size: 1536 })
+        posts[3].answer({ url: 'javascript:alert(1)', name: 'x.png' })
+        await settle()
 
         expect(element.value).toBe('<img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/a.png" alt="A" width="10" height="20">'
             + '<audio style="display: block; width: 100%;" src="/b.mp3" title="b.mp3" controls="controls" preload="metadata"></audio>'
             + '<a href="/c.zip" download="c.zip" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">c.zip</span><span style="flex-shrink: 0; white-space: nowrap; opacity: 0.6;">1.5 KB</span></a>'
             + '<p> world!</p>')
+
+        // The one the uploader wouldn't take: a placeholder says so, to dismiss.
+        expect(element.querySelector('[data-editor-failed]').textContent).toBe('Upload failed')
+
+        element.querySelector('[data-editor-failed] [data-editor-action="dismiss-upload"]').click()
+        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
     })
 
-    it('inserts what the server answers, and nothing for none', () => {
+    it('inserts what the server gives, and HTML', () => {
         const [element] = mount('<p>Hello</p>', { features: ['file'] })
 
-        element.addEventListener('editor-media', () => {})
         element.editor.commands.setTextSelection(6)
-        control(element, '[data-editor-action="media"]').click()
         window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'insert', attachments: [], html: null } }))
 
         expect(element.value).toBe('<p>Hello</p>')
@@ -484,16 +559,18 @@ describe('media', () => {
         expect(element.value).toContain('<p>Hi</p>')
     })
 
-    it('hands pasted files to the app, and turns pasted links into what they are', () => {
-        const [element] = mount('<p>Hello</p>')
-        const requests = []
-        const file = new File(['x'], 'shot.png', { type: 'image/png' })
+    it('uploads pasted files, and turns pasted links into what they are', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
+        const posts = uploader()
 
-        element.addEventListener('editor-media', event => requests.push(event.detail))
         element.editor.commands.setTextSelection(6)
-        paste(element, { files: [file] })
+        paste(element, { files: [new File(['x'], 'shot.png', { type: 'image/png' })] })
+        await settle()
 
-        expect(requests.map(request => request.files)).toEqual([[file]])
+        expect(posts.map(post => [post.form.source, post.form.file.name])).toEqual([['paste', 'shot.png']])
+
+        posts[0].answer({ url: '/shot.png', mime: 'image/png' })
+        await settle()
 
         paste(element, { 'text/plain': '## Heading\n\n- [x] Done\n\n**bold**' })
         paste(element, { 'text/plain': 'https://youtu.be/dQw4w9WgXcQ' })
@@ -502,49 +579,63 @@ describe('media', () => {
         expect(element.value).toContain('<h2>Heading</h2><ul style="list-style-type: none; padding-left: 0px;"><li style="display: flex; align-items: baseline; gap: 0.5em;"><input type="checkbox" disabled="disabled" checked="checked"><div><p>Done</p></div></li></ul><p><strong>bold</strong></p>')
     })
 
-    it('shows where pasted files will go until the app answers, or they are dismissed', () => {
-        const [element] = mount('<p>Hello</p>')
-        const requests = []
+    it('shows where files will go until they are there, why one would not upload, and nothing once dismissed', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
+        const posts = uploader()
+        const placeholders = () => element.querySelectorAll('[data-slot="editor-uploading"]')
 
-        element.addEventListener('editor-media', event => requests.push(event.detail))
         element.editor.commands.setTextSelection(6)
         paste(element, { files: [new File(['x'], 'a.png', { type: 'image/png' })] })
         paste(element, { files: [new File(['y'], 'b.png', { type: 'image/png' })] })
+        paste(element, { files: [new File(['z'], 'c.png', { type: 'image/png' })] })
+        await settle()
 
-        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(2)
+        expect(placeholders()).toHaveLength(3)
         expect(element.value).toBe('<p>Hello</p>')
 
-        requests[0].insert([{ url: '/a.png', mime: 'image/png' }])
+        posts[0].answer({ url: '/a.png', mime: 'image/png' })
+        posts[1].answer(null, 422, { file: ['Files up to 20 MB only.'] })
+        await settle()
 
-        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(1)
         expect(element.value).toContain('src="/a.png"')
+        expect(element.querySelector('[data-editor-failed]').textContent).toBe('Files up to 20 MB only.')
 
-        element.querySelector('[data-slot="editor-uploading"] [data-editor-action="dismiss-upload"]').click()
+        element.querySelector('[data-slot="editor-uploading"]:not([data-editor-failed]) [data-editor-action="dismiss-upload"]').click()
+        posts[2].answer({ url: '/c.png', mime: 'image/png' })
+        await settle()
 
-        expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
+        expect(element.value).not.toContain('/c.png')
+        expect(placeholders()).toHaveLength(1)
     })
 
-    it('asks for media of the kind its button says, or of the selected one to replace it', () => {
-        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video>')
-        const requests = []
-        const image = Object.assign(document.createElement('button'), { type: 'button' })
+    it('picks media of the kind its button says, or of the selected one to replace it; none without an uploader', async () => {
+        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video>', { attributes: UPLOADS })
+        const inputs = chooser()
 
-        image.dataset.editorAction = 'media'
-        image.dataset.editorValue = 'image'
-        element.querySelector('[data-slot="editor-toolbar"]').append(image)
-        element.addEventListener('editor-media', event => requests.push(event.detail.accept))
-        image.click()
+        mediaButton(element, 'image').click()
         element.editor.commands.setNodeSelection(7)
         control(element, '[data-editor-action="media"]').click()
 
-        expect(requests).toEqual([['image'], ['video']])
+        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['image/*', true], ['video/*', false]])
+
+        const [plain] = mount('<p>Hello</p>')
+        const posts = uploader()
+
+        mediaButton(plain, 'image').click()
+        plain.editor.commands.setTextSelection(6)
+        paste(plain, { files: [new File(['x'], 'a.png', { type: 'image/png' })] })
+        await settle()
+
+        expect(inputs).toHaveLength(2)
+        expect(posts).toEqual([])
+        expect(plain.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
     })
 
-    it('saves images it has no copy of when asked, one or all, two kinds two ways', () => {
-        const [element] = mount('<p>Hello</p>', { attributes: 'data-image-hosts="cdn.app.test"' })
-        const external = []
-        const data = []
+    it('saves images it has no copy of when asked, one or all, each a file: as read, or for the server to fetch', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: `${UPLOADS} data-image-hosts="cdn.app.test *.img.test"` })
+        const posts = uploader({ readable: ['https://other.test/a.png'] })
         const save = Object.assign(document.createElement('button'), { type: 'button' })
+        const error = Object.assign(document.createElement('p'), { hidden: true })
         const notice = element.querySelector('[data-editor-unsaved]')
         const images = () => element.value.match(/src="[^"]+"/g)
         const at = src => {
@@ -558,46 +649,60 @@ describe('media', () => {
         }
 
         save.dataset.editorAction = 'save-image'
-        element.querySelector('[data-slot="editor-toolbar"]').append(save)
-        element.addEventListener('editor-external-images', event => external.push(event.detail))
-        element.addEventListener('editor-data-images', event => data.push(event.detail))
+        error.toggleAttribute('data-editor-image-error', true)
+        element.querySelector('[data-slot="editor-toolbar"]').append(save, error)
         element.editor.commands.setTextSelection(6)
-        paste(element, { 'text/html': '<p><img src="https://other.test/a.png"><img src="https://other.test/a.png"><img src="https://cdn.app.test/b.png"><img src="/c.png"><img src="https://other.test/d.png"><img src="data:image/png;base64,iVBORw0KGgo="></p>' })
+        paste(element, { 'text/html': '<p><img src="https://other.test/a.png"><img src="https://other.test/a.png"><img src="https://cdn.app.test/b.png"><img src="/c.png"><img src="https://other.test/d.png"><img src="data:image/png;base64,iVBORw0KGgo="><img src="https://x.img.test/f.png"></p>' })
+        await settle()
 
         // Nothing goes until someone asks: the footer says how many wait.
-        expect(external).toEqual([])
+        expect(posts).toEqual([])
         expect(notice.hidden).toBe(false)
         expect(notice.textContent).toBe('3 unsaved')
 
         element.editor.commands.setNodeSelection(at('https://cdn.app.test/b.png'))
         expect(save.hidden).toBe(true)
 
+        element.editor.commands.setNodeSelection(at('https://x.img.test/f.png'))
+        expect(save.hidden).toBe(true)
+
         element.editor.commands.setNodeSelection(at('https://other.test/a.png'))
         expect(save.hidden).toBe(false)
         save.click()
+        await settle()
 
-        expect(external.map(request => request.urls)).toEqual([['https://other.test/a.png']])
-        expect(data).toEqual([])
+        // Its site shares it: the browser reads it, and sends it as a file.
+        expect(posts.map(post => [post.form.source, post.form.url, post.form.file?.name])).toEqual([['external', 'https://other.test/a.png', 'a.png']])
         expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(2)
 
-        external[0].replace([{ url: '/uploads/a.png', name: 'a.png', mime: 'image/png' }])
+        posts[0].answer({ url: 'https://files.app.test/a.png', name: 'a.png', mime: 'image/png' })
+        await settle()
 
-        expect(images()).toEqual(['src="/uploads/a.png"', 'src="/uploads/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"', 'src="data:image/png;base64,iVBORw0KGgo="'])
+        expect(images()).toEqual(['src="https://files.app.test/a.png"', 'src="https://files.app.test/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"', 'src="data:image/png;base64,iVBORw0KGgo="', 'src="https://x.img.test/f.png"'])
         expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(0)
         expect(notice.textContent).toBe('2 unsaved')
 
-        // All at once: external ones by address, data ones as files.
+        // All at once: a data one as a file; one its site doesn't share by its address,
+        // for the server to fetch.
         control(element, '[data-editor-action="save-images"]').click()
+        await settle()
 
-        expect(external.map(request => request.urls)).toEqual([['https://other.test/a.png'], ['https://other.test/d.png']])
-        expect(data[0].files.map(file => [file.name, file.type, file.size])).toEqual([['image-1.png', 'image/png', 8]])
+        expect(posts.slice(1).map(post => [post.form.source, post.form.url ?? null, post.form.file?.name ?? null, post.form.file?.type ?? null])).toEqual([['data', null, 'image-1.png', 'image/png'], ['external', 'https://other.test/d.png', null, null]])
         expect(control(element, '[data-editor-action="save-images"]').disabled).toBe(true)
 
-        window.dispatchEvent(new CustomEvent('ui-editor', { detail: { id: 'body', action: 'replace-data-images', attachments: [{ url: '/uploads/e.png' }], html: null } }))
-        external[1].replace([null])
+        posts[1].answer({ url: '/uploads/e.png' })
+        posts[2].answer(null, 422, { file: ['This image couldn’t be read.'] })
+        await settle()
 
-        expect(images().slice(4)).toEqual(['src="https://other.test/d.png"', 'src="/uploads/e.png"'])
+        expect(images().slice(4, 6)).toEqual(['src="https://other.test/d.png"', 'src="/uploads/e.png"'])
         expect(notice.textContent).toBe('1 unsaved')
+
+        // The one that wouldn't save says why, in its menu.
+        element.editor.commands.setNodeSelection(at('https://other.test/d.png'))
+        expect([error.hidden, error.textContent]).toEqual([false, 'This image couldn’t be read.'])
+
+        element.editor.commands.setNodeSelection(at('https://cdn.app.test/b.png'))
+        expect(error.hidden).toBe(true)
 
         // Undone, it is as it was; saved again, it takes the copy it had at once.
         element.editor.commands.undo()
@@ -605,9 +710,35 @@ describe('media', () => {
 
         element.editor.commands.setNodeSelection(at('data:image/png;base64,iVBORw0KGgo='))
         save.click()
+        await settle()
 
-        expect(data).toHaveLength(1)
+        expect(posts).toHaveLength(3)
         expect(images()[5]).toBe('src="/uploads/e.png"')
+    })
+
+    it('saves images as they come in, as auto_upload says: not those it loaded with, one undone, or one that failed', async () => {
+        const [element] = mount('<p><img src="https://other.test/old.png"></p>', { attributes: `${UPLOADS} data-auto-upload="external"` })
+        const posts = uploader()
+        const images = () => element.value.match(/src="[^"]+"/g)
+
+        element.editor.commands.setTextSelection(element.editor.state.doc.content.size - 1)
+        paste(element, { 'text/html': '<p><img src="https://other.test/new.png"><img src="https://other.test/bad.png"><img src="data:image/png;base64,iVBORw0KGgo="></p>' })
+        await settle()
+
+        expect(posts.map(post => post.form.url)).toEqual(['https://other.test/new.png', 'https://other.test/bad.png'])
+
+        posts[0].answer({ url: '/uploads/new.png' })
+        posts[1].answer(null, 500)
+        await settle()
+
+        expect(images()).toEqual(['src="https://other.test/old.png"', 'src="/uploads/new.png"', 'src="https://other.test/bad.png"', 'src="data:image/png;base64,iVBORw0KGgo="'])
+
+        element.editor.commands.undo()
+        element.editor.chain().setTextSelection(1).insertContent('!').run()
+        await settle()
+
+        expect(images()[1]).toBe('src="https://other.test/new.png"')
+        expect(posts).toHaveLength(2)
     })
 
     it('puts back the pictures of what Word copied, from its RTF', async () => {
@@ -628,11 +759,11 @@ describe('media', () => {
         expect(element.value).toContain(`<img src="data:image/jpeg;base64,${base64(jpeg)}">`)
     })
 
-    it('leaves a placeholder, never content, where a pasted picture could not be read, to upload it there', () => {
-        const [element] = mount('<p>Hello</p>')
-        const requests = []
+    it('leaves a placeholder, never content, where a pasted picture could not be read, to upload it there', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
+        const posts = uploader()
+        const inputs = chooser()
 
-        element.addEventListener('editor-media', event => requests.push(event.detail))
         element.editor.commands.setTextSelection(6)
         paste(element, { 'text/html': '<p>A<img src="file:///C:/x/chart.png">B</p><p><img src="file:///C:/x/two.png"></p>' })
 
@@ -642,15 +773,28 @@ describe('media', () => {
         expect(element.value).not.toContain('\uFFFC')
         expect(placeholders()).toHaveLength(2)
 
-        // Uploaded where it stands; nothing chosen, it stays.
+        // Uploaded where it stands, one picture; while it uploads it says so.
         placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
-        expect(requests[0].accept).toEqual(['image'])
+        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['image/*', false]])
 
-        requests[0].insert([])
+        choose(inputs[0], [new File(['x'], 'chart.png', { type: 'image/png' })])
+        await settle()
+
+        expect(placeholders()).toHaveLength(1)
+        expect(posts.map(post => post.form.source)).toEqual(['pick'])
+
+        // Failed, it stands there again, saying why.
+        posts[0].answer(null, 422, { file: ['Not a picture.'] })
+        await settle()
+
         expect(placeholders()).toHaveLength(2)
+        expect(placeholders()[0].querySelector('[data-editor-upload-message]').textContent).toBe('Not a picture.')
 
         placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
-        requests[1].insert([{ url: '/chart.png', mime: 'image/png' }])
+        choose(inputs[1], [new File(['x'], 'chart.png', { type: 'image/png' })])
+        await settle()
+        posts[1].answer({ url: '/chart.png', mime: 'image/png' })
+        await settle()
 
         expect(placeholders()).toHaveLength(1)
         expect(element.value).toContain('<p>HelloA</p><img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/chart.png" alt=""><p>B</p>')

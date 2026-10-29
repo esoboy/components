@@ -1,8 +1,9 @@
 /*
- * Placeholders, never part of the content: while the app uploads what was dropped or
- * pasted, one (the view's uploading template) stands where it will go, until the answer
- * comes or it is dismissed; where a pasted picture couldn't be read (images.js MISSING),
- * one (the missing template) says so, to upload it there or dismiss.
+ * Placeholders, never part of the content: while what was picked, dropped or pasted
+ * uploads, one (the view's uploading template) stands where it will go, until it is
+ * there or dismissed; where it wouldn't upload, one (failed) says why, to dismiss;
+ * where a pasted picture couldn't be read (images.js MISSING), one (missing) says so,
+ * to upload it there (saying why, if that fails) or dismiss.
  */
 
 import { Extension } from '@tiptap/core'
@@ -19,8 +20,8 @@ export function uploads(templates) {
         name: 'uploads',
 
         addCommands: () => ({
-            addUpload: (id, position, kind = 'uploading') => ({ tr, dispatch }) => {
-                if (dispatch) tr.setMeta(uploadsKey, { add: [{ id, position, kind }] })
+            addUpload: (id, position, kind = 'uploading', message = null) => ({ tr, dispatch }) => {
+                if (dispatch) tr.setMeta(uploadsKey, { add: [{ id, position, kind, message }] })
 
                 return true
             },
@@ -41,20 +42,25 @@ export function uploads(templates) {
 
                         set = set.map(tr.mapping, tr.doc)
 
-                        for (const { id, position, kind } of meta?.add ?? []) {
+                        if (meta?.remove) set = set.remove(set.find(undefined, undefined, spec => spec.id === meta.remove))
+
+                        for (const { id, position, kind, message } of meta?.add ?? []) {
                             const template = templates[kind]
                             const widget = () => {
                                 const element = template.content.firstElementChild.cloneNode(true)
+                                const text = element.querySelector('[data-editor-upload-message]')
 
                                 element.querySelectorAll('[data-editor-action]').forEach(control => control.setAttribute('data-editor-value', id))
+                                if (text && message) {
+                                    text.textContent = message
+                                    text.hidden = false
+                                }
 
                                 return element
                             }
 
-                            if (template) set = set.add(tr.doc, [Decoration.widget(Math.min(position, tr.doc.content.size), widget, { id, kind, side: -1 })])
+                            if (template) set = set.add(tr.doc, [Decoration.widget(Math.min(position, tr.doc.content.size), widget, { id, kind, message, side: -1 })])
                         }
-
-                        if (meta?.remove) set = set.remove(set.find(undefined, undefined, spec => spec.id === meta.remove))
 
                         return set
                     },

@@ -64,7 +64,7 @@ final class UiManager
     }
 
     /**
-     * Inserts into the Editor with that id: the attachments it asked for, or HTML.
+     * Inserts into the Editor with that id: attachments, or HTML.
      */
     public function editor(string $id): EditorHandle
     {
@@ -91,43 +91,6 @@ final class UiManager
     public function plainText(?string $html, string|array $format = 'full'): string
     {
         return RichText::plainText($html, $format);
-    }
-
-    /**
-     * Names a format of features and presets, for format="…", #[Sanitize('…')] and
-     * sanitize(), with the whitelist's tags it keeps besides theirs (['section']).
-     * Register it in a service provider's boot().
-     *
-     * @param  list<string>  $features
-     * @param  list<string>  $tags
-     */
-    public function editorFormat(string $name, array $features, array $tags = []): void
-    {
-        RichText::format($name, $features, $tags);
-    }
-
-    /**
-     * Adds to the whitelist every format keeps its tags by: tags, their attributes and
-     * those's values ('*' for all; for style, CSS properties), as ['img' =>
-     * ['data-ratio' => '*'], 'span' => ['style' => ['transform']], 'section' => '*'].
-     * Register it in a service provider's boot().
-     *
-     * @param  array<string, '*'|array<string, '*'|list<string>>>  $rules
-     */
-    public function editorWhitelist(array $rules): void
-    {
-        RichText::whitelist($rules);
-    }
-
-    /**
-     * Lets embeds play from another video platform: its embed code, when its player is
-     * on the host of $src; and its share links, when they match the pattern (a
-     * JavaScript regular expression), as $src with $1 their first capture. $still is
-     * the query that keeps its player from playing by itself.
-     */
-    public function embedPlatform(string $name, string $src, ?string $pattern = null, string $still = 'autoplay=0'): void
-    {
-        RichText::platform($name, $src, $pattern, $still);
     }
 
     /**

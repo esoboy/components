@@ -7,8 +7,8 @@ use InvalidArgumentException;
 /**
  * Rich text formats: what an Editor lets people write, and what sanitize() keeps.
  *
- * A format is a preset (text, basic, full), a name registered with format(), or a list
- * of features and presets. It decides all an Editor does: what can be written, and the
+ * A format is a preset (text, basic, full), a name in config ui.editor.formats, or a
+ * list of features and presets. It decides all an Editor does: what can be written, and the
  * tools it offers to write it. What can be written is a set of tags, each kept as the
  * one whitelist says (RichTextWhitelist, as UEditor's): its attributes and their values,
  * the CSS properties of its style. The rest goes: other tags are unwrapped (their text
@@ -133,68 +133,57 @@ final class RichText
         'iqiyi' => ['https://open.iqiyi.com/', null, 'autoplay=false'],
     ];
 
-    /** @var array<string, array{list<string>, list<string>}> */
-    private static array $formats = [];
-
-    /** @var array<string, array{string, string|null, string}> */
-    private static array $platforms = [];
-
     /** @var array<string, RichTextFormat> */
     private static array $resolved = [];
 
     /**
-     * Names a format, for format="…" and #[Sanitize('…')]: features and presets, and the
-     * whitelist's tags it keeps besides theirs (['section', 'small']), as the whitelist
-     * keeps them.
+     * The embed platforms, the built-in ones and config ui.editor.embed_platforms': each
+     * [src, pattern, still].
      *
-     * @param  list<string>  $features  features and presets
-     * @param  list<string>  $tags
-     */
-    public static function format(string $name, array $features, array $tags = []): void
-    {
-        if (isset(self::PRESETS[$name])) {
-            throw new InvalidArgumentException("[{$name}] is a preset; name the format something else.");
-        }
-
-        foreach ($tags as $tag) {
-            if (! isset(RichTextWhitelist::rules()[$tag])) {
-                throw new InvalidArgumentException("[{$tag}] is not in the whitelist; add it with Ui::editorWhitelist() first.");
-            }
-        }
-
-        self::$formats[$name] = [$features, $tags];
-        self::$resolved = [];
-    }
-
-    /**
-     * Adds tags, attributes and values to the whitelist, for every format that keeps
-     * the tag ('*' for all): ['img' => ['data-ratio' => '*'], 'section' => '*'].
-     *
-     * @param  array<string, '*'|array<string, '*'|list<string>>>  $rules
-     */
-    public static function whitelist(array $rules): void
-    {
-        RichTextWhitelist::add($rules);
-        self::$resolved = [];
-    }
-
-    /**
-     * Lets embeds play from another platform: its embed code plays when its player is on
-     * the host of $src, which sanitize() then lets through; share links matching the
-     * pattern, if any, become $src. $still keeps its player from playing by itself.
-     */
-    public static function platform(string $name, string $src, ?string $pattern = null, string $still = 'autoplay=0'): void
-    {
-        self::$platforms[$name] = [$src, $pattern, $still];
-        self::$resolved = [];
-    }
-
-    /**
      * @return array<string, array{string, string|null, string}>
      */
     public static function platforms(): array
     {
-        return [...self::PLATFORMS, ...self::$platforms];
+        $platforms = self::PLATFORMS;
+
+        foreach ((array) config('ui.editor.embed_platforms', []) as $name => $platform) {
+            if (! is_array($platform) || ! is_string($platform['src'] ?? null)) {
+                throw new InvalidArgumentException("The embed platform [{$name}] needs its player's address as src.");
+            }
+
+            $platforms[$name] = [$platform['src'], $platform['pattern'] ?? null, $platform['still'] ?? 'autoplay=0'];
+        }
+
+        return $platforms;
+    }
+
+    /**
+     * The named formats, config ui.editor.formats': each its features and presets, and
+     * the whitelist's tags it keeps besides theirs.
+     *
+     * @return array<string, array{list<string>, list<string>}>
+     */
+    public static function formats(): array
+    {
+        $formats = [];
+
+        foreach ((array) config('ui.editor.formats', []) as $name => $format) {
+            if (isset(self::PRESETS[$name])) {
+                throw new InvalidArgumentException("[{$name}] is a preset; name the format something else.");
+            }
+
+            $tags = array_values((array) ($format['tags'] ?? []));
+
+            foreach ($tags as $tag) {
+                if (! isset(RichTextWhitelist::rules()[$tag])) {
+                    throw new InvalidArgumentException("[{$tag}] is not in the whitelist; add it to config ui.editor.whitelist first.");
+                }
+            }
+
+            $formats[(string) $name] = [array_values((array) ($format['features'] ?? [])), $tags];
+        }
+
+        return $formats;
     }
 
     /**
@@ -230,12 +219,14 @@ final class RichText
      */
     public static function resolve(string|array|null $format = null): RichTextFormat
     {
-        [$features, $tags] = self::collect($format ?? 'full');
+        [$features, $tags] = self::collect($format ?? 'full', self::formats());
 
-        // In FEATURES order, so a format doesn't depend on how it was listed.
+        // In FEATURES order, so a format doesn't depend on how it was listed; again for
+        // config that changed (in tests, for a tenant).
         $features = array_values(array_intersect(self::FEATURES, $features));
+        $key = (string) json_encode([$features, $tags, config('ui.editor.whitelist'), config('ui.editor.embed_platforms')]);
 
-        return self::$resolved[(string) json_encode([$features, $tags])] ??= new RichTextFormat($features, $tags);
+        return self::$resolved[$key] ??= new RichTextFormat($features, $tags);
     }
 
     /**
@@ -275,9 +266,10 @@ final class RichText
      * A format's features, with the tags named formats add.
      *
      * @param  string|list<string>  $format
+     * @param  array<string, array{list<string>, list<string>}>  $formats
      * @return array{list<string>, list<string>}
      */
-    private static function collect(string|array $format, int $depth = 0): array
+    private static function collect(string|array $format, array $formats, int $depth = 0): array
     {
         if ($depth > 8) {
             throw new InvalidArgumentException('Rich text formats name each other in a loop.');
@@ -285,8 +277,8 @@ final class RichText
 
         [$names, $tags] = is_array($format) ? [$format, []] : match (true) {
             isset(self::PRESETS[$format]) => [self::PRESETS[$format], []],
-            isset(self::$formats[$format]) => self::$formats[$format],
-            default => throw new InvalidArgumentException("[{$format}] is not a rich text format; use text, basic, full, a list of features or a name given to Ui::editorFormat()."),
+            isset($formats[$format]) => $formats[$format],
+            default => throw new InvalidArgumentException("[{$format}] is not a rich text format; use text, basic, full, a list of features or a name in config ui.editor.formats."),
         };
 
         $features = [];
@@ -294,8 +286,8 @@ final class RichText
         foreach ($names as $name) {
             if (in_array($name, self::FEATURES, true)) {
                 $features[] = $name;
-            } elseif (isset(self::PRESETS[$name]) || isset(self::$formats[$name])) {
-                [$more, $added] = self::collect($name, $depth + 1);
+            } elseif (isset(self::PRESETS[$name]) || isset($formats[$name])) {
+                [$more, $added] = self::collect($name, $formats, $depth + 1);
                 array_push($features, ...$more);
                 array_push($tags, ...$added);
             } else {

@@ -326,6 +326,19 @@
                 & [data-editor-action="upload-missing"] {
                     @apply px-1 font-medium text-primary underline underline-offset-2;
                 }
+
+                & [data-editor-upload-message] {
+                    @apply text-destructive;
+                }
+            }
+
+            /* Files that wouldn't upload: why, in the destructive color. */
+            &[data-editor-failed] {
+                @apply bg-destructive/10 text-destructive;
+
+                & > svg {
+                    @apply size-3.5;
+                }
             }
         }
 

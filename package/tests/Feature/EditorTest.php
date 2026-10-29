@@ -3,9 +3,13 @@
 use Dom\Element;
 use Dom\HTMLDocument;
 use Esoboy\Ui\Facades\Ui;
+use Esoboy\Ui\Support\EditorUploads;
 use Esoboy\Ui\Support\RichText;
 use Esoboy\Ui\Tests\Fixtures\Posts;
+use Esoboy\Ui\Tests\Fixtures\Uploads;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\ViewException;
 use Livewire\Livewire;
@@ -29,7 +33,7 @@ function controls(string $html): array
 
 describe('formats', function () {
     it('resolves presets, lists of features and presets, and named formats', function () {
-        RichText::format('comment', ['bold', 'italic', 'link', 'emoji']);
+        config()->set('ui.editor.formats', ['comment' => ['features' => ['bold', 'italic', 'link', 'emoji']]]);
 
         $text = RichText::resolve('text');
         $basic = RichText::resolve('basic');
@@ -53,7 +57,9 @@ describe('formats', function () {
     ]);
 
     it('keeps preset names for presets', function () {
-        Ui::editorFormat('basic', ['bold']);
+        config()->set('ui.editor.formats', ['basic' => ['features' => ['bold']]]);
+
+        RichText::resolve('text');
     })->throws(InvalidArgumentException::class, '[basic] is a preset');
 
     it('decides the tools too: the HTML source only in full, typography only when named', function () {
@@ -69,13 +75,15 @@ describe('formats', function () {
 });
 
 describe('the view', function () {
+    beforeEach(fn () => config()->set('ui.editor.uploader', Uploads::class));
+
     it('renders the editor with its format and sanitized content', function () {
         $html = (string) $this->blade('<x-ui::editor wire:model="body" placeholder="Write" :max-length="500" default-value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
 
         expect($html)
             ->toContain('<eso-editor data-slot="editor" data-format="{&quot;features&quot;:[&quot;heading&quot;,')
             ->toContain('&quot;layout&quot;,&quot;toolbar&quot;,&quot;bubble-menu&quot;,&quot;slash-menu&quot;,&quot;drag-handle&quot;,&quot;find-replace&quot;,&quot;source&quot;,')
-            ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
+            ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;failed&quot;:&quot;The upload failed.&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-upload="http://localhost/esoboy-ui/editor/upload" data-image-hosts="localhost" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
             ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
             ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
             ->toContain('data-placeholder="Write" data-label="Rich text editor" wire:model="body">')
@@ -164,10 +172,11 @@ describe('the view', function () {
     });
 
     it('offers spacing, callouts, a link card, captions, image links, cell colors and an upload placeholder', function () {
-        $html = (string) $this->blade('<x-ui::editor :image-hosts="[\'cdn.app.test\', \'img.app.test\']" />');
+        config()->set('ui.editor.uploader', Uploads::class);
 
-        expect($html)->toContain('data-image-hosts="cdn.app.test img.app.test"')
-            ->and(substr_count($html, 'data-editor-command="margin-top"'))->toBe(6)
+        $html = (string) $this->blade('<x-ui::editor />');
+
+        expect(substr_count($html, 'data-editor-command="margin-top"'))->toBe(6)
             ->and(substr_count($html, 'data-editor-command="letter-spacing"'))->toBe(6)
             ->and(substr_count($html, 'data-editor-command="callout"'))->toBe(6)
             ->and($html)->toContain('data-editor-command="callout" data-editor-value="background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6" data-editor-label="Note"')
@@ -181,17 +190,18 @@ describe('the view', function () {
             ->toContain('data-editor-action="format-painter" aria-label="Format painter" aria-pressed="false"');
     });
 
-    it('turns, saves and shapes media from their menu, and takes videos uploaded or from a link', function () {
+    it('saves and shapes media from their menu, and takes videos uploaded or from a link', function () {
+        config()->set('ui.editor.uploader', Uploads::class);
+
         $html = (string) $this->blade('<x-ui::editor />');
 
         preg_match('~<template data-template="bubble-node">(.*?)</template>~s', $html, $node);
 
-        expect($node[1])->toContain('data-editor-action="rotate-left" aria-label="Rotate left"')
-            ->toContain('data-editor-action="rotate-right" aria-label="Rotate right"')
+        expect($node[1])->not->toContain('rotate')
             ->toContain('data-editor-action="save-image" aria-label="Save to this site" hidden="hidden"')
             ->toContain('data-editor-menu="embed-ratio" aria-label="Shape" data-editor-for="embed"')
             ->toContain('data-editor-command="embed-ratio" data-editor-value="9 / 16" data-editor-label="9:16"')
-            ->toContain('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden>')
+            ->toContain('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden></p>')
             ->and($html)->toContain('data-editor-opens="video" aria-label="Video"')
             ->toContain('data-editor-action="media" data-editor-value="video" data-editor-upload="data-editor-upload">')
             ->toContain('data-editor-video-input')
@@ -306,8 +316,8 @@ describe('sanitizing', function () {
     });
 
     it('takes tags, attributes and values the app adds, for the formats that name the tags', function () {
-        Ui::editorWhitelist(['img' => ['data-ratio' => '*'], 'span' => ['style' => ['transform']], 'center' => '*']);
-        Ui::editorFormat('notes', ['bold'], ['center']);
+        config()->set('ui.editor.whitelist', ['img' => ['data-ratio' => '*'], 'span' => ['style' => ['transform']], 'center' => '*']);
+        config()->set('ui.editor.formats', ['notes' => ['features' => ['bold'], 'tags' => ['center']]]);
 
         $html = '<p><span style="color:red;transform:rotate(3deg)"><strong>b</strong></span><img src="/a.png" data-ratio="0.5" data-x="1"></p><center class="c" id="i" onclick="x()" data-y="1">c</center>';
 
@@ -315,8 +325,14 @@ describe('sanitizing', function () {
             ->and(RichText::sanitize($html, 'full'))->toBe('<p><span style="color:red;transform:rotate(3deg)"><strong>b</strong></span><img src="/a.png" data-ratio="0.5" /></p><center class="c" id="i">c</center>')
             ->and(RichText::resolve('notes')->client()['allow']['center'])->toBe('*')
             ->and(RichText::resolve('notes')->client()['attributes'])->toContain('class', 'id')->not->toContain('onclick')
-            ->and(fn () => Ui::editorFormat('wrong', ['bold'], ['marquee']))->toThrow(InvalidArgumentException::class, '[marquee] is not in the whitelist')
-            ->and(fn () => Ui::editorWhitelist(['p' => ['onclick' => '*']]))->toThrow(InvalidArgumentException::class, '[onclick] runs script');
+            ->and(function () {
+                config()->set('ui.editor.formats', ['wrong' => ['features' => ['bold'], 'tags' => ['marquee']]]);
+                RichText::resolve('wrong');
+            })->toThrow(InvalidArgumentException::class, '[marquee] is not in the whitelist')
+            ->and(function () {
+                config()->set('ui.editor.whitelist', ['p' => ['onclick' => '*']]);
+                RichText::resolve('text');
+            })->toThrow(InvalidArgumentException::class, '[onclick] runs script');
     });
 
     it('keeps captions, image links and callouts', function () {
@@ -357,8 +373,10 @@ describe('sanitizing', function () {
     });
 
     it('plays embeds from known platforms only', function () {
-        Ui::embedPlatform('acme', 'https://player.acme.test/$1', '^https://acme\.test/v/(\w+)');
-        Ui::embedPlatform('code', 'https://embed.code.test/');
+        config()->set('ui.editor.embed_platforms', [
+            'acme' => ['src' => 'https://player.acme.test/$1', 'pattern' => '^https://acme\.test/v/(\w+)'],
+            'code' => ['src' => 'https://embed.code.test/'],
+        ]);
 
         $style = 'style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;"';
 
@@ -440,18 +458,123 @@ Body')
 });
 
 describe('the server', function () {
-    it('answers editor-media with attachments, or inserts HTML, through Ui::editor()', function () {
+    it('inserts attachments or HTML through Ui::editor()', function () {
         Livewire::test(Posts::class)
             ->call('attach')
             ->assertDispatched('ui-editor', id: 'body', action: 'insert', attachments: [['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']], html: null)
             ->call('template')
             ->assertDispatched('ui-editor', id: 'body', action: 'insert-content', attachments: [], html: '<p>Hello</p>');
     });
+});
 
-    it('answers editor-external-images and editor-data-images with the copies, through Ui::editor()', function () {
-        Livewire::test(Posts::class)
-            ->call('saveImages')
-            ->assertDispatched('ui-editor', id: 'body', action: 'replace-images', attachments: [['url' => '/copied.png'], null], html: null)
-            ->assertDispatched('ui-editor', id: 'body', action: 'replace-data-images', attachments: [['url' => '/uploaded.png']], html: null);
+describe('uploads', function () {
+    // A picture, as a site would send it.
+    $png = fn () => base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+    $post = fn (array $data) => test()->post('/esoboy-ui/editor/upload', $data, ['Accept' => 'application/json']);
+
+    beforeEach(function () {
+        Uploads::$uploads = [];
+        config()->set('ui.editor.uploader', Uploads::class);
     });
+
+    it('offers no media buttons, saving or placeholders to upload with, without an uploader', function () {
+        config()->set('ui.editor.uploader', null);
+
+        $html = (string) $this->blade('<x-ui::editor :upload-context="[\'post\' => 7]" />');
+
+        preg_match('~<template data-template="missing-image">(.*?)</template>~s', $html, $missing);
+
+        expect($html)->not->toContain('data-upload')
+            ->not->toContain('data-image-hosts')
+            ->not->toContain('data-editor-action="media"')
+            ->not->toContain('data-editor-action="save-image"')
+            ->not->toContain('data-editor-unsaved')
+            ->not->toContain('<template data-template="uploading">')
+            ->toContain('data-editor-opens="video"')
+            ->toContain('data-editor-video-input')
+            ->and($missing[1])->toContain('This picture couldn’t be pasted')->not->toContain('upload-missing')
+            ->and(controls($html))->not->toContain('image', 'audio', 'file');
+    });
+
+    it('tells the editor where to upload, the app’s hosts, its sealed context and what goes up by itself', function () {
+        config()->set('ui.editor.hosts', ['cdn.app.test', 'https://img.app.test:8443/x', '*.oss.test']);
+        config()->set('ui.editor.auto_upload', ['external' => true, 'data' => false]);
+        config()->set('app.asset_url', 'https://assets.app.test');
+        config()->set('filesystems.disks.s3.url', 'https://bucket.s3.test/files');
+
+        $html = (string) $this->blade('<x-ui::editor :upload-context="[\'post\' => 7]" />');
+
+        preg_match('~data-upload-context="([^"]+)"~', $html, $context);
+
+        expect($html)->toContain('data-upload="http://localhost/esoboy-ui/editor/upload"')
+            ->toContain('data-image-hosts="cdn.app.test img.app.test:8443 *.oss.test localhost assets.app.test bucket.s3.test"')
+            ->toContain('data-auto-upload="external"')
+            ->toContain('<template data-template="upload-failed">')
+            ->and(EditorUploads::open(html_entity_decode($context[1])))->toBe(['post' => 7])
+            ->and(controls($html))->toContain('image', 'audio', 'file');
+    });
+
+    it('hands each file to the uploader, with where it came from and the page’s context, and answers with its attachment', function () use ($post) {
+        $post(['source' => 'pick', 'file' => UploadedFile::fake()->create('a.pdf', 3, 'application/pdf'), 'context' => EditorUploads::seal(['post' => 7])])
+            ->assertOk()
+            ->assertExactJson(['attachment' => ['url' => '/uploads/a.pdf', 'name' => 'a.pdf', 'mime' => 'application/pdf', 'size' => 3072]]);
+
+        $post(['source' => 'paste', 'file' => UploadedFile::fake()->create('empty.png', 1, 'image/png')])->assertExactJson(['attachment' => null]);
+
+        expect(array_map(fn ($upload) => [$upload->source, $upload->url, $upload->context], Uploads::$uploads))->toBe([['pick', null, ['post' => 7]], ['paste', null, []]]);
+    });
+
+    it('says why it won’t: the request, a changed context, an image that isn’t a picture, the uploader’s reason; nothing without an uploader', function () use ($post) {
+        $post(['source' => 'stolen', 'file' => UploadedFile::fake()->create('a.png')])->assertUnprocessable()->assertJsonValidationErrors('source');
+        $post(['source' => 'pick'])->assertUnprocessable()->assertJsonValidationErrors('file');
+        $post(['source' => 'pick', 'file' => UploadedFile::fake()->create('a.png'), 'context' => 'forged'])->assertForbidden();
+        $post(['source' => 'data', 'file' => UploadedFile::fake()->createWithContent('a.png', '<svg onload="x()"/>')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'This image couldn’t be read.']);
+        $post(['source' => 'drop', 'file' => UploadedFile::fake()->image('refuse.png')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'Not this one.']);
+
+        config()->set('ui.editor.uploader', null);
+
+        $post(['source' => 'pick', 'file' => UploadedFile::fake()->image('a.png')])->assertNotFound();
+        expect(array_map(fn ($upload) => $upload->file->getClientOriginalName(), Uploads::$uploads))->toBe(['refuse.png']);
+    });
+
+    it('fetches an image on another site the browser couldn’t read, as a file for the uploader', function () use ($post, $png) {
+        Http::fake([
+            '93.184.216.34/old/cat.png' => Http::response('', 302, ['Location' => '/pics/cat.png']),
+            '93.184.216.34/pics/cat.png' => Http::response($png(), 200, ['Content-Type' => 'application/octet-stream']),
+        ]);
+
+        $post(['source' => 'external', 'url' => 'http://93.184.216.34/old/cat.png'])
+            ->assertOk()
+            ->assertJsonPath('attachment.url', '/uploads/cat.png')
+            ->assertJsonPath('attachment.mime', 'image/png');
+
+        expect(Uploads::$uploads[0]->url)->toBe('http://93.184.216.34/old/cat.png')
+            ->and(Uploads::$uploads[0]->source)->toBe('external')
+            ->and(is_file(Uploads::$uploads[0]->file->getPathname()))->toBeFalse();
+    });
+
+    it('fetches nothing from the server’s own network, through redirects too, nor what isn’t a picture', function (string $url) use ($post, $png) {
+        Http::fake([
+            '93.184.216.34/inside' => Http::response('', 302, ['Location' => 'http://10.0.0.1/a.png']),
+            '93.184.216.34/page' => Http::response('<html></html>', 200, ['Content-Type' => 'image/png']),
+            '*' => Http::response($png(), 200),
+        ]);
+
+        $post(['source' => 'external', 'url' => $url])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'This image couldn’t be read.']);
+
+        expect(Uploads::$uploads)->toBe([]);
+        Http::assertSentCount(str_starts_with($url, 'http://93.184.216.34/') ? 1 : 0);
+    })->with([
+        'localhost' => 'http://127.0.0.1/a.png',
+        'cloud metadata' => 'http://169.254.169.254/latest/meta-data',
+        'a cloud’s shared network' => 'http://100.100.100.200/latest/meta-data',
+        'a private network' => 'http://10.0.0.1/a.png',
+        'IPv6 loopback' => 'http://[::1]/a.png',
+        'IPv4 in IPv6' => 'http://[::ffff:127.0.0.1]/a.png',
+        'a name for none' => 'http://unresolvable.invalid/a.png',
+        'a file' => 'file:///etc/passwd',
+        'credentials' => 'http://user:secret@93.184.216.34/a.png',
+        'a redirect inside' => 'http://93.184.216.34/inside',
+        'a page' => 'http://93.184.216.34/page',
+    ]);
 });

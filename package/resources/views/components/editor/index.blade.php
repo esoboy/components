@@ -2,6 +2,7 @@
 
 @use('Esoboy\Ui\Assets')
 @use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\EditorUploads')
 @use('Esoboy\Ui\Support\Model')
 @use('Esoboy\Ui\Support\Overlay')
 @use('Esoboy\Ui\Support\RichText')
@@ -11,11 +12,11 @@
     'showError' => true,
 ])
 
-{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. The HTML is sanitized to the format on the way in here; put #[Sanitize] with the same format on the property for the way back. Images on hosts other than the page's and image-hosts, and data: ones, are the app's to save when someone asks (editor-external-images, editor-data-images). --}}
+{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. The HTML is sanitized to the format on the way in here; put #[Sanitize] with the same format on the property for the way back. What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
 @props([
     'format' => 'full',
     'maxLength' => null,
-    'imageHosts' => [],
+    'uploadContext' => [],
     'placeholder' => null,
     'label' => null,
     'defaultValue' => null,
@@ -29,6 +30,8 @@ $value = $defaultValue ?? Model::value($attributes);
 $value = $rich->sanitize(is_string($value) ? $value : '');
 $name = $attributes->get('name');
 $counts = $rich->has('character-count') || $maxLength;
+$uploads = EditorUploads::enabled() && $rich->has('image', 'audio', 'video', 'file');
+$images = $uploads && $rich->has('image');
 $tip = Overlay::open('editor-tip');
 Overlay::close('editor-tip');
 
@@ -46,8 +49,12 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
 <eso-editor {{ $attributes->except('name')->merge([
     'data-slot' => 'editor',
     'data-format' => json_encode($rich->client(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-    'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox'), 'caption' => __('ui::editor.caption-placeholder'), 'keyboard' => $rich->has('toolbar', 'bubble-menu') ? __('ui::editor.keyboard-hint') : ''], JSON_UNESCAPED_UNICODE),
-    'data-image-hosts' => $imageHosts ? implode(' ', $imageHosts) : false,
+    'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox'), 'caption' => __('ui::editor.caption-placeholder'), 'failed' => __('ui::editor.upload-failed'), 'keyboard' => $rich->has('toolbar', 'bubble-menu') ? __('ui::editor.keyboard-hint') : ''], JSON_UNESCAPED_UNICODE),
+    'data-upload' => $uploads ? route('esoboy-ui.editor.upload') : false,
+    'data-upload-token' => $uploads ? csrf_token() : false,
+    'data-upload-context' => $uploads && $uploadContext ? EditorUploads::seal($uploadContext) : false,
+    'data-image-hosts' => $images ? implode(' ', EditorUploads::hosts()) : false,
+    'data-auto-upload' => $images && EditorUploads::auto() ? implode(' ', EditorUploads::auto()) : false,
     'data-max-length' => $maxLength ?? false,
     'data-emoji' => $emoji ?? false,
     'data-placeholder' => $placeholder ?? false,
@@ -68,10 +75,10 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     @if ($rich->has('source'))
     <textarea data-slot="editor-source" aria-label="{{ __('ui::editor.source') }}" spellcheck="false" hidden wire:ignore></textarea>
     @endif
-    @if ($counts || $rich->has('image'))
+    @if ($counts || $images)
     {{-- Images the app has no copy of, to save them all; the count. --}}
     <div data-slot="editor-footer" wire:ignore>
-        @if ($rich->has('image'))
+        @if ($images)
         <span data-editor-unsaved data-editor-label="{{ __('ui::editor.images-unsaved') }}" hidden><span data-editor-unsaved-label></span><x-ui::button variant="link" size="xs" data-editor-action="save-images">{{ __('ui::editor.save-images') }}</x-ui::button></span>
         @endif
         @if ($counts)

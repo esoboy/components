@@ -1,10 +1,10 @@
 /*
- * Images not saved to the app yet: on another host than the page's (or the app's own,
- * data-image-hosts), or data: (pasted from a page, a screenshot tool or Word, or
- * rotated). They stay as they are until someone saves them, from the image's menu or
- * the footer's "save all": the app copies external ones (editor-external-images, their
- * addresses) and uploads data ones (editor-data-images, as files), and its answer takes
- * their place wherever they are by then. Meanwhile they show as saving.
+ * Images not saved to the app yet: on another host than the page's and the app's own
+ * (config ui.editor.hosts, data-image-hosts), or data: (pasted from a page, a
+ * screenshot tool or Word). They stay as they are until saved, from the image's menu or
+ * the footer's "save all", or as they come in (ui.editor.auto_upload): each goes to
+ * the app's uploader as a file (upload.js), and its copy takes their place wherever
+ * they are by then. Meanwhile they show as saving.
  */
 
 import { Extension } from '@tiptap/core'
@@ -15,16 +15,22 @@ export const savingKey = new PluginKey('editorSaving')
 
 const DATA = /^data:image\/(?:png|jpe?g|gif|webp|bmp|avif);base64,[a-z\d+/]+={0,2}$/i
 
+// Pictures, as the uploader takes images (EditorUploads::IMAGES): not SVG, which holds markup.
+const PICTURES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'image/avif']
+
 // A picture written into the address: what the editor keeps of data: images (not SVG,
 // which holds markup).
 export const dataImage = src => DATA.test(String(src ?? '').trim())
+
+// Whether a host is one of these: itself, or under *.example.com.
+export const ownHost = (host, hosts) => hosts.some(own => own === host || (own.startsWith('*.') && host.endsWith(own.slice(1))))
 
 // Whether an image address is on another host than the page or the app's own.
 export function external(src, hosts) {
     try {
         const url = new URL(src, document.baseURI)
 
-        return ['http:', 'https:'].includes(url.protocol) && url.host !== location.host && ! hosts.includes(url.host)
+        return ['http:', 'https:'].includes(url.protocol) && url.host !== location.host && ! ownHost(url.host, hosts)
     } catch {
         return false
     }
@@ -105,40 +111,22 @@ export function wordImages(html, rtf) {
 }
 
 /**
- * An image turned by a quarter (90, 180 or 270 degrees, clockwise) as a data: image of
- * its type (PNG for GIF, SVG and the rest), with its new size. It must be readable: on
- * the page's host, data:, or served to other sites (CORS); otherwise it throws.
+ * Another site's image as a file, as the browser reads it: only when its site lets pages
+ * read it (CORS), and a picture; otherwise it throws, for the server to fetch it.
  */
-export async function rotateImage(src, degrees) {
+export async function imageFile(src) {
     const response = await fetch(src, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' })
 
     if (! response.ok) throw new Error(`The image answered ${response.status}.`)
 
     const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    const image = new Image()
+    const type = blob.type.split(';')[0].trim().toLowerCase()
 
-    try {
-        image.src = url
-        await image.decode()
+    if (! PICTURES.includes(type)) throw new Error('The address is not a picture.')
 
-        const turned = degrees % 180 !== 0
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        const type = ['image/jpeg', 'image/webp'].includes(blob.type) ? blob.type : 'image/png'
+    const name = decodeURIComponent(new URL(src, document.baseURI).pathname.split('/').pop() ?? '').replace(/\.[^.]*$/, '') || 'image'
 
-        if (! context) throw new Error('No canvas to turn the image on.')
-
-        canvas.width = turned ? image.naturalHeight : image.naturalWidth
-        canvas.height = turned ? image.naturalWidth : image.naturalHeight
-        context.translate(canvas.width / 2, canvas.height / 2)
-        context.rotate(degrees * Math.PI / 180)
-        context.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2)
-
-        return { src: canvas.toDataURL(type, 0.92), width: canvas.width, height: canvas.height }
-    } finally {
-        URL.revokeObjectURL(url)
-    }
+    return new File([blob], `${name}.${type.split('/')[1].replace('jpeg', 'jpg')}`, { type })
 }
 
 function decorate(doc, pending) {

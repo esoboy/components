@@ -9,7 +9,7 @@ use InvalidArgumentException;
  * it, and for each attribute the values kept ('*' for any; for style, the CSS properties
  * kept, their values as written unless they could run or load something). A tag of '*'
  * keeps every attribute the HTML standard has, with any value. Formats pick tags from
- * here; the app adds tags and attributes with add() (Ui::editorWhitelist()).
+ * here; the app adds tags, attributes and values in config ui.editor.whitelist.
  */
 final class RichTextWhitelist
 {
@@ -75,22 +75,27 @@ final class RichTextWhitelist
         'mpadded' => ['width' => '*', 'height' => '*', 'depth' => '*', 'lspace' => '*', 'voffset' => '*'], 'mphantom' => [], 'menclose' => ['notation' => '*'], 'merror' => [], 'mmultiscripts' => [], 'mprescripts' => [], 'none' => [],
     ];
 
-    /** @var array<string, '*'|array<string, '*'|list<string>>> */
-    private static array $added = [];
-
-    /** @var array<string, '*'|array<string, '*'|list<string>>>|null */
+    /** @var array{string, array<string, '*'|array<string, '*'|list<string>>>}|null */
     private static ?array $rules = null;
 
     /**
-     * Adds tags, attributes and values to the whitelist ('*' for all): ['section' => '*',
-     * 'img' => ['data-ratio' => '*'], 'span' => ['style' => ['transform']]]. A format
-     * keeps an added tag once it names it.
+     * Every tag's rules, with what config ui.editor.whitelist adds ('*' for all):
+     * ['section' => '*', 'img' => ['data-ratio' => '*'], 'span' => ['style' =>
+     * ['transform']]]. A format keeps an added tag once it names it.
      *
-     * @param  array<string, '*'|array<string, '*'|list<string>>>  $rules
+     * @return array<string, '*'|array<string, '*'|list<string>>>
      */
-    public static function add(array $rules): void
+    public static function rules(): array
     {
-        foreach ($rules as $attributes) {
+        /** @var array<string, '*'|array<string, '*'|list<string>>> $added */
+        $added = (array) config('ui.editor.whitelist', []);
+        $key = (string) json_encode($added);
+
+        if (self::$rules !== null && self::$rules[0] === $key) {
+            return self::$rules[1];
+        }
+
+        foreach ($added as $attributes) {
             foreach ($attributes === '*' ? [] : array_keys($attributes) as $attribute) {
                 if (str_starts_with(strtolower($attribute), 'on')) {
                     throw new InvalidArgumentException("[{$attribute}] runs script; the whitelist never keeps it.");
@@ -98,18 +103,7 @@ final class RichTextWhitelist
             }
         }
 
-        self::$added = self::merge(self::$added, $rules);
-        self::$rules = null;
-    }
-
-    /**
-     * Every tag's rules, the app's added.
-     *
-     * @return array<string, '*'|array<string, '*'|list<string>>>
-     */
-    public static function rules(): array
-    {
-        return self::$rules ??= self::merge(self::RULES, self::$added);
+        return (self::$rules = [$key, self::merge(self::RULES, $added)])[1];
     }
 
     /**

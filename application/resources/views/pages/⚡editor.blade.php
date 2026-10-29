@@ -2,16 +2,11 @@
 
 use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Livewire\Sanitize;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 new class extends Component
 {
-    use WithFileUploads;
-
     #[Sanitize('text')]
     public string $note = '<h3>Text</h3><p>Text and its layout: <strong>marks</strong>, <span style="color:#dc2626">colors</span>, <span style="font-size:18px">sizes</span>, alignment, indents and lists; no images.</p>';
 
@@ -24,7 +19,7 @@ new class extends Component
 
     public ?string $published = null;
 
-    /** The app's attachment library, as the picker lists it. */
+    /** The app's own attachment library, inserted with Ui::editor()->insert(). */
     public array $library = [
         ['url' => '/demo/landscape.jpg', 'name' => 'landscape.jpg', 'mime' => 'image/jpeg', 'size' => 56814, 'alt' => 'A landscape', 'width' => 1200, 'height' => 800],
         ['url' => '/demo/photo-1.svg', 'name' => 'photo-1.svg', 'mime' => 'image/svg+xml', 'size' => 438, 'alt' => 'First photo'],
@@ -37,17 +32,8 @@ new class extends Component
     /** @var list<string> */
     public array $picked = [];
 
-    /** @var list<string> */
-    public array $accept = [];
-
-    public array $drops = [];
-
-    public array $pasted = [];
-
-    // editor-media without files: the picker opens, filtered to what the editor takes.
-    public function pickMedia(array $accept): void
+    public function pickMedia(): void
     {
-        $this->accept = $accept;
         $this->picked = [];
         Ui::dialog('library')->open();
     }
@@ -56,57 +42,6 @@ new class extends Component
     {
         Ui::editor('article')->insert(array_values(array_intersect_key($this->library, array_flip($this->picked))));
         Ui::dialog('library')->close();
-    }
-
-    public function cancelPick(): void
-    {
-        Ui::editor('article')->insert([]);
-    }
-
-    // editor-media with files dropped or pasted: uploaded, then inserted.
-    public function insertDrops(): void
-    {
-        Ui::editor('article')->insert(collect($this->drops)->map(fn ($file) => [
-            'url' => $file->temporaryUrl(),
-            'name' => $file->getClientOriginalName(),
-            'mime' => $file->getMimeType(),
-            'size' => $file->getSize(),
-        ])->all());
-
-        $this->drops = [];
-    }
-
-    // editor-external-images: the app copies images from elsewhere and answers with its copies.
-    public function importImages(array $urls): void
-    {
-        $directory = public_path('demo/imported');
-        File::ensureDirectoryExists($directory);
-
-        Ui::editor('article')->replaceImages(array_map(function (string $url) use ($directory) {
-            $response = rescue(fn () => Http::timeout(10)->get($url), report: false);
-            $type = strtok((string) $response?->header('Content-Type'), ';');
-
-            if (! $response?->successful() || ! str_starts_with((string) $type, 'image/')) {
-                return null;
-            }
-
-            $name = md5($url).'.'.(explode('/', $type)[1] ?? 'img');
-            File::put("{$directory}/{$name}", $response->body());
-
-            return ['url' => "/demo/imported/{$name}", 'name' => basename((string) parse_url($url, PHP_URL_PATH)), 'mime' => $type];
-        }, $urls));
-    }
-
-    // editor-data-images: pasted data: images and Word's pictures, uploaded as files.
-    public function savePasted(): void
-    {
-        Ui::editor('article')->replaceDataImages(collect($this->pasted)->map(fn ($file) => [
-            'url' => $file->temporaryUrl(),
-            'name' => $file->getClientOriginalName(),
-            'mime' => $file->getMimeType(),
-        ])->all());
-
-        $this->pasted = [];
     }
 
     public function kind(array $attachment): string
@@ -142,13 +77,13 @@ new class extends Component
     <form wire:submit="publish" class="space-y-4">
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
-            <x-ui::editor id="article" wire:model="article"
-                x-on:editor-media="$event.detail.files.length ? $wire.uploadMultiple('drops', $event.detail.files, () => $wire.insertDrops()) : $wire.pickMedia($event.detail.accept)"
-                x-on:editor-external-images="$wire.importImages($event.detail.urls)"
-                x-on:editor-data-images="$wire.uploadMultiple('pasted', $event.detail.files, () => $wire.savePasted())" />
-            <x-ui::field.description>The image, video, audio and file buttons ask the app (editor-media): here a library picker in a dialog, many at once; files dropped or pasted are uploaded first. Images from other sites and pasted ones are saved from their menu, or all at once from the footer. Type / for blocks.</x-ui::field.description>
+            <x-ui::editor id="article" wire:model="article" :upload-context="['page' => 'editor']" />
+            <x-ui::field.description>The image, video, audio and file buttons, and files dropped or pasted, upload with the app's uploader (config ui.editor.uploader, here App\Editor\DemoUploader). Images from other sites and pasted ones are saved from their menu, or all at once from the footer (or as they come in, with ui.editor.auto_upload). Type / for blocks.</x-ui::field.description>
         </x-ui::field>
-        <x-ui::button type="submit">Publish</x-ui::button>
+        <div class="flex gap-2">
+            <x-ui::button type="submit">Publish</x-ui::button>
+            <x-ui::button type="button" variant="outline" wire:click="pickMedia">Insert from the library</x-ui::button>
+        </div>
     </form>
 
     @if ($published)
@@ -160,20 +95,18 @@ new class extends Component
     @endif
 
     <x-ui::dialog name="library">
-        <x-ui::dialog.content x-on:close="$wire.cancelPick()">
+        <x-ui::dialog.content>
             <x-ui::dialog.header>
                 <x-ui::dialog.title>Attachment library</x-ui::dialog.title>
-                <x-ui::dialog.description>Pick any number; the editor takes: {{ implode(', ', $accept) }}.</x-ui::dialog.description>
+                <x-ui::dialog.description>Pick any number: Ui::editor('article')->insert() puts them at the cursor.</x-ui::dialog.description>
             </x-ui::dialog.header>
             <div class="grid gap-2">
                 @foreach ($library as $index => $attachment)
-                @if (in_array($this->kind($attachment), $accept, true) || in_array('file', $accept, true))
                 <x-ui::label class="flex items-center gap-2 rounded-md border p-2">
                     <x-ui::checkbox wire:model="picked" value="{{ $index }}" />
                     <span class="flex-1">{{ $attachment['name'] }}</span>
                     <x-ui::badge variant="secondary">{{ $this->kind($attachment) }}</x-ui::badge>
                 </x-ui::label>
-                @endif
                 @endforeach
             </div>
             <x-ui::dialog.footer>

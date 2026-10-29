@@ -19,6 +19,8 @@ class UiServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__.'/../config/ui.php', 'ui');
+
         $this->app->singleton(Assets::class, fn () => new Assets(__DIR__.'/../dist'));
         $this->app->singleton(UiManager::class);
         $this->app->scoped(Overlay::class);
@@ -30,6 +32,7 @@ class UiServiceProvider extends ServiceProvider
     {
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
 
+        $this->bootConfig();
         $this->bootAssets();
         $this->bootTranslations();
         $this->bootFieldContext();
@@ -40,6 +43,21 @@ class UiServiceProvider extends ServiceProvider
 
         // The browser writes the sidebar and theme cookies, so they can't be encrypted.
         EncryptCookies::except([SidebarState::COOKIE, Theme::COOKIE]);
+    }
+
+    /**
+     * config/ui.php: the Editor's formats, whitelist, embed platforms, hosts and uploader.
+     * Its route hands what the Editor uploads to the uploader.
+     */
+    protected function bootConfig(): void
+    {
+        $this->loadRoutesFrom(__DIR__.'/../routes/editor.php');
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/ui.php' => config_path('ui.php'),
+            ], 'ui-config');
+        }
     }
 
     /**

@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Esoboy\Ui\Livewire\EditorHandle editor(string $id)
  * @method static string sanitize(?string $html, string|list<string> $format = 'full')
  * @method static string plainText(?string $html, string|list<string> $format = 'full')
- * @method static void editorFormat(string $name, list<string> $features, list<string> $tags = [])
- * @method static void editorWhitelist(array<string, '*'|array<string, '*'|list<string>>> $rules)
- * @method static void embedPlatform(string $name, string $src, ?string $pattern = null, string $still = 'autoplay=0')
  *
  * @see UiManager
  */
