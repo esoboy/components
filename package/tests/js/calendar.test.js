@@ -257,4 +257,72 @@ describe('date picker', () => {
         expect(element.calendar.value).toBe('2026-01-05')
         expect(text(element)).toBe('January 5, 2026')
     })
+
+    describe('with time', () => {
+        function timed(mode = 'single', data = {}) {
+            const element = picker(mode)
+
+            element.setAttribute('data-time', '')
+            element.dataset.defaultTime = '09:00'
+            Object.assign(element.dataset, data)
+            element.calendar.insertAdjacentHTML('afterend', (mode === 'range' ? ['from', 'to'] : ['from']).map(part => `<input type="time" data-date-picker-time="${part}" value="09:00">`).join(''))
+
+            return element
+        }
+
+        const time = (element, part, value, type = 'change') => {
+            const input = element.querySelector(`[data-date-picker-time="${part}"]`)
+            input.value = value
+            input.dispatchEvent(new Event(type, { bubbles: true }))
+        }
+
+        it('joins the chosen day and the time, announcing either change from the picker', () => {
+            const element = timed()
+            const seen = []
+
+            element.addEventListener('change', event => event.target === element && seen.push(element.value))
+            day(element.calendar, '2026-10-26').click()
+            time(element, 'from', '14:30')
+
+            expect(seen).toEqual(['2026-10-26 09:00', '2026-10-26 14:30'])
+            expect(text(element)).toBe('October 26, 2026 at 2:30 PM')
+        })
+
+        it('keeps seconds when the step is under a minute', () => {
+            const element = timed('single', { step: '1' })
+
+            day(element.calendar, '2026-10-26').click()
+            time(element, 'from', '14:30')
+
+            expect(element.value).toBe('2026-10-26 14:30:00')
+        })
+
+        it('has no value until a day is chosen', () => {
+            const element = timed()
+
+            time(element, 'from', '14:30')
+
+            expect(element.value).toBe(null)
+        })
+
+        it('times each end of a range', () => {
+            const element = timed('range')
+
+            day(element.calendar, '2026-10-20').click()
+            day(element.calendar, '2026-10-22').click()
+            time(element, 'to', '18:00')
+
+            expect(element.value).toEqual({ from: '2026-10-20 09:00', to: '2026-10-22 18:00' })
+        })
+
+        it('splits values set by Livewire between the calendar and the times', () => {
+            const element = timed('range')
+
+            element.value = { from: '2026-01-05 08:15', to: '2026-01-06T17:45' }
+
+            expect(element.calendar.value).toEqual({ from: '2026-01-05', to: '2026-01-06' })
+            expect(element.querySelector('[data-date-picker-time="to"]').value).toBe('17:45')
+            expect(element.value).toEqual({ from: '2026-01-05 08:15', to: '2026-01-06 17:45' })
+        })
+    })
 })

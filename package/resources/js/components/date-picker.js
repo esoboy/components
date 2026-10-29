@@ -3,18 +3,23 @@
  *
  * A popover trigger showing the chosen date(s) and a <eso-calendar> inside. .value
  * proxies the calendar and input/change are dispatched from the picker itself, so
- * wire:model binds on it.
+ * wire:model binds on it. With data-time the footer's time inputs join the dates:
+ * "Y-m-d H:i" (H:i:s when data-step is under a minute), or { from, to } of those.
  */
 
 import { announce, define } from '../support/element.js'
 import { fromKey } from './calendar.js'
 
+const TIME = '[data-date-picker-time]'
+
 export class DatePickerElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
-        this.addEventListener('input', event => event.target === this.calendar && this.#announce(event, 'input'))
-        this.addEventListener('change', event => event.target === this.calendar && this.#announce(event, 'change'))
+        const own = event => event.target === this.calendar || event.target.matches?.(TIME)
+
+        this.addEventListener('input', event => own(event) && this.#announce(event, 'input'))
+        this.addEventListener('change', event => own(event) && this.#announce(event, 'change'))
 
         // A preset sets the calendar and shows its month.
         this.addEventListener('click', event => {
@@ -46,11 +51,31 @@ export class DatePickerElement extends HTMLElement {
         return this.querySelector('[data-date-picker-trigger]')
     }
 
+    get time() {
+        return this.hasAttribute('data-time')
+    }
+
     get value() {
-        return this.calendar?.value ?? null
+        const value = this.calendar?.value ?? null
+
+        if (! this.time) return value
+
+        const at = (date, part) => (date ? `${date} ${this.#time(part)}` : null)
+
+        return this.#range ? { from: at(value?.from, 'from'), to: at(value?.to, 'to') } : at(value, 'from')
     }
 
     set value(value) {
+        if (this.time) {
+            const split = at => String(at ?? '').split(/[ T]/)
+            const [from, fromTime] = split(this.#range ? value?.from : value)
+            const [to, toTime] = split(value?.to)
+
+            this.#setTime('from', fromTime)
+            this.#setTime('to', toTime)
+            value = this.#range ? { from: from || null, to: to || null } : from || null
+        }
+
         if (this.calendar) this.calendar.value = value
 
         this.render()
@@ -63,7 +88,7 @@ export class DatePickerElement extends HTMLElement {
         // The calendar may not be upgraded yet; its first render triggers ours again.
         if (! display || ! trigger || ! this.calendar?.month) return
 
-        const text = this.#format(this.calendar.value)
+        const text = this.#format(this.value)
         const empty = text === ''
 
         if (display.textContent !== (empty ? this.dataset.placeholder ?? '' : text)) display.textContent = empty ? this.dataset.placeholder ?? '' : text
@@ -78,8 +103,47 @@ export class DatePickerElement extends HTMLElement {
         }
     }
 
+    get #range() {
+        return this.calendar?.dataset.mode === 'range'
+    }
+
+    get #seconds() {
+        return Number(this.dataset.step) > 0 && Number(this.dataset.step) < 60
+    }
+
+    // A time input's value as H:i (or H:i:s), the default time when it is empty.
+    #time(part) {
+        const [hours = '00', minutes = '00', seconds = '00'] = (this.querySelector(`${TIME}[data-date-picker-time="${part}"]`)?.value || this.dataset.defaultTime || '00:00').split(':')
+
+        return [hours, minutes, ...(this.#seconds ? [seconds] : [])].join(':')
+    }
+
+    #setTime(part, time) {
+        const input = this.querySelector(`${TIME}[data-date-picker-time="${part}"]`)
+
+        if (input && time && input.value !== time) input.value = time
+    }
+
     #format(value) {
         const locale = this.dataset.locale || undefined
+
+        if (this.time) {
+            const at = text => {
+                const [date, time = '00:00'] = text.split(/[ T]/)
+                const [hours, minutes, seconds] = time.split(':').map(Number)
+                const day = fromKey(date)
+
+                day.setHours(hours || 0, minutes || 0, seconds || 0)
+
+                return day
+            }
+            const timeStyle = this.#seconds ? 'medium' : 'short'
+
+            if (value && typeof value === 'object') return value.from ? [value.from, value.to].filter(Boolean).map(text => at(text).toLocaleString(locale, { dateStyle: 'medium', timeStyle })).join(' - ') : ''
+
+            return value ? at(value).toLocaleString(locale, { dateStyle: 'long', timeStyle }) : ''
+        }
+
         const long = key => fromKey(key).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
         const short = key => fromKey(key).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: '2-digit' })
 

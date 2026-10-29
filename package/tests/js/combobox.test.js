@@ -174,3 +174,124 @@ describe('multiple', () => {
         expect([...combobox.querySelectorAll(':scope > input[type="hidden"]')].map(input => `${input.name}=${input.value}`)).toEqual(['tags[]=next', 'tags[]=astro'])
     })
 })
+
+describe('autocomplete', () => {
+    function autocomplete(attributes = '') {
+        document.body.innerHTML = `
+            <eso-combobox data-autocomplete ${attributes}>
+                <div data-slot="input-group"><input data-combobox-input><button data-combobox-clear></button></div>
+                <div data-slot="combobox-content" popover="manual">
+                    <div data-slot="combobox-list">
+                        <div data-slot="combobox-item" data-value="Hangzhou">Hangzhou</div>
+                        <div data-slot="combobox-item" data-value="Shanghai">Shanghai</div>
+                        <div data-slot="combobox-item" data-value="Shenzhen">Shenzhen</div>
+                    </div>
+                </div>
+            </eso-combobox>`
+
+        return document.querySelector('eso-combobox')
+    }
+
+    const changes = combobox => {
+        const seen = []
+        combobox.addEventListener('change', event => event.target === combobox && seen.push(combobox.value))
+        return seen
+    }
+
+    it('takes the typed text as its value, suggesting what matches', () => {
+        const combobox = autocomplete()
+        const inputs = announced(combobox)
+
+        type(combobox, 'sh')
+
+        expect(combobox.value).toBe('sh')
+        expect(inputs).toEqual(['"sh"'])
+        expect(combobox.isOpen).toBe(true)
+        expect(visible(combobox)).toEqual(['Shanghai', 'Shenzhen'])
+        expect(highlighted(combobox)).toBe(undefined)
+    })
+
+    it('closes when nothing matches, keeping the text', () => {
+        const combobox = autocomplete()
+
+        type(combobox, 'Beijing')
+
+        expect(combobox.isOpen).toBe(false)
+        expect(combobox.value).toBe('Beijing')
+        expect(combobox.input.value).toBe('Beijing')
+    })
+
+    it('fills in a chosen suggestion, then settles it with change', () => {
+        const combobox = autocomplete()
+        const settled = changes(combobox)
+
+        type(combobox, 'sh')
+        key(combobox, 'ArrowDown')
+        key(combobox, 'ArrowDown')
+        key(combobox, 'Enter')
+
+        expect(combobox.value).toBe('Shenzhen')
+        expect(combobox.input.value).toBe('Shenzhen')
+        expect(combobox.isOpen).toBe(false)
+        expect(settled).toEqual(['Shenzhen'])
+    })
+
+    it('settles the typed text on Enter without a highlight, letting the form have it', () => {
+        const combobox = autocomplete()
+        const settled = changes(combobox)
+
+        type(combobox, 'sh')
+        const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+        combobox.input.dispatchEvent(enter)
+
+        expect(enter.defaultPrevented).toBe(false)
+        expect(combobox.isOpen).toBe(false)
+        expect(settled).toEqual(['sh'])
+    })
+
+    it('settles on leaving the input, once per change', async () => {
+        const combobox = autocomplete()
+        const settled = changes(combobox)
+
+        combobox.input.focus()
+        type(combobox, 'Hang')
+        combobox.input.blur()
+        await Promise.resolve()
+        combobox.input.focus()
+        combobox.input.blur()
+        await Promise.resolve()
+
+        expect(settled).toEqual(['Hang'])
+    })
+
+    it('shows the value Livewire sets, and suggests what a morph brings while typing', async () => {
+        const combobox = autocomplete('data-should-filter="false"')
+        const settled = changes(combobox)
+
+        combobox.value = 'Suzhou'
+        expect(combobox.input.value).toBe('Suzhou')
+        expect(settled).toEqual([])
+
+        combobox.querySelector('[data-slot="combobox-list"]').innerHTML = ''
+        combobox.input.focus()
+        type(combobox, 'su')
+        expect(combobox.isOpen).toBe(false)
+
+        combobox.querySelector('[data-slot="combobox-list"]').innerHTML = '<div data-slot="combobox-item" data-value="Suzhou">Suzhou</div>'
+        await Promise.resolve()
+
+        expect(combobox.isOpen).toBe(true)
+        expect(visible(combobox)).toEqual(['Suzhou'])
+    })
+
+    it('clears to an empty text', () => {
+        const combobox = autocomplete('data-value=\'"Hangzhou"\'')
+
+        expect(combobox.input.value).toBe('Hangzhou')
+
+        combobox.querySelector('[data-combobox-clear]').click()
+
+        expect(combobox.value).toBe('')
+        expect(combobox.input.value).toBe('')
+    })
+})

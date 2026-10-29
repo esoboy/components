@@ -1,5 +1,6 @@
 <?php
 
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Esoboy\Ui\Facades\Ui;
 use Livewire\Component;
@@ -38,8 +39,33 @@ new class extends Component
 
     public ?string $time = '10:30:00';
 
+    public ?string $startsAt = '2026-10-29 10:30';
+
+    public array $shift = ['from' => null, 'to' => null];
+
+    public string $email = '';
+
+    public string $city = '';
+
     #[Validate('required|date')]
     public ?string $birthday = null;
+
+    /**
+     * The typed name at each mail domain that starts with what follows its @.
+     *
+     * @return list<string>
+     */
+    #[Computed]
+    public function emailSuggestions(): array
+    {
+        [$name, $domain] = array_pad(explode('@', $this->email, 2), 2, null);
+
+        return $name === '' ? [] : collect(['gmail.com', 'outlook.com', 'qq.com', '163.com'])
+            ->filter(fn (string $host) => $domain === null || str_starts_with($host, $domain))
+            ->map(fn (string $host) => "{$name}@{$host}")
+            ->values()
+            ->all();
+    }
 
     public function saveBirthday(): void
     {
@@ -98,6 +124,11 @@ new class extends Component
             </x-ui::field>
         </div>
         <p class="text-sm text-muted-foreground">time: <span id="time">{{ $time ?? 'none' }}</span></p>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::date-picker id="demo-datetime" time wire:model.live="startsAt" placeholder="Pick a date and time" />
+            <x-ui::date-picker id="demo-shift" mode="range" time default-time="09:00" wire:model.live="shift" placeholder="Pick a shift" />
+        </div>
+        <p class="text-sm text-muted-foreground">startsAt: <span id="starts-at">{{ $startsAt ?? 'none' }}</span>, shift: <span id="shift">{{ ($shift['from'] ?? '').' → '.($shift['to'] ?? '') }}</span></p>
         <form wire:submit="saveBirthday" class="flex items-start gap-3">
             <x-ui::field class="w-fit">
                 <x-ui::label for="birthday">Date of birth</x-ui::label>
@@ -183,6 +214,30 @@ new class extends Component
             </x-ui::combobox>
         </div>
         <p class="text-sm text-muted-foreground">framework: <span id="framework">{{ $framework ?? 'none' }}</span>, frameworks: <span id="frameworks">{{ implode(',', $frameworks) }}</span></p>
+        <p class="text-sm text-muted-foreground">With autocomplete the value is the typed text: suggestions from the server as you type, or filtered here.</p>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::combobox id="demo-email" autocomplete :should-filter="false" wire:model.live.debounce.150ms="email">
+                <x-ui::combobox.input placeholder="Email" :show-trigger="false" class="w-64" />
+                <x-ui::combobox.content>
+                    <x-ui::combobox.list>
+                        @foreach ($this->emailSuggestions as $suggestion)
+                            <x-ui::combobox.item :value="$suggestion" wire:key="email-{{ $suggestion }}">{{ $suggestion }}</x-ui::combobox.item>
+                        @endforeach
+                    </x-ui::combobox.list>
+                </x-ui::combobox.content>
+            </x-ui::combobox>
+            <x-ui::combobox id="demo-city" autocomplete wire:model.live="city">
+                <x-ui::combobox.input placeholder="City" :show-trigger="false" show-clear class="w-56" />
+                <x-ui::combobox.content>
+                    <x-ui::combobox.list>
+                        @foreach (['Hangzhou', 'Shanghai', 'Shenzhen', 'Suzhou', 'Beijing', 'Chengdu'] as $name)
+                            <x-ui::combobox.item :value="$name">{{ $name }}</x-ui::combobox.item>
+                        @endforeach
+                    </x-ui::combobox.list>
+                </x-ui::combobox.content>
+            </x-ui::combobox>
+        </div>
+        <p class="text-sm text-muted-foreground">email: <span id="email">{{ $email ?: 'none' }}</span>, city: <span id="city">{{ $city ?: 'none' }}</span></p>
     </section>
 
     <section class="space-y-4">

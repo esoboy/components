@@ -43,6 +43,12 @@ it('renders a command dialog with a translated, visually hidden title', function
         ->assertDontSee('data-variant="ghost" data-size="icon-sm"', false);
 });
 
+it('marks an autocomplete combobox, whose value is the typed text', function () {
+    $this->blade('<x-ui::combobox autocomplete wire:model.live="email"><x-ui::combobox.input :show-trigger="false" /></x-ui::combobox>')
+        ->assertSee('<eso-combobox data-slot="combobox" data-autocomplete="data-autocomplete" data-should-filter="true" wire:model.live="email">', false)
+        ->assertDontSee('data-combobox-trigger', false);
+});
+
 it('renders a combobox with its input, trigger and clear', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::combobox wire:model="framework" default-value="next">

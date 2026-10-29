@@ -66,6 +66,35 @@ it('renders presets under the calendar as calendar values', function () {
         ->toContain('data-date-picker-preset="&quot;2026-10-27&quot;">Today</button>');
 });
 
+it('renders a date and time picker, the calendar taking the date and a time input the time', function () {
+    $html = (string) $this->blade('<x-ui::date-picker time default-value="2026-01-05 14:30" />');
+
+    preg_match('/ for="(date-picker-[^"]+)-from"/', $html, $matches);
+    $id = $matches[1];
+
+    expect($html)
+        ->toContain('<eso-date-picker data-slot="date-picker" data-mode="single" data-time="data-time" data-default-time="00:00" data-locale="en">')
+        ->toContain('<eso-calendar data-slot="calendar" data-mode="single" data-value="&quot;2026-01-05&quot;"')
+        ->toContain('<div data-slot="date-picker-time" wire:ignore>')
+        ->toContain("<label data-slot=\"field-label\" for=\"{$id}-from\">Time</label>")
+        ->toMatch("/<input type=\"time\"[^>]*id=\"{$id}-from\"[^>]*value=\"14:30\" data-date-picker-time=\"from\">/")
+        ->not->toContain('data-date-picker-time="to"');
+});
+
+it('times both ends of a range, from the default time while empty', function () {
+    app()->setLocale('zh_CN');
+
+    $html = (string) $this->blade('<x-ui::date-picker mode="range" time step="1" default-time="09:00" :default-value="[\'from\' => \'2026-01-05 08:00:00\', \'to\' => null]" />');
+
+    expect($html)
+        ->toContain('data-time="data-time" data-step="1" data-default-time="09:00"')
+        ->toContain('data-value="{&quot;from&quot;:&quot;2026-01-05&quot;,&quot;to&quot;:null}"')
+        ->toContain('>开始时间</label>')
+        ->toContain('>结束时间</label>')
+        ->toMatch('/step="1" value="08:00:00" data-date-picker-time="from">/')
+        ->toMatch('/step="1" value="09:00" data-date-picker-time="to">/');
+});
+
 it('renders a time picker as a time input', function () {
     $this->blade('<x-ui::time-picker wire:model="time" step="1" />')
         ->assertSee('<input type="time" data-slot="input" data-time-picker="data-time-picker" wire:model="time" step="1">', false);
