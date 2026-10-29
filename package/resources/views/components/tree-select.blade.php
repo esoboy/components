@@ -10,7 +10,7 @@
     'showError' => true,
 ])
 
-{{-- A Select-style trigger opening a Tree; checkable picks several. --}}
+{{-- A Select-style trigger opening a Tree; checkable picks several, searchable puts a search box at the top, load fills lazy items. --}}
 @props([
     'items' => [],
     'checkable' => false,
@@ -20,6 +20,8 @@
     'defaultValue' => null,
     'defaultExpanded' => [],
     'expandAll' => false,
+    'searchable' => false,
+    'load' => null,
 ])
 
 @php
@@ -37,7 +39,7 @@ Overlay::close('tree-select');
         <x-ui::icon name="chevron-down" data-slot="select-icon" />
     </button>
     <div id="{{ $id }}" popover="auto" data-slot="tree-select-content" data-side="bottom" data-align="start" style="position-anchor: --{{ $id }}; --side-offset: 4px" wire:ignore.self>
-        <x-ui::tree :items="$items" :checkable="$checkable" :default-value="$value" :default-expanded="$defaultExpanded" :expand-all="$expandAll" />
+        <x-ui::tree :items="$items" :checkable="$checkable" :default-value="$value" :default-expanded="$defaultExpanded" :expand-all="$expandAll" :searchable="$searchable" :load="$load" />
     </div>
 </eso-tree-select>
 <x-ui::field.error :state="$state" />

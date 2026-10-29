@@ -8,41 +8,83 @@
  * Keyboard as in the ARIA tree pattern: Up/Down, Right opens or goes in, Left closes
  * or goes out, Home/End, Enter or Space chooses or checks.
  *
+ * Search (data-tree-search) keeps the items whose label contains it, with their
+ * ancestors opened, highlighting the matches (CSS Custom Highlight API); cleared, it
+ * brings back what was open. A lazy item (data-lazy) asks the Livewire method named
+ * by data-load for its children when it opens; when they come, a checked item checks
+ * them. With data-draggable, dragging an item (a long press on touch screens) over
+ * another dispatches move from the tree: { value, target, position }, before or after
+ * the target or inside it. The DOM stays as it is; the server moves the item.
+ *
  * A Tree Select is a Select-style trigger opening a tree; it proxies the tree's value.
  */
 
 import { announce, define, readValue } from '../support/element.js'
 
 const ITEM = '[data-slot="tree-item"]'
+const ROW = '[data-slot="tree-item-row"]'
+const SEARCH = '[data-tree-search]'
 
 const own = (root, selector) => [...root.querySelectorAll(selector)].filter(element => element.closest('eso-tree') === root)
 const childItems = item => [...(item.querySelector(':scope > [data-slot="tree-group"]')?.children ?? [])].filter(child => child.matches(ITEM))
 const isParent = item => item.hasAttribute('aria-expanded')
 const isDisabled = item => item.getAttribute('aria-disabled') === 'true' || Boolean(item.parentElement?.closest(`${ITEM}[aria-disabled="true"]`))
+const label = item => item.querySelector(`:scope > ${ROW} [data-slot="tree-item-label"]`)
+
+// Every tree's search matches, painted as one highlight.
+const matches = new Map()
+
+function paint() {
+    if (! window.CSS?.highlights || typeof Highlight === 'undefined') return
+
+    const ranges = [...matches.values()].flat()
+
+    ranges.length ? CSS.highlights.set('ui-tree-match', new Highlight(...ranges)) : CSS.highlights.delete('ui-tree-match')
+}
 
 export class TreeElement extends HTMLElement {
     #value = null
     #expanded = new Set()
-    #observer = new MutationObserver(() => this.#sync())
+    #query = ''
+    #before = null
+    #seen = new Set()
+    #drag = null
+    #dropped = false
+    #observer = new MutationObserver(() => this.#refresh())
 
     connectedCallback() {
         this.#value = readValue(this)
 
         if (this.checkable) this.#value = this.#cascade(Array.isArray(this.#value) ? this.#value : [])
 
-        for (const item of this.items) if (item.getAttribute('aria-expanded') === 'true') this.#expanded.add(item.dataset.value)
+        for (const item of this.items) {
+            this.#seen.add(item.dataset.value)
+            if (item.getAttribute('aria-expanded') === 'true') this.#expanded.add(item.dataset.value)
+        }
+
+        // A drag ends without the click that would choose the item dropped.
+        this.addEventListener('click', event => {
+            if (! this.#dropped) return
+
+            event.stopPropagation()
+            this.#dropped = false
+        }, true)
 
         this.addEventListener('click', event => this.#onClick(event))
         this.addEventListener('keydown', event => this.#onKey(event))
+        this.addEventListener('input', event => event.target.matches?.(SEARCH) && this.search(event.target.value))
+        this.addEventListener('pointerdown', event => this.#onPointerDown(event))
 
         this.#sync()
 
-        // Livewire morphs put back the server's open and checked states: restore ours.
+        // Livewire morphs put back the server's open and checked states, and bring loaded children: restore ours.
         this.#observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-expanded', 'aria-selected', 'aria-checked', 'hidden'] })
     }
 
     disconnectedCallback() {
         this.#observer.disconnect()
+        matches.delete(this)
+        paint()
     }
 
     get checkable() {
@@ -74,10 +116,98 @@ export class TreeElement extends HTMLElement {
 
         open ? this.#expanded.add(item.dataset.value) : this.#expanded.delete(item.dataset.value)
         this.#sync()
+
+        if (open) this.#load(item)
+    }
+
+    search(query) {
+        const text = query.trim().toLowerCase()
+
+        if (text && this.#before === null) this.#before = new Set(this.#expanded)
+
+        if (! text && this.#before !== null) {
+            this.#expanded = this.#before
+            this.#before = null
+        }
+
+        this.#query = text
+        this.#sync()
     }
 
     #announce() {
         announce(this)
+    }
+
+    #refresh() {
+        // Children a lazy item loaded: a checked item checks them too.
+        const fresh = this.items.filter(item => ! this.#seen.has(item.dataset.value))
+        const before = JSON.stringify(this.#value)
+
+        fresh.forEach(item => this.#seen.add(item.dataset.value))
+        if (fresh.length && this.checkable) this.#value = this.#cascade(this.#value)
+
+        this.#sync()
+
+        if (JSON.stringify(this.#value) !== before) this.#announce()
+    }
+
+    async #load(item) {
+        const value = item.dataset.value
+        const id = this.closest('[wire\\:id]')?.getAttribute('wire:id')
+        const component = id && window.Livewire?.find(id)
+
+        if (! this.dataset.load || ! item.hasAttribute('data-lazy') || item.getAttribute('aria-busy') === 'true' || childItems(item).length || ! component) return
+
+        item.setAttribute('aria-busy', 'true')
+
+        try {
+            await component.call(this.dataset.load, value)
+        } finally {
+            this.items.find(other => other.dataset.value === value)?.removeAttribute('aria-busy')
+        }
+    }
+
+    // Search: the matches and their ancestors stay, opened; the rest hide.
+    #filter() {
+        const keep = new Set()
+        const ranges = []
+
+        if (this.#query) {
+            for (const item of this.items) {
+                const text = label(item)?.firstChild
+                const index = text?.nodeType === Node.TEXT_NODE ? text.textContent.toLowerCase().indexOf(this.#query) : -1
+
+                if (index < 0) continue
+
+                keep.add(item)
+
+                for (let node = item.parentElement?.closest(ITEM); node && node.closest('eso-tree') === this; node = node.parentElement?.closest(ITEM)) {
+                    keep.add(node)
+                    this.#expanded.add(node.dataset.value)
+                }
+
+                const range = document.createRange()
+
+                range.setStart(text, index)
+                range.setEnd(text, index + this.#query.length)
+                ranges.push(range)
+            }
+        }
+
+        for (const item of this.items) {
+            const hidden = Boolean(this.#query) && ! keep.has(item)
+
+            if (item.hidden !== hidden) item.hidden = hidden
+        }
+
+        const empty = this.querySelector('[data-slot="tree-empty"]')
+        const nothing = Boolean(this.#query) && keep.size === 0
+
+        // Written only when it changes: every write wakes the observer, which filters again.
+        if (empty && empty.hidden === nothing) empty.hidden = ! nothing
+
+        ranges.length ? matches.set(this, ranges) : matches.delete(this)
+        paint()
     }
 
     #choose(item) {
@@ -145,6 +275,8 @@ export class TreeElement extends HTMLElement {
             else if (element.getAttribute(name) !== value) element.setAttribute(name, value)
         }
 
+        this.#filter()
+
         const checked = new Set(this.checkable ? this.#value : [])
         const visible = this.#visible()
         const focusable = this.items.find(item => item.tabIndex === 0 && visible.includes(item))
@@ -187,9 +319,11 @@ export class TreeElement extends HTMLElement {
         }
     }
 
-    // Items whose ancestors are all open, in order.
+    // Items the search keeps whose ancestors are all open, in order.
     #visible() {
         return this.items.filter(item => {
+            if (item.hidden) return false
+
             for (let node = item.parentElement?.closest(ITEM); node && node.closest('eso-tree') === this; node = node.parentElement?.closest(ITEM)) {
                 if (! this.#expanded.has(node.dataset.value)) return false
             }
@@ -224,6 +358,18 @@ export class TreeElement extends HTMLElement {
     }
 
     #onKey(event) {
+        const search = this.querySelector(SEARCH)
+
+        // Down from the search goes into the tree, Up from its first item back.
+        if (event.target === search) {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                this.#focus(this.#visible()[0])
+            }
+
+            return
+        }
+
         const item = event.target.closest?.(ITEM)
 
         if (! item || item.closest('eso-tree') !== this) return
@@ -237,7 +383,7 @@ export class TreeElement extends HTMLElement {
 
         switch (event.key) {
             case 'ArrowDown': return go(visible[index + 1])
-            case 'ArrowUp': return go(visible[index - 1])
+            case 'ArrowUp': return index === 0 && search ? (event.preventDefault(), search.focus()) : go(visible[index - 1])
             case 'Home': return go(visible[0])
             case 'End': return go(visible.at(-1))
             case 'ArrowRight':
@@ -259,6 +405,105 @@ export class TreeElement extends HTMLElement {
                 this.#choose(item)
         }
     }
+
+    // A drag starts once the pointer moves, or on touch screens after a long press (so a swipe still scrolls).
+    #onPointerDown(event) {
+        const row = event.target.closest?.(ROW)
+        const item = row?.closest(ITEM)
+
+        if (! this.hasAttribute('data-draggable') || event.button !== 0 || ! item || item.closest('eso-tree') !== this || isDisabled(item)) return
+        if (event.target.closest('[data-slot="tree-item-toggle"], [data-tree-check]')) return
+
+        const touch = event.pointerType === 'touch'
+        const start = { x: event.clientX, y: event.clientY }
+        const timer = touch ? setTimeout(() => this.#startDrag(item), 400) : 0
+
+        const move = moved => {
+            if (! this.#drag) {
+                if (Math.hypot(moved.clientX - start.x, moved.clientY - start.y) < 5) return
+                if (touch) return stop()
+
+                this.#startDrag(item)
+            }
+
+            this.#dragOver(moved.clientX, moved.clientY)
+        }
+
+        // While dragging, the page doesn't scroll under the finger.
+        const hold = held => this.#drag && held.preventDefault()
+        const escape = pressed => pressed.key === 'Escape' && stop()
+        const drop = () => stop(true)
+        const cancel = () => stop()
+
+        const stop = (dropping = false) => {
+            clearTimeout(timer)
+            document.removeEventListener('pointermove', move)
+            document.removeEventListener('pointerup', drop)
+            document.removeEventListener('pointercancel', cancel)
+            document.removeEventListener('keydown', escape)
+            document.removeEventListener('touchmove', hold)
+
+            if (this.#drag) this.#endDrag(dropping)
+        }
+
+        document.addEventListener('pointermove', move)
+        document.addEventListener('pointerup', drop)
+        document.addEventListener('pointercancel', cancel)
+        document.addEventListener('keydown', escape)
+        document.addEventListener('touchmove', hold, { passive: false })
+    }
+
+    #startDrag(item) {
+        this.#drag = { item, target: null, position: null }
+        item.toggleAttribute('data-dragging', true)
+        this.toggleAttribute('data-dragging', true)
+    }
+
+    // Over a row: its top quarter drops before it, its bottom quarter after, the rest inside (not into a disabled item).
+    #dragOver(x, y) {
+        const drag = this.#drag
+        const row = document.elementFromPoint(x, y)?.closest(ROW)
+        const target = row?.closest(ITEM)
+        let position = null
+
+        if (target && target.closest('eso-tree') === this && ! drag.item.contains(target)) {
+            const box = row.getBoundingClientRect()
+            const at = (y - box.top) / box.height
+
+            position = at < 0.25 ? 'before' : at > 0.75 ? 'after' : 'inside'
+            if (position === 'inside' && isDisabled(target)) position = at < 0.5 ? 'before' : 'after'
+        }
+
+        if (drag.target && (drag.target !== target || drag.position !== position)) drag.target.removeAttribute('data-drop')
+
+        drag.target = position ? target : null
+        drag.position = position
+
+        if (drag.target) drag.target.setAttribute('data-drop', position)
+    }
+
+    #endDrag(dropping) {
+        const { item, target, position } = this.#drag
+
+        this.#drag = null
+        item.removeAttribute('data-dragging')
+        target?.removeAttribute('data-drop')
+        this.removeAttribute('data-dragging')
+
+        // The click that follows the pointer going up isn't a choice.
+        this.#dropped = true
+        setTimeout(() => (this.#dropped = false))
+
+        if (! dropping || ! target) return
+
+        // Dropped inside, the target opens, to show the item there once the server has moved it.
+        if (position === 'inside') {
+            this.#expanded.add(target.dataset.value)
+            this.#sync()
+        }
+
+        this.dispatchEvent(new CustomEvent('move', { detail: { value: item.dataset.value, target: target.dataset.value, position } }))
+    }
 }
 
 export class TreeSelectElement extends HTMLElement {
@@ -269,7 +514,7 @@ export class TreeSelectElement extends HTMLElement {
         this.content?.addEventListener('toggle', event => {
             this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open'))
 
-            if (event.newState === 'open') this.tree?.querySelector(`${ITEM}[tabindex="0"]`)?.focus()
+            if (event.newState === 'open') (this.tree?.querySelector(SEARCH) ?? this.tree?.querySelector(`${ITEM}[tabindex="0"]`))?.focus()
         })
 
         // The tree's events become the picker's; one choice closes a single picker.

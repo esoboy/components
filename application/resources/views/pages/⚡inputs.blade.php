@@ -1,10 +1,54 @@
 <?php
 
 use Esoboy\Ui\Facades\Ui;
+use Esoboy\Ui\Support\Options;
 use Livewire\Component;
 
 new class extends Component
 {
+    public array $org = [
+        ['value' => 'eng', 'label' => 'Engineering', 'lazy' => true],
+        ['value' => 'design', 'label' => 'Design', 'lazy' => true],
+        ['value' => 'sales', 'label' => 'Sales', 'lazy' => true],
+    ];
+
+    public array $staff = ['design'];
+
+    public ?string $team = null;
+
+    public array $outline = [
+        ['value' => 'intro', 'label' => 'Introduction'],
+        ['value' => 'setup', 'label' => 'Getting started', 'children' => [
+            ['value' => 'install', 'label' => 'Installation'],
+            ['value' => 'config', 'label' => 'Configuration'],
+        ]],
+        ['value' => 'components', 'label' => 'Components', 'children' => [
+            ['value' => 'button', 'label' => 'Button'],
+            ['value' => 'tree', 'label' => 'Tree'],
+        ]],
+        ['value' => 'faq', 'label' => 'FAQ'],
+    ];
+
+    /**
+     * A slow source of children for the lazy org tree: teams, then their people.
+     */
+    public function loadChildren(string $value): void
+    {
+        usleep(500_000);
+
+        $teams = ['eng' => ['Web', 'Mobile'], 'design' => ['Brand', 'Product'], 'sales' => ['EMEA', 'APAC']];
+        $children = str_contains($value, '.')
+            ? array_map(fn ($name) => ['value' => "{$value}.".strtolower($name), 'label' => $name], ['Ada', 'Grace', 'Linus'])
+            : array_map(fn ($team) => ['value' => "{$value}.".strtolower($team), 'label' => $team, 'lazy' => true], $teams[$value] ?? []);
+
+        $this->org = Options::put($this->org, $value, $children);
+    }
+
+    public function move(string $value, string $target, string $position): void
+    {
+        $this->outline = Options::move($this->outline, $value, $target, $position);
+    }
+
     public array $region = ['zhejiang', 'hangzhou', 'xihu'];
 
     public array $category = [];
@@ -160,7 +204,7 @@ new class extends Component
                 <p class="text-xs text-muted-foreground">Checked: <span id="permissions">{{ implode(', ', $permissions) }}</span></p>
             </div>
             <div class="space-y-2">
-                <x-ui::tree wire:model.live="file" :default-expanded="['components', 'ui']">
+                <x-ui::tree wire:model.live="file" searchable placeholder="Search files" :default-expanded="['components', 'ui']">
                     <x-ui::tree.item value="components" label="components">
                         <x-slot:icon><x-ui::icon name="folder" /></x-slot:icon>
                         <x-ui::tree.item value="ui" label="ui">
@@ -174,16 +218,30 @@ new class extends Component
                 </x-ui::tree>
                 <p class="text-xs text-muted-foreground">Selected: <span id="file">{{ $file }}</span></p>
             </div>
+            <div class="space-y-2">
+                <x-ui::tree id="org-tree" wire:model.live="staff" checkable load="loadChildren" :items="$org" />
+                <p class="text-xs text-muted-foreground">Lazy: teams and people load as you open them; checked Design checks them as they come. Checked: <span id="staff">{{ implode(', ', $staff) }}</span></p>
+            </div>
+            <div class="space-y-2">
+                @php
+                $order = function (array $items) use (&$order): string {
+                    return implode(', ', array_map(fn ($item) => $item['label'].(empty($item['children']) ? '' : ' ('.$order($item['children']).')'), $items));
+                };
+                @endphp
+                <x-ui::tree id="outline-tree" draggable expand-all :items="$outline" wire:move="move($event.detail.value, $event.detail.target, $event.detail.position)" />
+                <p class="text-xs text-muted-foreground">Draggable: drop on a row's top or bottom edge to put an item before or after it, on its middle to put it inside. Order: <span id="outline">{{ $order($outline) }}</span></p>
+            </div>
         </div>
     </section>
 
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Tree Select</h2>
         <div class="flex flex-wrap gap-4">
-            <x-ui::tree-select wire:model.live="department" :items="$depts" placeholder="Department" expand-all class="w-56" />
+            <x-ui::tree-select wire:model.live="department" :items="$depts" placeholder="Department" searchable expand-all class="w-56" />
             <x-ui::tree-select wire:model.live="departments" :items="$depts" checkable placeholder="Departments" expand-all class="w-72" />
+            <x-ui::tree-select id="team-select" wire:model.live="team" :items="$org" load="loadChildren" searchable placeholder="Team" class="w-56" />
         </div>
-        <p class="text-xs text-muted-foreground">Single: <span id="department">{{ $department }}</span> · Multiple: <span id="departments">{{ implode(', ', $departments) }}</span></p>
+        <p class="text-xs text-muted-foreground">Single: <span id="department">{{ $department }}</span> · Multiple: <span id="departments">{{ implode(', ', $departments) }}</span> · Lazy: <span id="team">{{ $team }}</span></p>
     </section>
 
     <section class="space-y-4">

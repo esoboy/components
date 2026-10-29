@@ -152,3 +152,149 @@ describe('tree select', () => {
         expect(element.trigger.textContent).toBe('Users, Ban')
     })
 })
+
+describe('search', () => {
+    function searchable() {
+        document.body.innerHTML = `
+            <eso-tree>
+                <div data-slot="tree-search"><input data-tree-search></div>
+                <ul role="tree">${permissions}</ul>
+                <div data-slot="tree-empty" hidden>No results</div>
+            </eso-tree>`
+
+        return document.querySelector('eso-tree')
+    }
+
+    const search = (tree, text) => {
+        const input = tree.querySelector('[data-tree-search]')
+        input.value = text
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+
+    const shown = tree => tree.items.filter(item => ! item.hidden).map(item => item.dataset.value)
+
+    it('keeps the matches and their ancestors, opened, and brings back what was open when cleared', async () => {
+        const tree = searchable()
+
+        search(tree, 'BA')
+        await Promise.resolve()
+
+        expect(shown(tree)).toEqual(['users', 'ban'])
+        expect(node(tree, 'users').getAttribute('aria-expanded')).toBe('true')
+        expect(tree.querySelector('[data-slot="tree-empty"]').hidden).toBe(true)
+
+        search(tree, 'nothing')
+        await Promise.resolve()
+        expect(tree.querySelector('[data-slot="tree-empty"]').hidden).toBe(false)
+
+        search(tree, '')
+        await Promise.resolve()
+
+        expect(shown(tree)).toEqual(['orders', 'view', 'refund', 'export', 'users', 'ban', 'settings'])
+        expect(node(tree, 'users').getAttribute('aria-expanded')).toBe('false')
+        expect(tree.querySelector('[data-slot="tree-empty"]').hidden).toBe(true)
+    })
+
+    it('moves between the search box and the items with the arrows', () => {
+        const tree = searchable()
+        const input = tree.querySelector('[data-tree-search]')
+
+        search(tree, 'set')
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }))
+        expect(document.activeElement).toBe(node(tree, 'settings'))
+
+        node(tree, 'settings').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }))
+        expect(document.activeElement).toBe(input)
+    })
+})
+
+describe('lazy items', () => {
+    const lazy = (value, label) => `
+        <li role="treeitem" tabindex="-1" data-slot="tree-item" data-value="${value}" data-lazy aria-expanded="false">
+            <div data-slot="tree-item-row"><span data-slot="tree-item-toggle"></span><input type="checkbox" data-tree-check><span data-slot="tree-item-label">${label}</span></div>
+            <ul role="group" data-slot="tree-group" hidden></ul>
+        </li>`
+
+    afterEach(() => delete window.Livewire)
+
+    it('asks the load method for the children of an item it opens, busy meanwhile, and checks them under a checked item', async () => {
+        document.body.innerHTML = `<div wire:id="page"><eso-tree data-checkable data-load="loadChildren" data-value='["design"]'><ul role="tree">${lazy('design', 'Design')}</ul></eso-tree></div>`
+
+        const tree = document.querySelector('eso-tree')
+        const call = vi.fn(async () => {
+            expect(node(tree, 'design').getAttribute('aria-busy')).toBe('true')
+            node(tree, 'design').querySelector('[data-slot="tree-group"]').innerHTML = item('design.brand', 'Brand') + item('design.product', 'Product')
+            await Promise.resolve()
+        })
+        const seen = announced(tree)
+
+        window.Livewire = { find: id => (id === 'page' ? { call } : null) }
+
+        node(tree, 'design').querySelector('[data-slot="tree-item-toggle"]').click()
+        await vi.waitFor(() => expect(node(tree, 'design').hasAttribute('aria-busy')).toBe(false))
+
+        expect(call).toHaveBeenCalledWith('loadChildren', 'design')
+        expect(tree.value).toEqual(['design', 'design.brand', 'design.product'])
+        expect(seen.at(-1)).toEqual(['design', 'design.brand', 'design.product'])
+
+        // Loaded once: opening it again asks for nothing.
+        tree.expand(node(tree, 'design'), false)
+        tree.expand(node(tree, 'design'), true)
+        expect(call).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe('dragging', () => {
+    // jsdom has no PointerEvent: a MouseEvent with what the tree reads of one.
+    const pointer = (type, init = {}) => Object.assign(new MouseEvent(type, { bubbles: true, ...init }), { pointerType: 'mouse' })
+
+    it('dispatches move for where an item is dropped, and not into its own children', () => {
+        const tree = mount('data-draggable')
+        const moves = []
+        tree.addEventListener('move', event => moves.push(event.detail))
+
+        const drag = (from, to, offset) => {
+            const target = row(tree, to)
+
+            target.getBoundingClientRect = () => ({ top: 0, height: 40 })
+            document.elementFromPoint = () => target
+
+            row(tree, from).dispatchEvent(pointer('pointerdown', { button: 0, clientX: 0, clientY: 100 }))
+            document.dispatchEvent(pointer('pointermove', { clientX: 0, clientY: offset }))
+            const drop = target.closest('[data-slot="tree-item"]').dataset.drop
+            document.dispatchEvent(pointer('pointerup', { clientX: 0, clientY: offset }))
+
+            return drop
+        }
+
+        expect(drag('settings', 'users', 4)).toBe('before')
+        expect(drag('settings', 'users', 36)).toBe('after')
+        expect(drag('settings', 'users', 20)).toBe('inside')
+        expect(drag('orders', 'view', 20)).toBe(undefined)
+
+        expect(moves).toEqual([
+            { value: 'settings', target: 'users', position: 'before' },
+            { value: 'settings', target: 'users', position: 'after' },
+            { value: 'settings', target: 'users', position: 'inside' },
+        ])
+        expect(node(tree, 'users').getAttribute('aria-expanded')).toBe('true')
+        expect(tree.hasAttribute('data-dragging')).toBe(false)
+    })
+
+    it('ends without choosing the item, and Escape drops nothing', () => {
+        const tree = mount('data-draggable')
+        const moves = []
+        tree.addEventListener('move', event => moves.push(event.detail))
+        row(tree, 'users').getBoundingClientRect = () => ({ top: 0, height: 40 })
+        document.elementFromPoint = () => row(tree, 'users')
+
+        row(tree, 'settings').dispatchEvent(pointer('pointerdown', { button: 0, clientX: 0, clientY: 100 }))
+        document.dispatchEvent(pointer('pointermove', { clientX: 0, clientY: 20 }))
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+        document.dispatchEvent(pointer('pointerup'))
+        row(tree, 'settings').click()
+
+        expect(moves).toEqual([])
+        expect(tree.value).toBe(null)
+    })
+})
