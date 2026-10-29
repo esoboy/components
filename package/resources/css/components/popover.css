@@ -1,10 +1,11 @@
 /*
- * Popover, menu, Tooltip and Hover Card content: native popovers in the top layer,
- * placed against their trigger with CSS anchor positioning. data-side picks the
- * side (flipping when it doesn't fit), data-align the edge, --side-offset the gap.
+ * Popover, menu, Tooltip, Hover Card, Select and Combobox content: native popovers
+ * in the top layer, placed against their trigger with CSS anchor positioning.
+ * data-side picks the side (flipping when it doesn't fit), data-align the edge,
+ * --side-offset the gap. Select over its trigger is placed by its script instead.
  */
 @layer components {
-    :where([data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="tooltip-content"], [data-slot="hover-card-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"], [data-slot="navigation-menu-content"], [data-slot="cascader-content"], [data-slot="tree-select-content"], [data-slot="mentions-content"], [data-slot="tour-content"]) {
+    :where([data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="tooltip-content"], [data-slot="hover-card-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"], [data-slot="navigation-menu-content"], [data-slot="select-content"], [data-slot="combobox-content"], [data-slot="cascader-content"], [data-slot="tree-select-content"], [data-slot="mentions-content"], [data-slot="tour-content"]) {
         position: fixed;
         inset: auto;
         margin: 0;
