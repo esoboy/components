@@ -174,19 +174,64 @@ trait WithDataTable
         return $this->filters !== [] || $this->search !== '';
     }
 
-    public function updatedPerPage(): void
+    /**
+     * The page sizes Pagination offers. $perPage is always one of them: another (from
+     * the URL, say) becomes the first.
+     *
+     * @return non-empty-list<int>
+     */
+    public function perPageOptions(): array
     {
-        $this->resetPage();
+        return [10, 20, 25, 30, 40, 50];
     }
 
-    public function updatedFilters(): void
+    public function mountWithDataTable(): void
     {
-        $this->resetPage();
+        $this->keepDataTableInBounds();
     }
 
-    public function updatedSearch(): void
+    /**
+     * A new page size, filter or search starts again from the first page. Livewire's
+     * hook for this trait, so a component's own updatedSearch() and the like add to it.
+     */
+    public function updatedWithDataTable(string $property): void
     {
-        $this->resetPage();
+        if (in_array(strtok($property, '.'), ['perPage', 'filters', 'search'], true)) {
+            $this->keepDataTableInBounds();
+            $this->resetPage();
+        }
+    }
+
+    /**
+     * Keeps what the URL or the browser sent to what the table takes: a page size it
+     * offers, and filters that are lists of values.
+     */
+    private function keepDataTableInBounds(): void
+    {
+        if (! in_array($this->perPage, $this->perPageOptions(), true)) {
+            $this->perPage = $this->perPageOptions()[0];
+        }
+
+        $this->filters = self::filterValues($this->filters);
+    }
+
+    /**
+     * @param  array<mixed>  $filters
+     * @return array<string, list<string>>
+     */
+    private static function filterValues(array $filters): array
+    {
+        $kept = [];
+
+        foreach ($filters as $column => $values) {
+            $values = is_string($column) && is_array($values) ? array_values(array_filter($values, is_string(...))) : [];
+
+            if ($values !== []) {
+                $kept[$column] = $values;
+            }
+        }
+
+        return $kept;
     }
 
     /**

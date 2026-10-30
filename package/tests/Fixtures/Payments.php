@@ -13,6 +13,14 @@ class Payments extends Component
 {
     use WithDataTable;
 
+    public string $searchedFor = '';
+
+    // The app's own hook for a property the trait resets the page on.
+    public function updatedSearch(string $search): void
+    {
+        $this->searchedFor = $search;
+    }
+
     public function sortedSql(): string
     {
         return $this->sortQuery(app('db')->table('payments'), ['email'])->toSql();

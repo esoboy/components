@@ -2,10 +2,9 @@
 
 @use('Esoboy\Ui\Support\Model')
 
-{{-- shadcn's DataTablePagination for a Laravel paginator: selection count, rows per page, page x of y, first / previous / next / last. --}}
+{{-- shadcn's DataTablePagination for a Laravel paginator: selection count, rows per page (WithDataTable's perPageOptions()), page x of y, first / previous / next / last. --}}
 @props([
     'paginator',
-    'pageSizes' => [10, 20, 25, 30, 40, 50],
 ])
 
 @php
@@ -14,19 +13,19 @@ $selected = $table && property_exists($table, 'selected') ? count($table->select
 $total = method_exists($paginator, 'total') ? $paginator->total() : $paginator->count();
 $last = method_exists($paginator, 'lastPage') ? max($paginator->lastPage(), 1) : $paginator->currentPage() + ($paginator->hasMorePages() ? 1 : 0);
 $page = $paginator->getPageName();
-$perPage = $table && property_exists($table, 'perPage') ? (string) $table->perPage : null;
+$sizes = $table && method_exists($table, 'perPageOptions') ? $table->perPageOptions() : null;
 @endphp
 
 <div {{ $attributes->merge(['data-slot' => 'data-table-pagination']) }}>
     <div data-slot="data-table-selection">{{ __('ui::data-table.selected', ['selected' => $selected, 'total' => $total]) }}</div>
     <div data-slot="data-table-pagination-controls">
-        @if ($perPage !== null)
+        @if ($sizes !== null)
         <div data-slot="data-table-page-size">
             <p>{{ __('ui::data-table.rows_per_page') }}</p>
             <x-ui::select wire:model.live="perPage">
-                <x-ui::select.trigger class="h-8 w-[70px]"><x-ui::select.value :placeholder="$perPage" /></x-ui::select.trigger>
+                <x-ui::select.trigger class="h-8 w-[70px]"><x-ui::select.value :placeholder="(string) $table->perPage" /></x-ui::select.trigger>
                 <x-ui::select.content side="top">
-                    @foreach ($pageSizes as $size)
+                    @foreach ($sizes as $size)
                     <x-ui::select.item :value="(string) $size">{{ $size }}</x-ui::select.item>
                     @endforeach
                 </x-ui::select.content>

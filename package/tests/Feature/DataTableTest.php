@@ -88,6 +88,36 @@ it('resets to the first page when the page size changes', function () {
         ->assertSet('paginators.page', 1);
 });
 
+it('takes only the page sizes the pager offers, from the URL or the browser', function () {
+    expect(Livewire::test(Payments::class)->html())
+        ->toContain('data-value="25"')
+        ->toContain('data-value="50"');
+
+    Livewire::withQueryParams(['perPage' => 1000000])
+        ->test(Payments::class)
+        ->assertSet('perPage', 10)
+        ->set('perPage', 30)
+        ->assertSet('perPage', 30)
+        ->set('perPage', 7)
+        ->assertSet('perPage', 10);
+});
+
+it('resets the page on search alongside the app\'s own updatedSearch()', function () {
+    Livewire::test(Payments::class)
+        ->call('setPage', 3)
+        ->set('search', 'ada')
+        ->assertSet('searchedFor', 'ada')
+        ->assertSet('paginators.page', 1);
+});
+
+it('keeps only filters that are lists of values', function () {
+    Livewire::withQueryParams(['filters' => ['status' => [['paid']], 'method' => ['card', ['x']], 0 => ['y']]])
+        ->test(Payments::class)
+        ->assertSet('filters', ['method' => ['card']])
+        ->set('filters.status', [['failed']])
+        ->assertSet('filters', ['method' => ['card']]);
+});
+
 it('filters columns, back on the first page, and resets filters and search', function () {
     $component = Livewire::test(Payments::class)
         ->call('setPage', 3)
