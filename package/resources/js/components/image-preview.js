@@ -7,7 +7,7 @@
  * image closes the viewer.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const MIN = 0.5
 const MAX = 5
@@ -23,6 +23,8 @@ export class ImagePreviewElement extends HTMLElement {
     #dragged = false
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.addEventListener('click', event => {
             const trigger = event.target.closest?.('[data-slot="image-preview-trigger"]')
 
@@ -35,7 +37,7 @@ export class ImagePreviewElement extends HTMLElement {
             // A click beside the image, but not the end of a drag.
             if (event.target === this.dialog && ! this.#dragged) this.dialog.close()
             this.#dragged = false
-        })
+        }, { signal })
 
         this.addEventListener('keydown', event => {
             if (! this.dialog?.contains(event.target)) return
@@ -46,18 +48,18 @@ export class ImagePreviewElement extends HTMLElement {
                 event.preventDefault()
                 this.#act(action)
             }
-        })
+        }, { signal })
 
         this.addEventListener('wheel', event => {
             if (! this.dialog?.open || ! this.dialog.contains(event.target)) return
 
             event.preventDefault()
             this.#zoom(this.#scale * Math.exp(-event.deltaY * 0.002))
-        }, { passive: false })
+        }, { passive: false, signal })
 
         this.addEventListener('dblclick', event => {
             if (event.target === this.image) this.#scale > 1 ? this.#reset() : this.#zoom(2)
-        })
+        }, { signal })
 
         this.addEventListener('pointerdown', event => {
             if (event.target !== this.image || this.#scale <= 1 || event.button !== 0) return
@@ -66,7 +68,7 @@ export class ImagePreviewElement extends HTMLElement {
             this.image.setPointerCapture?.(event.pointerId)
             this.#drag = { pointer: event.pointerId, x: event.clientX - this.#x, y: event.clientY - this.#y }
             this.image.toggleAttribute('data-dragging', true)
-        })
+        }, { signal })
 
         this.addEventListener('pointermove', event => {
             if (! this.#drag || this.#drag.pointer !== event.pointerId) return
@@ -75,20 +77,24 @@ export class ImagePreviewElement extends HTMLElement {
             this.#y = event.clientY - this.#drag.y
             this.#dragged = true
             this.#apply()
-        })
+        }, { signal })
 
         for (const type of ['pointerup', 'pointercancel']) {
             this.addEventListener(type, () => {
                 this.#drag = null
                 this.image?.removeAttribute('data-dragging')
-            })
+            }, { signal })
         }
 
         // load and error don't bubble: listen while they go down.
         const loaded = event => event.target === this.image && this.dialog.removeAttribute('data-loading')
 
-        this.addEventListener('load', loaded, true)
-        this.addEventListener('error', loaded, true)
+        this.addEventListener('load', loaded, { capture: true, signal })
+        this.addEventListener('error', loaded, { capture: true, signal })
+    }
+
+    disconnectedCallback() {
+        disconnected(this)
     }
 
     get dialog() {

@@ -40,6 +40,26 @@ HTMLDialogElement.prototype.close = function (value) {
     this.dispatchEvent(new Event('close'))
 }
 
+// Invoker commands: a click on a button with command runs it on the element commandfor
+// names, or its commandForElement.
+document.addEventListener('click', event => {
+    const button = event.target.closest?.('button[command]')
+
+    if (! button || button.disabled || event.defaultPrevented) return
+
+    const target = button.commandForElement ?? document.getElementById(button.getAttribute('commandfor'))
+    const command = button.getAttribute('command')
+
+    if (! target) return
+
+    if (command === 'toggle-popover') target.togglePopover()
+    else if (command === 'show-popover') target.showPopover()
+    else if (command === 'hide-popover') target.hidePopover()
+    else if (command === 'show-modal') target.showModal()
+    else if (command === 'close') target.close()
+    else if (command.startsWith('--')) target.dispatchEvent(Object.assign(new Event('command'), { command, source: button }))
+})
+
 // Desktop unless a test swaps it.
 window.matchMedia ||= query => ({ media: query, matches: false, addEventListener() {}, removeEventListener() {} })
 

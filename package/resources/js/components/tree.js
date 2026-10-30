@@ -19,7 +19,8 @@
  * A Tree Select is a Select-style trigger opening a tree; it proxies the tree's value.
  */
 
-import { announce, define, readValue } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue } from '../support/element.js'
+import { link } from '../support/overlay.js'
 
 const ITEM = '[data-slot="tree-item"]'
 const ROW = '[data-slot="tree-item-row"]'
@@ -53,6 +54,8 @@ export class TreeElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#refresh())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = readValue(this)
 
         if (this.checkable) this.#value = this.#cascade(Array.isArray(this.#value) ? this.#value : [])
@@ -68,12 +71,12 @@ export class TreeElement extends HTMLElement {
 
             event.stopPropagation()
             this.#dropped = false
-        }, true)
+        }, { capture: true, signal })
 
-        this.addEventListener('click', event => this.#onClick(event))
-        this.addEventListener('keydown', event => this.#onKey(event))
-        this.addEventListener('input', event => event.target.matches?.(SEARCH) && this.search(event.target.value))
-        this.addEventListener('pointerdown', event => this.#onPointerDown(event))
+        this.addEventListener('click', event => this.#onClick(event), { signal })
+        this.addEventListener('keydown', event => this.#onKey(event), { signal })
+        this.addEventListener('input', event => event.target.matches?.(SEARCH) && this.search(event.target.value), { signal })
+        this.addEventListener('pointerdown', event => this.#onPointerDown(event), { signal })
 
         this.#sync()
 
@@ -82,6 +85,7 @@ export class TreeElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
         matches.delete(this)
         paint()
@@ -510,12 +514,13 @@ export class TreeSelectElement extends HTMLElement {
     #observer = new MutationObserver(() => this.render())
 
     connectedCallback() {
-        this.trigger?.addEventListener('click', () => this.content?.togglePopover())
+        const signal = connected(this)
+
         this.content?.addEventListener('toggle', event => {
             this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open'))
 
             if (event.newState === 'open') (this.tree?.querySelector(SEARCH) ?? this.tree?.querySelector(`${ITEM}[tabindex="0"]`))?.focus()
-        })
+        }, { signal })
 
         // The tree's events become the picker's; one choice closes a single picker.
         for (const type of ['input', 'change']) {
@@ -529,14 +534,17 @@ export class TreeSelectElement extends HTMLElement {
                     this.trigger?.focus()
                 }
                 this.dispatchEvent(new Event(type, { bubbles: true }))
-            })
+            }, { signal })
         }
+
+        if (this.trigger) link(this.trigger, this.content)
 
         // Livewire morphs put back the server's label: show ours.
         if (this.trigger) this.#observer.observe(this.trigger, { childList: true, subtree: true, characterData: true })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

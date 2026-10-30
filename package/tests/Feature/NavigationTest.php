@@ -78,10 +78,10 @@ describe('tabs', function () {
 
         $view->assertSee('<eso-tabs data-slot="tabs" data-orientation="horizontal" data-value="password">', false)
             ->assertSee('<div role="tablist" data-slot="tabs-list" data-variant="line" aria-orientation="horizontal">', false)
-            ->assertSee('<button type="button" role="tab" data-slot="tabs-trigger" data-value="account" aria-selected="false" tabindex="-1">Account</button>', false)
-            ->assertSee('<button type="button" role="tab" data-slot="tabs-trigger" data-value="password" data-active="data-active" aria-selected="true" tabindex="0">Password</button>', false)
-            ->assertSee('<div role="tabpanel" tabindex="0" data-slot="tabs-content" data-value="account" hidden="hidden">A</div>', false)
-            ->assertSee('<div role="tabpanel" tabindex="0" data-slot="tabs-content" data-value="password">P</div>', false);
+            ->assertSee('<button type="button" role="tab" wire:key="tabs-trigger-account" data-slot="tabs-trigger" data-value="account" aria-selected="false" tabindex="-1">Account</button>', false)
+            ->assertSee('<button type="button" role="tab" wire:key="tabs-trigger-password" data-slot="tabs-trigger" data-value="password" data-active="data-active" aria-selected="true" tabindex="0">Password</button>', false)
+            ->assertSee('<div role="tabpanel" wire:key="tabs-content-account" tabindex="0" data-slot="tabs-content" data-value="account" hidden="hidden">A</div>', false)
+            ->assertSee('<div role="tabpanel" wire:key="tabs-content-password" tabindex="0" data-slot="tabs-content" data-value="password">P</div>', false);
     });
 
     it('passes the orientation to the list', function () {
@@ -228,11 +228,9 @@ describe('sidebar', function () {
             </x-ui::sidebar.menu>
             BLADE);
 
-        [$anchor] = idsOf($html, 'data-tooltip');
-
         expect($html)
-            ->toContain('<a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="default" data-active="data-active" data-tooltip="'.$anchor.'" style="anchor-name: --'.$anchor.';" href="/"><span>Home</span></a>')
-            ->toContain('id="'.$anchor.'" popover="manual" role="tooltip"')
+            ->toContain('<a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="default" data-active="data-active" data-tooltip-trigger="data-tooltip-trigger" href="/"><span>Home</span></a>')
+            ->toContain('<div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="right"')
             ->toContain('data-sidebar="menu-tooltip"')
             ->toContain('<button type="button" data-slot="sidebar-menu-action" data-sidebar="menu-action" data-show-on-hover="data-show-on-hover">')
             ->toContain('<div data-slot="sidebar-menu-badge" data-sidebar="menu-badge">3</div>')

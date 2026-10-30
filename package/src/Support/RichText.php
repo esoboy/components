@@ -2,6 +2,8 @@
 
 namespace Esoboy\Ui\Support;
 
+use Dom\HTMLDocument;
+use Dom\HTMLElement;
 use InvalidArgumentException;
 
 /**
@@ -260,6 +262,103 @@ final class RichText
 
         // One line break between blocks, however many ended and began there.
         return trim(preg_replace("~[ \t]*\n(?:[ \t]*\n)*~", "\n", $text) ?? '');
+    }
+
+    /**
+     * How many characters rich text has, as the Editor counts them (max-length, its
+     * count): the graphemes of its text, so 汉 and 👍🏽 are one each, without spaces
+     * and line breaks; images, video, formulas and file cards count none.
+     *
+     * @param  string|list<string>|null  $format
+     */
+    public static function characters(?string $html, string|array|null $format = null): int
+    {
+        $body = self::body(self::sanitize($html, $format));
+
+        if ($body === null) {
+            return 0;
+        }
+
+        // What the Editor holds as one piece, not as text: formulas, file cards.
+        foreach ($body->querySelectorAll('math, a[download]') as $piece) {
+            $piece->remove();
+        }
+
+        $text = (string) preg_replace('/[\s\p{Z}\x{FEFF}]+/u', '', $body->textContent ?? '');
+
+        return (int) preg_match_all('/\X/u', $text);
+    }
+
+    /**
+     * Rich text as a page shows it (<x-ui::rich-text>): cleaned to the format, its
+     * headings with ids to link to (headings()), its images loading as they come into
+     * view.
+     *
+     * @param  string|list<string>|null  $format
+     */
+    public static function display(?string $html, string|array|null $format = null): string
+    {
+        $body = self::body(self::sanitize($html, $format));
+
+        if ($body === null) {
+            return '';
+        }
+
+        self::anchor($body);
+
+        foreach ($body->querySelectorAll('img') as $image) {
+            $image->setAttribute('loading', 'lazy');
+            $image->setAttribute('decoding', 'async');
+        }
+
+        return $body->innerHTML;
+    }
+
+    /**
+     * The headings of rich text, in order: their level (1 for h1, …), text, and the id
+     * display() gives them.
+     *
+     * @param  string|list<string>|null  $format
+     * @return list<array{level: int, text: string, id: string}>
+     */
+    public static function headings(?string $html, string|array|null $format = null): array
+    {
+        $body = self::body(self::sanitize($html, $format));
+
+        return $body === null ? [] : self::anchor($body);
+    }
+
+    private static function body(string $html): ?HTMLElement
+    {
+        return $html === '' ? null : HTMLDocument::createFromString("<!DOCTYPE html><body>{$html}</body>", LIBXML_NOERROR)->body;
+    }
+
+    /**
+     * Gives each heading an id from its text, as written (第一章, getting-started), a
+     * number after it when the text repeats.
+     *
+     * @return list<array{level: int, text: string, id: string}>
+     */
+    private static function anchor(HTMLElement $body): array
+    {
+        $headings = [];
+        $taken = [];
+
+        foreach ($body->querySelectorAll('h1, h2, h3, h4, h5, h6') as $heading) {
+            $text = trim((string) preg_replace('/\s+/u', ' ', $heading->textContent ?? ''));
+            $slug = trim((string) preg_replace('/[^\p{L}\p{N}_]+/u', '-', mb_strtolower($text)), '-') ?: 'section';
+            $id = $slug;
+
+            for ($count = 2; isset($taken[$id]); $count++) {
+                $id = "{$slug}-{$count}";
+            }
+
+            $taken[$id] = true;
+            $heading->setAttribute('id', $id);
+            $headings[] = ['level' => (int) substr($heading->tagName, 1), 'text' => $text, 'id' => $id];
+        }
+
+        return $headings;
     }
 
     /**

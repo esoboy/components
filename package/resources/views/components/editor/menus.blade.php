@@ -114,6 +114,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
         @if ($rich->has('image'))
         <div data-slot="editor-bubble-group" data-editor-for="image">
             <x-ui::editor.button command="caption" />
+            <x-ui::editor.button command="image-row" />
             <x-ui::popover>
                 <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::popover.trigger>
                 <x-ui::popover.content align="start" data-editor-field-content>
@@ -177,7 +178,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 @if ($uploads && $rich->has('image', 'audio', 'video', 'file'))
 {{-- Where dropped or pasted files will go while they upload. --}}
 <template data-template="uploading">
-    <span data-slot="editor-uploading" contenteditable="false"><x-ui::spinner /><span>{{ __('ui::editor.uploading') }}</span><button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
+    <span data-slot="editor-uploading" contenteditable="false"><x-ui::spinner /><span>{{ __('ui::editor.uploading') }}</span><span data-editor-upload-progress></span><button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
 </template>
 {{-- Where files that wouldn't upload were to go: why (the uploader's reason), to dismiss. --}}
 <template data-template="upload-failed">

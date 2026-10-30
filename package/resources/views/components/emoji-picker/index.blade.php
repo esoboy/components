@@ -19,3 +19,4 @@ $data = collect(["emoji/{$locale}.json", 'emoji/'.strtok($locale, '-').'.json', 
     'data-columns' => $columns,
     'style' => "--emoji-picker-columns: {$columns};",
 ]) }}>{{ $slot }}</eso-emoji-picker>
+<x-ui::extras />

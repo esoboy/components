@@ -52,12 +52,12 @@ describe('collapsible', function () {
         $this->blade($template, ['open' => false])
             ->assertSee('<eso-collapsible data-slot="collapsible">', false)
             ->assertSee('<button type="button" data-slot="collapsible-trigger" aria-expanded="false">T</button>', false)
-            ->assertSee('<div data-slot="collapsible-content" hidden="hidden">C</div>', false);
+            ->assertSee('<div data-slot="collapsible-content" wire:key="collapsible-content" hidden="hidden">C</div>', false);
 
         $this->blade($template, ['open' => true])
             ->assertSee('<eso-collapsible data-slot="collapsible" data-open="data-open">', false)
             ->assertSee('aria-expanded="true" data-panel-open="data-panel-open"', false)
-            ->assertSee('<div data-slot="collapsible-content" data-open="data-open">C</div>', false);
+            ->assertSee('<div data-slot="collapsible-content" wire:key="collapsible-content" data-open="data-open">C</div>', false);
     });
 
     it('starts from the bound Livewire value', function () {

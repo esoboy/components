@@ -6,18 +6,20 @@
  * at either end, as with shadcn's Embla carousel.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 export class CarouselElement extends HTMLElement {
     #frame = 0
     #resize = new ResizeObserver(() => this.#schedule())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.addEventListener('click', event => {
             const button = event.target.closest?.('[data-carousel]')
 
             if (button && button.closest('eso-carousel') === this) button.dataset.carousel === 'next' ? this.scrollNext() : this.scrollPrev()
-        })
+        }, { signal })
 
         // Like Embla's handler, Left/Right move slides whatever the orientation.
         this.addEventListener('keydown', event => {
@@ -25,14 +27,15 @@ export class CarouselElement extends HTMLElement {
 
             event.preventDefault()
             event.key === 'ArrowRight' ? this.scrollNext() : this.scrollPrev()
-        }, true)
+        }, { capture: true, signal })
 
-        this.viewport?.addEventListener('scroll', () => this.#schedule(), { passive: true })
+        this.viewport?.addEventListener('scroll', () => this.#schedule(), { passive: true, signal })
         if (this.viewport) this.#resize.observe(this.viewport)
         this.#schedule()
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#resize.disconnect()
         cancelAnimationFrame(this.#frame)
     }

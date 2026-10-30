@@ -15,7 +15,7 @@ return [
 
     'editor' => [
 
-        // Named formats, for format="…", #[Sanitize('…')] and Ui::sanitize(): features
+        // Named formats, for format="…", Ui::sanitize() and Ui::plainText(): features
         // and presets, and the whitelist's tags kept besides theirs.
         // 'comment' => ['features' => ['bold', 'italic', 'link', 'emoji']],
         // 'notes' => ['features' => ['text', 'image'], 'tags' => ['section']],

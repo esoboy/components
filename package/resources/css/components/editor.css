@@ -13,12 +13,6 @@
             @apply border-ring ring-3 ring-ring/50;
         }
 
-        &[aria-invalid="true"] {
-            @apply ring-3;
-            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
-        }
-
         &[data-disabled] {
             @apply cursor-not-allowed opacity-50;
         }
@@ -50,6 +44,17 @@
 
         & [data-slot="button"] {
             @apply shrink-0;
+        }
+    }
+
+    /* On phones, while writing: the toolbar over the keyboard, the width of the screen,
+       its place in the editor kept. */
+    :where([data-slot="editor"][data-keyboard]) {
+        padding-top: var(--editor-toolbar-space, 0px);
+
+        & > [data-slot="editor-toolbar"] {
+            @apply fixed inset-x-0 top-auto z-40 rounded-none border-t border-b-0 pb-[max(0.25rem,env(safe-area-inset-bottom))];
+            bottom: var(--editor-keyboard, 0px);
         }
     }
 
@@ -303,9 +308,11 @@
             cursor: copy;
         }
 
-        /* Files on their way, where they will go. */
+        /* Files on their way, where they will go: how far they have got, as a bar behind. */
         & [data-slot="editor-uploading"] {
-            @apply mx-0.5 inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 align-middle text-xs text-muted-foreground select-none;
+            @apply mx-0.5 inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 align-middle text-xs text-muted-foreground tabular-nums select-none;
+
+            background-image: linear-gradient(to right, color-mix(in oklab, var(--primary) 18%, transparent) var(--editor-upload-progress, 0%), transparent var(--editor-upload-progress, 0%));
 
             & [data-slot="spinner"] {
                 @apply size-3.5;
@@ -513,12 +520,24 @@
         @apply min-h-32 w-full flex-1 resize-y bg-transparent px-3 py-2 font-mono text-sm outline-none;
     }
 
-    /* Images not saved yet on the left, the count on the right; gone with neither. */
+    /* Uploads and images not saved yet on the left, the count on the right; gone with none. */
     :where([data-slot="editor-footer"]) {
         @apply flex items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
 
         &:not(:has(> :not([hidden]))) {
             @apply hidden;
+        }
+
+        & [data-editor-busy] {
+            @apply mr-auto;
+
+            &[role="alert"] {
+                @apply font-medium text-destructive;
+            }
+        }
+
+        & [data-editor-busy]:not([hidden]) ~ [data-editor-unsaved] {
+            @apply mr-0;
         }
 
         & [data-editor-unsaved] {
@@ -539,6 +558,16 @@
     :where([data-slot="editor-input"], [data-slot="editor-content"]:not(:has(> [data-slot="editor-input"])), [data-slot="rich-text"]) {
         & :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div, section, aside, figure, table, details, img, video, audio, iframe, a[download], math[display="block"]) + :is(h1, h2, h3, h4, h5, h6, p, ul, ol, blockquote, pre, hr, div, section, aside, figure, table, details, img, video, audio, iframe, a[download], math[display="block"]) {
             @apply mt-3;
+        }
+
+        /* Images side by side line up: their row's gap parts them. */
+        & [style*="grid-template-columns"] > * {
+            margin-top: 0 !important;
+        }
+
+        /* Their columns size them: no handles to drag. */
+        & [data-editor-row] [data-editor-resize] {
+            display: none !important;
         }
 
         & h1 {

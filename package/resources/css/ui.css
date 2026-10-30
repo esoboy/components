@@ -1,9 +1,11 @@
 /*
  * esoboy/ui
  *
- * Import after tailwindcss:
+ * The components shadcn has, and the tokens. Import after tailwindcss, and extras.css
+ * after it when the app uses components shadcn doesn't have:
  *   @import 'tailwindcss';
  *   @import '../../vendor/esoboy/ui/resources/css/ui.css';
+ *   @import '../../vendor/esoboy/ui/resources/css/extras.css';
  *
  * Every token below lives in @theme, so a later @theme block in the app overrides it.
  * Light and dark values are paired with light-dark() and follow the system through
@@ -15,7 +17,6 @@
 @import './utilities.css';
 @import './components/accordion.css';
 @import './components/alert.css';
-@import './components/anchor.css';
 @import './components/aspect-ratio.css';
 @import './components/attachment.css';
 @import './components/avatar.css';
@@ -27,30 +28,20 @@
 @import './components/calendar.css';
 @import './components/card.css';
 @import './components/carousel.css';
-@import './components/cascader.css';
 @import './components/checkbox.css';
 @import './components/code-block.css';
 @import './components/collapsible.css';
-@import './components/color-picker.css';
 @import './components/combobox.css';
 @import './components/command.css';
 @import './components/context-menu.css';
-@import './components/countdown.css';
-@import './components/cropper.css';
 @import './components/data-table.css';
 @import './components/date-picker.css';
-@import './components/description-list.css';
 @import './components/dialog.css';
 @import './components/drawer.css';
 @import './components/dropdown-menu.css';
-@import './components/editor.css';
-@import './components/emoji-picker.css';
 @import './components/empty.css';
 @import './components/field.css';
-@import './components/file-upload.css';
-@import './components/float-button.css';
 @import './components/hover-card.css';
-@import './components/image-preview.css';
 @import './components/input.css';
 @import './components/input-group.css';
 @import './components/input-otp.css';
@@ -58,48 +49,32 @@
 @import './components/kbd.css';
 @import './components/label.css';
 @import './components/marker.css';
-@import './components/mentions.css';
 @import './components/menubar.css';
 @import './components/message.css';
 @import './components/message-scroller.css';
 @import './components/native-select.css';
 @import './components/navigation-menu.css';
-@import './components/number-input.css';
 @import './components/pagination.css';
-@import './components/password-input.css';
 @import './components/popover.css';
 @import './components/progress.css';
-@import './components/qr-code.css';
 @import './components/questionnaire.css';
 @import './components/radio-group.css';
-@import './components/rating.css';
 @import './components/resizable.css';
-@import './components/result.css';
 @import './components/scroll-area.css';
 @import './components/select.css';
 @import './components/separator.css';
 @import './components/sidebar.css';
-@import './components/signature.css';
 @import './components/skeleton.css';
 @import './components/slider.css';
 @import './components/spinner.css';
-@import './components/statistic.css';
-@import './components/steps.css';
 @import './components/switch.css';
 @import './components/table.css';
 @import './components/tabs.css';
-@import './components/tags-input.css';
-@import './components/timeline.css';
 @import './components/time-picker.css';
 @import './components/toast.css';
 @import './components/toggle.css';
 @import './components/tooltip.css';
-@import './components/tour.css';
 @import './components/trace.css';
-@import './components/transfer.css';
-@import './components/tree.css';
-@import './components/verification-code-button.css';
-@import './components/watermark.css';
 
 @source '../views';
 
@@ -172,6 +147,18 @@
     :where([data-variant="success"], [data-type="success"]) { --tone: var(--color-success); }
     :where([data-variant="warning"], [data-type="warning"]) { --tone: var(--color-warning); }
     :where([data-variant="info"], [data-type="info"]) { --tone: var(--color-info); }
+}
+
+/*
+ * shadcn's invalid controls (aria-invalid): a destructive border and ring. After every
+ * component's own rules, so it wins over their focus styles as shadcn's variant does.
+ */
+@layer components {
+    :where([data-slot="button"], [data-slot="checkbox"], [data-slot="input"], [data-slot="textarea"], [data-slot="native-select"], [data-slot="select-trigger"], [data-slot="switch"])[aria-invalid="true"] {
+        @apply ring-3;
+        border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
+        --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
+    }
 }
 
 @layer base {

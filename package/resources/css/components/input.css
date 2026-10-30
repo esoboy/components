@@ -5,12 +5,6 @@
         @apply focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50;
         @apply disabled:cursor-not-allowed disabled:opacity-50;
         background-color: light-dark(transparent, color-mix(in oklab, var(--color-input) 30%, transparent));
-
-        &[aria-invalid="true"] {
-            @apply ring-3;
-            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
-        }
     }
 
     :where([data-slot="input"], [data-slot="textarea"]) {

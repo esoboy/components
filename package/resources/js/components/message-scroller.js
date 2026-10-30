@@ -16,7 +16,7 @@
  * scrollToEnd(), scrollToStart() and scrollToMessage(id) drive it from anywhere.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const EPSILON = 0.5
 const AUTOSCROLL_TIMEOUT = 180
@@ -48,15 +48,17 @@ export class MessageScrollerElement extends HTMLElement {
     })
 
     connectedCallback() {
+        const signal = connected(this)
+
         const viewport = this.viewport
         const content = this.content
 
         if (! viewport || ! content) return
 
-        viewport.addEventListener('scroll', () => this.#syncAfterScroll(), { passive: true })
-        viewport.addEventListener('wheel', () => this.#userIntent(), { passive: true })
-        viewport.addEventListener('touchmove', () => this.#userIntent(), { passive: true })
-        viewport.addEventListener('keydown', event => SCROLL_KEYS.has(event.key) && this.#userIntent())
+        viewport.addEventListener('scroll', () => this.#syncAfterScroll(), { passive: true, signal })
+        viewport.addEventListener('wheel', () => this.#userIntent(), { passive: true, signal })
+        viewport.addEventListener('touchmove', () => this.#userIntent(), { passive: true, signal })
+        viewport.addEventListener('keydown', event => SCROLL_KEYS.has(event.key) && this.#userIntent(), { signal })
 
         this.addEventListener('click', event => {
             const button = event.target.closest?.('[data-message-scroller-button]')
@@ -67,7 +69,7 @@ export class MessageScrollerElement extends HTMLElement {
 
             button.blur()
             button.dataset.messageScrollerButton === 'start' ? this.scrollToStart({ behavior }) : this.scrollToEnd({ behavior })
-        })
+        }, { signal })
 
         this.#mutations.observe(content, { childList: true })
         this.#resize.observe(viewport)
@@ -77,6 +79,7 @@ export class MessageScrollerElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#mutations.disconnect()
         this.#resize.disconnect()
         cancelAnimationFrame(this.#frame)

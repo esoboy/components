@@ -13,7 +13,8 @@ use InvalidArgumentException;
  */
 final class RichTextWhitelist
 {
-    // CSS by what it sets: text, a block's text, its box, flex layout, lists, tables.
+    // CSS by what it sets: text, a block's text, its box, flex and grid layout (images
+    // side by side), lists, tables.
     private const TEXT = ['color', 'background-color', 'font', 'font-family', 'font-size', 'font-style', 'font-weight', 'font-variant', 'text-decoration', 'text-decoration-line', 'text-decoration-style', 'text-decoration-color', 'text-transform', 'text-shadow', 'letter-spacing', 'word-spacing', 'line-height', 'white-space', 'word-break', 'overflow-wrap', 'word-wrap', 'vertical-align', 'direction'];
 
     private const PARAGRAPH = ['text-align', 'text-indent'];
@@ -29,7 +30,7 @@ final class RichTextWhitelist
         'box-shadow', 'opacity', 'overflow', 'overflow-x', 'overflow-y', 'float', 'clear',
     ];
 
-    private const FLEX = ['flex', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'align-items', 'align-self', 'gap', 'row-gap', 'column-gap'];
+    private const FLEX = ['flex', 'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'align-items', 'align-self', 'gap', 'row-gap', 'column-gap', 'grid-template-columns'];
 
     private const LIST = ['list-style', 'list-style-type', 'list-style-position'];
 

@@ -35,6 +35,7 @@ $buttons = [
     'delete-table' => ['trash', __('ui::editor.delete-table'), false, null],
     'delete-node' => ['trash', __('ui::editor.delete'), false, null],
     'caption' => ['captions', __('ui::editor.caption'), true, null],
+    'image-row' => ['columns-2', __('ui::editor.image-row'), true, null],
     'save-image' => ['image-up', __('ui::editor.save-image'), false, null, true],
     'image' => ['image', __('ui::editor.image'), false, null, 'media'],
     'audio' => ['eighth-notes', __('ui::editor.audio'), false, null, 'media'],

@@ -24,7 +24,7 @@ it('renders a command menu', function () {
         ->assertSee('<div role="listbox" data-slot="command-list">', false)
         ->assertSee('<div role="presentation" data-slot="command-empty">No results.</div>', false)
         ->assertSee('<div data-slot="command-group-heading" aria-hidden="true">Suggestions</div>', false)
-        ->assertSee('<div role="option" data-slot="command-item" data-value="cal" data-keywords="date events" aria-selected="false" wire:click="open">', false)
+        ->assertSee('<div role="option" wire:key="command-item-cal" data-slot="command-item" data-value="cal" data-keywords="date events" aria-selected="false" wire:click="open">', false)
         ->assertSee('<span data-slot="command-shortcut">⌘C</span>', false)
         ->assertSee('aria-selected="false" aria-disabled="true"', false)
         ->assertSee('<div role="separator" data-slot="command-separator"></div>', false);
@@ -66,17 +66,15 @@ it('renders a combobox with its input, trigger and clear', function () {
         </x-ui::combobox>
         BLADE);
 
-    [$id] = idsOf($html, 'aria-controls');
-
     expect($html)
         ->toContain('<eso-combobox data-slot="combobox" data-should-filter="true" data-value="&quot;next&quot;" wire:model="framework">')
-        ->toContain("<div data-slot=\"input-group\" role=\"group\" data-combobox-anchor=\"data-combobox-anchor\" style=\"anchor-name: --{$id};\">")
-        ->toContain("<input type=\"text\" data-slot=\"input-group-control\" data-combobox-input=\"data-combobox-input\" role=\"combobox\" autocomplete=\"off\" aria-autocomplete=\"list\" aria-expanded=\"false\" aria-controls=\"{$id}\" placeholder=\"Select a framework\">")
+        ->toContain('<div data-slot="input-group" role="group" data-combobox-anchor="data-combobox-anchor">')
+        ->toContain('<input type="text" data-slot="input-group-control" data-combobox-input="data-combobox-input" role="combobox" autocomplete="off" aria-autocomplete="list" aria-expanded="false" placeholder="Select a framework">')
         ->toContain('data-combobox-trigger')
         ->toContain('data-combobox-clear')
         ->toContain('aria-label="Clear"')
-        ->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"listbox\" data-slot=\"combobox-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 6px;\">")
-        ->toContain('<div role="option" data-slot="combobox-item" data-value="next" aria-selected="false">')
+        ->toContain('<div popover="manual" role="listbox" data-slot="combobox-content" data-side="bottom" data-align="start" style="--side-offset: 6px; --align-offset: 0px;">')
+        ->toContain('<div role="option" wire:key="combobox-item-next" data-slot="combobox-item" data-value="next" aria-selected="false">')
         ->toContain('<div data-slot="combobox-label">Frameworks</div>');
 });
 
@@ -98,6 +96,28 @@ it('renders a multiple combobox with a chip template', function () {
         ->toContain('<template data-combobox-chip>')
         ->toContain('aria-label="移除"')
         ->toContain('<input type="text" data-slot="combobox-chip-input" data-combobox-input="data-combobox-input" role="combobox"');
+});
+
+it('renders a combobox with a trigger, its value and the search inside, as shadcn', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::combobox wire:model="country">
+            <x-ui::combobox.trigger variant="outline" class="w-64 justify-between"><x-ui::combobox.value placeholder="Select a country" /></x-ui::combobox.trigger>
+            <x-ui::combobox.content>
+                <x-ui::combobox.input :show-trigger="false" placeholder="Search" />
+                <x-ui::combobox.list><x-ui::combobox.item value="nl">Netherlands</x-ui::combobox.item></x-ui::combobox.list>
+            </x-ui::combobox.content>
+        </x-ui::combobox>
+        <x-ui::combobox.chip>Tag</x-ui::combobox.chip>
+        <x-ui::combobox.chip :show-remove="false">Fixed</x-ui::combobox.chip>
+        <x-ui::combobox.clear />
+        BLADE);
+
+    expect($html)
+        ->toMatch('/<button type="button" class="w-64 justify-between" data-slot="button" data-variant="outline" data-size="default" data-combobox-trigger="data-combobox-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-slot="combobox-value" data-placeholder="Select a country">Select a country<\/span><svg[^>]*data-slot="combobox-trigger-icon"/')
+        ->toMatch('/ data-slot="combobox-content"[^>]*>\s*<div data-slot="input-group"[^>]*>\s*<input type="text" data-slot="input-group-control" data-combobox-input/')
+        ->toMatch('/<div data-slot="combobox-chip">\s*<span data-combobox-chip-label>Tag<\/span>\s*<button[^>]*data-combobox-chip-remove/')
+        ->toMatch('/<span data-combobox-chip-label>Fixed<\/span>\s*<\/div>/')
+        ->toMatch('/<button type="button" data-slot="button" data-variant="ghost" data-size="icon-xs" data-combobox-clear="data-combobox-clear" aria-label="Clear">/');
 });
 
 it('validates a combobox inside a field', function () {

@@ -102,6 +102,7 @@ return [
     'alt-text' => '替代文字',
     'alt-placeholder' => '描述这张图片…',
     'replace-media' => '替换',
+    'image-row' => '并排',
     'caption' => '图片说明',
     'caption-placeholder' => '输入图片说明…',
     'image-link' => '图片链接',
@@ -111,6 +112,8 @@ return [
     'images-unsaved' => ':count 张图片未保存到本站',
     'save-images' => '全部保存',
     'uploading' => '上传中…',
+    'uploading-count' => '正在上传 :count 个文件…',
+    'submit-uploading' => '还有 :count 个文件在上传，传完才能提交。',
     'image-missing' => '此图片需单独上传',
     'upload' => '上传',
     'dismiss' => '关闭',
@@ -165,4 +168,6 @@ return [
     'fullscreen' => '全屏',
     'drag-handle' => '拖动以移动，点击以选中',
     'characters' => '字',
+    'too-long' => ':attribute 不能超过 :max 字（现在 :count 字）。',
+    'too-short' => ':attribute 至少要 :min 字（现在 :count 字）。',
 ];

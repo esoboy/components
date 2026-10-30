@@ -288,6 +288,18 @@ describe('date picker', () => {
             expect(text(element)).toBe('October 26, 2026 at 2:30 PM')
         })
 
+        it('points its time labels at their inputs', () => {
+            document.body.innerHTML = `
+                <eso-date-picker data-mode="single" data-time>
+                    <div data-slot="field"><label data-slot="field-label">Time</label><input type="time" data-date-picker-time="from"></div>
+                </eso-date-picker>`
+
+            const input = document.querySelector('[data-date-picker-time]')
+
+            expect(input.id).not.toBe('')
+            expect(document.querySelector('label').htmlFor).toBe(input.id)
+        })
+
         it('keeps seconds when the step is under a minute', () => {
             const element = timed('single', { step: '1' })
 

@@ -3,7 +3,7 @@
 namespace Esoboy\Ui;
 
 use Esoboy\Ui\Support\FieldContext;
-use Esoboy\Ui\Support\Overlay;
+use Esoboy\Ui\Support\OverlayModel;
 use Esoboy\Ui\Support\PendingControl;
 use Esoboy\Ui\Support\Sequence;
 use Esoboy\Ui\Support\SidebarState;
@@ -11,9 +11,6 @@ use Esoboy\Ui\Support\Theme;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Component;
-
-use function Livewire\on;
 
 class UiServiceProvider extends ServiceProvider
 {
@@ -23,7 +20,6 @@ class UiServiceProvider extends ServiceProvider
 
         $this->app->singleton(Assets::class, fn () => new Assets(__DIR__.'/../dist'));
         $this->app->singleton(UiManager::class);
-        $this->app->scoped(Overlay::class);
         $this->app->scoped(PendingControl::class);
         $this->app->scoped(Sequence::class);
     }
@@ -35,8 +31,7 @@ class UiServiceProvider extends ServiceProvider
         $this->bootConfig();
         $this->bootAssets();
         $this->bootTranslations();
-        $this->bootFieldContext();
-        $this->bootLivewire();
+        $this->bootMarkers();
 
         // <html @uiTheme('admin')>: the app's theme choice as data-theme; see Theme.
         Blade::directive('uiTheme', fn (string $expression) => "<?php echo \Esoboy\Ui\Support\Theme::attributes({$expression}); ?>");
@@ -78,20 +73,13 @@ class UiServiceProvider extends ServiceProvider
     }
 
     /**
-     * Overlay ids restart with every render of a component, so a morph keeps them.
+     * Mark field tags and bound overlay roots before Blaze compiles them; see FieldContext
+     * and OverlayModel. Blaze hooks the same pipeline from an app()->booted() callback, so
+     * registering here runs first.
      */
-    protected function bootLivewire(): void
+    protected function bootMarkers(): void
     {
-        on('render', fn (Component $component) => app(Overlay::class)->restart($component->getId()));
-    }
-
-    /**
-     * Mark field tags before Blaze compiles them; see FieldContext. Blaze hooks the
-     * same pipeline from an app()->booted() callback, so registering here runs first.
-     */
-    protected function bootFieldContext(): void
-    {
-        Blade::prepareStringsForCompilationUsing(fn (string $template) => FieldContext::mark($template));
+        Blade::prepareStringsForCompilationUsing(fn (string $template) => OverlayModel::mark(FieldContext::mark($template)));
     }
 
     /**

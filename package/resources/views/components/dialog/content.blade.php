@@ -1,13 +1,22 @@
 @blaze
 
+@use('Esoboy\Ui\Support\OverlayModel')
+
 @aware([
     'name',
+    'uiModel' => null,
 ])
 
 @props([
     'showCloseButton' => true,
 ])
 
+@php
+// wire:model on the root binds whether it is open; see OverlayModel.
+$model = OverlayModel::attributes($uiModel);
+@endphp
+
+{!! $model ? '<eso-dialog '.$model.'>' : '' !!}
 {{-- wire:ignore.self keeps Livewire morphs from stripping the open state. --}}
 <dialog {{ $attributes->merge([
     'id' => $name,
@@ -23,3 +32,4 @@
         </x-ui::button>
     @endif
 </dialog>
+{!! $model ? '</eso-dialog>' : '' !!}

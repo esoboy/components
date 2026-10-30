@@ -6,12 +6,6 @@
         @apply disabled:pointer-events-none disabled:opacity-50;
         @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
 
-        &[aria-invalid="true"] {
-            @apply ring-3;
-            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
-        }
-
         /* Livewire v4 marks the element that triggered a request with data-loading. */
         &[data-loading] {
             @apply pointer-events-none opacity-50;

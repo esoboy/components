@@ -1,7 +1,6 @@
 @blaze
 
 @use('Esoboy\Ui\Support\ControlState')
-@use('Esoboy\Ui\Support\Overlay')
 
 @aware([
     'uiField' => false,
@@ -17,13 +16,11 @@
 @php
 // Validated here, as the textarea inside this view can't see the field around the mentions.
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$id = Overlay::open('mentions');
-Overlay::close('mentions');
 @endphp
 
 <eso-mentions data-slot="mentions" data-prefix="{{ json_encode(array_values((array) $prefix)) }}" data-split="{{ $split }}">
-    <x-ui::textarea :attributes="$attributes->merge(['role' => 'combobox', 'aria-autocomplete' => 'list', 'aria-expanded' => 'false', 'aria-controls' => $id, 'data-mentions-input' => true, ...$state->attributes()])" />
-    <div id="{{ $id }}" popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>
+    <x-ui::textarea :attributes="$attributes->merge(['role' => 'combobox', 'aria-autocomplete' => 'list', 'aria-expanded' => 'false', 'data-mentions-input' => true, ...$state->attributes()])" />
+    <div popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>
         <div data-slot="mentions-list">{{ $slot }}</div>
         <div data-slot="mentions-empty">{{ __('ui::mentions.empty') }}</div>
     </div>
@@ -31,3 +28,4 @@ Overlay::close('mentions');
     <div data-slot="mentions-mirror" aria-hidden="true"><span></span><span data-mentions-caret></span></div>
     <x-ui::field.error :state="$state" />
 </eso-mentions>
+<x-ui::extras />

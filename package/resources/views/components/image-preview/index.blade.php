@@ -39,3 +39,4 @@
         </div>
     </dialog>
 </eso-image-preview>
+<x-ui::extras />

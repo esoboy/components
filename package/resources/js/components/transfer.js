@@ -7,7 +7,7 @@
  * from the transfer, so wire:model binds on it.
  */
 
-import { announce, define, readValue, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue, writeHidden } from '../support/element.js'
 
 export class TransferElement extends HTMLElement {
     #value = []
@@ -15,6 +15,8 @@ export class TransferElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         const value = readValue(this, [])
 
         this.#value = Array.isArray(value) ? value.map(String) : []
@@ -25,7 +27,7 @@ export class TransferElement extends HTMLElement {
 
             event.stopPropagation()
             if (event.target.matches('[data-transfer-search]')) this.#render()
-        })
+        }, { signal })
 
         this.addEventListener('change', event => {
             if (event.target === this) return
@@ -45,13 +47,13 @@ export class TransferElement extends HTMLElement {
             }
 
             this.#render()
-        })
+        }, { signal })
 
         this.addEventListener('click', event => {
             const move = event.target.closest?.('[data-transfer-move]')
 
             if (move && ! move.disabled) this.#move(move.dataset.transferMove)
-        })
+        }, { signal })
 
         this.#render()
 
@@ -60,6 +62,7 @@ export class TransferElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

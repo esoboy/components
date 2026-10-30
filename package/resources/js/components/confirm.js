@@ -7,8 +7,6 @@
 
 import { onLivewire } from '../support/livewire.js'
 
-const ANCHOR = '--ui-confirm'
-
 // The question and the confirm button's label, or the translated ones the server rendered.
 function word(element, question, label) {
     for (const [node, text] of [[element.querySelector('[data-slot$="-title"]'), question], [element.querySelector('[value="confirm"]'), label]]) {
@@ -28,7 +26,6 @@ function askInDialog(dialog) {
 // Anchored to the element while open; Escape, a click outside and Cancel decline.
 function askInPopover(popover, el) {
     return new Promise(resolve => {
-        const names = el.style.getPropertyValue('anchor-name')
         let confirmed = false
 
         const click = ({ target }) => {
@@ -40,7 +37,6 @@ function askInPopover(popover, el) {
 
             popover.removeEventListener('click', click)
             popover.removeEventListener('toggle', toggle)
-            names ? el.style.setProperty('anchor-name', names) : el.style.removeProperty('anchor-name')
 
             // Focus was in the popover: give it back to the element that asked.
             if (! document.activeElement || document.activeElement === document.body || popover.contains(document.activeElement)) el.focus()
@@ -48,10 +44,9 @@ function askInPopover(popover, el) {
             resolve(confirmed)
         }
 
-        el.style.setProperty('anchor-name', [names, ANCHOR].filter(name => name && name !== 'none').join(', '))
         popover.addEventListener('click', click)
         popover.addEventListener('toggle', toggle)
-        popover.showPopover()
+        popover.showPopover({ source: el })
     })
 }
 

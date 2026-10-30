@@ -4,7 +4,6 @@
 @use('Esoboy\Ui\Support\ControlState')
 @use('Esoboy\Ui\Support\EditorUploads')
 @use('Esoboy\Ui\Support\Model')
-@use('Esoboy\Ui\Support\Overlay')
 @use('Esoboy\Ui\Support\RichText')
 
 @aware([
@@ -12,7 +11,7 @@
     'showError' => true,
 ])
 
-{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. The HTML is sanitized to the format on the way in here; put #[Sanitize] with the same format on the property for the way back. What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
+{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. A name keeps a hidden input for forms. The bound HTML is sanitized to the format as it comes in here; the app sanitizes what comes back before storing it, with Ui::sanitize($html, the same format). What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
 @props([
     'format' => 'full',
     'maxLength' => null,
@@ -32,8 +31,6 @@ $name = $attributes->get('name');
 $counts = $rich->has('character-count') || $maxLength;
 $uploads = EditorUploads::enabled() && $rich->has('image', 'audio', 'video', 'file');
 $images = $uploads && $rich->has('image');
-$tip = Overlay::open('editor-tip');
-Overlay::close('editor-tip');
 
 // The Emoji Picker's data, for :shortcode: suggestions.
 $assets = app(Assets::class);
@@ -75,9 +72,12 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     @if ($rich->has('source'))
     <textarea data-slot="editor-source" aria-label="{{ __('ui::editor.source') }}" spellcheck="false" hidden wire:ignore></textarea>
     @endif
-    @if ($counts || $images)
-    {{-- Images the app has no copy of, to save them all; the count. --}}
+    @if ($counts || $uploads)
+    {{-- Files on their way (and why a form won't submit meanwhile); images the app has no copy of, to save them all; the count. --}}
     <div data-slot="editor-footer" wire:ignore>
+        @if ($uploads)
+        <span data-editor-busy data-editor-label="{{ __('ui::editor.uploading-count') }}" data-editor-refused="{{ __('ui::editor.submit-uploading') }}" role="status" hidden></span>
+        @endif
         @if ($images)
         <span data-editor-unsaved data-editor-label="{{ __('ui::editor.images-unsaved') }}" hidden><span data-editor-unsaved-label></span><x-ui::button variant="link" size="xs" data-editor-action="save-images">{{ __('ui::editor.save-images') }}</x-ui::button></span>
         @endif
@@ -87,7 +87,7 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     </div>
     @endif
     <x-ui::editor.menus />
-    <div id="{{ $tip }}" popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip style="position-anchor: --{{ $tip }}; --side-offset: 4px" wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></div>
+    <div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip style="--side-offset: 4px;" wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></div>
     @if ($name)
     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
     @endif

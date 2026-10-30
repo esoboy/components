@@ -6,25 +6,27 @@
  * input/change come from the element, so wire:model binds on it.
  */
 
-import { announce, define } from '../support/element.js'
+import { announce, connected, define, disconnected } from '../support/element.js'
 
 export class NumberInputElement extends HTMLElement {
     #value = null
     #repeat = 0
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = this.#parse(this.input?.value)
 
         // Listeners sit on the element: a morph may replace the input inside it.
         const fromInput = event => event.target === this.input
 
-        this.addEventListener('input', event => fromInput(event) && event.stopPropagation())
+        this.addEventListener('input', event => fromInput(event) && event.stopPropagation(), { signal })
         this.addEventListener('change', event => {
             if (! fromInput(event)) return
 
             event.stopPropagation()
             this.#commit(this.#parse(this.input.value))
-        })
+        }, { signal })
         this.addEventListener('keydown', event => {
             if (! fromInput(event)) return
 
@@ -40,7 +42,7 @@ export class NumberInputElement extends HTMLElement {
                 event.preventDefault()
                 this.#commit(Number(this.dataset.max))
             }
-        })
+        }, { signal })
 
         this.addEventListener('pointerdown', event => {
             const button = event.target.closest?.('[data-number-input]')
@@ -61,14 +63,15 @@ export class NumberInputElement extends HTMLElement {
             }, delay))
 
             again(400)
-        })
+        }, { signal })
 
         for (const type of ['pointerup', 'pointerleave', 'pointercancel']) {
-            this.addEventListener(type, () => clearTimeout(this.#repeat))
+            this.addEventListener(type, () => clearTimeout(this.#repeat), { signal })
         }
     }
 
     disconnectedCallback() {
+        disconnected(this)
         clearTimeout(this.#repeat)
     }
 

@@ -10,7 +10,7 @@ afterEach(() => {
 function mount(attributes = '') {
     document.body.innerHTML = `
         <eso-select data-name="fruit" ${attributes}>
-            <button data-slot="select-trigger"><span data-slot="select-value" data-placeholder="Pick">Pick</span></button>
+            <button data-slot="select-trigger" command="toggle-popover" commandfor=""><span data-slot="select-value" data-placeholder="Pick">Pick</span></button>
             <div data-slot="select-content" popover="auto" data-align-trigger="false">
                 <div data-slot="select-item" data-value="apple" tabindex="-1"><span data-slot="select-item-text">Apple</span></div>
                 <div data-slot="select-item" data-value="banana" tabindex="-1"><span data-slot="select-item-text">Banana</span></div>

@@ -22,3 +22,4 @@ $tile = $lines ? Watermark::tile($lines, (int) $fontSize, (int) $rotate, [(int) 
     <div data-slot="watermark-layer" aria-hidden="true" style="--watermark-image: {{ $tile['image'] }}; --watermark-size: {{ $tile['width'] }}px {{ $tile['height'] }}px"></div>
     @endif
 </eso-watermark>
+<x-ui::extras />

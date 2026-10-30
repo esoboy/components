@@ -45,3 +45,4 @@ $image = $upload['url'] ?? $src;
     @endif
     <x-ui::field.error :state="$state" />
 </eso-file-upload>
+<x-ui::extras />

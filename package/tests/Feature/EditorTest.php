@@ -3,6 +3,7 @@
 use Dom\Element;
 use Dom\HTMLDocument;
 use Esoboy\Ui\Facades\Ui;
+use Esoboy\Ui\Rules\RichTextLength;
 use Esoboy\Ui\Support\EditorUploads;
 use Esoboy\Ui\Support\RichText;
 use Esoboy\Ui\Tests\Fixtures\Posts;
@@ -11,12 +12,13 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\ViewException;
 use Livewire\Livewire;
 
 /*
  * Editor: Tiptap in the editor.js module, writing what its format allows, with HTML
- * sanitized to that format on the way in (the view) and back (#[Sanitize], Ui::sanitize()).
+ * sanitized to that format on the way in (the view) and, by the app, back (Ui::sanitize()).
  */
 
 // The controls a toolbar shows (not those in its menus and popovers), by what names them.
@@ -91,7 +93,7 @@ describe('the view', function () {
             ->toContain('<div data-slot="editor-control" data-priority="1">')
             ->toContain('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
             ->toContain('data-editor-action="media" data-editor-value="image" aria-label="Image"><svg')
-            ->toContain('command="toggle-popover" data-editor-more="data-editor-more" hidden="hidden" aria-label="More"')
+            ->toContain('command="toggle-popover" commandfor="" data-editor-more="data-editor-more" hidden="hidden" aria-label="More"')
             ->toContain('data-editor-more-content="data-editor-more-content" aria-label="More"')
             ->toContain('<div data-slot="editor-find" role="search" aria-label="Find and replace" hidden wire:ignore>')
             ->toContain('<div data-slot="editor-content" wire:ignore><p>Hi <b>there</b></p></div>')
@@ -274,10 +276,71 @@ describe('the view', function () {
 
     it('shows rich text as written, sanitized to its format', function () {
         $this->blade('<x-ui::rich-text class="prose" html="<h2 style=\'color:red;position:fixed\'>Hi</h2><p>a<script>x</script></p>" />')
-            ->assertSee('<div data-slot="rich-text" class="prose"><h2 style="color:red">Hi</h2><p>a</p></div>', false);
+            ->assertSee('<div data-slot="rich-text" class="prose"><h2 style="color:red" id="hi">Hi</h2><p>a</p></div>', false);
 
         $this->blade('<x-ui::rich-text format="text" html="<h2>Hi</h2><p><b>a</b><img src=\'/a.png\'></p>" />')
-            ->assertSee('<div data-slot="rich-text"><h2>Hi</h2><p><b>a</b></p></div>', false);
+            ->assertSee('<div data-slot="rich-text"><h2 id="hi">Hi</h2><p><b>a</b></p></div>', false);
+    });
+
+    it('gives headings ids to link to, numbered when they repeat, and lets images load as they come into view', function () {
+        $html = '<h2>Getting started</h2><h3>第一章 安装</h3><h2>Getting  started</h2><h2>!!!</h2><p><img src="/a.png" width="10" height="10"></p>';
+
+        expect(RichText::display($html))->toBe('<h2 id="getting-started">Getting started</h2><h3 id="第一章-安装">第一章 安装</h3><h2 id="getting-started-2">Getting  started</h2><h2 id="section">!!!</h2><p><img src="/a.png" width="10" height="10" loading="lazy" decoding="async"></p>')
+            ->and(RichText::headings($html))->toBe([
+                ['level' => 2, 'text' => 'Getting started', 'id' => 'getting-started'],
+                ['level' => 3, 'text' => '第一章 安装', 'id' => '第一章-安装'],
+                ['level' => 2, 'text' => 'Getting started', 'id' => 'getting-started-2'],
+                ['level' => 2, 'text' => '!!!', 'id' => 'section'],
+            ])
+            ->and(RichText::display(''))->toBe('')
+            ->and(RichText::headings('<p>none</p>'))->toBe([]);
+    });
+
+    it('lists the headings as an anchor, the top three levels it has, each under the one before', function () {
+        $html = '<h2>A</h2><h3>B</h3><h4>C</h4><h5>D</h5><h3>E</h3>';
+        $toc = (string) $this->blade('<x-ui::rich-text.toc :html="$html" class="sticky">On this page</x-ui::rich-text.toc>', ['html' => $html]);
+
+        expect($toc)->toContain('<eso-anchor role="navigation" aria-label="On this page" data-slot="anchor" class="sticky">')
+            ->toContain('<p data-slot="anchor-title">On this page</p>')
+            ->toContain('<a data-slot="anchor-item" data-level="1" href="#a">A</a>')
+            ->toContain('<a data-slot="anchor-item" data-level="2" href="#b">B</a>')
+            ->toContain('<a data-slot="anchor-item" data-level="3" href="#c">C</a>')
+            ->toContain('<a data-slot="anchor-item" data-level="2" href="#e">E</a>')
+            ->not->toContain('#d')
+            ->and(trim((string) $this->blade('<x-ui::rich-text.toc html="<p>No headings</p>" />')))->toBe('');
+    });
+});
+
+describe('images side by side', function () {
+    it('keeps a row of images and its grid, and offers it from an image\'s menu', function () {
+        $row = '<div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px;align-items:start"><img src="/a.png" style="display:block;width:100%" /><a href="/b"><img src="/b.png" /></a></div>';
+
+        expect(RichText::sanitize($row, 'basic'))->toBe('<div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px;align-items:start"><img src="/a.png" style="display:block;width:100%" /><a href="/b" rel="noopener noreferrer nofollow"><img src="/b.png" /></a></div>');
+
+        preg_match('~<template data-template="bubble-node">(.*?)</template>~s', (string) $this->blade('<x-ui::editor format="basic" />'), $node);
+
+        expect($node[1])->toContain('data-editor-command="image-row" aria-label="Side by side" aria-pressed="false"');
+    });
+});
+
+describe('counting', function () {
+    it('counts characters as the editor does: graphemes, no spaces or line breaks, no media, formulas or file cards', function () {
+        $html = '<p>汉字 👍🏽</p><p>a b<br>c'."\u{3000}".'d</p><img src="/a.png"><p><math><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math></p><a href="/f.pdf" download="f.pdf">f.pdf</a>';
+
+        expect(RichText::characters($html))->toBe(7)
+            ->and(Ui::characters($html))->toBe(7)
+            ->and(RichText::characters(''))->toBe(0)
+            ->and(RichText::characters('<p>a<script>bcdef</script></p>', 'text'))->toBe(1);
+    });
+
+    it('validates rich text by that count, not by its HTML', function () {
+        $long = '<p style="color:#dc2626;font-size:18px"><strong>'.str_repeat('字', 5).'</strong></p>';
+        $validate = fn (string $html, RichTextLength $rule) => Validator::make(['body' => $html], ['body' => [$rule]]);
+
+        expect($validate($long, new RichTextLength(max: 5))->passes())->toBeTrue()
+            ->and($validate($long, new RichTextLength(max: 4))->errors()->first('body'))->toBe('The body may not be longer than 4 characters (it has 5).')
+            ->and($validate($long, new RichTextLength(min: 6))->errors()->first('body'))->toBe('The body must be at least 6 characters (it has 5).')
+            ->and($validate('<p>a</p><img src="/a.png">', new RichTextLength(max: 1, format: 'basic'))->passes())->toBeTrue();
     });
 });
 
@@ -439,31 +502,13 @@ Body')
             ->and(Ui::plainText(null))->toBe('');
     });
 
-    it('cleans a #[Sanitize] property as the browser sets it, to its format, before updated hooks read it', function () {
+    it('leaves what the browser sends to the app, which sanitizes it before storing it', function () {
         Livewire::test(Posts::class)
             ->set('body', '<p onclick="steal()">Hi</p><script>alert(1)</script>')
-            ->assertSet('body', '<p>Hi</p>')
-            ->assertSet('seen', '<p>Hi</p>')
-            ->set('intro', '<p>A<img src="/a.png"></p><table><tbody><tr><td>B</td></tr></tbody></table>')
-            ->assertSet('intro', '<p>A<img src="/a.png" /></p>B')
-            ->set('plain', '<script>kept</script>')
-            ->assertSet('plain', '<script>kept</script>');
-    });
-
-    it('cleans a #[Sanitize] property of a form object', function () {
-        Livewire::test(Posts::class)
-            ->set('form.body', '<p>Hi<iframe src="https://evil.test"></iframe></p>')
-            ->assertSet('form.body', '<p>Hi</p>');
-    });
-});
-
-describe('the server', function () {
-    it('inserts attachments or HTML through Ui::editor()', function () {
-        Livewire::test(Posts::class)
-            ->call('attach')
-            ->assertDispatched('ui-editor', id: 'body', action: 'insert', attachments: [['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']], html: null)
-            ->call('template')
-            ->assertDispatched('ui-editor', id: 'body', action: 'insert-content', attachments: [], html: '<p>Hello</p>');
+            ->assertSet('body', '<p onclick="steal()">Hi</p><script>alert(1)</script>')
+            ->assertSeeHtml('<div data-slot="editor-content" wire:ignore><p>Hi</p></div>')
+            ->call('save')
+            ->assertSet('saved', '<p>Hi</p>');
     });
 });
 

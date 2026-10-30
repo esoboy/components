@@ -11,13 +11,11 @@ it('puts the textarea in charge and the items in a listbox for the caret', funct
             <x-ui::mentions.item value="wangwu" disabled>王五</x-ui::mentions.item>
         </x-ui::mentions>
         BLADE);
-    $id = idsOf($html, 'aria-controls')[0];
-
     expect($html)
         ->toContain('<eso-mentions data-slot="mentions" data-prefix="[&quot;@&quot;]" data-split=" ">')
-        ->toContain('<textarea data-slot="textarea" class="min-h-24" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="'.$id.'" data-mentions-input="data-mentions-input" wire:model="comment" placeholder="Write a comment" rows="3"></textarea>')
-        ->toContain('<div id="'.$id.'" popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>')
-        ->toContain('<div role="option" data-slot="mentions-item" data-value="zhangsan" aria-selected="false">张三</div>')
+        ->toContain('<textarea data-slot="textarea" class="min-h-24" role="combobox" aria-autocomplete="list" aria-expanded="false" data-mentions-input="data-mentions-input" wire:model="comment" placeholder="Write a comment" rows="3"></textarea>')
+        ->toContain('<div popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>')
+        ->toContain('<div role="option" wire:key="mentions-item-zhangsan" data-slot="mentions-item" data-value="zhangsan" aria-selected="false">张三</div>')
         ->toContain('data-value="wangwu" aria-selected="false" aria-disabled="true"')
         ->toContain('<div data-slot="mentions-empty">No results found.</div>')
         ->toContain('<div data-slot="mentions-mirror" aria-hidden="true"><span></span><span data-mentions-caret></span></div>');

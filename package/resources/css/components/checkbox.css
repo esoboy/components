@@ -30,14 +30,9 @@
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
         }
 
-        &[aria-invalid="true"] {
-            @apply ring-3;
-            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
-
-            &:checked {
-                @apply border-primary;
-            }
+        /* Invalid, see ui.css; checked, its border stays the check's. */
+        &[aria-invalid="true"]:checked {
+            @apply border-primary;
         }
     }
 }

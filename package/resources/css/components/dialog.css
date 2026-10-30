@@ -2,8 +2,13 @@
  * Dialog, Alert Dialog and Sheet are native <dialog> elements in the top layer.
  * Entry and exit animate with @starting-style; display/overlay transition discretely.
  * Display is only set while open, so a closed <dialog> keeps the browser's display: none.
+ * <eso-dialog> and <eso-popover>, around one bound with wire:model, take no box.
  */
 @layer components {
+    :where(eso-dialog, eso-popover) {
+        display: contents;
+    }
+
     :where([data-slot="dialog-content"], [data-slot="alert-dialog-content"], [data-slot="sheet-content"]) {
         @apply max-h-none max-w-none border-0 bg-popover text-popover-foreground outline-none;
         transition-property: opacity, scale, translate, display, overlay;

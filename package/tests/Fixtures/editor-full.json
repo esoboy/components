@@ -507,7 +507,8 @@
             "align-self",
             "gap",
             "row-gap",
-            "column-gap"
+            "column-gap",
+            "grid-template-columns"
         ],
         [
             "color",
@@ -604,7 +605,8 @@
             "align-self",
             "gap",
             "row-gap",
-            "column-gap"
+            "column-gap",
+            "grid-template-columns"
         ],
         [
             "display",
@@ -762,6 +764,7 @@
             "gap",
             "row-gap",
             "column-gap",
+            "grid-template-columns",
             "list-style",
             "list-style-type",
             "list-style-position"
@@ -862,6 +865,7 @@
             "gap",
             "row-gap",
             "column-gap",
+            "grid-template-columns",
             "border-collapse",
             "border-spacing",
             "table-layout",

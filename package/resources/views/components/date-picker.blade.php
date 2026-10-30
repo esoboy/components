@@ -3,7 +3,6 @@
 @use('Esoboy\Ui\Support\ControlState')
 @use('Esoboy\Ui\Support\DatePresets')
 @use('Esoboy\Ui\Support\Model')
-@use('Esoboy\Ui\Support\Overlay')
 
 @aware([
     'uiField' => false,
@@ -48,7 +47,6 @@ if ($time) {
         $value = $date ?: null;
     }
 
-    $timeId = Overlay::current('date-picker');
 }
 @endphp
 
@@ -82,9 +80,9 @@ if ($time) {
                 <x-ui::field.group>
                     @foreach ($range ? ['from' => __('ui::date-picker.start-time'), 'to' => __('ui::date-picker.end-time')] : ['from' => __('ui::date-picker.time')] as $part => $label)
                     <x-ui::field>
-                        <x-ui::field.label :for="$timeId.'-'.$part">{{ $label }}</x-ui::field.label>
+                        <x-ui::field.label>{{ $label }}</x-ui::field.label>
                         <x-ui::input-group>
-                            <x-ui::input-group.input :id="$timeId.'-'.$part" type="time" :step="$step" :value="$times[$part] ?: $defaultTime" :data-date-picker-time="$part" />
+                            <x-ui::input-group.input type="time" :step="$step" :value="$times[$part] ?: $defaultTime" :data-date-picker-time="$part" />
                             <x-ui::input-group.addon><x-ui::icon name="clock-2" /></x-ui::input-group.addon>
                         </x-ui::input-group>
                     </x-ui::field>

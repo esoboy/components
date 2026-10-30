@@ -9,10 +9,12 @@
  * items itself, and mentions-select { prefix, value } a chosen item.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 import { matches } from './command.js'
 
 const ITEM = '[data-slot="mentions-item"]'
+
+let ids = 0
 
 // What decides where the textarea's text wraps, copied onto the mirror.
 const BOX = [
@@ -28,13 +30,15 @@ export class MentionsElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#mention && this.#filter())
 
     connectedCallback() {
+        const signal = connected(this)
+
         const fromInput = event => event.target === this.input
 
-        this.addEventListener('input', event => fromInput(event) && this.#update())
-        this.addEventListener('click', event => fromInput(event) && this.#update())
-        this.addEventListener('keydown', event => fromInput(event) && this.#onKey(event))
-        this.addEventListener('keyup', event => fromInput(event) && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) && this.#update())
-        this.addEventListener('focusout', event => ! this.contains(event.relatedTarget) && this.close())
+        this.addEventListener('input', event => fromInput(event) && this.#update(), { signal })
+        this.addEventListener('click', event => fromInput(event) && this.#update(), { signal })
+        this.addEventListener('keydown', event => fromInput(event) && this.#onKey(event), { signal })
+        this.addEventListener('keyup', event => fromInput(event) && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) && this.#update(), { signal })
+        this.addEventListener('focusout', event => ! this.contains(event.relatedTarget) && this.close(), { signal })
 
         // Choosing keeps the focus, and the caret, in the textarea.
         this.addEventListener('pointerdown', event => {
@@ -44,19 +48,20 @@ export class MentionsElement extends HTMLElement {
 
             event.preventDefault()
             this.#choose(item)
-        })
+        }, { signal })
 
         this.addEventListener('pointermove', event => {
             const item = event.target.closest?.(ITEM)
 
             if (item && this.#available(item)) this.#highlight(item)
-        })
+        }, { signal })
 
         // Livewire may render other items (a server search): filter them too.
         if (this.list) this.#observer.observe(this.list, { childList: true, subtree: true })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 
@@ -157,6 +162,7 @@ export class MentionsElement extends HTMLElement {
 
     #open() {
         if (! this.isOpen) this.content?.showPopover()
+        if (this.content && 'ariaControlsElements' in this.input) this.input.ariaControlsElements = [this.content]
 
         this.input.setAttribute('aria-expanded', 'true')
         this.#place()
@@ -228,7 +234,7 @@ export class MentionsElement extends HTMLElement {
 
         if (! item) return this.input?.removeAttribute('aria-activedescendant')
 
-        item.id ||= `${this.content.id}-${this.items.indexOf(item)}`
+        item.id ||= `ui-mentions-item-${++ids}`
         this.input.setAttribute('aria-activedescendant', item.id)
         item.scrollIntoView({ block: 'nearest' })
     }

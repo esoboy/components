@@ -19,6 +19,17 @@ new class extends Component
 
     public int $deleted = 0;
 
+    // Bound with wire:model on the Dialog: open while true.
+    public bool $renaming = false;
+
+    public function rename(): void
+    {
+        $this->validate();
+
+        $this->renaming = false;
+        Ui::toast('Renamed', description: "Name is now {$this->name}.", type: 'success');
+    }
+
     public function save(): void
     {
         $this->validate();
@@ -100,7 +111,27 @@ new class extends Component
             </x-ui::dialog>
 
             <x-ui::button variant="secondary" wire:click="openFromServer">Open from server</x-ui::button>
+
+            <x-ui::dialog name="rename" wire:model.live="renaming">
+                <x-ui::dialog.trigger variant="outline">Rename (wire:model)</x-ui::dialog.trigger>
+                <x-ui::dialog.content class="sm:max-w-sm">
+                    <form wire:submit="rename" class="grid gap-4">
+                        <x-ui::dialog.header>
+                            <x-ui::dialog.title>Rename</x-ui::dialog.title>
+                            <x-ui::dialog.description>Open while $renaming is true; saving sets it back to false.</x-ui::dialog.description>
+                        </x-ui::dialog.header>
+                        <x-ui::field>
+                            <x-ui::input wire:model="name" />
+                        </x-ui::field>
+                        <x-ui::dialog.footer>
+                            <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+                            <x-ui::button type="submit">Save</x-ui::button>
+                        </x-ui::dialog.footer>
+                    </form>
+                </x-ui::dialog.content>
+            </x-ui::dialog>
         </div>
+        <p class="text-sm text-muted-foreground">renaming: {{ $renaming ? 'true' : 'false' }}</p>
     </section>
 
     <section class="space-y-4">

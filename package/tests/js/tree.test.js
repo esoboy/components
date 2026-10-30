@@ -122,7 +122,7 @@ describe('tree select', () => {
     function picker(checkable = false) {
         document.body.innerHTML = `
             <eso-tree-select data-placeholder="Pick" ${checkable ? 'data-checkable' : ''}>
-                <button data-tree-select-trigger><span data-slot="select-value">Pick</span></button>
+                <button data-tree-select-trigger command="toggle-popover" commandfor=""><span data-slot="select-value">Pick</span></button>
                 <div data-slot="tree-select-content" popover="auto"><eso-tree ${checkable ? 'data-checkable' : ''}>${permissions}</eso-tree></div>
             </eso-tree-select>`
 

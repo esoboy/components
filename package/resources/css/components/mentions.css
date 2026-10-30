@@ -12,7 +12,7 @@
         max-width: calc(100dvw - 1rem);
     }
 
-    /* Outside :where, so it beats the inset: auto popover.css (loaded later) gives every popover. */
+    /* Outside :where, so it beats the inset: auto popover.css gives every popover. */
     [data-slot="mentions-content"] {
         top: var(--mentions-top, 0);
         left: var(--mentions-left, 0);

@@ -1,9 +1,17 @@
-@blaze
+@blaze(fold: true)
 
-@use('Esoboy\Ui\Support\Overlay')
+@props([
+    'as' => 'button',
+])
 
 @php
-$id = Overlay::open('dropdown-menu');
+// commandfor stays empty: ui.js points the trigger at the Dropdown Menu Content after it.
+$attributes = $attributes->merge(['data-dropdown-menu-trigger' => true, 'command' => 'toggle-popover', 'commandfor' => '', 'aria-haspopup' => 'menu']);
 @endphp
 
-<x-ui::button :attributes="$attributes->merge(['commandfor' => $id, 'command' => 'toggle-popover', 'aria-haspopup' => 'menu', 'style' => 'anchor-name: --'.$id.';'])">{{ $slot }}</x-ui::button>
+{{-- as renders another component as the trigger, like shadcn's render (sidebar.menu-button, tooltip.trigger, …); it must render a <button>, whose command the browser runs. --}}
+@if ($as === 'button')
+<x-ui::button :attributes="$attributes">{{ $slot }}</x-ui::button>
+@else
+<x-dynamic-component :component="'ui::'.$as" :attributes="$attributes">{{ $slot }}</x-dynamic-component>
+@endif

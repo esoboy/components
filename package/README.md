@@ -14,11 +14,14 @@ components that bind with `wire:model`.
 composer require esoboy/ui
 ```
 
-Import the styles after Tailwind in the app's CSS entry:
+Import the styles after Tailwind in the app's CSS entry: `ui.css` has the components
+shadcn/ui has, `extras.css` the others (Editor, Tree, Tour, Cascader, …), for apps that
+use any:
 
 ```css
 @import 'tailwindcss';
 @import '../../vendor/esoboy/ui/resources/css/ui.css';
+@import '../../vendor/esoboy/ui/resources/css/extras.css';
 ```
 
 Load the scripts and place the toaster and the confirm dialog once in the layout:
@@ -34,9 +37,10 @@ Load the scripts and place the toaster and the confirm dialog once in the layout
 </body>
 ```
 
-`@uiScripts` loads one deferred script with every component. Heavy components (Code Block
-highlighting, …) load their own script the first time they appear on a page, also when
-they arrive in a Livewire update; the app installs and imports nothing else.
+`@uiScripts` loads one deferred script with the components shadcn/ui has. The others,
+and heavy ones (Editor, Code Block highlighting, …), load their script the first time
+they appear on a page, also when they arrive in a Livewire update; the app installs and
+imports nothing else.
 
 The package serves its scripts from `/esoboy-ui/…`. In production, publish them so the web
 server serves them without booting Laravel:
@@ -63,6 +67,29 @@ shadcn/ui's:
 
 Controls inside `<x-ui::field>` show their validation errors; standalone controls don't.
 
+Where shadcn/ui passes `render` to a trigger, give it `as`, the component to render
+(it must render a button):
+
+```blade
+<x-ui::dropdown-menu>
+    <x-ui::dropdown-menu.trigger as="sidebar.menu-button" size="lg">…</x-ui::dropdown-menu.trigger>
+    <x-ui::dropdown-menu.content side="right" align="end">…</x-ui::dropdown-menu.content>
+</x-ui::dropdown-menu>
+
+<x-ui::tooltip>
+    <x-ui::tooltip.trigger as="input-group.button" size="icon-xs">…</x-ui::tooltip.trigger>
+    <x-ui::tooltip.content>…</x-ui::tooltip.content>
+</x-ui::tooltip>
+```
+
+A trigger comes before its content, as in shadcn/ui; the script pairs them, so overlays
+need no ids and keep open through Livewire updates. Where shadcn/ui has `open`, bind it
+with `wire:model` on the root (Dialog, Sheet, Drawer, Alert Dialog, Popover):
+
+```blade
+<x-ui::dialog name="edit-profile" wire:model="editing">…</x-ui::dialog>
+```
+
 Icons are Lucide's, built in (the version is in `resources/icons/lucide.php`):
 
 ```blade
@@ -80,6 +107,13 @@ use Esoboy\Ui\Facades\Ui;
 Ui::toast('Saved', type: 'success');
 Ui::dialog('edit-profile')->close();
 Ui::countdown('sms');
+```
+
+The Editor cleans the HTML it shows to its format. What it sends back is the app's to
+clean before storing it, with the same format; `Ui::plainText()` gives its text:
+
+```php
+$post->body = Ui::sanitize($this->body, 'basic');
 ```
 
 The toaster is kept across `wire:navigate`, so a toast shown before

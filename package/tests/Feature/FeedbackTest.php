@@ -98,7 +98,7 @@ it('renders a destructive confirm dialog and confirm popovers', function () {
         ->toContain('<dialog id="ui-confirm-destructive" role="alertdialog" data-slot="alert-dialog-content" data-size="sm"')
         ->toMatch('/data-slot="alert-dialog-media"[^>]*><svg/')
         ->toMatch('/data-variant="destructive"[^>]*commandfor="ui-confirm-destructive" command="close" value="confirm">Delete<\/button>/')
-        ->toMatch('/<div id="ui-confirm-popover" popover="auto" data-slot="popover-content" data-side="top"[^>]*style="[^"]*position-anchor: --ui-confirm;"/')
+        ->toMatch('/<div popover="auto" data-slot="popover-content" data-side="top"[^>]*id="ui-confirm-popover">/')
         ->toMatch('/commandfor="ui-confirm-popover" command="hide-popover" autofocus="autofocus">Cancel<\/button>/')
         ->toMatch('/commandfor="ui-confirm-popover" command="hide-popover" value="confirm">Continue<\/button>/')
         ->toMatch('/data-variant="destructive"[^>]*commandfor="ui-confirm-popover-destructive" command="hide-popover" value="confirm">Delete<\/button>/');

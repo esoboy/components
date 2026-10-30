@@ -1,18 +1,16 @@
-@blaze
+@blaze(fold: true)
 
-@use('Esoboy\Ui\Support\Overlay')
-
-@php
-$id = Overlay::close('dropdown-menu-sub');
-@endphp
+@props([
+    'sideOffset' => 0,
+    'alignOffset' => -3,
+])
 
 <div {{ $attributes->merge([
-    'id' => $id,
     'popover' => 'auto',
     'role' => 'menu',
     'tabindex' => '-1',
     'data-slot' => 'dropdown-menu-sub-content',
     'data-side' => 'right',
     'data-align' => 'start',
-    'style' => "position-anchor: --{$id}; --side-offset: 0px;",
+    'style' => "--side-offset: {$sideOffset}px; --align-offset: {$alignOffset}px;",
 ]) }}>{{ $slot }}</div>

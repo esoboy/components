@@ -21,11 +21,11 @@ const isOpen = element => element.matches(':popover-open')
 describe('context menu', () => {
     it('opens at the pointer, 4px lower', () => {
         document.body.innerHTML = `
-            <div data-context-menu="menu">Area</div>
+            <div data-slot="context-menu-trigger">Area</div>
             <div id="menu" popover="auto" role="menu" tabindex="-1" data-slot="context-menu-content"><button role="menuitem">Back</button></div>`
 
         const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 40, clientY: 50 })
-        document.querySelector('[data-context-menu]').dispatchEvent(event)
+        document.querySelector('[data-slot="context-menu-trigger"]').dispatchEvent(event)
 
         const menu = document.getElementById('menu')
 
@@ -81,7 +81,7 @@ describe('hover card', () => {
     it('opens after its delay and closes after leaving, unless the pointer moves into the card', () => {
         vi.useFakeTimers()
         document.body.innerHTML = `
-            <a data-hover-card="card" data-delay="600" data-close-delay="300">@nextjs</a>
+            <a data-hover-card-trigger data-delay="600" data-close-delay="300">@nextjs</a>
             <div id="card" popover="manual" data-slot="hover-card-content">Card</div>`
 
         const trigger = document.querySelector('a')
@@ -108,7 +108,7 @@ describe('navigation menu', () => {
     function mount() {
         document.body.innerHTML = `
             <nav data-slot="navigation-menu">
-                <button data-navigation-menu="one" aria-expanded="false">One</button>
+                <button data-slot="navigation-menu-trigger" aria-expanded="false">One</button>
                 <div id="one" popover="auto" data-slot="navigation-menu-content"><a href="#">Link</a></div>
             </nav>`
 

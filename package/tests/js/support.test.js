@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { announce, define, readValue, writeHidden } from '../../resources/js/support/element.js'
+import { announce, connected, define, disconnected, readValue, writeHidden } from '../../resources/js/support/element.js'
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -19,6 +19,30 @@ describe('define', () => {
         customElements.define('eso-taken', class extends HTMLElement {})
 
         expect(() => define('eso-taken', class extends HTMLElement {})).toThrow('<eso-taken> is already defined by another script')
+    })
+})
+
+describe('connected', () => {
+    it('keeps only the listeners of the last connection', () => {
+        const element = document.createElement('div')
+        let clicks = 0
+
+        element.addEventListener('click', () => clicks++, { signal: connected(element) })
+        element.addEventListener('click', () => clicks++, { signal: connected(element) })
+        element.click()
+
+        expect(clicks).toBe(1)
+    })
+
+    it('removes them when the element disconnects', () => {
+        const element = document.createElement('div')
+        let clicks = 0
+
+        element.addEventListener('click', () => clicks++, { signal: connected(element) })
+        disconnected(element)
+        element.click()
+
+        expect(clicks).toBe(0)
     })
 })
 

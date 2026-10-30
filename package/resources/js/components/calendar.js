@@ -6,7 +6,7 @@
  * ({ from, to }). input/change are dispatched from the calendar, so wire:model binds on it.
  */
 
-import { announce, define, readValue } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue } from '../support/element.js'
 import { clone, readTemplates } from '../support/templates.js'
 
 const pad = number => String(number).padStart(2, '0')
@@ -45,6 +45,8 @@ export class CalendarElement extends HTMLElement {
     #templates = {}
 
     connectedCallback() {
+        const signal = connected(this)
+
         // Read before the first render replaces the children; kept when the calendar moves.
         this.#templates = { ...this.#templates, ...readTemplates(this) }
         this.#value = this.#normalize(readValue(this))
@@ -55,11 +57,15 @@ export class CalendarElement extends HTMLElement {
 
         this.#month = startOfMonth(anchor)
 
-        this.addEventListener('click', event => this.#onClick(event))
-        this.addEventListener('change', event => this.#onDropdown(event))
-        this.addEventListener('keydown', event => this.#onKey(event))
+        this.addEventListener('click', event => this.#onClick(event), { signal })
+        this.addEventListener('change', event => this.#onDropdown(event), { signal })
+        this.addEventListener('keydown', event => this.#onKey(event), { signal })
 
         this.render()
+    }
+
+    disconnectedCallback() {
+        disconnected(this)
     }
 
     get mode() {

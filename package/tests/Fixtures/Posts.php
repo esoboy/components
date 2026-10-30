@@ -3,54 +3,28 @@
 namespace Esoboy\Ui\Tests\Fixtures;
 
 use Esoboy\Ui\Facades\Ui;
-use Esoboy\Ui\Livewire\Sanitize;
 use Livewire\Component;
-use Livewire\Form;
-
-class PostForm extends Form
-{
-    #[Sanitize]
-    public string $body = '';
-}
 
 class Posts extends Component
 {
-    #[Sanitize]
     public string $body = '';
 
-    #[Sanitize('basic')]
-    public string $intro = '';
+    public ?string $saved = null;
 
-    public string $plain = '';
-
-    public PostForm $form;
-
-    public ?string $seen = null;
-
-    // As an app loading a post would: set on the server, no #[Sanitize] involved.
+    // As an app loading a post would: set on the server.
     public function load(string $html): void
     {
         $this->body = $html;
     }
 
-    public function updatedBody(): void
+    // As an app stores what the Editor sends back: sanitized to its format first.
+    public function save(): void
     {
-        $this->seen = $this->body;
-    }
-
-    // As an app's own attachment library would insert.
-    public function attach(): void
-    {
-        Ui::editor('body')->insert([['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']]);
-    }
-
-    public function template(): void
-    {
-        Ui::editor('body')->insertContent('<p>Hello</p>');
+        $this->saved = Ui::sanitize($this->body);
     }
 
     public function render(): string
     {
-        return '<div><x-ui::editor id="body" wire:model="body" /></div>';
+        return '<div><x-ui::editor wire:model="body" /></div>';
     }
 }

@@ -6,7 +6,7 @@
  * side of it within their min and max; Home and End push to a limit.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const PANEL = '[data-slot="resizable-panel"]'
 const HANDLE = '[data-slot="resizable-handle"]'
@@ -16,10 +16,16 @@ export class ResizablePanelGroupElement extends HTMLElement {
     #sizes = new Map()
 
     connectedCallback() {
-        this.addEventListener('pointerdown', event => this.#onPress(event))
-        this.addEventListener('keydown', event => this.#onKey(event))
+        const signal = connected(this)
+
+        this.addEventListener('pointerdown', event => this.#onPress(event), { signal })
+        this.addEventListener('keydown', event => this.#onKey(event), { signal })
 
         this.#layout()
+    }
+
+    disconnectedCallback() {
+        disconnected(this)
     }
 
     get vertical() {

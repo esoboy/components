@@ -6,7 +6,7 @@
  * in Base UI. Arrow keys move focus along the list; Enter or Space activates.
  */
 
-import { announce, define } from '../support/element.js'
+import { announce, connected, define, disconnected } from '../support/element.js'
 
 const TRIGGER = '[data-slot="tabs-trigger"]'
 const CONTENT = '[data-slot="tabs-content"]'
@@ -19,14 +19,16 @@ export class TabsElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = this.dataset.value ?? null
 
         this.addEventListener('click', event => {
             const trigger = event.target.closest?.(TRIGGER)
 
             if (this.#owns(trigger)) this.#activate(trigger)
-        })
-        this.addEventListener('keydown', event => this.#onKey(event))
+        }, { signal })
+        this.addEventListener('keydown', event => this.#onKey(event), { signal })
 
         this.#sync()
 
@@ -36,6 +38,7 @@ export class TabsElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 

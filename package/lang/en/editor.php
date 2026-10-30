@@ -102,6 +102,7 @@ return [
     'alt-text' => 'Alternative text',
     'alt-placeholder' => 'Describe the image…',
     'replace-media' => 'Replace',
+    'image-row' => 'Side by side',
     'caption' => 'Caption',
     'caption-placeholder' => 'Write a caption…',
     'image-link' => 'Image link',
@@ -111,6 +112,8 @@ return [
     'images-unsaved' => 'Images not on this site: :count',
     'save-images' => 'Save all',
     'uploading' => 'Uploading…',
+    'uploading-count' => 'Uploading files: :count',
+    'submit-uploading' => 'Wait for the uploads to finish before submitting (:count left).',
     'image-missing' => 'This picture couldn’t be pasted',
     'upload' => 'Upload',
     'dismiss' => 'Dismiss',
@@ -165,4 +168,6 @@ return [
     'fullscreen' => 'Full screen',
     'drag-handle' => 'Drag to move, click to select',
     'characters' => 'characters',
+    'too-long' => 'The :attribute may not be longer than :max characters (it has :count).',
+    'too-short' => 'The :attribute must be at least :min characters (it has :count).',
 ];

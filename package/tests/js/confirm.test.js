@@ -133,20 +133,19 @@ describe('popover', () => {
     it('asks in a popover anchored to the element, confirmed by its confirm button', async () => {
         const action = vi.fn()
         const el = bind('Remove this row?', ['popover'])
-        el.style.setProperty('anchor-name', '--tooltip-1')
+        const shown = vi.spyOn(popover(), 'showPopover')
 
         el.__livewire_confirm(action, vi.fn())
 
         expect(popover().matches(':popover-open')).toBe(true)
         expect(popover().querySelector('h2').textContent).toBe('Remove this row?')
-        expect(el.style.getPropertyValue('anchor-name')).toBe('--tooltip-1, --ui-confirm')
+        expect(shown).toHaveBeenCalledWith({ source: el })
 
         popover().querySelector('[value="confirm"]').click()
         popover().hidePopover()
         await Promise.resolve()
 
         expect(action).toHaveBeenCalled()
-        expect(el.style.getPropertyValue('anchor-name')).toBe('--tooltip-1')
         expect(document.activeElement).toBe(el)
     })
 

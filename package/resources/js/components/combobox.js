@@ -12,7 +12,7 @@
  * when a morph brings new ones from the server while typing.
  */
 
-import { announce, define, readValue, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue, writeHidden } from '../support/element.js'
 import { matches } from './command.js'
 
 const ITEM = '[data-slot="combobox-item"]'
@@ -26,6 +26,8 @@ export class ComboboxElement extends HTMLElement {
     #onOutside = event => ! this.contains(event.target) && ! this.content?.contains(event.target) && this.close()
 
     connectedCallback() {
+        const signal = connected(this)
+
         const initial = readValue(this)
 
         this.#value = this.multiple ? (Array.isArray(initial) ? initial.map(String) : []) : this.autocomplete ? String(initial ?? '') : initial === null ? null : String(initial)
@@ -38,10 +40,10 @@ export class ComboboxElement extends HTMLElement {
 
             this.open()
             this.filter(input.value)
-        })
-        input?.addEventListener('click', () => this.open())
-        input?.addEventListener('keydown', event => this.#onKey(event))
-        input?.addEventListener('blur', () => queueMicrotask(() => ! this.contains(document.activeElement) && (this.autocomplete ? this.#change() : this.#restoreText())))
+        }, { signal })
+        input?.addEventListener('click', () => this.open(), { signal })
+        input?.addEventListener('keydown', event => this.#onKey(event), { signal })
+        input?.addEventListener('blur', () => queueMicrotask(() => ! this.contains(document.activeElement) && (this.autocomplete ? this.#change() : this.#restoreText())), { signal })
 
         this.addEventListener('click', event => {
             if (event.target.closest('[data-combobox-trigger]')) return this.isOpen ? this.close() : (this.open(), input?.focus())
@@ -50,15 +52,15 @@ export class ComboboxElement extends HTMLElement {
             const remove = event.target.closest('[data-combobox-chip-remove]')
 
             if (remove) this.#commit(this.#value.filter(value => value !== remove.closest('[data-slot="combobox-chip"]').dataset.value))
-        })
+        }, { signal })
 
-        this.content?.addEventListener('click', event => this.choose(event.target.closest(ITEM)))
-        this.content?.addEventListener('mousedown', event => event.preventDefault())
+        this.content?.addEventListener('click', event => this.choose(event.target.closest(ITEM)), { signal })
+        this.content?.addEventListener('mousedown', event => event.target !== this.input && event.preventDefault(), { signal })
         this.content?.addEventListener('pointermove', event => {
             const item = event.target.closest?.(ITEM)
 
             if (item && this.#isAvailable(item)) this.highlight(item)
-        })
+        }, { signal })
 
         this.#sync()
         this.#restoreText()
@@ -75,6 +77,7 @@ export class ComboboxElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
         document.removeEventListener('pointerdown', this.#onOutside)
     }
@@ -127,8 +130,9 @@ export class ComboboxElement extends HTMLElement {
         // An autocomplete has nothing to show without a suggestion.
         if (this.autocomplete && (this.filter(query), ! this.#hasSuggestions())) return
 
-        this.content.showPopover()
+        this.content.showPopover({ source: this.querySelector('[data-combobox-anchor]') ?? this.querySelector('[data-combobox-trigger]') ?? this.input })
         this.input?.setAttribute('aria-expanded', 'true')
+        if (this.input && 'ariaControlsElements' in this.input) this.input.ariaControlsElements = [this.content]
         this.querySelector('[data-combobox-trigger]')?.setAttribute('aria-expanded', 'true')
         document.addEventListener('pointerdown', this.#onOutside)
 
@@ -138,8 +142,13 @@ export class ComboboxElement extends HTMLElement {
     close() {
         if (! this.isOpen) return
 
+        const focused = this.content.contains(document.activeElement)
+
         this.content.hidePopover()
         this.input?.setAttribute('aria-expanded', 'false')
+
+        // Searching inside the list, focus goes back to the trigger.
+        if (focused && this.#searching) this.querySelector('[data-combobox-trigger]')?.focus()
         this.querySelector('[data-combobox-trigger]')?.setAttribute('aria-expanded', 'false')
         document.removeEventListener('pointerdown', this.#onOutside)
 
@@ -268,11 +277,16 @@ export class ComboboxElement extends HTMLElement {
         return ! this.multiple && this.#value !== null && this.input?.value === this.#label(this.#value)
     }
 
-    // Single: when not typing, the input shows the chosen item's text.
+    // With a Combobox Trigger, the input inside the list only searches.
+    get #searching() {
+        return Boolean(this.input && this.content?.contains(this.input))
+    }
+
+    // Single: when not typing, the input shows the chosen item's text; a search field, nothing.
     #restoreText() {
         if (this.multiple || ! this.input) return
 
-        const text = this.autocomplete ? this.#value : this.#value === null ? '' : this.#label(this.#value)
+        const text = this.#searching ? '' : this.autocomplete ? this.#value : this.#value === null ? '' : this.#label(this.#value)
 
         if (this.input.value !== text) this.input.value = text
     }
@@ -285,6 +299,14 @@ export class ComboboxElement extends HTMLElement {
         }
 
         this.querySelectorAll('[data-combobox-clear]').forEach(clear => (clear.hidden = this.multiple ? ! this.#value.length : this.#value === null))
+
+        const chosen = this.multiple ? this.#value.map(value => this.#label(value)).join(', ') : this.#value === null ? '' : this.#label(this.#value)
+
+        for (const display of this.querySelectorAll('[data-slot="combobox-value"]')) {
+            const text = chosen || display.dataset.placeholder || ''
+
+            if (display.textContent !== text) display.textContent = text
+        }
 
         this.#renderChips()
         this.#mirrorValidation()

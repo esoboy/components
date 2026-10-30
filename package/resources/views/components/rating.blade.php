@@ -43,3 +43,4 @@ $focusable = min($max, max(1, (int) round($value ?? 1)));
 </eso-rating>
 @endif
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

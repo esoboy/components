@@ -22,3 +22,4 @@
         </div>
     </div>
 </eso-tour>
+<x-ui::extras />

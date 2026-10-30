@@ -50,6 +50,7 @@ export function uploads(templates) {
                                 const element = template.content.firstElementChild.cloneNode(true)
                                 const text = element.querySelector('[data-editor-upload-message]')
 
+                                element.dataset.editorUpload = id
                                 element.querySelectorAll('[data-editor-action]').forEach(control => control.setAttribute('data-editor-value', id))
                                 if (text && message) {
                                     text.textContent = message

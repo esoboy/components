@@ -33,11 +33,9 @@ it('defaults to a single, labelled calendar', function () {
 it('renders a date picker around a popover and a calendar', function () {
     $html = (string) $this->blade('<x-ui::date-picker wire:model="date" placeholder="Pick a date" default-value="2026-01-05" mode="single" class="w-64" />');
 
-    [$id] = idsOf($html, 'commandfor');
-
     expect($html)
         ->toContain('<eso-date-picker data-slot="date-picker" data-mode="single" data-placeholder="Pick a date" data-locale="en" wire:model="date">')
-        ->toContain("data-variant=\"outline\" data-size=\"default\" commandfor=\"{$id}\" command=\"toggle-popover\" data-date-picker-trigger=\"data-date-picker-trigger\"")
+        ->toContain('data-variant="outline" data-size="default" data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor="" data-date-picker-trigger="data-date-picker-trigger"')
         ->toContain('class="w-64"')
         ->toContain('<span data-slot="date-picker-value">Pick a date</span>')
         ->toContain('data-date-picker-content')
@@ -69,15 +67,13 @@ it('renders presets under the calendar as calendar values', function () {
 it('renders a date and time picker, the calendar taking the date and a time input the time', function () {
     $html = (string) $this->blade('<x-ui::date-picker time default-value="2026-01-05 14:30" />');
 
-    preg_match('/ for="(date-picker-[^"]+)-from"/', $html, $matches);
-    $id = $matches[1];
-
     expect($html)
         ->toContain('<eso-date-picker data-slot="date-picker" data-mode="single" data-time="data-time" data-default-time="00:00" data-locale="en">')
         ->toContain('<eso-calendar data-slot="calendar" data-mode="single" data-value="&quot;2026-01-05&quot;"')
         ->toContain('<div data-slot="date-picker-time" wire:ignore>')
-        ->toContain("<label data-slot=\"field-label\" for=\"{$id}-from\">Time</label>")
-        ->toMatch("/<input type=\"time\"[^>]*id=\"{$id}-from\"[^>]*value=\"14:30\" data-date-picker-time=\"from\">/")
+        // Its script gives the inputs ids and points the labels at them.
+        ->toContain('<label data-slot="field-label">Time</label>')
+        ->toMatch('/<input type="time"[^>]*value="14:30" data-date-picker-time="from">/')
         ->not->toContain('data-date-picker-time="to"');
 });
 

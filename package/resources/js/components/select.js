@@ -7,7 +7,8 @@
  * with the chosen item lined up on it, as Base UI's alignItemWithTrigger does.
  */
 
-import { announce, define, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, writeHidden } from '../support/element.js'
+import { link } from '../support/overlay.js'
 
 const ITEM = '[data-slot="select-item"]'
 
@@ -18,14 +19,15 @@ export class SelectElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = this.dataset.value ?? null
 
-        this.trigger?.addEventListener('click', () => (this.isOpen ? this.close() : this.open()))
-        this.trigger?.addEventListener('keydown', event => this.#onTriggerKey(event))
-        this.content?.addEventListener('keydown', event => this.#onListKey(event))
-        this.content?.addEventListener('click', event => this.#onItemClick(event))
-        this.content?.addEventListener('pointermove', event => event.target.closest?.(ITEM)?.focus({ preventScroll: true }))
-        this.content?.addEventListener('toggle', event => this.#onToggle(event))
+        this.trigger?.addEventListener('keydown', event => this.#onTriggerKey(event), { signal })
+        this.content?.addEventListener('keydown', event => this.#onListKey(event), { signal })
+        this.content?.addEventListener('click', event => this.#onItemClick(event), { signal })
+        this.content?.addEventListener('pointermove', event => event.target.closest?.(ITEM)?.focus({ preventScroll: true }), { signal })
+        this.content?.addEventListener('toggle', event => this.#onToggle(event), { signal })
 
         this.#sync()
 
@@ -35,6 +37,7 @@ export class SelectElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 
@@ -70,7 +73,7 @@ export class SelectElement extends HTMLElement {
     open() {
         if (! this.content || this.trigger?.disabled) return
 
-        this.content.showPopover()
+        this.content.showPopover({ source: this.trigger })
     }
 
     close() {
@@ -98,6 +101,8 @@ export class SelectElement extends HTMLElement {
 
     #sync() {
         const selected = this.#selected
+
+        if (this.trigger) link(this.trigger, this.content)
 
         for (const item of this.items) {
             const state = String(item === selected)

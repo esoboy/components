@@ -4,7 +4,7 @@
  * The eye toggles the input between password and text.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 // The eye shows or hides the password; morphs put back type="password", so it is reapplied.
 export class PasswordInputElement extends HTMLElement {
@@ -12,18 +12,21 @@ export class PasswordInputElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.addEventListener('click', event => {
             if (! event.target.closest?.('[data-password-toggle]')) return
 
             this.#visible = ! this.#visible
             this.#render()
-        })
+        }, { signal })
 
         this.#render()
         this.#observer.observe(this, { subtree: true, childList: true, attributes: true, attributeFilter: ['type', 'aria-pressed'] })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

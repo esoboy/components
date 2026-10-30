@@ -7,7 +7,7 @@
  * come from the element, so wire:model binds on it.
  */
 
-import { announce, define, readValue, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue, writeHidden } from '../support/element.js'
 
 const SEPARATORS = /[,，\n]/
 
@@ -16,6 +16,8 @@ export class TagsInputElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         const value = readValue(this, [])
 
         this.#tags = Array.isArray(value) ? value.map(String) : []
@@ -36,16 +38,16 @@ export class TagsInputElement extends HTMLElement {
             } else if (event.key === 'Backspace' && input.value === '' && this.#tags.length) {
                 this.#set(this.#tags.slice(0, -1))
             }
-        })
+        }, { signal })
 
         this.addEventListener('input', event => {
             if (! fromInput(event)) return
 
             event.stopPropagation()
             if (SEPARATORS.test(this.input.value)) this.#add(this.input.value)
-        })
+        }, { signal })
 
-        this.addEventListener('focusout', event => fromInput(event) && this.input.value.trim() && this.#add(this.input.value))
+        this.addEventListener('focusout', event => fromInput(event) && this.input.value.trim() && this.#add(this.input.value), { signal })
 
         this.addEventListener('click', event => {
             const remove = event.target.closest?.('[data-tags-input-remove]')
@@ -59,7 +61,7 @@ export class TagsInputElement extends HTMLElement {
             } else if (event.target === this) {
                 this.input?.focus()
             }
-        })
+        }, { signal })
 
         this.#render()
 
@@ -68,6 +70,7 @@ export class TagsInputElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

@@ -7,10 +7,6 @@
         @apply relative flex w-full cursor-move touch-none items-center justify-center overflow-hidden select-none focus:outline-none;
     }
 
-    :where([data-slot="cropper-description"]) {
-        @apply sr-only;
-    }
-
     :where([data-slot="cropper-image-wrapper"]) {
         @apply absolute will-change-transform;
     }

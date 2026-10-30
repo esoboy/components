@@ -2,7 +2,10 @@
  * Popover, menu, Tooltip, Hover Card, Select and Combobox content: native popovers
  * in the top layer, placed against their trigger with CSS anchor positioning.
  * data-side picks the side (flipping when it doesn't fit), data-align the edge,
- * --side-offset the gap. Select over its trigger is placed by its script instead.
+ * --side-offset the gap, --align-offset a shift along that edge (Base UI's alignOffset:
+ * toward the inside for start and end, right or down for center). Their trigger is
+ * their anchor without a name: the invoker, or the source they were shown for. Select
+ * over its trigger is placed by its script instead.
  */
 @layer components {
     :where([data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="tooltip-content"], [data-slot="hover-card-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"], [data-slot="navigation-menu-content"], [data-slot="select-content"], [data-slot="combobox-content"], [data-slot="cascader-content"], [data-slot="tree-select-content"], [data-slot="mentions-content"], [data-slot="tour-content"]) {
@@ -30,7 +33,32 @@
             position-area: bottom;
             position-try-fallbacks: flip-block;
             transform-origin: top;
+        }
 
+        &[data-side="top"] {
+            margin-bottom: var(--side-offset);
+            position-area: top;
+            position-try-fallbacks: flip-block;
+            transform-origin: bottom;
+        }
+
+        &:is([data-side="bottom"], [data-side="top"]) {
+            margin-left: var(--align-offset, 0px);
+            margin-right: calc(var(--align-offset, 0px) * -1);
+
+            &[data-align="start"] { margin-right: 0; }
+            &[data-align="end"] { margin-left: 0; margin-right: var(--align-offset, 0px); }
+        }
+
+        &:is([data-side="left"], [data-side="right"]) {
+            margin-top: var(--align-offset, 0px);
+            margin-bottom: calc(var(--align-offset, 0px) * -1);
+
+            &[data-align="start"] { margin-bottom: 0; }
+            &[data-align="end"] { margin-top: 0; margin-bottom: var(--align-offset, 0px); }
+        }
+
+        &[data-side="bottom"] {
             &[data-align="start"] { position-area: bottom span-right; transform-origin: top left; }
             &[data-align="end"] { position-area: bottom span-left; transform-origin: top right; }
 
@@ -41,11 +69,6 @@
         }
 
         &[data-side="top"] {
-            margin-bottom: var(--side-offset);
-            position-area: top;
-            position-try-fallbacks: flip-block;
-            transform-origin: bottom;
-
             &[data-align="start"] { position-area: top span-right; transform-origin: bottom left; }
             &[data-align="end"] { position-area: top span-left; transform-origin: bottom right; }
 

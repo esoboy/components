@@ -295,3 +295,46 @@ describe('autocomplete', () => {
         expect(combobox.input.value).toBe('')
     })
 })
+
+describe('with a trigger', () => {
+    function triggered() {
+        document.body.innerHTML = `
+            <eso-combobox data-value='"svelte"'>
+                <button data-combobox-trigger><span data-slot="combobox-value" data-placeholder="Pick a framework">Pick a framework</span></button>
+                <div data-slot="combobox-content" popover="manual">
+                    <div data-slot="input-group"><input data-combobox-input></div>
+                    <div data-slot="combobox-list">${items}</div>
+                </div>
+            </eso-combobox>`
+
+        return document.querySelector('eso-combobox')
+    }
+
+    it('shows the choice on the trigger and searches with an empty input inside the list', () => {
+        const element = triggered()
+        const trigger = element.querySelector('[data-combobox-trigger]')
+
+        expect(element.querySelector('[data-slot="combobox-value"]').textContent).toBe('SvelteKit')
+        expect(element.input.value).toBe('')
+
+        trigger.click()
+        expect(element.isOpen).toBe(true)
+        expect(document.activeElement).toBe(element.input)
+
+        element.choose(element.querySelector('[data-value="astro"]'))
+
+        expect(element.value).toBe('astro')
+        expect(element.isOpen).toBe(false)
+        expect(element.input.value).toBe('')
+        expect(element.querySelector('[data-slot="combobox-value"]').textContent).toBe('Astro')
+        expect(document.activeElement).toBe(trigger)
+    })
+
+    it('shows the placeholder while nothing is chosen', () => {
+        const element = triggered()
+
+        element.value = null
+
+        expect(element.querySelector('[data-slot="combobox-value"]').textContent).toBe('Pick a framework')
+    })
+})

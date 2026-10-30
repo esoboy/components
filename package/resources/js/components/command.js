@@ -6,7 +6,7 @@
  * highlighted item, so its wire:click (or any click handler) runs.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const ITEM = '[data-slot="command-item"]'
 
@@ -30,13 +30,15 @@ export class CommandElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
-        this.input?.addEventListener('input', () => this.refresh())
-        this.input?.addEventListener('keydown', event => this.#onKey(event))
+        const signal = connected(this)
+
+        this.input?.addEventListener('input', () => this.refresh(), { signal })
+        this.input?.addEventListener('keydown', event => this.#onKey(event), { signal })
         this.addEventListener('pointermove', event => {
             const item = event.target.closest?.(ITEM)
 
             if (item && this.#isAvailable(item)) this.highlight(item)
-        })
+        }, { signal })
 
         this.refresh()
 
@@ -46,6 +48,7 @@ export class CommandElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 

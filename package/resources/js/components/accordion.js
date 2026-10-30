@@ -6,7 +6,7 @@
  * Arrow keys, Home and End move between triggers, as in Base UI.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 let accordions = 0
 
@@ -15,12 +15,14 @@ export class AccordionElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
-        this.addEventListener('keydown', event => this.#onKey(event))
+        const signal = connected(this)
+
+        this.addEventListener('keydown', event => this.#onKey(event), { signal })
 
         // A disabled item's summary never toggles it.
         this.addEventListener('click', event => {
             if (event.target.closest?.('summary[aria-disabled="true"]')) event.preventDefault()
-        })
+        }, { signal })
 
         this.#nameItems()
 
@@ -29,6 +31,7 @@ export class AccordionElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 

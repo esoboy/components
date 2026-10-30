@@ -8,11 +8,11 @@ beforeAll(() => registerTooltip())
 
 beforeEach(() => {
     document.body.innerHTML = `
-        <button data-tooltip="t"><span>Hover</span></button>
+        <button data-tooltip-trigger><span>Hover</span></button>
         <div id="t" popover="manual" data-slot="tooltip-content">Tip</div>
         <a id="elsewhere">x</a>
     `
-    trigger = document.querySelector('[data-tooltip]')
+    trigger = document.querySelector('[data-tooltip-trigger]')
     tooltip = document.getElementById('t')
 })
 

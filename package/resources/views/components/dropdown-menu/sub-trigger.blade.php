@@ -1,24 +1,18 @@
-@blaze
-
-@use('Esoboy\Ui\Support\Overlay')
+@blaze(fold: true)
 
 @props([
     'inset' => false,
 ])
 
-@php
-$id = Overlay::open('dropdown-menu-sub');
-@endphp
-
+{{-- Opens the Dropdown Menu Sub Content after it; commandfor stays empty, ui.js points it there. --}}
 <button {{ $attributes->merge([
     'type' => 'button',
     'role' => 'menuitem',
     'aria-haspopup' => 'menu',
     'data-slot' => 'dropdown-menu-sub-trigger',
     'data-inset' => $inset,
-    'commandfor' => $id,
     'command' => 'toggle-popover',
-    'style' => 'anchor-name: --'.$id.';',
+    'commandfor' => '',
 ]) }}>
     {{ $slot }}
     <x-ui::icon name="chevron-right" data-slot="dropdown-menu-sub-trigger-icon" />

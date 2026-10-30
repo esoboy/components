@@ -18,13 +18,14 @@ const root = fileURLToPath(new URL('..', import.meta.url))
 const dist = join(root, 'dist')
 
 const bundles = [
-    // Every component but the heavy ones, as one classic script for @uiScripts.
+    // The components shadcn has, as one classic script for @uiScripts.
     { entryPoints: { ui: 'resources/js/ui.js' }, format: 'iife' },
 
-    // Heavy components: modules their views load through @assets, with what they
-    // import on demand (a Shiki language, …) split into chunks/.
+    // The others, and the heavy ones: modules their views load through @assets, with
+    // what they share or import on demand (a Shiki language, …) split into chunks/.
     {
         entryPoints: {
+            extras: 'resources/js/extras.js',
             'code-block': 'resources/js/heavy/code-block.js',
             editor: 'resources/js/heavy/editor.js',
             signature: 'resources/js/heavy/signature.js',

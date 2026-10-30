@@ -1,25 +1,22 @@
 <?php
 
 use Esoboy\Ui\Facades\Ui;
-use Esoboy\Ui\Livewire\Sanitize;
+use Esoboy\Ui\Rules\RichTextLength;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new class extends Component
 {
-    #[Sanitize('text')]
     public string $note = '<h3>Text</h3><p>Text and its layout: <strong>marks</strong>, <span style="color:#dc2626">colors</span>, <span style="font-size:18px">sizes</span>, alignment, indents and lists; no images.</p>';
 
-    #[Sanitize('basic')]
     public string $intro = '<h2>Basic</h2><p style="text-indent:2em;line-height:1.75">Everything text has (<strong>marks</strong>, <mark style="background-color:#fef08a;color:#171717">highlights</mark>, <span style="font-size:20px">sizes</span>, …), and images, video, audio, files and emoji 😀.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:40%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><ul style="list-style-type:none;padding-left:0"><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" checked disabled><div><p>A task done</p></div></li><li style="display:flex;align-items:baseline;gap:0.5em"><input type="checkbox" disabled><div><p>A task to do</p></div></li></ul>';
 
-    #[Sanitize]
-    #[Validate('required')]
-    public string $article = '<h1>Full</h1><p>Everything basic has, and media, embeds, tables, collapsible blocks, formulas like <math><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\pi} + 1 = 0</annotation></semantics></math> and code.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:50%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><details><summary>Click to expand</summary><div><p>Hidden until opened.</p></div></details><pre><code>composer require esoboy/ui</code></pre><section style="padding:12px 16px;border-left:3px solid #f97316;background-color:rgba(249,115,22,0.08)"><p><strong>A section</strong> pasted from a WeChat article: the whitelist keeps the tag and its style.</p></section><aside style="padding:12px 16px;border-radius:6px;background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6"><p>A callout.</p></aside>';
+    #[Validate(['required', new RichTextLength(max: 2000)])]
+    public string $article = '<h1>Full</h1><h2>Media</h2><p>Everything basic has, and media, embeds, tables, collapsible blocks, formulas like <math><semantics><mrow><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>+</mo><mn>1</mn><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e^{i\pi} + 1 = 0</annotation></semantics></math> and code.</p><img src="/demo/landscape.jpg" alt="A landscape" width="1200" height="800" style="display:block;width:50%;max-width:100%;height:auto;margin-left:auto;margin-right:auto"><div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:8px;align-items:start"><img src="/demo/photo-1.svg" alt="First photo" style="display:block;width:100%;height:auto"><img src="/demo/photo-2.svg" alt="Second photo" style="display:block;width:100%;height:auto"></div><h2>Blocks</h2><h3>Collapsible</h3><details><summary>Click to expand</summary><div><p>Hidden until opened.</p></div></details><pre><code>composer require esoboy/ui</code></pre><section style="padding:12px 16px;border-left:3px solid #f97316;background-color:rgba(249,115,22,0.08)"><p><strong>A section</strong> pasted from a WeChat article: the whitelist keeps the tag and its style.</p></section><aside style="padding:12px 16px;border-radius:6px;background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6"><p>A callout.</p></aside>';
 
     public ?string $published = null;
 
-    /** The app's own attachment library, inserted with Ui::editor()->insert(). */
+    /** The app's own attachment library, put in with the editor's insert(). */
     public array $library = [
         ['url' => '/demo/landscape.jpg', 'name' => 'landscape.jpg', 'mime' => 'image/jpeg', 'size' => 56814, 'alt' => 'A landscape', 'width' => 1200, 'height' => 800],
         ['url' => '/demo/photo-1.svg', 'name' => 'photo-1.svg', 'mime' => 'image/svg+xml', 'size' => 438, 'alt' => 'First photo'],
@@ -38,10 +35,12 @@ new class extends Component
         Ui::dialog('library')->open();
     }
 
-    public function insertPicked(): void
+    // The picked attachments, for the button to hand to the editor.
+    public function insertPicked(): array
     {
-        Ui::editor('article')->insert(array_values(array_intersect_key($this->library, array_flip($this->picked))));
         Ui::dialog('library')->close();
+
+        return array_values(array_intersect_key($this->library, array_flip($this->picked)));
     }
 
     public function kind(array $attachment): string
@@ -53,7 +52,7 @@ new class extends Component
     {
         $this->validate();
 
-        $this->published = $this->article;
+        $this->published = Ui::sanitize($this->article);
     }
 };
 ?>
@@ -77,7 +76,7 @@ new class extends Component
     <form wire:submit="publish" class="space-y-4">
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
-            <x-ui::editor id="article" wire:model="article" :upload-context="['page' => 'editor']" />
+            <x-ui::editor id="article" wire:model="article" :max-length="2000" :upload-context="['page' => 'editor']" />
             <x-ui::field.description>The image, video, audio and file buttons, and files dropped or pasted, upload with the app's uploader (config ui.editor.uploader, here App\Editor\DemoUploader). Images from other sites and pasted ones are saved from their menu, or all at once from the footer (or as they come in, with ui.editor.auto_upload). Type / for blocks.</x-ui::field.description>
         </x-ui::field>
         <div class="flex gap-2">
@@ -88,8 +87,11 @@ new class extends Component
 
     @if ($published)
     <section class="space-y-3">
-        <h2 class="text-lg font-semibold">&lt;x-ui::rich-text&gt;</h2>
-        <x-ui::rich-text id="published" :html="$published" class="rounded-lg border p-4" />
+        <h2 class="text-lg font-semibold">&lt;x-ui::rich-text&gt; and its &lt;x-ui::rich-text.toc&gt;</h2>
+        <div class="grid gap-6 md:grid-cols-[1fr_12rem]">
+            <x-ui::rich-text id="published" :html="$published" class="rounded-lg border p-4" />
+            <x-ui::rich-text.toc :html="$published" class="md:sticky md:top-4 md:self-start">On this page</x-ui::rich-text.toc>
+        </div>
         <pre class="overflow-x-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap">{{ $published }}</pre>
     </section>
     @endif
@@ -98,7 +100,7 @@ new class extends Component
         <x-ui::dialog.content>
             <x-ui::dialog.header>
                 <x-ui::dialog.title>Attachment library</x-ui::dialog.title>
-                <x-ui::dialog.description>Pick any number: Ui::editor('article')->insert() puts them at the cursor.</x-ui::dialog.description>
+                <x-ui::dialog.description>Pick any number: the editor's insert() puts them at the cursor.</x-ui::dialog.description>
             </x-ui::dialog.header>
             <div class="grid gap-2">
                 @foreach ($library as $index => $attachment)
@@ -111,7 +113,7 @@ new class extends Component
             </div>
             <x-ui::dialog.footer>
                 <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
-                <x-ui::button wire:click="insertPicked">Insert</x-ui::button>
+                <x-ui::button x-on:click="$wire.insertPicked().then(attachments => document.getElementById('article').insert(attachments))">Insert</x-ui::button>
             </x-ui::dialog.footer>
         </x-ui::dialog.content>
     </x-ui::dialog>

@@ -8,7 +8,8 @@
  * or Enter to open a parent, Left to go back, Enter on a leaf to choose it.
  */
 
-import { announce, define, readValue, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, readValue, writeHidden } from '../support/element.js'
+import { link } from '../support/overlay.js'
 import { clone, readTemplates } from '../support/templates.js'
 
 const ITEM = '[data-cascader-item]'
@@ -20,29 +21,31 @@ export class CascaderElement extends HTMLElement {
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#templates = readTemplates(this)
 
         const value = readValue(this, [])
 
         this.#value = Array.isArray(value) ? value.map(String) : []
 
-        this.trigger?.addEventListener('click', () => (this.isOpen ? this.close() : this.open()))
         this.trigger?.addEventListener('keydown', event => {
             if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
                 event.preventDefault()
                 this.open()
             }
-        })
+        }, { signal })
 
-        this.content?.addEventListener('click', event => this.#onClick(event))
-        this.content?.addEventListener('keydown', event => this.#onKey(event))
-        this.content?.addEventListener('toggle', event => this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open')))
+        this.content?.addEventListener('click', event => this.#onClick(event), { signal })
+        this.content?.addEventListener('keydown', event => this.#onKey(event), { signal })
+        this.content?.addEventListener('toggle', event => this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open')), { signal })
 
         // Livewire morphs put back the server's label: show ours.
         if (this.trigger) this.#observer.observe(this.trigger, { childList: true, subtree: true, characterData: true })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 
@@ -80,7 +83,7 @@ export class CascaderElement extends HTMLElement {
 
         this.#open = [...this.#value]
         this.#renderColumns()
-        this.content.showPopover()
+        this.content.showPopover({ source: this.trigger })
 
         const columns = this.content.querySelectorAll('[data-slot="cascader-column"]')
         const last = columns[Math.max(0, this.#value.length - 1)] ?? columns[0]
@@ -147,6 +150,8 @@ export class CascaderElement extends HTMLElement {
     }
 
     #render() {
+        if (this.trigger) link(this.trigger, this.content)
+
         const labels = []
         let options = this.options
 

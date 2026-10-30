@@ -76,3 +76,4 @@ $lists = [
     @endif
 </eso-transfer>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

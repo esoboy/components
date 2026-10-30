@@ -3,7 +3,6 @@
 @use('Esoboy\Ui\Support\Options')
 @use('Esoboy\Ui\Support\ControlState')
 @use('Esoboy\Ui\Support\Model')
-@use('Esoboy\Ui\Support\Overlay')
 
 @aware([
     'uiField' => false,
@@ -26,8 +25,6 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = array_values(array_map('strval', (array) ($defaultValue ?? Model::value($attributes) ?? [])));
 $options = Options::normalize($options);
 $labels = Options::labels($options, $value);
-$id = Overlay::open('cascader');
-Overlay::close('cascader');
 @endphp
 
 {{-- <eso-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
@@ -44,11 +41,11 @@ Overlay::close('cascader');
     <template data-template="column"><div data-slot="cascader-column" role="listbox"></div></template>
     <template data-template="option"><x-ui::select.item value="" data-cascader-item /></template>
     <template data-template="icon-parent"><x-ui::icon name="chevron-right" /></template>
-    <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" aria-controls="{{ $id }}" style="anchor-name: --{{ $id }}" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
+    <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" command="toggle-popover" commandfor="" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
         <span data-slot="select-value">{{ $labels ? implode(" {$separator} ", $labels) : $placeholder }}</span>
         <x-ui::icon name="chevron-down" data-slot="select-icon" />
     </button>
-    <div id="{{ $id }}" popover="auto" data-slot="cascader-content" data-side="bottom" data-align="start" style="position-anchor: --{{ $id }}; --side-offset: 4px" wire:ignore></div>
+    <div popover="auto" data-slot="cascader-content" data-side="bottom" data-align="start" style="--side-offset: 4px;" wire:ignore></div>
     @if ($attributes->has('name'))
         @foreach ($labels ? $value : [] as $part)
         <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $part }}">
@@ -56,3 +53,4 @@ Overlay::close('cascader');
     @endif
 </eso-cascader>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

@@ -12,11 +12,9 @@ it('pairs a hover card trigger with its content', function () {
         </x-ui::hover-card>
         BLADE);
 
-    [$id] = idsOf($html, 'data-hover-card');
-
     expect($html)
-        ->toContain('<a data-slot="button" data-variant="link" data-size="default" style="anchor-name: --'.$id.';" data-hover-card="'.$id.'" data-delay="10" data-close-delay="300" href="/u/nextjs">@nextjs</a>')
-        ->toContain('<div id="'.$id.'" popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 4px;">Card</div>');
+        ->toContain('<a data-slot="button" data-variant="link" data-size="default" data-hover-card-trigger="data-hover-card-trigger" data-delay="10" data-close-delay="300" href="/u/nextjs">@nextjs</a>')
+        ->toContain('<div popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="--side-offset: 4px; --align-offset: 4px;">Card</div>');
 });
 
 it('opens a context menu from its trigger area, with dropdown menu items', function () {
@@ -31,12 +29,10 @@ it('opens a context menu from its trigger area, with dropdown menu items', funct
         </x-ui::context-menu>
         BLADE);
 
-    [$id] = idsOf($html, 'data-context-menu');
-
     expect($html)
-        ->toContain('<div data-slot="context-menu-trigger" data-context-menu="'.$id.'">Right click</div>')
-        ->toContain('<div id="'.$id.'" popover="auto" role="menu" tabindex="-1" data-slot="context-menu-content">')
-        ->toContain('<button type="button" commandfor="'.$id.'" command="hide-popover" role="menuitem" data-slot="dropdown-menu-item" data-variant="destructive" data-inset="data-inset">Delete')
+        ->toContain('<div data-slot="context-menu-trigger">Right click</div>')
+        ->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="context-menu-content" data-align-offset="4">')
+        ->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="destructive" data-inset="data-inset">Delete')
         ->toContain('<span data-slot="dropdown-menu-shortcut">⌘⌫</span>')
         ->toContain('<div role="separator" data-slot="dropdown-menu-separator"></div>')
         ->toMatch('/<input(?=[^>]*wire:model="bookmarks")(?=[^>]*role="menuitemcheckbox")/');
@@ -52,13 +48,11 @@ it('renders a menubar whose triggers toggle their menus', function () {
         </x-ui::menubar>
         BLADE);
 
-    [$id] = idsOf($html, 'commandfor');
-
     expect($html)
         ->toContain('<div role="menubar" data-slot="menubar">')
-        ->toContain('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" commandfor="'.$id.'" command="toggle-popover" style="anchor-name: --'.$id.';">File</button>')
-        ->toContain('<div id="'.$id.'" popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="position-anchor: --'.$id.'; --side-offset: 8px;">')
-        ->toContain('<button type="button" commandfor="'.$id.'" command="hide-popover" role="menuitem" data-slot="dropdown-menu-item" data-variant="default">New Tab</button>');
+        ->toContain('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" command="toggle-popover" commandfor="">File</button>')
+        ->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: -4px;">')
+        ->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default">New Tab</button>');
 });
 
 it('renders a navigation menu with trigger-styled links and aligned content', function () {
@@ -74,13 +68,11 @@ it('renders a navigation menu with trigger-styled links and aligned content', fu
         </x-ui::navigation-menu>
         BLADE);
 
-    [$id] = idsOf($html, 'data-navigation-menu');
-
     expect($html)
         ->toContain('<nav data-slot="navigation-menu">')
         ->toContain('<ul data-slot="navigation-menu-list">')
-        ->toContain('<button type="button" aria-expanded="false" aria-controls="'.$id.'" data-slot="navigation-menu-trigger" data-navigation-menu="'.$id.'" style="anchor-name: --'.$id.';">')
-        ->toContain('<div id="'.$id.'" popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="position-anchor: --'.$id.'; --side-offset: 8px;">')
+        ->toContain('<button type="button" aria-expanded="false" data-slot="navigation-menu-trigger">')
+        ->toContain('<div popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="--side-offset: 8px;">')
         ->toContain('<a data-slot="navigation-menu-link" data-active="data-active" aria-current="page" href="/tabs">Tabs</a>')
         ->toContain('<li data-slot="navigation-menu-item"><a data-slot="navigation-menu-link" href="/docs">Docs</a></li>');
 });

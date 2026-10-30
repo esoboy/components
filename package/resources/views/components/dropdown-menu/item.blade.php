@@ -1,6 +1,4 @@
-@blaze
-
-@use('Esoboy\Ui\Support\Overlay')
+@blaze(fold: true)
 
 @props([
     'variant' => 'default',
@@ -8,9 +6,7 @@
 ])
 
 @php
-// Choosing an item closes the whole menu, submenus included.
-$menu = Overlay::current('dropdown-menu');
-
+// Choosing an item closes the whole menu, submenus included (ui.js).
 $attributes = $attributes->merge([
     'role' => 'menuitem',
     'data-slot' => 'dropdown-menu-item',
@@ -22,5 +18,5 @@ $attributes = $attributes->merge([
 @if ($attributes->has('href'))
 <a {{ $attributes }}>{{ $slot }}</a>
 @else
-<button {{ $attributes->merge(['type' => 'button', 'commandfor' => $menu, 'command' => 'hide-popover']) }}>{{ $slot }}</button>
+<button {{ $attributes->merge(['type' => 'button']) }}>{{ $slot }}</button>
 @endif

@@ -9,7 +9,7 @@
  * element, tour-change reports { step } and tour-close { step, finished }.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 import { onLivewire } from '../support/livewire.js'
 
 const ANCHOR = '--tour-target'
@@ -20,11 +20,13 @@ export class TourElement extends HTMLElement {
     #returnFocus = null
 
     connectedCallback() {
+        const signal = connected(this)
+
         // Invoker commands: <button commandfor="<name>" command="--start">.
         this.addEventListener('command', event => {
             if (event.command === '--start') this.start()
             if (event.command === '--close') this.close()
-        })
+        }, { signal })
 
         this.addEventListener('click', event => {
             const action = event.target.closest?.('[data-tour-action]')?.dataset.tourAction
@@ -33,10 +35,11 @@ export class TourElement extends HTMLElement {
             if (action === 'next') this.go(this.#step + 1)
             if (action === 'finish') this.close(true)
             if (action === 'close') this.close()
-        })
+        }, { signal })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#point(null)
     }
 

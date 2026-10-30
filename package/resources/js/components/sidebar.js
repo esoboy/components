@@ -7,7 +7,7 @@
  * container as a sheet (a popover with a backdrop, closed by Escape or a click outside).
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const COOKIE = 'sidebar_state'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -34,28 +34,28 @@ export class SidebarProviderElement extends HTMLElement {
     #onBreakpoint = () => this.containers.forEach(container => container.matches(':popover-open') && container.hidePopover())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.addEventListener('click', event => {
             const control = event.target.closest?.('[data-sidebar="trigger"], [data-sidebar="rail"]')
 
             if (control && control.closest('eso-sidebar-provider') === this) this.toggle()
-        })
+        }, { signal })
 
         this.addEventListener('keydown', event => {
             if (event.key === 'Escape' && this.openMobile) {
                 event.preventDefault()
                 this.setOpenMobile(false)
             }
-        })
+        }, { signal })
 
-        window.addEventListener('keydown', this.#onKey)
-        document.addEventListener('pointerdown', this.#onOutsidePress)
-        this.#mobile.addEventListener('change', this.#onBreakpoint)
+        window.addEventListener('keydown', this.#onKey, { signal })
+        document.addEventListener('pointerdown', this.#onOutsidePress, { signal })
+        this.#mobile.addEventListener('change', this.#onBreakpoint, { signal })
     }
 
     disconnectedCallback() {
-        window.removeEventListener('keydown', this.#onKey)
-        document.removeEventListener('pointerdown', this.#onOutsidePress)
-        this.#mobile.removeEventListener('change', this.#onBreakpoint)
+        disconnected(this)
     }
 
     get sidebars() {

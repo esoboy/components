@@ -4,6 +4,8 @@
  * Menubar share the items; they add opening at the pointer, and moving along the bar.
  */
 
+import { contentOf, triggerOf } from '../support/overlay.js'
+
 const ROOT_MENU = '[data-slot="dropdown-menu-content"], [data-slot="context-menu-content"], [data-slot="menubar-content"]'
 const MENU = `${ROOT_MENU}, [data-slot="dropdown-menu-sub-content"]`
 const ITEM = '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]'
@@ -13,9 +15,10 @@ export function register() {
     const itemsOf = menu => [...menu.querySelectorAll(ITEM)]
         .filter(item => item.closest('[role="menu"]') === menu && ! item.disabled && item.getAttribute('aria-disabled') !== 'true')
 
-    const submenuOf = trigger => document.getElementById(trigger.getAttribute('commandfor'))
+    // A menubar trigger's menu, or a sub trigger's submenu.
+    const menuOf = trigger => contentOf(trigger, trigger.matches('[data-slot="menubar-trigger"]') ? 'menubar' : 'dropdown-menu-sub')
 
-    const open = popover => popover && ! popover.matches(':popover-open') && popover.showPopover()
+    const open = (popover, source) => popover && ! popover.matches(':popover-open') && popover.showPopover({ source })
 
     const close = popover => popover?.matches(':popover-open') && popover.hidePopover()
 
@@ -50,8 +53,8 @@ export function register() {
             case 'ArrowRight':
                 if (event.target.matches('[data-slot="dropdown-menu-sub-trigger"]')) {
                     event.preventDefault()
-                    const submenu = submenuOf(event.target)
-                    open(submenu)
+                    const submenu = menuOf(event.target)
+                    open(submenu, event.target)
                     itemsOf(submenu)[0]?.focus()
                 }
                 return
@@ -60,28 +63,37 @@ export function register() {
                 if (menu.matches('[data-slot="dropdown-menu-sub-content"]')) {
                     event.preventDefault()
                     close(menu)
-                    document.querySelector(`[commandfor="${menu.id}"]`)?.focus()
+                    triggerOf(menu, 'dropdown-menu-sub')?.focus()
                 }
         }
     })
 
-    // Context menus open where the pointer is (4px lower, shadcn's alignOffset), flipping to stay on screen.
+    // Context menus open where the pointer is (alignOffset lower, shadcn's 4px), flipping to stay on screen.
     document.addEventListener('contextmenu', event => {
-        const trigger = event.target.closest?.('[data-context-menu]')
-        const menu = trigger && document.getElementById(trigger.dataset.contextMenu)
+        const trigger = event.target.closest?.('[data-slot="context-menu-trigger"]')
+        const menu = trigger && contentOf(trigger, 'context-menu')
 
         if (! menu) return
+
+        const offset = Number(menu.dataset.alignOffset ?? 4)
 
         event.preventDefault()
         close(menu)
         menu.style.left = `${event.clientX}px`
-        menu.style.top = `${event.clientY + 4}px`
+        menu.style.top = `${event.clientY + offset}px`
         open(menu)
 
         const { width, height } = menu.getBoundingClientRect()
 
         if (event.clientX + width > window.innerWidth) menu.style.left = `${Math.max(0, event.clientX - width)}px`
-        if (event.clientY + 4 + height > window.innerHeight) menu.style.top = `${Math.max(0, event.clientY - height)}px`
+        if (event.clientY + offset + height > window.innerHeight) menu.style.top = `${Math.max(0, event.clientY - height)}px`
+    })
+
+    // Choosing an item closes the whole menu, submenus included.
+    document.addEventListener('click', event => {
+        const item = event.target.closest?.('[data-slot="dropdown-menu-item"]')
+
+        if (item && ! event.defaultPrevented && ! item.disabled && item.getAttribute('aria-disabled') !== 'true') close(item.closest(ROOT_MENU))
     })
 
     // Menubar: ArrowLeft/Right move between its menus, opening the next one if one was open.
@@ -95,7 +107,7 @@ export function register() {
         if (! menubar || event.target.closest('[data-slot="dropdown-menu-sub-content"]') || (event.key === 'ArrowRight' && event.target.matches('[data-slot="dropdown-menu-sub-trigger"]'))) return false
 
         const triggers = [...menubar.querySelectorAll('[data-slot="menubar-trigger"]')].filter(trigger => ! trigger.disabled)
-        const current = menu ? document.querySelector(`[commandfor="${menu.id}"]`) : event.target
+        const current = menu ? triggerOf(menu, 'menubar') : event.target
         const index = triggers.indexOf(current)
 
         if (index < 0) return false
@@ -105,7 +117,7 @@ export function register() {
         event.preventDefault()
         next.focus()
 
-        if (menu?.matches(':popover-open')) open(submenuOf(next))
+        if (menu?.matches(':popover-open')) open(menuOf(next), next)
 
         return true
     }
@@ -120,7 +132,7 @@ export function register() {
             const anyOpen = [...menubar.querySelectorAll('[data-slot="menubar-content"]')].some(menu => menu.matches(':popover-open'))
 
             if (anyOpen) {
-                open(submenuOf(trigger))
+                open(menuOf(trigger), trigger)
                 trigger.focus()
             }
 
@@ -137,7 +149,7 @@ export function register() {
         for (const trigger of menu.querySelectorAll('[data-slot="dropdown-menu-sub-trigger"]')) {
             if (trigger.closest('[role="menu"]') !== menu) continue
 
-            trigger === row ? open(submenuOf(trigger)) : close(submenuOf(trigger))
+            trigger === row ? open(menuOf(trigger), trigger) : close(menuOf(trigger))
         }
     })
 }

@@ -27,7 +27,7 @@
 </x-ui::alert-dialog>
 
 @foreach (['ui-confirm-popover' => 'default', 'ui-confirm-popover-destructive' => 'destructive'] as $id => $variant)
-<x-ui::popover.content :id="$id" side="top" class="w-auto max-w-72" style="position-anchor: --ui-confirm">
+<x-ui::popover.content :id="$id" side="top" class="w-auto max-w-72">
     <x-ui::popover.header>
         <x-ui::popover.title>{{ __('ui::confirm.title') }}</x-ui::popover.title>
     </x-ui::popover.header>

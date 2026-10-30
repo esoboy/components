@@ -1,23 +1,18 @@
-@blaze
-
-@use('Esoboy\Ui\Support\Overlay')
+@blaze(fold: true)
 
 @props([
     'side' => 'bottom',
     'align' => 'start',
     'sideOffset' => 6,
+    'alignOffset' => 0,
 ])
 
-@php
-$id = Overlay::close('combobox');
-@endphp
-
+{{-- Placed against the input group or the chips (data-combobox-anchor). --}}
 <div {{ $attributes->merge([
-    'id' => $id,
     'popover' => 'manual',
     'role' => 'listbox',
     'data-slot' => 'combobox-content',
     'data-side' => $side,
     'data-align' => $align,
-    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px;",
+    'style' => "--side-offset: {$sideOffset}px; --align-offset: {$alignOffset}px;",
 ]) }}>{{ $slot }}</div>

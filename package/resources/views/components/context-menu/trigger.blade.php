@@ -1,10 +1,4 @@
-@blaze
+@blaze(fold: true)
 
-@use('Esoboy\Ui\Support\Overlay')
-
-@php
-$id = Overlay::open('dropdown-menu');
-@endphp
-
-{{-- Right-clicking the area opens the menu at the pointer. --}}
-<div {{ $attributes->merge(['data-slot' => 'context-menu-trigger', 'data-context-menu' => $id]) }}>{{ $slot }}</div>
+{{-- Right-clicking the area opens the Context Menu Content after it at the pointer. --}}
+<div {{ $attributes->merge(['data-slot' => 'context-menu-trigger']) }}>{{ $slot }}</div>

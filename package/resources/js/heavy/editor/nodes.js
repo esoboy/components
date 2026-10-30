@@ -167,6 +167,111 @@ export function picture(list) {
     })
 }
 
+// Images side by side: a grid of as many equal columns as it has images.
+const rowStyle = count => `display: grid; grid-template-columns: repeat(${count}, minmax(0, 1fr)); gap: 8px; align-items: start;`
+
+// An image as a row's column fills it; out of a row, it is as it was inserted, centered.
+const inRow = image => image.type.create({ ...image.attrs, style: restyle(image.attrs.style, { 'width': '100%', 'margin-left': null, 'margin-right': null }) })
+const outOfRow = image => image.type.create({ ...image.attrs, style: restyle(image.attrs.style, { 'width': null, 'margin-left': 'auto', 'margin-right': 'auto' }) })
+
+// A grid row of images (an <img>, or a linked one, each), as the editor writes them.
+const isRow = element => /grid/.test(element.style.display) && element.children.length > 1 && [...element.children].every(child => child.matches('img[src]') || (child.matches('a[href]') && child.children.length === 1 && child.firstElementChild.matches('img[src]')))
+
+/**
+ * Images side by side, in a row of equal columns: an image joins the next one (or the
+ * one before, or their row, up to four) from its menu, and leaves its row the same way,
+ * to stand under it; a row left with one image is that image again.
+ */
+export function imageRows() {
+    return Node.create({
+        name: 'imageRow',
+        group: 'block',
+        content: 'image+',
+        draggable: true,
+        parseHTML: () => [{ tag: 'div', priority: 60, getAttrs: element => isRow(element) ? null : false }],
+        renderHTML: ({ node }) => ['div', { style: rowStyle(node.childCount) }, 0],
+        // In the editor its images keep no handles: their column sizes them.
+        addNodeView: () => ({ node }) => {
+            const dom = document.createElement('div')
+
+            dom.dataset.editorRow = ''
+            dom.style.cssText = rowStyle(node.childCount)
+
+            return {
+                dom,
+                contentDOM: dom,
+                update: next => next.type === node.type && ((dom.style.cssText = rowStyle(next.childCount)), true),
+            }
+        },
+        addCommands: () => ({
+            toggleImageRow: () => ({ state, tr, dispatch }) => {
+                const { selection, schema } = state
+                const image = selection.node?.type.name === 'image' ? selection.node : null
+                const row = schema.nodes.imageRow
+
+                if (! image) return false
+
+                const $position = state.doc.resolve(selection.from)
+                const parent = $position.parent
+
+                // Out of its row, under it; the row closes up.
+                if (parent.type === row) {
+                    if (dispatch) {
+                        const others = parent.content.content.filter((child, index) => index !== $position.index())
+                        const left = others.length === 1 ? [outOfRow(others[0])] : [row.create(null, others)]
+
+                        tr.replaceWith($position.before(), $position.after(), [...left, outOfRow(image)])
+                        tr.setSelection(NodeSelection.create(tr.doc, $position.before() + left[0].nodeSize))
+                    }
+
+                    return true
+                }
+
+                if (parent.type.name === 'figure') return false
+
+                const fits = node => node?.type.name === 'image' || (node?.type === row && node.childCount < 4)
+                const next = parent.maybeChild($position.index() + 1)
+                const previous = $position.index() > 0 ? parent.maybeChild($position.index() - 1) : null
+                const other = fits(next) ? next : fits(previous) ? previous : null
+
+                if (! other) return false
+
+                if (dispatch) {
+                    const after = other === next
+                    const images = other.type === row ? other.content.content : [inRow(other)]
+                    const from = after ? selection.from : selection.from - other.nodeSize
+                    const to = after ? selection.to + other.nodeSize : selection.to
+
+                    tr.replaceWith(from, to, row.create(null, after ? [inRow(image), ...images] : [...images, inRow(image)]))
+                    tr.setSelection(NodeSelection.create(tr.doc, from + 1 + (after ? 0 : images.reduce((size, node) => size + node.nodeSize, 0))))
+                }
+
+                return true
+            },
+        }),
+        // A row that lost all but one image (deleted, moved out) is that image again.
+        addProseMirrorPlugins: () => [new Plugin({
+            appendTransaction: (transactions, previous, state) => {
+                if (! transactions.some(transaction => transaction.docChanged)) return null
+
+                const { tr } = state
+
+                state.doc.descendants((node, position) => {
+                    if (node.type.name !== 'imageRow') return
+
+                    const mapped = tr.mapping.map(position)
+
+                    if (node.childCount === 1) tr.replaceWith(mapped, mapped + node.nodeSize, outOfRow(node.firstChild))
+
+                    return false
+                })
+
+                return tr.docChanged ? tr : null
+            },
+        })],
+    })
+}
+
 /**
  * Captions: an image in a <figure> with its <figcaption> under it.
  */

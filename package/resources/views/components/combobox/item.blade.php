@@ -4,8 +4,10 @@
     'value',
 ])
 
+{{-- wire:key: its script gives it an id, and Livewire's morph would otherwise match it by that id and replace it. --}}
 <div {{ $attributes->merge([
     'role' => 'option',
+    'wire:key' => "combobox-item-{$value}",
     'data-slot' => 'combobox-item',
     'data-value' => $value,
     'aria-selected' => 'false',

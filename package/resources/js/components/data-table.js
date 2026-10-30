@@ -16,7 +16,7 @@
  * A merged cell (rowspan) is highlighted with every row it spans, not just its own.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const ALL = '[data-data-table-select-all]'
 const ROW = '[data-data-table-select-row]'
@@ -36,10 +36,12 @@ export class DataTableElement extends HTMLElement {
     #resizes = new ResizeObserver(() => this.#stick())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.addEventListener('change', event => {
             if (event.target.matches?.(ALL) && this.#owns(event.target)) this.#selectAll(event.target.checked)
             else if (event.target.matches?.(ROW)) this.#sync()
-        })
+        }, { signal })
 
         this.addEventListener('click', event => {
             const toggle = event.target.closest?.(TOGGLE)
@@ -49,11 +51,11 @@ export class DataTableElement extends HTMLElement {
 
             this.#expanded.has(id) ? this.#expanded.delete(id) : this.#expanded.add(id)
             this.#expand()
-        })
+        }, { signal })
 
-        this.addEventListener('scroll', event => event.target.matches?.('[data-slot="table-container"]') && this.#edges(event.target), { capture: true, passive: true })
-        this.addEventListener('pointerover', event => this.#hover(event.target.closest?.('tbody > tr') ?? null))
-        this.addEventListener('pointerleave', () => this.#hover(null))
+        this.addEventListener('scroll', event => event.target.matches?.('[data-slot="table-container"]') && this.#edges(event.target), { capture: true, passive: true, signal })
+        this.addEventListener('pointerover', event => this.#hover(event.target.closest?.('tbody > tr') ?? null), { signal })
+        this.addEventListener('pointerleave', () => this.#hover(null), { signal })
 
         this.#refresh()
 
@@ -62,6 +64,7 @@ export class DataTableElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
         this.#resizes.disconnect()
     }

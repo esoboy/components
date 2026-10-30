@@ -6,26 +6,29 @@
  */
 
 import { countdowns } from '../support/countdown.js'
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 export class VerificationCodeButtonElement extends HTMLElement {
     #timer = 0
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         // While counting, clicks stop here, before the button's wire:click.
         this.addEventListener('click', event => {
             if (this.remaining > 0) {
                 event.preventDefault()
                 event.stopPropagation()
             }
-        }, true)
+        }, { capture: true, signal })
 
         this.#render()
         this.#observer.observe(this, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['aria-disabled'] })
     }
 
     disconnectedCallback() {
+        disconnected(this)
         clearTimeout(this.#timer)
         this.#observer.disconnect()
     }

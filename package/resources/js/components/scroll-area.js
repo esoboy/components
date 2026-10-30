@@ -6,7 +6,7 @@
  * Thumbs drag, and a press on the track jumps there, as in Base UI.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 
 const MIN_THUMB = 16
 const SCROLL_TIMEOUT = 500
@@ -18,10 +18,12 @@ export class ScrollAreaElement extends HTMLElement {
     #scrolling = 0
 
     connectedCallback() {
-        this.viewport?.addEventListener('scroll', () => this.#onScroll(), { passive: true })
+        const signal = connected(this)
+
+        this.viewport?.addEventListener('scroll', () => this.#onScroll(), { passive: true, signal })
 
         for (const bar of this.#bars()) {
-            bar.addEventListener('pointerdown', event => this.#onPress(event, bar))
+            bar.addEventListener('pointerdown', event => this.#onPress(event, bar), { signal })
         }
 
         this.#observe()
@@ -29,6 +31,7 @@ export class ScrollAreaElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#resize.disconnect()
         this.#mutations.disconnect()
         cancelAnimationFrame(this.#frame)

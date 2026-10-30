@@ -1,7 +1,5 @@
 @blaze
 
-@use('Esoboy\Ui\Support\Overlay')
-
 @props([
     'isActive' => false,
     'variant' => 'default',
@@ -11,15 +9,13 @@
 
 @php
 // The tooltip only shows while the sidebar is collapsed to icons (sidebar.css hides it otherwise).
-$tooltipId = $tooltip !== null ? Overlay::open('tooltip') : null;
-
 $attributes = $attributes->merge([
     'data-slot' => 'sidebar-menu-button',
     'data-sidebar' => 'menu-button',
     'data-variant' => $variant,
     'data-size' => $size,
     'data-active' => $isActive,
-    ...($tooltipId ? ['data-tooltip' => $tooltipId, 'style' => "anchor-name: --{$tooltipId};"] : []),
+    'data-tooltip-trigger' => $tooltip !== null,
 ]);
 @endphp
 
@@ -28,6 +24,6 @@ $attributes = $attributes->merge([
 @else
 <button {{ $attributes->merge(['type' => 'button']) }}>{{ $slot }}</button>
 @endif
-@if ($tooltipId)
+@if ($tooltip !== null)
 <x-ui::tooltip.content side="right" align="center" data-sidebar="menu-tooltip">{{ $tooltip }}</x-ui::tooltip.content>
 @endif

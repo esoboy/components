@@ -53,3 +53,4 @@ $value = $checkable ? array_values(array_map('strval', (array) ($value ?? []))) 
     <div data-slot="tree-empty" hidden>{{ __('ui::tree.no_results') }}</div>
     @endif
 </eso-tree>
+<x-ui::extras />

@@ -47,3 +47,4 @@ $name = $attributes->get('name');
     </div>
 </eso-number-input>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

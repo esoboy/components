@@ -49,3 +49,4 @@ $name = $attributes->get('name');
     @endif
 </eso-tags-input>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

@@ -1,37 +1,32 @@
 <?php
 
-use Esoboy\Ui\Support\Overlay;
+/*
+ * Overlays carry no ids: ui.js pairs each trigger with the content after it, so a
+ * re-render, or an overlay coming or going before another, changes nothing a morph
+ * would match elements by.
+ */
+
 use Esoboy\Ui\Tests\Fixtures\Menus;
 use Livewire\Livewire;
 
-it('pairs triggers and contents first in, last out', function () {
-    $outer = Overlay::open('popover');
-    $inner = Overlay::open('popover');
+it('renders triggers and contents without ids', function () {
+    $html = Livewire::test(Menus::class)->html();
 
-    expect(Overlay::close('popover'))->toBe($inner)
-        ->and(Overlay::close('popover'))->toBe($outer);
+    expect($html)
+        ->not->toMatch('/\sid="/')
+        ->not->toContain('anchor-name')
+        ->not->toContain('position-anchor')
+        ->toContain('data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor=""')
+        ->toContain('data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu"');
 });
 
-it('finds the innermost open id of a kind', function () {
-    $menu = Overlay::open('dropdown-menu');
-    Overlay::open('dropdown-menu-sub');
-
-    expect(Overlay::current('dropdown-menu'))->toBe($menu);
-});
-
-it('numbers ids per page outside Livewire', function () {
-    expect(Overlay::open('popover'))->toBe('popover-page-1')
-        ->and(Overlay::open('tooltip'))->toBe('tooltip-page-2');
-});
-
-it('keeps the same ids when a Livewire component re-renders', function () {
+it('renders the same overlays when a component re-renders', function () {
     $component = Livewire::test(Menus::class);
-    $first = idsOf($component->html(), 'id');
+    // What the component's root carries changes between requests; what is inside, not.
+    $markup = fn () => preg_replace('/^<div[^>]*>/', '', $component->html());
+    $first = $markup();
 
     $component->call('$refresh');
-    $second = idsOf($component->html(), 'id');
 
-    expect($first)->toHaveCount(2)
-        ->and($second)->toBe($first)
-        ->and($first[0])->toContain($component->id());
+    expect($markup())->toBe($first);
 });

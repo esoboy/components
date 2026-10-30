@@ -4,19 +4,21 @@
  * trigger and the content; content opened by click stays until dismissed.
  */
 
+import { contentOf, triggerOf } from '../support/overlay.js'
+
 const DELAY = 50
+const TRIGGER = '[data-slot="navigation-menu-trigger"]'
 
 export function register() {
     const timers = new Map()
 
-    const contentOf = trigger => document.getElementById(trigger.dataset.navigationMenu)
-    const triggerOf = content => document.querySelector(`[data-navigation-menu="${content.id}"]`)
     const isOpen = content => content.matches(':popover-open')
 
-    const show = (content, by) => {
+    const show = ({ trigger, content }, by) => {
         clearTimeout(timers.get(content))
         content.dataset.openedBy = by
-        if (! isOpen(content)) content.showPopover()
+
+        if (! isOpen(content)) content.showPopover({ source: trigger })
     }
 
     const hideLater = content => {
@@ -28,26 +30,26 @@ export function register() {
     document.addEventListener('toggle', ({ target, newState }) => {
         if (! target.matches?.('[data-slot="navigation-menu-content"]')) return
 
-        triggerOf(target)?.setAttribute('aria-expanded', String(newState === 'open'))
+        triggerOf(target, 'navigation-menu')?.setAttribute('aria-expanded', String(newState === 'open'))
     }, true)
 
     document.addEventListener('click', ({ target }) => {
-        const trigger = target.closest?.('[data-navigation-menu]')
-        const content = trigger && contentOf(trigger)
+        const trigger = target.closest?.(TRIGGER)
+        const content = trigger && contentOf(trigger, 'navigation-menu')
 
         if (! content) return
 
         // A click on a menu the pointer just opened keeps it open.
         if (isOpen(content) && content.dataset.openedBy === 'hover') content.dataset.openedBy = 'click'
         else if (isOpen(content)) content.hidePopover()
-        else show(content, 'click')
+        else show({ trigger, content }, 'click')
     })
 
     const parts = element => {
-        const trigger = element?.closest?.('[data-navigation-menu]')
-        const content = trigger ? contentOf(trigger) : element?.closest?.('[data-slot="navigation-menu-content"]')
+        const trigger = element?.closest?.(TRIGGER)
+        const content = trigger ? contentOf(trigger, 'navigation-menu') : element?.closest?.('[data-slot="navigation-menu-content"]')
 
-        return content ? { trigger: trigger ?? triggerOf(content), content } : null
+        return content ? { trigger: trigger ?? triggerOf(content, 'navigation-menu'), content } : null
     }
 
     document.addEventListener('pointerover', ({ target, relatedTarget, pointerType }) => {
@@ -63,7 +65,7 @@ export function register() {
         const nav = found.trigger?.closest('[data-slot="navigation-menu"]')
         const switching = nav && [...nav.querySelectorAll('[data-slot="navigation-menu-content"]')].some(isOpen)
 
-        timers.set(found.content, setTimeout(() => show(found.content, 'hover'), switching ? 0 : DELAY))
+        timers.set(found.content, setTimeout(() => show(found, 'hover'), switching ? 0 : DELAY))
     })
 
     document.addEventListener('pointerout', ({ target, relatedTarget }) => {

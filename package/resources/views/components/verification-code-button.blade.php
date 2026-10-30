@@ -13,3 +13,4 @@
         <span data-verification-code-label>{{ $slot }}</span>
     </x-ui::button>
 </eso-verification-code-button>
+<x-ui::extras />

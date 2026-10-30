@@ -7,19 +7,29 @@
  * "Y-m-d H:i" (H:i:s when data-step is under a minute), or { from, to } of those.
  */
 
-import { announce, define } from '../support/element.js'
+import { announce, connected, define, disconnected } from '../support/element.js'
 import { fromKey } from './calendar.js'
 
 const TIME = '[data-date-picker-time]'
+
+let times = 0
 
 export class DatePickerElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
+        const signal = connected(this)
+
+        // The time inputs sit in wire:ignore, so ids given here stay: their labels need them.
+        for (const input of this.querySelectorAll(TIME)) {
+            input.id ||= `ui-date-picker-time-${++times}`
+            input.closest('[data-slot="field"]')?.querySelector('[data-slot="field-label"]')?.setAttribute('for', input.id)
+        }
+
         const own = event => event.target === this.calendar || event.target.matches?.(TIME)
 
-        this.addEventListener('input', event => own(event) && this.#announce(event, 'input'))
-        this.addEventListener('change', event => own(event) && this.#announce(event, 'change'))
+        this.addEventListener('input', event => own(event) && this.#announce(event, 'input'), { signal })
+        this.addEventListener('change', event => own(event) && this.#announce(event, 'change'), { signal })
 
         // A preset sets the calendar and shows its month.
         this.addEventListener('click', event => {
@@ -30,7 +40,7 @@ export class DatePickerElement extends HTMLElement {
             this.calendar.value = JSON.parse(preset.dataset.datePickerPreset)
             this.render()
             announce(this)
-        })
+        }, { signal })
 
         this.render()
 
@@ -40,6 +50,7 @@ export class DatePickerElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 

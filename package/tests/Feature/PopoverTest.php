@@ -1,11 +1,11 @@
 <?php
 
 /*
- * Popover, Tooltip and Dropdown Menu: a trigger and its content are linked by id
- * and placed with CSS anchor positioning.
+ * Popover, Tooltip and Dropdown Menu: a trigger comes before its content, without ids;
+ * ui.js pairs them and the browser anchors the content to the trigger.
  */
 
-it('links a popover trigger to its content', function () {
+it('renders a popover trigger before its content', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::popover>
             <x-ui::popover.trigger variant="outline">Open</x-ui::popover.trigger>
@@ -18,16 +18,13 @@ it('links a popover trigger to its content', function () {
         </x-ui::popover>
         BLADE);
 
-    [$id] = idsOf($html, 'commandfor');
-
-    expect($id)->toStartWith('popover-')
-        ->and($html)->toContain("<button type=\"button\" style=\"anchor-name: --{$id};\" data-slot=\"button\" data-variant=\"outline\" data-size=\"default\" commandfor=\"{$id}\" command=\"toggle-popover\">Open</button>")
-        ->and($html)->toContain("<div id=\"{$id}\" popover=\"auto\" data-slot=\"popover-content\" data-side=\"bottom\" data-align=\"start\" style=\"position-anchor: --{$id}; --side-offset: 8px;\">")
+    expect($html)->toContain('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor="">Open</button>')
+        ->and($html)->toContain('<div popover="auto" data-slot="popover-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: 0px;">')
         ->and($html)->toContain('<h2 data-slot="popover-title">Dimensions</h2>')
         ->and($html)->toContain('<p data-slot="popover-description">Set them.</p>');
 });
 
-it('gives every popover its own id, nested ones included', function () {
+it('renders nested popovers without ids', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::popover>
             <x-ui::popover.trigger>A</x-ui::popover.trigger>
@@ -40,12 +37,9 @@ it('gives every popover its own id, nested ones included', function () {
         </x-ui::popover>
         BLADE);
 
-    $triggers = idsOf($html, 'commandfor');
-    $contents = idsOf($html, 'id');
-
-    expect($triggers)->toHaveCount(2)
-        ->and(array_unique($triggers))->toHaveCount(2)
-        ->and($contents)->toBe($triggers);
+    expect(substr_count($html, 'data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor=""'))->toBe(2)
+        ->and(substr_count($html, 'data-slot="popover-content"'))->toBe(2)
+        ->and($html)->not->toMatch('/\sid="/');
 });
 
 it('renders a tooltip shown on hover', function () {
@@ -56,10 +50,8 @@ it('renders a tooltip shown on hover', function () {
         </x-ui::tooltip>
         BLADE);
 
-    [$id] = idsOf($html, 'data-tooltip');
-
-    expect($html)->toContain("style=\"anchor-name: --{$id};\" data-slot=\"button\" data-variant=\"outline\" data-size=\"default\" data-tooltip=\"{$id}\" aria-describedby=\"{$id}\">Hover</button>")
-        ->and($html)->toContain("<div id=\"{$id}\" popover=\"manual\" role=\"tooltip\" data-slot=\"tooltip-content\" data-side=\"top\" data-align=\"center\" style=\"position-anchor: --{$id}; --side-offset: 4px;\">Add to library</div>");
+    expect($html)->toContain('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-tooltip-trigger="data-tooltip-trigger">Hover</button>')
+        ->and($html)->toContain('<div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" style="--side-offset: 4px; --align-offset: 0px;">Add to library</div>');
 });
 
 it('renders a dropdown menu whose items close the root menu', function () {
@@ -84,23 +76,18 @@ it('renders a dropdown menu whose items close the root menu', function () {
         </x-ui::dropdown-menu>
         BLADE);
 
-    [$menu, $sub] = array_values(array_unique(idsOf($html, 'commandfor')));
-
-    expect($menu)->toStartWith('dropdown-menu-page-')
-        ->and($sub)->toStartWith('dropdown-menu-sub-')
-        ->and($html)->toContain("style=\"anchor-name: --{$menu};\" data-slot=\"button\" data-variant=\"default\" data-size=\"default\" commandfor=\"{$menu}\" command=\"toggle-popover\" aria-haspopup=\"menu\">Open</button>")
-        ->and($html)->toContain("<div id=\"{$menu}\" popover=\"auto\" role=\"menu\" tabindex=\"-1\" data-slot=\"dropdown-menu-content\" data-side=\"bottom\" data-align=\"start\"")
+    expect($html)->toContain('<button type="button" data-slot="button" data-variant="default" data-size="default" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu">Open</button>')
+        ->and($html)->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-content" data-side="bottom" data-align="start" style="--side-offset: 4px; --align-offset: 0px;">')
         ->and($html)->toContain('<div data-slot="dropdown-menu-label" data-inset="data-inset">Account</div>')
-        ->and($html)->toContain("<button type=\"button\" commandfor=\"{$menu}\" command=\"hide-popover\" role=\"menuitem\" data-slot=\"dropdown-menu-item\" data-variant=\"default\" wire:click=\"profile\">")
+        ->and($html)->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default" wire:click="profile">')
         ->and($html)->toContain('<span data-slot="dropdown-menu-shortcut">⌘P</span>')
         ->and($html)->toContain('<a role="menuitem" data-slot="dropdown-menu-item" data-variant="default" href="/billing">Billing</a>')
         ->and($html)->toContain('<div role="separator" data-slot="dropdown-menu-separator"></div>')
-        ->and($html)->toContain("aria-haspopup=\"menu\" data-slot=\"dropdown-menu-sub-trigger\" commandfor=\"{$sub}\" command=\"toggle-popover\" style=\"anchor-name: --{$sub};\">")
-        ->and($html)->toContain("<div id=\"{$sub}\" popover=\"auto\" role=\"menu\" tabindex=\"-1\" data-slot=\"dropdown-menu-sub-content\" data-side=\"right\" data-align=\"start\"")
-        ->and($html)->toContain('data-variant="destructive"');
-
-    // Items inside the submenu close the root menu too.
-    expect(substr_count($html, "commandfor=\"{$menu}\" command=\"hide-popover\""))->toBe(3);
+        ->and($html)->toContain('aria-haspopup="menu" data-slot="dropdown-menu-sub-trigger" command="toggle-popover" commandfor="">')
+        ->and($html)->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-sub-content" data-side="right" data-align="start" style="--side-offset: 0px; --align-offset: -3px;">')
+        ->and($html)->toContain('data-variant="destructive"')
+        // ui.js closes the root menu when an item is chosen.
+        ->and($html)->not->toContain('hide-popover');
 });
 
 it('binds checkbox and radio items with wire:model', function () {
@@ -119,8 +106,33 @@ it('binds checkbox and radio items with wire:model', function () {
 
 it('keeps a style given to a component after its own', function () {
     $this->blade('<x-ui::popover><x-ui::popover.trigger style="color: red">Open</x-ui::popover.trigger><x-ui::popover.content style="width: 10rem">x</x-ui::popover.content></x-ui::popover>')
-        ->assertSeeInOrder(['; color: red;"', '--side-offset: 4px; width: 10rem;"'], false);
+        ->assertSeeInOrder(['style="color: red;"', '--align-offset: 0px; width: 10rem;"'], false);
 
     $this->blade('<x-ui::sidebar.provider style="--sidebar-width: 20rem">x</x-ui::sidebar.provider>')
         ->assertSee('style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem; --sidebar-width: 20rem;"', false);
+});
+
+it('shifts content along its edge by alignOffset', function () {
+    $this->blade('<x-ui::popover><x-ui::popover.trigger>Open</x-ui::popover.trigger><x-ui::popover.content align="end" :align-offset="-6">x</x-ui::popover.content></x-ui::popover>')
+        ->assertSee('data-align="end" style="--side-offset: 4px; --align-offset: -6px;"', false);
+});
+
+it('renders another component as the trigger, like shadcn\'s render', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::dropdown-menu>
+            <x-ui::dropdown-menu.trigger as="sidebar.menu-button" size="lg">Me</x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.content>m</x-ui::dropdown-menu.content>
+        </x-ui::dropdown-menu>
+        <x-ui::dropdown-menu>
+            <x-ui::tooltip>
+                <x-ui::tooltip.trigger as="dropdown-menu.trigger" variant="ghost" size="icon">More</x-ui::tooltip.trigger>
+                <x-ui::tooltip.content>More actions</x-ui::tooltip.content>
+            </x-ui::tooltip>
+            <x-ui::dropdown-menu.content>m</x-ui::dropdown-menu.content>
+        </x-ui::dropdown-menu>
+        BLADE);
+
+    expect($html)
+        ->toContain('<button type="button" data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="lg" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu">Me</button>')
+        ->toContain('<button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu" data-tooltip-trigger="data-tooltip-trigger">More</button>');
 });

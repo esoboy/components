@@ -17,7 +17,8 @@
  * uploader (config ui.editor.uploader; data-upload, upload.js), and what it answers ({
  * url, name, mime, size, alt, width, height, poster }) in place; so do images it has no
  * copy of (external, data:), when saved (images.js). Without an uploader there are no
- * media buttons. Ui::editor(id)->insert() inserts attachments the app has itself.
+ * media buttons. Its insert() and insertContent() put in attachments the app has
+ * itself (its media library), or HTML.
  *
  * Built into dist/editor.js; the view loads it through @assets.
  */
@@ -35,13 +36,14 @@ import { CellSelection } from '@tiptap/pm/tables'
 import StarterKit from '@tiptap/starter-kit'
 import { marked } from 'marked'
 import { define, writeHidden } from '../support/element.js'
+import { contentOf } from '../support/overlay.js'
 import { clone, readTemplates } from '../support/templates.js'
 import { COMMANDS } from './editor/commands.js'
 import { MoveBlocks, dragHandle } from './editor/drag.js'
 import { Find, findKey } from './editor/find.js'
 import { Saving, dataFile, imageFile, savingKey, unsaved, unsavedImages, wordImages } from './editor/images.js'
 import { accepted, attachmentNode, kindOf, safeUrl, videoNode } from './editor/media.js'
-import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, picture, tables, tasks, toMathML } from './editor/nodes.js'
+import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, imageRows, picture, tables, tasks, toMathML } from './editor/nodes.js'
 import { wordLists } from './editor/paste.js'
 import { blockStyle, styleExtensions } from './editor/styles.js'
 import { emojiMenu, slashMenu } from './editor/suggest.js'
@@ -68,9 +70,14 @@ const popoverOpen = () => !! document.querySelector('[popover]:not([popover="man
 // Text that reads as Markdown: headings, lists, quotes, fences, tables, emphasis, links.
 const MARKDOWN = /^(#{1,6}\s|\s*[-*+]\s|\s*\d+[.)]\s|>\s|```|\|.*\|\s*$)|\*\*\S[^*]*\*\*|\[[^\]]+\]\([^)\s]+\)/m
 
-// One grapheme per character, so 汉字 and 👍🏽 count one each.
+// One grapheme per character, so 汉字 and 👍🏽 count one each; spaces and line breaks
+// none, nor media (Tiptap gives each a space): as the server counts, RichText::characters().
 const segmenter = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter() : null
-const characters = text => segmenter ? [...segmenter.segment(text)].length : [...text].length
+const characters = text => {
+    text = text.replace(/\s+/g, '')
+
+    return segmenter ? [...segmenter.segment(text)].length : [...text].length
+}
 
 // Mod-B: ⌘B on Apple systems, Ctrl+B elsewhere; and as aria-keyshortcuts.
 const keys = shortcut => shortcut.split('-').map(key => key === 'Mod' ? (MAC ? '⌘' : 'Ctrl') : key === 'Shift' ? (MAC ? '⇧' : 'Shift') : key === 'Alt' ? (MAC ? '⌥' : 'Alt') : key.toUpperCase()).join(MAC ? '' : '+')
@@ -98,6 +105,8 @@ export class EditorElement extends HTMLElement {
     #whitelist = null
     #labels = {}
     #saving = new Set()
+    #uploading = 0
+    #refused = false
     #saved = new Map()
     #failed = new Map()
     #loaded = new Set()
@@ -115,11 +124,7 @@ export class EditorElement extends HTMLElement {
     #mathPreview = 0
 
     connectedCallback() {
-        if (this.#editor) {
-            window.addEventListener('ui-editor', this.#server)
-
-            return
-        }
+        if (this.#editor) return
 
         const content = this.querySelector(':scope > [data-slot="editor-content"]')
 
@@ -151,6 +156,8 @@ export class EditorElement extends HTMLElement {
                     ...this.hasAttribute('data-disabled') ? { 'aria-disabled': 'true' } : {},
                     ...this.#aria(),
                 }),
+                // On phones the toolbar is over the keyboard: the cursor stays clear of it.
+                scrollMargin: TOUCH ? { top: 8, right: 8, bottom: 64, left: 8 } : 5,
                 // Word's pictures come in its RTF, read as the paste or drop begins.
                 transformPastedHTML: html => this.#whitelist.restrict(wordLists(this.#has('image') ? wordImages(html, this.#rtf) : html)),
                 handlePaste: (view, event, slice) => this.#paste(view, event, slice),
@@ -211,13 +218,12 @@ export class EditorElement extends HTMLElement {
     }
 
     disconnectedCallback() {
-        window.removeEventListener('ui-editor', this.#server)
-
         // Moved, it comes back at once; removed, its editor goes.
         queueMicrotask(() => {
             if (this.isConnected) return
 
             this.#fullscreen(false)
+            this.#keyboard(false)
             this.#toolbar?.disconnect()
             this.#editor?.destroy()
             this.#editor = null
@@ -284,6 +290,13 @@ export class EditorElement extends HTMLElement {
         this.#insert(attachments, null)
     }
 
+    /**
+     * Inserts HTML where the cursor is (a template, a reply), as far as the format allows.
+     */
+    insertContent(html) {
+        this.#editor?.chain().focus().insertContent(this.#whitelist.restrict(html)).run()
+    }
+
     // A feature of the format: what can be written, or a tool.
     #has(feature) {
         return this.#format.features.includes(feature)
@@ -335,7 +348,7 @@ export class EditorElement extends HTMLElement {
             has('details') && collapsible(labels),
             has('code-block') && PlainCodeBlock,
             has('table') && tables(styles, list),
-            has('image') && [picture(list), figures(styles), Saving],
+            has('image') && [picture(list), figures(styles), imageRows(), Saving],
             has('video') && Video,
             has('audio') && Audio,
             has('file') && file(styles.card),
@@ -395,11 +408,9 @@ export class EditorElement extends HTMLElement {
     // Tooltips and shortcuts for the controls in an element (a menu cloned later, too);
     // menu items say what they are themselves.
     #prepareControls(root) {
-        const tip = this.querySelector(':scope > [data-editor-tip]')
-
         for (const control of root?.querySelectorAll?.('button[aria-label]') ?? []) {
             if (control.closest('[popover]')) continue
-            if (tip) control.dataset.tooltip = tip.id
+            control.toggleAttribute('data-editor-tooltip', true)
             if (control.dataset.editorKeys) control.setAttribute('aria-keyshortcuts', ariaKeys(control.dataset.editorKeys))
         }
 
@@ -436,32 +447,54 @@ export class EditorElement extends HTMLElement {
         })
 
         // The tooltip follows the control pointed at or focused.
-        this.addEventListener('pointerover', event => this.#tip(event.target.closest?.('[data-tooltip]')))
+        this.addEventListener('pointerover', event => this.#tip(event.target.closest?.('[data-editor-tooltip]')))
+        this.addEventListener('pointerout', event => ! event.relatedTarget?.closest?.('[data-editor-tooltip]') && this.#tip(null))
         this.addEventListener('focusin', event => {
-            this.#tip(event.target.closest?.('[data-tooltip]'))
+            this.#tip(event.target.closest?.('[data-editor-tooltip]'))
             if (! this.#editor.view.dom.contains(event.target)) this.#focused ??= this.value
+            this.#keyboard(this.#editor.isEditable)
         })
         this.addEventListener('focusout', event => {
+            if (! event.relatedTarget?.closest?.('[data-editor-tooltip]')) this.#tip(null)
             if (! this.contains(event.relatedTarget)) this.#changed()
+            if (! this.contains(event.relatedTarget)) this.#keyboard(false)
         })
+    }
 
-        window.addEventListener('ui-editor', this.#server)
+    /**
+     * On phones, while writing in it: the toolbar over the keyboard (the foot of the
+     * visual viewport, which the keyboard shortens), where the thumbs are, not at the
+     * top of a page scrolled away; its place kept, so the text doesn't jump.
+     */
+    #keyboard(on) {
+        const toolbar = this.#part('editor-toolbar')
+        const viewport = window.visualViewport
+
+        if (! TOUCH || ! toolbar || on === this.hasAttribute('data-keyboard')) return
+
+        if (on) {
+            this.style.setProperty('--editor-toolbar-space', `${toolbar.offsetHeight}px`)
+            this.#placeToolbar()
+            viewport?.addEventListener('resize', this.#placeToolbar)
+            viewport?.addEventListener('scroll', this.#placeToolbar)
+        } else {
+            viewport?.removeEventListener('resize', this.#placeToolbar)
+            viewport?.removeEventListener('scroll', this.#placeToolbar)
+        }
+
+        this.toggleAttribute('data-keyboard', on)
+    }
+
+    #placeToolbar = () => {
+        const viewport = window.visualViewport
+
+        this.style.setProperty('--editor-keyboard', `${viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0}px`)
     }
 
     // change once editing ends, if it changed anything.
     #changed() {
         if (this.#focused !== null && this.#focused !== this.value) this.dispatchEvent(new Event('change', { bubbles: true }))
         this.#focused = null
-    }
-
-    #server = event => {
-        const { id, action, attachments, html } = event.detail ?? {}
-
-        if (! this.#editor || ! id || id !== this.id) return
-
-        if (action === 'insert') this.#insert(attachments, null)
-        if (action === 'insert-content' && html) this.#editor.chain().focus().insertContent(this.#whitelist.restrict(html)).run()
-        if (action === 'focus') this.#editor.commands.focus()
     }
 
     // What a control does.
@@ -797,10 +830,19 @@ export class EditorElement extends HTMLElement {
 
         const request = { from: range.from, to: range.to, id: placeholder ?? `upload-${++uploaded}` }
 
+        // How far the files have got, together, shows on the placeholder.
+        const sent = files.map(() => 0)
+        const size = files.reduce((sum, file) => sum + file.size, 0) || 1
+        const progress = index => (loaded, total) => {
+            sent[index] = files[index].size * loaded / total
+            this.#progress(request.id, sent.reduce((sum, part) => sum + part, 0) / size)
+        }
+
         this.#requests.add(request)
         this.#placeholder(request.id, request.from, 'uploading')
+        this.#busy(files.length)
 
-        const results = await Promise.allSettled(files.map(file => this.#send({ file, source })))
+        const results = await Promise.allSettled(files.map((file, index) => this.#send({ file, source }, progress(index)).finally(() => this.#busy(-1))))
 
         if (! this.#requests.delete(request) || ! this.#editor) return
 
@@ -821,6 +863,15 @@ export class EditorElement extends HTMLElement {
         this.#editor?.view.dispatch(this.#editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, message }] : [] }))
     }
 
+    // The share of an upload placeholder's files sent, as a percentage and a bar.
+    #progress(id, share) {
+        const placeholder = this.#editor?.view.dom.querySelector(`[data-editor-upload="${id}"]`)
+        const percent = `${Math.min(100, Math.round(share * 100))}%`
+
+        placeholder?.style.setProperty('--editor-upload-progress', percent)
+        placeholder?.querySelector('[data-editor-upload-progress]')?.replaceChildren(percent)
+    }
+
     // A placeholder dismissed: what it waited for goes nowhere.
     #dismiss(id) {
         for (const request of this.#requests) if (request.id === id) this.#requests.delete(request)
@@ -829,8 +880,8 @@ export class EditorElement extends HTMLElement {
     }
 
     // To the uploader. The address of its answer is the app's: its copies are never external.
-    async #send(item) {
-        const attachment = await upload(this.dataset.upload, { ...item, context: this.dataset.uploadContext, token: this.dataset.uploadToken })
+    async #send(item, progress = null) {
+        const attachment = await upload(this.dataset.upload, { ...item, progress, context: this.dataset.uploadContext, token: this.dataset.uploadToken })
 
         if (! attachment?.url || ! safeUrl(attachment.url)) return null
 
@@ -892,6 +943,7 @@ export class EditorElement extends HTMLElement {
 
             this.#saving.add(src)
             this.#failed.delete(src)
+            this.#busy(1)
             this.#saveImage(src, kind)
                 .then(attachment => {
                     if (! attachment) return this.#failed.set(src, this.#labels.failed)
@@ -903,10 +955,64 @@ export class EditorElement extends HTMLElement {
                 .finally(() => {
                     this.#saving.delete(src)
                     this.#editor?.commands.setSaving([...this.#saving])
+                    this.#busy(-1)
                 })
         }
 
         this.#editor.commands.setSaving([...this.#saving])
+    }
+
+    /**
+     * Whether files or images are on their way to the uploader: what they will be isn't
+     * in the value yet, so a form around the editor doesn't submit meanwhile (the footer
+     * says why). aria-busy says so, and editor-busy { busy } when it changes.
+     */
+    get busy() {
+        return this.#uploading > 0
+    }
+
+    #busy(change) {
+        const was = this.busy
+
+        this.#uploading = Math.max(0, this.#uploading + change)
+        this.busy ? this.setAttribute('aria-busy', 'true') : this.removeAttribute('aria-busy')
+        if (! this.busy) this.#refused = false
+        this.#syncBusy()
+
+        if (was !== this.busy) this.dispatchEvent(new CustomEvent('editor-busy', { bubbles: true, detail: { busy: this.busy } }))
+    }
+
+    // The footer's word on the uploads: how many, and why the form didn't submit.
+    #syncBusy() {
+        const notice = this.querySelector('[data-editor-busy]')
+
+        if (! notice) return
+
+        const text = ((this.#refused ? notice.dataset.editorRefused : notice.dataset.editorLabel) ?? ':count').replace(':count', this.#uploading)
+
+        notice.hidden = ! this.busy
+        notice.setAttribute('role', this.#refused ? 'alert' : 'status')
+        if (notice.textContent !== text) notice.textContent = text
+    }
+
+    // A form submitted around it while it uploads doesn't; before Livewire's wire:submit
+    // (on the form) hears of it.
+    static {
+        document.addEventListener('submit', event => {
+            const busy = [...event.target.querySelectorAll?.('eso-editor') ?? []].filter(editor => editor.busy)
+
+            if (! busy.length) return
+
+            event.preventDefault()
+            event.stopImmediatePropagation()
+
+            for (const editor of busy) {
+                editor.#refused = true
+                editor.#syncBusy()
+            }
+
+            busy[0].querySelector('[data-editor-busy]')?.scrollIntoView?.({ block: 'nearest' })
+        }, true)
     }
 
     async #saveImage(src, kind) {
@@ -1117,19 +1223,18 @@ export class EditorElement extends HTMLElement {
         if (this.#editor && ! this.hasAttribute('data-source')) this.#editor.commands.focus()
     }
 
-    // The tooltip names the control and its shortcut, anchored to it.
+    // The tooltip names the control and its shortcut, anchored to it; none, it hides.
     #tip(control) {
         const tip = this.querySelector(':scope > [data-editor-tip]')
 
-        if (! control || ! tip || control.dataset.tooltip !== tip.id) return
+        if (! tip || (control && control === this.#anchor && tip.matches(':popover-open'))) return
 
-        const name = `--${tip.id}`
-        const names = element => (element.style.getPropertyValue('anchor-name') || '').split(',').map(part => part.trim()).filter(part => part && part !== 'none')
-
-        if (this.#anchor && this.#anchor !== control) this.#anchor.style.setProperty('anchor-name', names(this.#anchor).filter(part => part !== name).join(', ') || 'none')
-        if (! names(control).includes(name)) control.style.setProperty('anchor-name', [...names(control), name].join(', '))
+        if (tip.matches(':popover-open')) tip.hidePopover()
 
         this.#anchor = control
+
+        if (! control) return
+
         tip.querySelector('[data-editor-tip-label]').textContent = control.getAttribute('aria-label') ?? ''
 
         const shortcut = tip.querySelector('[data-editor-tip-keys]')
@@ -1138,6 +1243,8 @@ export class EditorElement extends HTMLElement {
             shortcut.textContent = control.dataset.editorKeys ? keys(control.dataset.editorKeys) : ''
             shortcut.hidden = ! control.dataset.editorKeys
         }
+
+        tip.showPopover({ source: control })
     }
 
     // The bars of controls: the toolbar, and the bubble menus.
@@ -1259,7 +1366,7 @@ export class EditorElement extends HTMLElement {
         // Menus show their checked item on their button: its icon, or its name (the menu's
         // own for its default, none).
         for (const trigger of this.#all('[data-editor-menu]')) {
-            const menu = document.getElementById(trigger.getAttribute('commandfor') ?? trigger.getAttribute('popovertarget') ?? '')
+            const menu = contentOf(trigger, 'dropdown-menu')
             const checked = menu?.querySelector('[aria-checked="true"]')
             const current = trigger.querySelector('[data-editor-current]')
 

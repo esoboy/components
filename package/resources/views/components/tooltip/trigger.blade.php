@@ -1,9 +1,17 @@
-@blaze
+@blaze(fold: true)
 
-@use('Esoboy\Ui\Support\Overlay')
+@props([
+    'as' => 'button',
+])
 
 @php
-$id = Overlay::open('tooltip');
+// Hovering or focusing it shows the Tooltip Content after it (ui.js).
+$attributes = $attributes->merge(['data-tooltip-trigger' => true]);
 @endphp
 
-<x-ui::button :attributes="$attributes->merge(['data-tooltip' => $id, 'aria-describedby' => $id, 'style' => 'anchor-name: --'.$id.';'])">{{ $slot }}</x-ui::button>
+{{-- as renders another component as the trigger, like shadcn's render: dropdown-menu.trigger, input-group.button, … --}}
+@if ($as === 'button')
+<x-ui::button :attributes="$attributes">{{ $slot }}</x-ui::button>
+@else
+<x-dynamic-component :component="'ui::'.$as" :attributes="$attributes">{{ $slot }}</x-dynamic-component>
+@endif

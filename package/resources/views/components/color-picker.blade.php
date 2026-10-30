@@ -56,3 +56,4 @@ $name = $attributes->get('name');
     @endif
 </eso-color-picker>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

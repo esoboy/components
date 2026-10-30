@@ -28,3 +28,4 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
     </div>
 </eso-password-input>
 <x-ui::field.error :state="$state" />
+<x-ui::extras />

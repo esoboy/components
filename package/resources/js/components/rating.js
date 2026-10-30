@@ -6,13 +6,15 @@
  * input/change are dispatched from the rating, so wire:model binds on it.
  */
 
-import { announce, define, writeHidden } from '../support/element.js'
+import { announce, connected, define, disconnected, writeHidden } from '../support/element.js'
 
 export class RatingElement extends HTMLElement {
     #value = null
     #observer = new MutationObserver(() => this.#render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = this.#parse(this.dataset.value)
 
         this.addEventListener('click', event => {
@@ -23,7 +25,7 @@ export class RatingElement extends HTMLElement {
             const value = Number(item.dataset.value)
 
             this.#commit(value === this.#value ? null : value)
-        })
+        }, { signal })
 
         this.addEventListener('keydown', event => {
             const items = this.#items()
@@ -40,7 +42,7 @@ export class RatingElement extends HTMLElement {
 
             this.#commit(next)
             items[next - 1].focus()
-        })
+        }, { signal })
 
         this.#render()
 
@@ -49,6 +51,7 @@ export class RatingElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

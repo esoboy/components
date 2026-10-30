@@ -5,11 +5,13 @@
  * controls left in the toolbar. Laid out again whenever the toolbar's width changes.
  */
 
+import { contentOf } from '../../support/overlay.js'
+
 const SEPARATOR = '[data-slot="separator"]'
 
 export function overflow(toolbar, laidOut) {
     const more = toolbar.querySelector(':scope > [data-editor-more]')
-    const panel = more && document.getElementById(more.getAttribute('commandfor'))
+    const panel = more && contentOf(more, 'popover')
 
     if (! panel) return null
 

@@ -28,3 +28,37 @@ it('does not hardcode user facing text in any component', function (string $path
 
     expect(trim($text))->toBe('', "Hardcoded text found in {$path}: use a ui.* translation key instead.");
 })->with(fn () => componentViews());
+
+it('imports every component stylesheet once, in ui.css or extras.css', function () {
+    $css = realpath(__DIR__.'/../../resources/css');
+    $imported = [];
+
+    foreach (['ui.css', 'extras.css'] as $entry) {
+        preg_match_all("/@import '\.\/components\/([\w-]+)\.css';/", (string) file_get_contents("{$css}/{$entry}"), $matches);
+        array_push($imported, ...$matches[1]);
+    }
+
+    $files = array_map(fn (string $path) => basename($path, '.css'), glob("{$css}/components/*.css") ?: []);
+
+    sort($imported);
+    sort($files);
+
+    expect($imported)->toBe($files);
+});
+
+it('loads extras.js wherever an element it defines shows', function (string $path) {
+    $js = realpath(__DIR__.'/../../resources/js');
+
+    preg_match_all("/from '\.\/components\/([\w-]+)\.js'/", (string) file_get_contents("{$js}/extras.js"), $modules);
+
+    $elements = collect($modules[1])
+        ->flatMap(function (string $module) use ($js) {
+            preg_match_all("/define\('(eso-[\w-]+)'/", (string) file_get_contents("{$js}/components/{$module}.js"), $defined);
+
+            return $defined[1];
+        });
+
+    $source = (string) file_get_contents($path);
+
+    expect(str_contains($source, '<x-ui::extras />'))->toBe($elements->contains(fn (string $element) => str_contains($source, "<{$element}")));
+})->with(fn () => array_diff_key(componentViews(), ['extras.blade.php' => true]));

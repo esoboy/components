@@ -22,3 +22,4 @@ $remaining = Countdown::remaining($until, $seconds);
     'data-name' => $name,
     'data-format' => $format,
 ]) }}>{{ Countdown::format($remaining, $format) }}</eso-countdown>
+<x-ui::extras />

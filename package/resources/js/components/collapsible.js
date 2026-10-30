@@ -6,7 +6,7 @@
  * collapsible itself, so wire:model binds on it.
  */
 
-import { announce, define } from '../support/element.js'
+import { announce, connected, define, disconnected } from '../support/element.js'
 
 const TRIGGER = '[data-slot="collapsible-trigger"], [data-collapsible-trigger]'
 const CONTENT = '[data-slot="collapsible-content"], [data-collapsible-content]'
@@ -19,6 +19,8 @@ export class CollapsibleElement extends HTMLElement {
     #observer = null
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#open = this.hasAttribute('data-open')
 
         this.addEventListener('click', event => {
@@ -28,7 +30,7 @@ export class CollapsibleElement extends HTMLElement {
 
             this.value = ! this.#open
             announce(this)
-        })
+        }, { signal })
 
         this.#sync()
 
@@ -38,6 +40,7 @@ export class CollapsibleElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer?.disconnect()
     }
 

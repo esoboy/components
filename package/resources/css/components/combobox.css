@@ -13,8 +13,13 @@
         @apply hidden;
     }
 
-    :where([data-combobox-trigger][aria-expanded="true"]) {
+    :where([data-slot="input-group"] [data-combobox-trigger][aria-expanded="true"]) {
         @apply bg-transparent;
+    }
+
+    /* shadcn's ComboboxTrigger ends with a muted chevron. */
+    :where([data-slot="combobox-trigger-icon"]) {
+        @apply pointer-events-none size-4 text-muted-foreground;
     }
 
     :where([data-slot="combobox-content"]) {

@@ -1,20 +1,14 @@
-@blaze
-
-@use('Esoboy\Ui\Support\Overlay')
+@blaze(fold: true)
 
 @props([
     'side' => 'bottom',
     'align' => 'center',
     'sideOffset' => 4,
+    'alignOffset' => 0,
     'alignItemWithTrigger' => true,
 ])
 
-@php
-$id = Overlay::close('select');
-@endphp
-
 <div {{ $attributes->merge([
-    'id' => $id,
     'popover' => 'auto',
     'role' => 'listbox',
     'tabindex' => '-1',
@@ -22,5 +16,5 @@ $id = Overlay::close('select');
     'data-align-trigger' => $alignItemWithTrigger ? 'true' : 'false',
     'data-side' => $side,
     'data-align' => $align,
-    'style' => "position-anchor: --{$id}; --side-offset: {$sideOffset}px;",
+    'style' => "--side-offset: {$sideOffset}px; --align-offset: {$alignOffset}px;",
 ]) }}>{{ $slot }}</div>

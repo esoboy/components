@@ -94,3 +94,4 @@ $files = UploadedFiles::of(Model::value($attributes));
     </div>
     <x-ui::field.error :state="$state" />
 </eso-file-upload>
+<x-ui::extras />

@@ -8,7 +8,7 @@
  * so wire:model binds on it.
  */
 
-import { define, writeHidden } from '../support/element.js'
+import { connected, define, disconnected, writeHidden } from '../support/element.js'
 
 const clamp = (number, min = 0, max = 1) => Math.min(max, Math.max(min, number))
 
@@ -46,6 +46,8 @@ export class ColorPickerElement extends HTMLElement {
     #observer = new MutationObserver(() => this.render())
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#value = parseHex(this.dataset.value)
         if (this.#value) this.#hsv = hexToHsv(this.#value)
 
@@ -55,7 +57,7 @@ export class ColorPickerElement extends HTMLElement {
 
             event.stopPropagation()
             if (event.target.matches('[data-slot="color-picker-hue"]')) this.#setHsv({ h: Number(event.target.value) }, 'input')
-        })
+        }, { signal })
 
         this.addEventListener('change', event => {
             if (event.target === this) return
@@ -64,14 +66,14 @@ export class ColorPickerElement extends HTMLElement {
 
             if (event.target.matches('[data-slot="color-picker-hue"]')) this.#announce('change')
             if (event.target.matches('[data-color-picker-input]')) this.#setHex(event.target.value)
-        })
+        }, { signal })
 
         this.addEventListener('click', event => {
             const swatch = event.target.closest?.('[data-color-picker-swatch]')
 
             if (swatch) this.#setHex(swatch.dataset.colorPickerSwatch)
             if (event.target.closest?.('[data-color-picker-eyedropper]')) this.#pickFromScreen()
-        })
+        }, { signal })
 
         this.addEventListener('keydown', event => {
             if (event.target.matches?.('[data-color-picker-input]') && event.key === 'Enter') {
@@ -89,7 +91,7 @@ export class ColorPickerElement extends HTMLElement {
             event.preventDefault()
             this.#setHsv({ s: clamp(this.#hsv.s + move[0]), v: clamp(this.#hsv.v + move[1]) }, 'input')
             this.#announce('change')
-        })
+        }, { signal })
 
         this.addEventListener('pointerdown', event => {
             const area = event.target.closest?.('[data-slot="color-picker-area"]')
@@ -101,13 +103,13 @@ export class ColorPickerElement extends HTMLElement {
             area.setPointerCapture?.(event.pointerId)
             this.#dragging = true
             this.#pointAt(area, event)
-        })
+        }, { signal })
 
         this.addEventListener('pointermove', event => {
             const area = event.target.closest?.('[data-slot="color-picker-area"]')
 
             if (this.#dragging && area) this.#pointAt(area, event)
-        })
+        }, { signal })
 
         for (const type of ['pointerup', 'pointercancel']) {
             this.addEventListener(type, () => {
@@ -115,7 +117,7 @@ export class ColorPickerElement extends HTMLElement {
 
                 this.#dragging = false
                 this.#announce('change')
-            })
+            }, { signal })
         }
 
         const eyedropper = this.querySelector('[data-color-picker-eyedropper]')
@@ -129,6 +131,7 @@ export class ColorPickerElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#observer.disconnect()
     }
 

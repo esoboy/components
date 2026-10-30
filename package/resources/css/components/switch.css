@@ -25,12 +25,6 @@
                 background-color: light-dark(var(--color-background), var(--color-primary-foreground));
             }
         }
-
-        &[aria-invalid="true"] {
-            @apply ring-3;
-            border-color: light-dark(var(--color-destructive), color-mix(in oklab, var(--color-destructive) 50%, transparent));
-            --tw-ring-color: light-dark(color-mix(in oklab, var(--color-destructive) 20%, transparent), color-mix(in oklab, var(--color-destructive) 40%, transparent));
-        }
     }
 
     :where([data-slot="switch"][data-size="default"]) {

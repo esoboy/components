@@ -7,7 +7,7 @@
  * server's list of uploaded files takes over once Livewire re-renders.
  */
 
-import { define } from '../support/element.js'
+import { connected, define, disconnected } from '../support/element.js'
 import { clone, readTemplates } from '../support/templates.js'
 
 export function formatSize(bytes) {
@@ -34,25 +34,28 @@ export class FileUploadElement extends HTMLElement {
     #templates = {}
 
     connectedCallback() {
+        const signal = connected(this)
+
         this.#templates = readTemplates(this)
 
         const zone = this.dropzone
 
         if (! zone) return
 
-        zone.addEventListener('dragenter', event => this.#onDrag(event))
-        zone.addEventListener('dragover', event => this.#onDrag(event))
-        zone.addEventListener('dragleave', event => ! zone.contains(event.relatedTarget) && zone.removeAttribute('data-dragging'))
-        zone.addEventListener('drop', event => this.#onDrop(event))
+        zone.addEventListener('dragenter', event => this.#onDrag(event), { signal })
+        zone.addEventListener('dragover', event => this.#onDrag(event), { signal })
+        zone.addEventListener('dragleave', event => ! zone.contains(event.relatedTarget) && zone.removeAttribute('data-dragging'), { signal })
+        zone.addEventListener('drop', event => this.#onDrop(event), { signal })
 
-        this.addEventListener('livewire-upload-start', () => this.#start())
-        this.addEventListener('livewire-upload-progress', event => this.#progress(event.detail?.progress ?? 0))
+        this.addEventListener('livewire-upload-start', () => this.#start(), { signal })
+        this.addEventListener('livewire-upload-progress', event => this.#progress(event.detail?.progress ?? 0), { signal })
         for (const type of ['livewire-upload-finish', 'livewire-upload-error', 'livewire-upload-cancel']) {
-            this.addEventListener(type, () => this.#end())
+            this.addEventListener(type, () => this.#end(), { signal })
         }
     }
 
     disconnectedCallback() {
+        disconnected(this)
         this.#revoke()
     }
 

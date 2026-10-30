@@ -1,10 +1,18 @@
 /*
  * Dialog, Sheet and Drawer open and close natively through invoker commands. Two gaps remain:
  * closing on a backdrop click (Safari has no closedby="any" yet) and Livewire's
- * Ui::dialog('name')->open() / ->close().
+ * Ui::dialog('name')->open() / ->close(). wire:model on the root binds the open state
+ * through <eso-dialog>.
  */
 
+import { define } from '../support/element.js'
+import { OpenElement } from '../support/open.js'
+
+class DialogElement extends OpenElement {}
+
 export function register() {
+    define('eso-dialog', DialogElement)
+
     document.addEventListener('click', ({ target, clientX, clientY }) => {
         if (! target.matches?.('dialog[open]:is([data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="drawer-popup"])')) return
 
