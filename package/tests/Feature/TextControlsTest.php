@@ -21,9 +21,9 @@ it('renders a textarea with its content', function () {
 it('renders a native select whose wrapper takes the class', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::native-select wire:model="role" class="w-full" size="sm">
-            <x-ui::native-select.optgroup label="Staff">
+            <x-ui::native-select.opt-group label="Staff">
                 <x-ui::native-select.option value="admin">Admin</x-ui::native-select.option>
-            </x-ui::native-select.optgroup>
+            </x-ui::native-select.opt-group>
         </x-ui::native-select>
         BLADE);
 
