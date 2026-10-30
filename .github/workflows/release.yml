@@ -1,9 +1,8 @@
 name: release
 
-# A tag (v1.2.0) publishes package/ with its built dist/ to the repository Composer
-# installs esoboy/ui from: dist/ is gitignored here, and @uiScripts needs it. Set the
-# repository variable UI_SPLIT_REPOSITORY (owner/name) and the secret UI_SPLIT_TOKEN
-# (a token that may push to it); until then this does nothing.
+# A tag (v1.2.0) publishes package/ with its built dist/ to esoboy/ui, the repository
+# Composer installs esoboy/ui from: dist/ is gitignored here, and @uiScripts needs it.
+# The secret UI_SPLIT_TOKEN is a token that may push to esoboy/ui.
 
 on:
   push:
@@ -15,7 +14,6 @@ defaults:
 
 jobs:
   split:
-    if: vars.UI_SPLIT_REPOSITORY != ''
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +33,6 @@ jobs:
 
       # Each release is one commit of the package as it ships, dist/ included, under the tag.
       - env:
-          REPOSITORY: ${{ vars.UI_SPLIT_REPOSITORY }}
           TOKEN: ${{ secrets.UI_SPLIT_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
@@ -46,4 +43,4 @@ jobs:
           git add --all
           git commit --quiet --message "esoboy/ui ${TAG}"
           git tag "${TAG}"
-          git push --force "https://x-access-token:${TOKEN}@github.com/${REPOSITORY}.git" main "refs/tags/${TAG}"
+          git push --force "https://x-access-token:${TOKEN}@github.com/esoboy/ui.git" main "refs/tags/${TAG}"
