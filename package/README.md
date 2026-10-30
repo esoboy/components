@@ -170,3 +170,7 @@ npm run build       # dist/ (npm run dev rebuilds on change)
 ```
 
 `dist/` is a build output and isn't committed on branches; a release builds it into its tag.
+
+## License
+
+MIT. The Lucide icons are ISC, see `resources/icons/LICENSE`.
