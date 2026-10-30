@@ -2,7 +2,7 @@ name: release
 
 # A tag (v1.2.0) publishes package/ with its built dist/ to esoboy/ui, the repository
 # Composer installs esoboy/ui from: dist/ is gitignored here, and @uiScripts needs it.
-# The secret UI_SPLIT_TOKEN is a token that may push to esoboy/ui.
+# The UI environment's secret UI_SPLIT_TOKEN is a token that may push to esoboy/ui.
 
 on:
   push:
@@ -15,6 +15,7 @@ defaults:
 jobs:
   split:
     runs-on: ubuntu-latest
+    environment: UI
 
     steps:
       - uses: actions/checkout@v4
