@@ -5,7 +5,7 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "ext-intl": "*",
         "bacon/bacon-qr-code": "^3.1",
         "illuminate/support": "^13.0",
