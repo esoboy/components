@@ -23,6 +23,17 @@ class Posts extends Component
         $this->saved = Ui::sanitize($this->body);
     }
 
+    // As an app's own attachment library would insert.
+    public function attach(): void
+    {
+        Ui::editor('body')->insert([['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']]);
+    }
+
+    public function template(): void
+    {
+        Ui::editor('body')->insertContent('<p>Hello</p>');
+    }
+
     public function render(): string
     {
         return '<div><x-ui::editor wire:model="body" /></div>';

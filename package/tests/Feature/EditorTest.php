@@ -88,7 +88,7 @@ describe('the view', function () {
             ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;failed&quot;:&quot;The upload failed.&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-upload="http://localhost/esoboy-ui/editor/upload" data-image-hosts="localhost" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
             ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
             ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
-            ->toContain('data-placeholder="Write" data-label="Rich text editor" wire:model="body">')
+            ->toContain('data-placeholder="Write" data-label="Rich text editor" data-editor-name="body" wire:model="body">')
             ->toContain('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" wire:ignore>')
             ->toContain('<div data-slot="editor-control" data-priority="1">')
             ->toContain('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
@@ -236,7 +236,7 @@ describe('the view', function () {
 
     it('keeps the HTML in a hidden input for forms, and shows the disabled state', function () {
         $this->blade('<x-ui::editor name="body" default-value="<p>Hi</p>" disabled />')
-            ->assertSee('data-name="body" data-disabled="data-disabled"', false)
+            ->assertSee('data-name="body" data-editor-name="body" data-disabled="data-disabled"', false)
             ->assertSee('<input type="hidden" name="body" value="&lt;p&gt;Hi&lt;/p&gt;">', false);
     });
 
@@ -509,6 +509,24 @@ Body')
             ->assertSeeHtml('<div data-slot="editor-content" wire:ignore><p>Hi</p></div>')
             ->call('save')
             ->assertSet('saved', '<p>Hi</p>');
+    });
+});
+
+describe('the server', function () {
+    it('inserts attachments or HTML through Ui::editor(), by the name its wire:model gives it, in its component', function () {
+        $posts = Livewire::test(Posts::class);
+
+        expect($posts->html())->toContain('data-editor-name="body"');
+
+        $posts->call('attach')
+            ->assertDispatched('ui-editor', name: 'body', owner: $posts->instance()->getId(), action: 'insert', attachments: [['url' => '/a.png', 'name' => 'a.png', 'mime' => 'image/png']], html: null)
+            ->call('template')
+            ->assertDispatched('ui-editor', name: 'body', owner: $posts->instance()->getId(), action: 'insert-content', attachments: [], html: '<p>Hello</p>');
+    });
+
+    it('takes the editor\'s name over its wire:model', function () {
+        $this->blade('<x-ui::editor name="intro" wire:model="body" />')
+            ->assertSee('data-name="intro" data-editor-name="intro"', false);
     });
 });
 

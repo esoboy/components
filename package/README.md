@@ -110,10 +110,14 @@ Ui::countdown('sms');
 ```
 
 The Editor cleans the HTML it shows to its format. What it sends back is the app's to
-clean before storing it, with the same format; `Ui::plainText()` gives its text:
+clean before storing it, with the same format; `Ui::plainText()` gives its text.
+`Ui::editor()` reaches an Editor of the calling component by its name, else the property
+its `wire:model` binds, to insert what the app has itself (its media library):
 
 ```php
 $post->body = Ui::sanitize($this->body, 'basic');
+
+Ui::editor('body')->insert([['url' => $file->url, 'name' => $file->name, 'mime' => $file->mime]]);
 ```
 
 The toaster is kept across `wire:navigate`, so a toast shown before

@@ -11,7 +11,7 @@
     'showError' => true,
 ])
 
-{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. A name keeps a hidden input for forms. The bound HTML is sanitized to the format as it comes in here; the app sanitizes what comes back before storing it, with Ui::sanitize($html, the same format). What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
+{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. Ui::editor($name) reaches it by its name, else the property its wire:model binds; a name also keeps a hidden input for forms. The bound HTML is sanitized to the format as it comes in here; the app sanitizes what comes back before storing it, with Ui::sanitize($html, the same format). What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
 @props([
     'format' => 'full',
     'maxLength' => null,
@@ -57,6 +57,7 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     'data-placeholder' => $placeholder ?? false,
     'data-label' => $label ?? __('ui::editor.label'),
     'data-name' => $name ?? false,
+    'data-editor-name' => $name ?? Model::key($attributes) ?? false,
     'data-disabled' => (bool) $disabled,
     ...$state->attributes(),
 ]) }}>

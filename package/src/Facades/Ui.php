@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Esoboy\Ui\Livewire\TourHandle tour(string $name)
  * @method static void countdown(string $name = 'verification-code', ?int $seconds = null)
  * @method static string theme(string $scope = 'default')
+ * @method static \Esoboy\Ui\Livewire\EditorHandle editor(string $name)
  * @method static string sanitize(?string $html, string|list<string> $format = 'full')
  * @method static string plainText(?string $html, string|list<string> $format = 'full')
  * @method static int characters(?string $html, string|list<string> $format = 'full')

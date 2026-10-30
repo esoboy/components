@@ -17,8 +17,8 @@
  * uploader (config ui.editor.uploader; data-upload, upload.js), and what it answers ({
  * url, name, mime, size, alt, width, height, poster }) in place; so do images it has no
  * copy of (external, data:), when saved (images.js). Without an uploader there are no
- * media buttons. Its insert() and insertContent() put in attachments the app has
- * itself (its media library), or HTML.
+ * media buttons. Ui::editor(name)->insert() (or the element's insert()) puts in
+ * attachments the app has itself (its media library); insertContent(), HTML.
  *
  * Built into dist/editor.js; the view loads it through @assets.
  */
@@ -124,7 +124,11 @@ export class EditorElement extends HTMLElement {
     #mathPreview = 0
 
     connectedCallback() {
-        if (this.#editor) return
+        if (this.#editor) {
+            window.addEventListener('ui-editor', this.#server)
+
+            return
+        }
 
         const content = this.querySelector(':scope > [data-slot="editor-content"]')
 
@@ -218,6 +222,8 @@ export class EditorElement extends HTMLElement {
     }
 
     disconnectedCallback() {
+        window.removeEventListener('ui-editor', this.#server)
+
         // Moved, it comes back at once; removed, its editor goes.
         queueMicrotask(() => {
             if (this.isConnected) return
@@ -459,6 +465,8 @@ export class EditorElement extends HTMLElement {
             if (! this.contains(event.relatedTarget)) this.#changed()
             if (! this.contains(event.relatedTarget)) this.#keyboard(false)
         })
+
+        window.addEventListener('ui-editor', this.#server)
     }
 
     /**
@@ -495,6 +503,18 @@ export class EditorElement extends HTMLElement {
     #changed() {
         if (this.#focused !== null && this.#focused !== this.value) this.dispatchEvent(new Event('change', { bubbles: true }))
         this.#focused = null
+    }
+
+    #server = event => {
+        const { name, owner, action, attachments, html } = event.detail ?? {}
+
+        // Ui::editor(name): this one's name, from the component it is in.
+        if (! this.#editor || ! name || name !== this.dataset.editorName) return
+        if (owner && owner !== this.closest('[wire\\:id]')?.getAttribute('wire:id')) return
+
+        if (action === 'insert') this.insert(attachments)
+        if (action === 'insert-content' && html) this.insertContent(html)
+        if (action === 'focus') this.#editor.commands.focus()
     }
 
     // What a control does.

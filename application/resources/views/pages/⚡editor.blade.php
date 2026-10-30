@@ -16,7 +16,7 @@ new class extends Component
 
     public ?string $published = null;
 
-    /** The app's own attachment library, put in with the editor's insert(). */
+    /** The app's own attachment library, inserted with Ui::editor()->insert(). */
     public array $library = [
         ['url' => '/demo/landscape.jpg', 'name' => 'landscape.jpg', 'mime' => 'image/jpeg', 'size' => 56814, 'alt' => 'A landscape', 'width' => 1200, 'height' => 800],
         ['url' => '/demo/photo-1.svg', 'name' => 'photo-1.svg', 'mime' => 'image/svg+xml', 'size' => 438, 'alt' => 'First photo'],
@@ -35,12 +35,10 @@ new class extends Component
         Ui::dialog('library')->open();
     }
 
-    // The picked attachments, for the button to hand to the editor.
-    public function insertPicked(): array
+    public function insertPicked(): void
     {
+        Ui::editor('article')->insert(array_values(array_intersect_key($this->library, array_flip($this->picked))));
         Ui::dialog('library')->close();
-
-        return array_values(array_intersect_key($this->library, array_flip($this->picked)));
     }
 
     public function kind(array $attachment): string
@@ -76,7 +74,7 @@ new class extends Component
     <form wire:submit="publish" class="space-y-4">
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
-            <x-ui::editor id="article" wire:model="article" :max-length="2000" :upload-context="['page' => 'editor']" />
+            <x-ui::editor wire:model="article" :max-length="2000" :upload-context="['page' => 'editor']" />
             <x-ui::field.description>The image, video, audio and file buttons, and files dropped or pasted, upload with the app's uploader (config ui.editor.uploader, here App\Editor\DemoUploader). Images from other sites and pasted ones are saved from their menu, or all at once from the footer (or as they come in, with ui.editor.auto_upload). Type / for blocks.</x-ui::field.description>
         </x-ui::field>
         <div class="flex gap-2">
@@ -100,7 +98,7 @@ new class extends Component
         <x-ui::dialog.content>
             <x-ui::dialog.header>
                 <x-ui::dialog.title>Attachment library</x-ui::dialog.title>
-                <x-ui::dialog.description>Pick any number: the editor's insert() puts them at the cursor.</x-ui::dialog.description>
+                <x-ui::dialog.description>Pick any number: Ui::editor('article')->insert() puts them at the cursor.</x-ui::dialog.description>
             </x-ui::dialog.header>
             <div class="grid gap-2">
                 @foreach ($library as $index => $attachment)
@@ -113,7 +111,7 @@ new class extends Component
             </div>
             <x-ui::dialog.footer>
                 <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
-                <x-ui::button x-on:click="$wire.insertPicked().then(attachments => document.getElementById('article').insert(attachments))">Insert</x-ui::button>
+                <x-ui::button wire:click="insertPicked">Insert</x-ui::button>
             </x-ui::dialog.footer>
         </x-ui::dialog.content>
     </x-ui::dialog>

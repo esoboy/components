@@ -37,7 +37,7 @@ const TOGGLES = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript',
 function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.features, attributes = '', whitelist = null } = {}) {
     document.body.innerHTML = `
         <form>
-            <eso-editor id="body" data-slot="editor" data-labels='{"keyboard":"Alt+F10","failed":"Upload failed"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
+            <eso-editor id="body" data-slot="editor" data-editor-name="body" data-labels='{"keyboard":"Alt+F10","failed":"Upload failed"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
                 <div data-slot="editor-toolbar" role="toolbar">
                     ${COMMANDS.map(command => `<button type="button" data-editor-command="${command}" aria-label="${command}" ${TOGGLES.includes(command) ? 'aria-pressed="false"' : ''}></button>`).join('')}
                     <button type="button" data-editor-action="media" aria-label="Media"></button>
@@ -565,6 +565,30 @@ describe('media', () => {
 
         element.querySelector('[data-editor-failed] [data-editor-action="dismiss-upload"]').click()
         expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
+    })
+
+    it('inserts what the server gives, and HTML, to the editor of that name in that component', () => {
+        const [element] = mount('<p>Hello</p>', { features: ['file'] })
+        const send = detail => window.dispatchEvent(new CustomEvent('ui-editor', { detail: { owner: 'posts', attachments: [], html: null, ...detail } }))
+
+        element.closest('form').setAttribute('wire:id', 'posts')
+        element.editor.commands.setTextSelection(6)
+        send({ name: 'body', action: 'insert' })
+
+        expect(element.value).toBe('<p>Hello</p>')
+
+        send({ name: 'other', action: 'insert', attachments: [{ url: '/x.png' }] })
+        send({ name: 'body', owner: 'comments', action: 'insert', attachments: [{ url: '/x.png' }] })
+
+        expect(element.value).toBe('<p>Hello</p>')
+
+        send({ name: 'body', action: 'insert', attachments: [{ url: '/x.png', mime: 'image/png' }] })
+
+        expect(element.value).toBe('<p>Hello</p><a href="/x.png" download="x.png" type="image/png" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">x.png</span></a>')
+
+        send({ name: 'body', action: 'insert-content', html: '<p><strong>Hi</strong></p>' })
+
+        expect(element.value).toContain('<p>Hi</p>')
     })
 
     it('inserts attachments from the app, and HTML, where the cursor is', () => {
