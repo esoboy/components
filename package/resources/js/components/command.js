@@ -40,11 +40,26 @@ export class CommandElement extends HTMLElement {
             if (item && this.#isAvailable(item)) this.highlight(item)
         }, { signal })
 
+        this.#link()
         this.refresh()
 
-        // Items added or replaced by Livewire (server-side search) are filtered and highlighted too.
-        this.#observer = new MutationObserver(records => records.some(record => record.type === 'childList') && this.refresh())
-        this.#observer.observe(this.list ?? this, { childList: true, subtree: true })
+        // Items added or replaced by Livewire (server-side search) are filtered and highlighted
+        // too, and the ids morphs strip are put back.
+        this.#observer = new MutationObserver(records => {
+            this.#link()
+
+            if (records.some(record => record.type === 'childList')) this.refresh()
+        })
+        this.#observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['id', 'aria-controls'] })
+    }
+
+    // The input controls the list, as ARIA's combobox has it.
+    #link() {
+        if (! this.input || ! this.list) return
+
+        this.list.id ||= `ui-command-list-${++ids}`
+
+        if (this.input.getAttribute('aria-controls') !== this.list.id) this.input.setAttribute('aria-controls', this.list.id)
     }
 
     disconnectedCallback() {

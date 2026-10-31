@@ -21,13 +21,13 @@ it('renders a command menu', function () {
 
     $view->assertSee('<eso-command data-slot="command" data-should-filter="false" class="rounded-lg border">', false)
         ->assertSee('<input type="text" data-slot="command-input" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" placeholder="Search..." wire:model.live="q">', false)
-        ->assertSee('<div role="listbox" data-slot="command-list">', false)
+        ->assertSee('<div role="listbox" aria-label="Suggestions" data-slot="command-list" wire:key="command-list">', false)
         ->assertSee('<div role="presentation" data-slot="command-empty">No results.</div>', false)
         ->assertSee('<div data-slot="command-group-heading" aria-hidden="true">Suggestions</div>', false)
         ->assertSee('<div role="option" wire:key="command-item-cal" data-slot="command-item" data-value="cal" data-keywords="date events" aria-selected="false" wire:click="open">', false)
         ->assertSee('<span data-slot="command-shortcut">⌘C</span>', false)
         ->assertSee('aria-selected="false" aria-disabled="true"', false)
-        ->assertSee('<div role="separator" data-slot="command-separator"></div>', false);
+        ->assertSee('<div role="none" data-slot="command-separator"></div>', false);
 });
 
 it('renders a command dialog with a translated, visually hidden title', function () {

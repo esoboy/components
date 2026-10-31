@@ -6,8 +6,9 @@
         @apply relative block;
     }
 
+    /* A scroll container, so it takes focus for the keyboard, ringed as Scroll Area is. */
     :where([data-slot="carousel-content"]) {
-        @apply overflow-hidden overscroll-contain;
+        @apply overflow-hidden overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50;
         scrollbar-width: none;
 
         &::-webkit-scrollbar {

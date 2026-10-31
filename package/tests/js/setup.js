@@ -17,9 +17,15 @@ Element.prototype.querySelectorAll = function (selector) { return querySelectorA
 Document.prototype.querySelector = function (selector) { return querySelector.call(this, translate(selector)) }
 Document.prototype.querySelectorAll = function (selector) { return documentQuerySelectorAll.call(this, translate(selector)) }
 
+// As the platform does: beforetoggle, the change, then toggle.
 const toggle = (element, open) => {
+    if (element.hasAttribute('data-popover-open') === open) return
+
+    const newState = open ? 'open' : 'closed'
+
+    element.dispatchEvent(Object.assign(new Event('beforetoggle'), { newState }))
     element.toggleAttribute('data-popover-open', open)
-    element.dispatchEvent(Object.assign(new Event('toggle'), { newState: open ? 'open' : 'closed' }))
+    element.dispatchEvent(Object.assign(new Event('toggle'), { newState }))
 }
 
 Element.prototype.scrollIntoView ||= function () {}

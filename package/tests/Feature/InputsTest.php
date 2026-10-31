@@ -21,6 +21,14 @@ it('renders tags as chips before the input, with a template for new ones', funct
         ->toContain('<input type="hidden" name="tags[]" value="vue">');
 });
 
+it('puts its id and name on the input, where a label points', function () {
+    $html = (string) $this->blade('<x-ui::number-input id="qty" aria-describedby="hint" wire:model="qty" />');
+
+    expect($html)
+        ->toContain('<eso-number-input data-slot="number-input" data-step="1" aria-describedby="hint" wire:model="qty">')
+        ->toContain('autocomplete="off" id="qty"');
+});
+
 it('renders a number input as an input group with steppers', function () {
     $html = (string) $this->blade('<x-ui::number-input :default-value="1" :min="1" :max="10" step="0.5" name="qty" />');
 

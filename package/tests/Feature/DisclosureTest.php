@@ -75,15 +75,31 @@ it('renders progress with its value', function () {
         BLADE);
 
     $view->assertSeeInOrder([
-        '<div role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="30" aria-valuetext="15%" data-slot="progress" data-variant="default">',
-        '<span data-slot="progress-label">Upload</span>',
+        '<div role="progressbar" aria-labelledby="ui-progress-label-1" aria-valuemin="0" aria-valuemax="200" aria-valuenow="30" aria-valuetext="15%" data-slot="progress" data-variant="default">',
+        '<span id="ui-progress-label-1" data-slot="progress-label">Upload</span>',
         '<span data-slot="progress-value">15%</span>',
         '<div data-slot="progress-track">',
         '<div data-slot="progress-indicator"  style="inset-inline-start: 0; width: 15%" ></div>',
     ], false);
 
-    $this->blade('<x-ui::progress />')->assertSee('data-indeterminate', false)->assertDontSee('aria-valuenow', false);
+    $this->blade('<x-ui::progress />')->assertSee('data-indeterminate', false)->assertDontSee('aria-valuenow', false)->assertDontSee('aria-labelledby', false);
     $this->blade('<x-ui::progress :value="100" />')->assertSee('data-complete', false);
+});
+
+it('names each progress by its own label, or by an own aria-labelledby', function () {
+    $view = $this->blade(<<<'BLADE'
+        <x-ui::progress :value="10"><x-ui::progress.label>First</x-ui::progress.label></x-ui::progress>
+        <x-ui::progress :value="20"><x-ui::progress.label id="second">Second</x-ui::progress.label></x-ui::progress>
+        <x-ui::progress :value="30" aria-labelledby="heading" />
+        BLADE);
+
+    $view->assertSeeInOrder([
+        'aria-labelledby="ui-progress-label-1"',
+        '<span id="ui-progress-label-1" data-slot="progress-label">First</span>',
+        'aria-labelledby="second"',
+        '<span id="second" data-slot="progress-label">Second</span>',
+        'aria-labelledby="heading"',
+    ], false);
 });
 
 it('renders a circle progress with its value in the middle', function () {
@@ -116,7 +132,7 @@ it('renders a scroll area with both scrollbars, hidden until JS measures', funct
 
     $view->assertSeeInOrder([
         '<eso-scroll-area data-slot="scroll-area" class="h-72">',
-        '<div data-slot="scroll-area-viewport">Tags</div>',
+        '<div data-slot="scroll-area-viewport" tabindex="0">Tags</div>',
         '<div data-slot="scroll-area-scrollbar" data-orientation="vertical" hidden wire:ignore><div data-slot="scroll-area-thumb"></div></div>',
         '<div data-slot="scroll-area-scrollbar" data-orientation="horizontal" hidden wire:ignore>',
     ], false);
@@ -149,7 +165,7 @@ it('renders a carousel with its controls', function () {
 
     expect($html)
         ->toContain('<eso-carousel role="region" aria-roledescription="carousel" data-slot="carousel" data-orientation="horizontal" data-align="start">')
-        ->toContain('<div data-slot="carousel-content">')
+        ->toContain('<div data-slot="carousel-content" tabindex="0">')
         ->toContain('<div class="-ml-2"><div role="group" aria-roledescription="slide" data-slot="carousel-item" class="basis-1/3">1</div></div>')
         ->toMatch('/data-carousel="previous" disabled="disabled"/')
         ->toContain('<span class="sr-only">Previous slide</span>')

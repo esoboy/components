@@ -111,4 +111,18 @@ describe('pointer', () => {
         hover('Profile')
         expect(sub.matches(':popover-open')).toBe(false)
     })
+
+    it('keeps a hover-opened submenu open when its trigger is clicked, then toggles', () => {
+        menu.showPopover()
+        hover('Invite')
+
+        const first = new MouseEvent('click', { bubbles: true, cancelable: true })
+        item('Invite').dispatchEvent(first)
+        expect(first.defaultPrevented).toBe(true)
+        expect(sub.matches(':popover-open')).toBe(true)
+
+        const second = new MouseEvent('click', { bubbles: true, cancelable: true })
+        item('Invite').dispatchEvent(second)
+        expect(second.defaultPrevented).toBe(false)
+    })
 })

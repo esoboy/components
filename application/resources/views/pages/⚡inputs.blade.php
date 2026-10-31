@@ -253,13 +253,13 @@ new class extends Component
         </x-ui::field>
         <div class="grid gap-4 sm:grid-cols-2">
             <x-ui::field>
-                <x-ui::field.label>Quantity</x-ui::field.label>
-                <x-ui::number-input wire:model.live="quantity" :min="1" :max="10" />
+                <x-ui::field.label for="quantity-input">Quantity</x-ui::field.label>
+                <x-ui::number-input id="quantity-input" wire:model.live="quantity" :min="1" :max="10" />
                 <x-ui::field.description>Quantity: <span id="quantity">{{ $quantity }}</span></x-ui::field.description>
             </x-ui::field>
             <x-ui::field>
-                <x-ui::field.label>Price</x-ui::field.label>
-                <x-ui::number-input wire:model.live="price" :min="0" step="0.1" />
+                <x-ui::field.label for="price-input">Price</x-ui::field.label>
+                <x-ui::number-input id="price-input" wire:model.live="price" :min="0" step="0.1" />
                 <x-ui::field.description>Price: <span id="price">{{ $price }}</span></x-ui::field.description>
             </x-ui::field>
         </div>

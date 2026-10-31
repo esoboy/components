@@ -18,7 +18,7 @@
     ]) }}>
     <div data-slot="input-group-addon" data-align="inline-end" role="group">
         @if ($showTrigger)
-            <x-ui::combobox.trigger variant="ghost" size="icon-xs" tabindex="-1" :disabled="$attributes->has('disabled')" />
+            <x-ui::combobox.trigger variant="ghost" size="icon-xs" tabindex="-1" :aria-label="__('ui::combobox.trigger')" :disabled="$attributes->has('disabled')" />
         @endif
         @if ($showClear)
             <x-ui::combobox.clear :disabled="$attributes->has('disabled')" />

@@ -1,3 +1,4 @@
 @blaze(fold: true)
 
-<div {{ $attributes->merge(['role' => 'separator', 'data-slot' => 'command-separator']) }}></div>
+{{-- Decoration between groups: a listbox holds only groups and options. --}}
+<div {{ $attributes->merge(['role' => 'none', 'data-slot' => 'command-separator']) }}></div>

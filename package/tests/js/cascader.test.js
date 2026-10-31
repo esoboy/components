@@ -54,6 +54,15 @@ it('opens on the current path, a column per level', () => {
     expect(document.activeElement).toBe(item(cascader, 'Xihu'))
 })
 
+it('shows its columns when its trigger opens it natively', () => {
+    const cascader = mount(`data-value='["zj","nb"]'`)
+
+    cascader.content.showPopover({ source: cascader.trigger })
+
+    expect(columns(cascader)).toEqual([['Zhejiang', 'Beijing'], ['Hangzhou', 'Ningbo']])
+    expect(document.activeElement).toBe(item(cascader, 'Ningbo'))
+})
+
 it('marks parents and leaves with the icons its view rendered', () => {
     const cascader = mount(`data-value='["zj","hz","xh"]'`)
 

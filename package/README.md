@@ -159,6 +159,16 @@ Tailwind's `dark:` follows the same choice.
 - **Strings:** override single lines in `lang/vendor/ui/{locale}/{component}.php`, or
   publish them all with `php artisan vendor:publish --tag=ui-lang`.
 
+## AI agents
+
+The package ships [Laravel Boost](https://laravel.com/docs/boost) guidelines and an
+`esoboy-ui-development` skill (every component with its parts, binding, forms, overlays,
+Data Table, rich text, theming) in `resources/boost`. Boost finds them on its own:
+`php artisan boost:install` lists `esoboy/ui (guidelines, skills)` among the third-party
+packages, and once picked, `boost:update` keeps them current with the installed version.
+Apps that already use Boost are offered the package the next time `boost:update` runs in
+a terminal.
+
 ## Development
 
 ```bash
@@ -167,6 +177,16 @@ composer lint       # Pint
 composer analyse    # Larastan
 npm test            # Vitest
 npm run build       # dist/ (npm run dev rebuilds on change)
+```
+
+Browser tests drive the demo app's pages in Chromium (Pest's browser plugin with
+Playwright), one file per component in `application/tests/Browser`, plus a smoke test and
+an axe pass over every page. Build `dist/` first; the tests publish it:
+
+```bash
+cd ../application
+npm ci && npm run build && npx playwright install chromium
+composer test
 ```
 
 `dist/` is a build output and isn't committed on branches; a release builds it into its tag.

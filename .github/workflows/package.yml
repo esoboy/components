@@ -49,3 +49,38 @@ jobs:
       - run: npm test
 
       - run: npm run build
+
+  # The demo app installs the package as apps do and drives its pages in Chromium.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package/package-lock.json
+            application/package-lock.json
+
+      - run: npm ci && npm run build
+
+      - run: composer install --no-interaction --prefer-dist
+        working-directory: application
+
+      - run: cp .env.example .env && php artisan key:generate
+        working-directory: application
+
+      - run: npm ci && npm run build && npx playwright install --with-deps chromium
+        working-directory: application
+
+      - run: vendor/bin/pest
+        working-directory: application

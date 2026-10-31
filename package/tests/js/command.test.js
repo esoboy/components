@@ -124,3 +124,17 @@ describe('keyboard', () => {
         expect(selected(command)).toBe('Profile')
     })
 })
+
+describe('aria', () => {
+    it('points the input at the list it controls, again after a morph strips it', async () => {
+        const command = mount()
+
+        expect(command.list.id).toMatch(/^ui-command-list-\d+$/)
+        expect(command.input.getAttribute('aria-controls')).toBe(command.list.id)
+
+        command.input.removeAttribute('aria-controls')
+        await new Promise(resolve => setTimeout(resolve))
+
+        expect(command.input.getAttribute('aria-controls')).toBe(command.list.id)
+    })
+})

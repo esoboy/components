@@ -71,7 +71,7 @@ PHP;
 
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">QR Code</h2>
-        <x-ui::input wire:model.live.debounce.300ms="link" class="max-w-sm" />
+        <x-ui::input wire:model.live.debounce.300ms="link" aria-label="QR code link" class="max-w-sm" />
         <div class="flex flex-wrap items-end gap-6">
             <x-ui::qr-code :value="$link" />
             <x-ui::qr-code :value="$link" icon="/demo/photo-2.svg" :size="120" />

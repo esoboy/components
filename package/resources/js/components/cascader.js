@@ -38,7 +38,20 @@ export class CascaderElement extends HTMLElement {
 
         this.content?.addEventListener('click', event => this.#onClick(event), { signal })
         this.content?.addEventListener('keydown', event => this.#onKey(event), { signal })
-        this.content?.addEventListener('toggle', event => this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open')), { signal })
+
+        // However it opens (the trigger's command, the keyboard), it shows the columns along the value.
+        this.content?.addEventListener('beforetoggle', event => {
+            if (event.newState !== 'open') return
+
+            this.#open = [...this.#value]
+            this.#renderColumns()
+        }, { signal })
+
+        this.content?.addEventListener('toggle', event => {
+            this.trigger?.setAttribute('aria-expanded', String(event.newState === 'open'))
+
+            if (event.newState === 'open') this.#focusCurrent()
+        }, { signal })
 
         // Livewire morphs put back the server's label: show ours.
         if (this.trigger) this.#observer.observe(this.trigger, { childList: true, subtree: true, characterData: true })
@@ -79,12 +92,13 @@ export class CascaderElement extends HTMLElement {
     }
 
     open() {
-        if (! this.content || this.trigger?.disabled) return
+        if (! this.content || this.trigger?.disabled || this.isOpen) return
 
-        this.#open = [...this.#value]
-        this.#renderColumns()
         this.content.showPopover({ source: this.trigger })
+    }
 
+    // The chosen option of the deepest column, else its first enabled one.
+    #focusCurrent() {
         const columns = this.content.querySelectorAll('[data-slot="cascader-column"]')
         const last = columns[Math.max(0, this.#value.length - 1)] ?? columns[0]
 

@@ -76,3 +76,42 @@ it('names its inputs for form posts', () => {
     expect([...mount([1], 'volume').querySelectorAll('input')].map(input => input.name)).toEqual(['volume'])
     expect([...mount([1, 2], 'price').querySelectorAll('input')].map(input => input.name)).toEqual(['price[]', 'price[]'])
 })
+
+// A 200px track from x = 0, so a pointer's x is its value on 0–200.
+const press = (slider, clientX, type = 'pointerdown') => {
+    const control = slider.querySelector('[data-slot="slider-control"]')
+
+    control.getBoundingClientRect = () => ({ left: 0, right: 200, top: 0, bottom: 10, width: 200, height: 10 })
+    control.setPointerCapture = () => {}
+    ;(type === 'pointerdown' ? slider.querySelector('[data-slot="slider-track"]') : control).dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, clientX }))
+}
+
+it('moves the thumb to a press on the track and drags it until release', () => {
+    const slider = mount([50])
+    const events = []
+    // wire:model listens to the slider's own events (.self).
+    slider.addEventListener('input', event => event.target === slider && events.push('input'))
+    slider.addEventListener('change', event => event.target === slider && events.push('change'))
+
+    press(slider, 150)
+    expect(slider.value).toBe(150)
+    expect(document.activeElement).toBe(slider.thumbs[0])
+
+    press(slider, 170, 'pointermove')
+    press(slider, 170, 'pointerup')
+    press(slider, 20, 'pointermove')
+
+    expect(slider.value).toBe(170)
+    expect(events).toEqual(['input', 'input', 'change'])
+})
+
+it('moves the nearest of several thumbs', () => {
+    const slider = mount([20, 100])
+
+    press(slider, 90)
+    expect(slider.value).toEqual([20, 90])
+
+    press(slider, 0, 'pointerup')
+    press(slider, 30)
+    expect(slider.value).toEqual([30, 90])
+})

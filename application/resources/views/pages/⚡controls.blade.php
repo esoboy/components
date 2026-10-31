@@ -280,7 +280,7 @@ new class extends Component
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::toggle aria-label="Toggle bold" wire:model.live="bold"><x-ui::icon name="bold" /></x-ui::toggle>
             <x-ui::toggle variant="outline" aria-label="Toggle italic" default-pressed><x-ui::icon name="italic" /> Italic</x-ui::toggle>
-            <x-ui::toggle size="sm" disabled><x-ui::icon name="underline" /></x-ui::toggle>
+            <x-ui::toggle size="sm" aria-label="Toggle underline" disabled><x-ui::icon name="underline" /></x-ui::toggle>
             <span class="text-sm text-muted-foreground">bold: <span id="bold">{{ $bold ? 'on' : 'off' }}</span></span>
         </div>
     </section>
@@ -305,14 +305,14 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Slider</h2>
         <div class="grid max-w-xs gap-6">
-            <x-ui::slider wire:model.live="volume" :max="100" :step="1" />
-            <x-ui::slider wire:model.live="price" :max="100" :step="5" />
-            <x-ui::slider :default-value="[33]" disabled />
+            <x-ui::slider wire:model.live="volume" :max="100" :step="1" aria-label="Volume" />
+            <x-ui::slider wire:model.live="price" :max="100" :step="5" aria-label="Price" />
+            <x-ui::slider :default-value="[33]" aria-label="Disabled" disabled />
         </div>
         <p class="text-sm text-muted-foreground">volume: <span id="volume">{{ $volume }}</span>, price: <span id="price">{{ implode('-', $price) }}</span></p>
         <div class="flex h-40 gap-6">
-            <x-ui::slider :default-value="[50]" orientation="vertical" />
-            <x-ui::slider :default-value="[25, 75]" orientation="vertical" />
+            <x-ui::slider :default-value="[50]" orientation="vertical" aria-label="Vertical" />
+            <x-ui::slider :default-value="[25, 75]" orientation="vertical" aria-label="Vertical range" />
         </div>
     </section>
 

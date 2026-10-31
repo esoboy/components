@@ -22,8 +22,29 @@ export function register() {
 
     const close = popover => popover?.matches(':popover-open') && popover.hidePopover()
 
+    // A menu the pointer opened (a submenu, or another menubar menu while one is open)
+    // stays open when its trigger is then clicked, as Base UI's stickIfOpen keeps it;
+    // later clicks toggle it. Kept off the DOM, where morphs would strip it.
+    const hovered = new WeakSet()
+
+    const openByHover = (menu, trigger) => {
+        if (! menu || menu.matches(':popover-open')) return
+
+        open(menu, trigger)
+        hovered.add(menu)
+    }
+
+    document.addEventListener('click', event => {
+        const trigger = event.target.closest?.('[data-slot="menubar-trigger"], [data-slot="dropdown-menu-sub-trigger"]')
+        const menu = trigger && menuOf(trigger)
+
+        if (menu && hovered.delete(menu) && menu.matches(':popover-open')) event.preventDefault()
+    }, true)
+
     // A freshly opened menu takes focus so arrow keys work right away.
     document.addEventListener('toggle', ({ target, newState }) => {
+        if (newState === 'closed') hovered.delete(target)
+
         if (newState === 'open' && target.matches?.(ROOT_MENU) && ! target.contains(document.activeElement)) {
             target.focus()
         }
@@ -132,7 +153,7 @@ export function register() {
             const anyOpen = [...menubar.querySelectorAll('[data-slot="menubar-content"]')].some(menu => menu.matches(':popover-open'))
 
             if (anyOpen) {
-                open(menuOf(trigger), trigger)
+                openByHover(menuOf(trigger), trigger)
                 trigger.focus()
             }
 
@@ -149,7 +170,7 @@ export function register() {
         for (const trigger of menu.querySelectorAll('[data-slot="dropdown-menu-sub-trigger"]')) {
             if (trigger.closest('[role="menu"]') !== menu) continue
 
-            trigger === row ? open(menuOf(trigger), trigger) : close(menuOf(trigger))
+            trigger === row ? openByHover(menuOf(trigger), trigger) : close(menuOf(trigger))
         }
     })
 }

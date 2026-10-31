@@ -9,11 +9,15 @@
 
 @php
 $percent = $value === null ? null : max(0, min(100, ($value - $min) / max($max - $min, 1) * 100));
+
+// Blade renders the slot first: a Progress Label in it names the bar.
+$label = preg_match('/<[^>]*\sdata-slot="progress-label"[^>]*>/', (string) $slot, $tag) && preg_match('/\sid="([^"]+)"/', $tag[0], $id) ? $id[1] : null;
 @endphp
 
 {{-- The circle variant draws its track and indicator as rings and centres its content (a Progress Value) in them. --}}
 <div {{ $attributes->merge([
     'role' => 'progressbar',
+    'aria-labelledby' => $label ?? false,
     'aria-valuemin' => $min,
     'aria-valuemax' => $max,
     'aria-valuenow' => $value ?? false,

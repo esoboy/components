@@ -66,6 +66,20 @@ describe('menubar', () => {
         expect(isOpen(menu('view'))).toBe(false)
     })
 
+    it('keeps the menu it switched to open when that trigger is then clicked', () => {
+        mount()
+        menu('file').showPopover()
+
+        const trigger = document.querySelector('[commandfor="view"]')
+        trigger.dispatchEvent(new MouseEvent('pointerover', { bubbles: true }))
+
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true })
+        trigger.dispatchEvent(click)
+
+        expect(click.defaultPrevented).toBe(true)
+        expect(isOpen(menu('view'))).toBe(true)
+    })
+
     it('moves to the next menu with ArrowRight from inside a menu, wrapping', () => {
         mount()
         menu('view').showPopover()

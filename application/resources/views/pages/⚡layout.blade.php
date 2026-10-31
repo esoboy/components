@@ -20,7 +20,7 @@ new class extends Component
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Watermark</h2>
-        <x-ui::input wire:model.live.debounce.300ms="viewer" class="max-w-xs" />
+        <x-ui::input wire:model.live.debounce.300ms="viewer" aria-label="Viewer" class="max-w-xs" />
         <x-ui::watermark :content="[$viewer, '2026-10-27']">
             <x-ui::card>
                 <x-ui::card.header>
@@ -74,19 +74,19 @@ new class extends Component
 
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Progress</h2>
-        <x-ui::progress :value="$progress" class="w-[60%]" />
+        <x-ui::progress :value="$progress" aria-label="Progress" class="w-[60%]" />
         <x-ui::progress :value="$progress" class="w-full max-w-sm">
             <x-ui::progress.label>Upload progress</x-ui::progress.label>
             <x-ui::progress.value />
         </x-ui::progress>
         <div class="flex flex-wrap items-center gap-6">
-            <x-ui::progress variant="circle" :value="$progress">
+            <x-ui::progress variant="circle" :value="$progress" aria-label="Progress">
                 <x-ui::progress.value />
             </x-ui::progress>
-            <x-ui::progress variant="circle" :value="$progress" class="size-24 [--progress-stroke:8px]">
+            <x-ui::progress variant="circle" :value="$progress" aria-label="Progress" class="size-24 [--progress-stroke:8px]">
                 <x-ui::progress.value class="text-lg" />
             </x-ui::progress>
-            <x-ui::progress variant="circle" :value="$progress" class="size-5 [--progress-stroke:3px]" />
+            <x-ui::progress variant="circle" :value="$progress" aria-label="Progress" class="size-5 [--progress-stroke:3px]" />
             <x-ui::progress variant="circle" class="size-5 [--progress-stroke:3px]" aria-label="Loading" />
         </div>
         <div class="flex gap-2">
