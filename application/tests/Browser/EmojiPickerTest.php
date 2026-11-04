@@ -24,7 +24,7 @@ it('filters by search', function () {
     $page->script("document.getElementById('mood-picker').scrollIntoView()");
 
     $page->assertScript("document.querySelectorAll('".EMOJI."').length > 100")
-        ->type('#mood-picker [data-slot="emoji-picker-search"]', 'pizza')
+        ->type('#mood-picker [data-emoji-picker-search]', 'pizza')
         ->assertScript("[...document.querySelectorAll('".EMOJI."')].filter(emoji => ! emoji.hidden).map(emoji => emoji.textContent)[0]", '🍕')
         ->assertScript("[...document.querySelectorAll('".EMOJI."')].filter(emoji => ! emoji.hidden).length < 5");
 });

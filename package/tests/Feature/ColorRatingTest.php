@@ -14,8 +14,8 @@ it('renders a color picker as a popover trigger with a swatch', function () {
         ->toContain('<span data-slot="color-picker-swatch" style="--color-picker-color: #2563eb"></span>')
         ->toContain('<span data-slot="color-picker-value">#2563eb</span>')
         ->toContain('<div data-slot="color-picker-area" role="slider" tabindex="0" aria-label="Saturation and brightness">')
-        ->toContain('<input type="range" data-slot="color-picker-hue" min="0" max="360" step="1" aria-label="Hue">')
-        ->toContain('data-color-picker-input value="#2563eb"')
+        ->toContain('<input type="range" data-slot="slider-thumb" min="0" max="360" step="1" value="0" aria-orientation="horizontal" aria-label="Hue">')
+        ->toContain('data-color-picker-input="data-color-picker-input" value="#2563eb"')
         ->toContain('data-color-picker-swatch="#2563eb" style="--color-picker-color: #2563eb" aria-label="#2563eb" aria-pressed="true"')
         ->toContain('aria-pressed="false"')
         ->toContain('<input type="hidden" name="color" value="#2563eb">');

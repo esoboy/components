@@ -17,6 +17,7 @@ export class SelectElement extends HTMLElement {
     #typed = ''
     #typedAt = 0
     #observer = null
+    #stopPositioning = null
 
     connectedCallback() {
         const signal = connected(this)
@@ -39,6 +40,7 @@ export class SelectElement extends HTMLElement {
     disconnectedCallback() {
         disconnected(this)
         this.#observer?.disconnect()
+        this.#stopPositioning?.()
     }
 
     get trigger() {
@@ -136,12 +138,41 @@ export class SelectElement extends HTMLElement {
         const open = newState === 'open'
 
         this.trigger?.setAttribute('aria-expanded', String(open))
+        this.#stopPositioning?.()
+        this.#stopPositioning = null
 
         if (! open) return
 
-        if (this.content.dataset.alignTrigger === 'true') this.#alignWithTrigger()
+        if (this.content.dataset.alignTrigger === 'true') this.#trackPosition()
 
         ;(this.#selected ?? this.enabledItems[0])?.focus({ preventScroll: true })
+    }
+
+    // Unlike a CSS-anchored popover, item alignment uses viewport coordinates. Follow
+    // scrolling ancestors and trigger resizes for as long as this list is open.
+    #trackPosition() {
+        const controller = new AbortController()
+        const { signal } = controller
+        let frame = 0
+        const schedule = event => {
+            // Scrolling through the options must not snap back to the selected item.
+            if (event?.type === 'scroll' && this.content.contains(event.target)) return
+
+            cancelAnimationFrame(frame)
+            frame = requestAnimationFrame(() => this.#alignWithTrigger())
+        }
+        const resize = new ResizeObserver(schedule)
+
+        document.addEventListener('scroll', schedule, { capture: true, passive: true, signal })
+        window.addEventListener('resize', schedule, { passive: true, signal })
+        resize.observe(this.trigger)
+        this.#alignWithTrigger()
+
+        this.#stopPositioning = () => {
+            controller.abort()
+            resize.disconnect()
+            cancelAnimationFrame(frame)
+        }
     }
 
     // Base UI's alignItemWithTrigger: the list covers the trigger, the chosen item's text
@@ -152,7 +183,9 @@ export class SelectElement extends HTMLElement {
         const item = this.#selected ?? this.enabledItems[0]
         const value = this.querySelector('[data-slot="select-value"]')?.getBoundingClientRect() ?? trigger
 
-        content.style.width = `${trigger.width}px`
+        // Measure in the same coordinate system used below. The shared popover's
+        // flip-block fallback would otherwise mirror our explicit top coordinate.
+        Object.assign(content.style, { positionArea: 'none', positionTryFallbacks: 'none', inset: 'auto', margin: '0', width: `${trigger.width}px` })
 
         let left = trigger.left + 1
         let top = trigger.top
@@ -169,9 +202,13 @@ export class SelectElement extends HTMLElement {
         const margin = 10
         const height = content.offsetHeight
 
-        top = Math.min(Math.max(top, margin), window.innerHeight - height - margin)
+        const alignedTop = top
 
-        Object.assign(content.style, { positionArea: 'none', inset: 'auto', margin: '0', top: `${top}px`, left: `${left}px` })
+        top = Math.max(margin, Math.min(top, window.innerHeight - height - margin))
+        left = Math.max(margin, Math.min(left, window.innerWidth - content.offsetWidth - margin))
+
+        Object.assign(content.style, { top: `${top}px`, left: `${left}px` })
+        content.scrollTop = Math.max(0, top - alignedTop)
     }
 
     #onTriggerKey(event) {

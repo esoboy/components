@@ -46,6 +46,9 @@ export class FileUploadElement extends HTMLElement {
         zone.addEventListener('dragover', event => this.#onDrag(event), { signal })
         zone.addEventListener('dragleave', event => ! zone.contains(event.relatedTarget) && zone.removeAttribute('data-dragging'), { signal })
         zone.addEventListener('drop', event => this.#onDrop(event), { signal })
+        zone.addEventListener('click', event => {
+            if (! event.target.closest('label') && ! this.input?.disabled) this.input?.click()
+        }, { signal })
 
         this.addEventListener('livewire-upload-start', () => this.#start(), { signal })
         this.addEventListener('livewire-upload-progress', event => this.#progress(event.detail?.progress ?? 0), { signal })
@@ -64,7 +67,7 @@ export class FileUploadElement extends HTMLElement {
     }
 
     get dropzone() {
-        return this.input?.closest('label')
+        return this.input?.closest('[data-slot="file-upload-dropzone"], [data-slot="image-upload-dropzone"]')
     }
 
     #onDrag(event) {
@@ -120,21 +123,30 @@ export class FileUploadElement extends HTMLElement {
             pending.closest('[data-file-upload-list]')?.removeAttribute('hidden')
         }
 
-        this.querySelector('[data-slot="file-upload-progress"]')?.removeAttribute('hidden')
+        this.querySelector('[data-file-upload-progress]')?.removeAttribute('hidden')
         this.#progress(0)
     }
 
     #progress(percent) {
-        this.style.setProperty('--file-upload-progress', `${percent}%`)
+        percent = Math.max(0, Math.min(100, Number(percent) || 0))
 
         const label = (this.dataset.uploadingLabel ?? '').replace(':progress', percent)
+        const progress = this.querySelector('[data-file-upload-progress]')
+
+        if (progress) {
+            progress.setAttribute('aria-valuenow', percent)
+            progress.setAttribute('aria-valuetext', percent + '%')
+            progress.setAttribute('aria-label', label)
+            progress.toggleAttribute('data-complete', percent === 100)
+            progress.querySelector('[data-slot="progress-indicator"]').style.width = percent + '%'
+        }
 
         this.querySelectorAll('[data-file-upload-pending] [data-slot="attachment-description"]').forEach(description => (description.textContent = label))
     }
 
     #end() {
         this.removeAttribute('data-uploading')
-        this.querySelector('[data-slot="file-upload-progress"]')?.setAttribute('hidden', '')
+        this.querySelector('[data-file-upload-progress]')?.setAttribute('hidden', '')
 
         // Livewire's re-render brings the uploaded files; drop the stand-ins once it has.
         queueMicrotask(() => {

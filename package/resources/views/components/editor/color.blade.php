@@ -27,18 +27,18 @@ $names = [
         @if ($rich->has('color'))
         <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.text-color') }}">
             <p data-slot="editor-swatches-label">{{ __('ui::editor.text-color') }}</p>
-            <button type="button" data-slot="editor-swatch" data-editor-command="color" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.color-default') }}"><span><x-ui::icon name="baseline" /></span></button>
+            <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="color" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.color-default') }}"><span><x-ui::icon name="baseline" /></span></x-ui::button>
             @foreach (RichText::COLORS as $key => $color)
-            <button type="button" data-slot="editor-swatch" data-editor-command="color" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="color: {{ $color }}"><x-ui::icon name="baseline" /></span></button>
+            <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="color" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="color: {{ $color }}"><x-ui::icon name="baseline" /></span></x-ui::button>
             @endforeach
         </div>
         @endif
         @if ($rich->has('highlight'))
         <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.highlight') }}">
             <p data-slot="editor-swatches-label">{{ __('ui::editor.highlight') }}</p>
-            <button type="button" data-slot="editor-swatch" data-editor-command="highlight" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.highlight-none') }}"><x-ui::icon name="ban" /></button>
+            <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="highlight" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.highlight-none') }}"><x-ui::icon name="ban" /></x-ui::button>
             @foreach (RichText::HIGHLIGHTS as $key => $color)
-            <button type="button" data-slot="editor-swatch" data-editor-command="highlight" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="background-color: {{ $color }}"></span></button>
+            <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="highlight" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="background-color: {{ $color }}"></span></x-ui::button>
             @endforeach
         </div>
         @endif

@@ -34,10 +34,10 @@ $value = $checkable ? array_values(array_map('strval', (array) ($value ?? []))) 
 ]) }}>
     @if ($searchable)
     <div data-slot="tree-search">
-        <div data-slot="input-group" role="group">
-            <input type="text" data-slot="tree-search-input" data-tree-search placeholder="{{ $placeholder ?? __('ui::tree.search') }}" aria-label="{{ __('ui::tree.search') }}" autocomplete="off" spellcheck="false">
-            <div data-slot="input-group-addon" data-align="inline-start" role="group"><x-ui::icon name="search" /></div>
-        </div>
+        <x-ui::input-group>
+            <x-ui::input-group.input data-tree-search :placeholder="$placeholder ?? __('ui::tree.search')" :aria-label="__('ui::tree.search')" autocomplete="off" spellcheck="false" class="px-2 text-sm" />
+            <x-ui::input-group.addon><x-ui::icon name="search" /></x-ui::input-group.addon>
+        </x-ui::input-group>
     </div>
     @endif
     <ul {{ $attributes->whereStartsWith('aria-')->merge(['role' => 'tree', 'data-slot' => 'tree-list', 'aria-multiselectable' => $checkable ? 'true' : false]) }}>

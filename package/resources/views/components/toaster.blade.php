@@ -39,6 +39,6 @@
     <template data-template="icon-info"><x-ui::icon name="info" /></template>
     <template data-template="icon-warning"><x-ui::icon name="triangle-alert" /></template>
     <template data-template="icon-error"><x-ui::icon name="octagon-x" /></template>
-    <template data-template="icon-loading"><x-ui::icon name="loader-circle" data-spin /></template>
+    <template data-template="icon-loading"><x-ui::spinner aria-hidden="true" /></template>
 </div>
 @endpersist

@@ -35,19 +35,19 @@ $labelling = ['id', 'aria-label', 'aria-labelledby'];
     'data-max' => $max ?? false,
     'data-step' => $step,
 ]) }}>
-    <div role="group" data-slot="input-group">
-        <div role="group" data-slot="input-group-addon" data-align="inline-start">
+    <x-ui::input-group :render-error="false">
+        <x-ui::input-group.addon>
             <x-ui::button variant="ghost" size="icon-xs" data-number-input="decrement" :aria-label="__('ui::number-input.decrement')" tabindex="-1" :disabled="$disabled || ($min !== null && $value !== null && $value <= $min)">
                 <x-ui::icon name="minus" />
             </x-ui::button>
-        </div>
-        <input type="text" inputmode="decimal" role="spinbutton" data-slot="input-group-control" value="{{ $value }}" placeholder="{{ $placeholder }}" autocomplete="off" {{ $attributes->only($labelling) }} @if ($name) name="{{ $name }}" @endif @if ($min !== null) aria-valuemin="{{ $min }}" @endif @if ($max !== null) aria-valuemax="{{ $max }}" @endif @if ($value !== null) aria-valuenow="{{ $value }}" @endif {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if ($disabled) disabled @endif>
-        <div role="group" data-slot="input-group-addon" data-align="inline-end">
+        </x-ui::input-group.addon>
+        <x-ui::input-group.input inputmode="decimal" role="spinbutton" :value="$value ?? ''" :placeholder="$placeholder" autocomplete="off" :name="$name" :aria-valuemin="$min" :aria-valuemax="$max" :aria-valuenow="$value" :state="$state" :disabled="$disabled" :attributes="$attributes->only($labelling)" />
+        <x-ui::input-group.addon align="inline-end">
             <x-ui::button variant="ghost" size="icon-xs" data-number-input="increment" :aria-label="__('ui::number-input.increment')" tabindex="-1" :disabled="$disabled || ($max !== null && $value !== null && $value >= $max)">
                 <x-ui::icon name="plus" />
             </x-ui::button>
-        </div>
-    </div>
+        </x-ui::input-group.addon>
+    </x-ui::input-group>
 </eso-number-input>
 <x-ui::field.error :state="$state" />
 <x-ui::extras />

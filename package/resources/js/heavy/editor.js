@@ -10,7 +10,7 @@
  * Controls: [data-editor-command] (and data-editor-value) runs a command and shows whether
  * it is on (aria-pressed, aria-checked in menus) or possible; [data-editor-action] opens
  * what the editor has besides (media, find, source, full screen). The toolbar is one line
- * and one tab stop, arrow keys moving within it, what doesn't fit in More; one tooltip
+ * by default, or wraps when More is omitted, with one tab stop and arrow keys within it; one tooltip
  * names whichever control is pointed at.
  *
  * Media: what is picked with a media button, dropped or pasted goes to the app's
@@ -456,7 +456,8 @@ export class EditorElement extends HTMLElement {
         this.addEventListener('pointerover', event => this.#tip(event.target.closest?.('[data-editor-tooltip]')))
         this.addEventListener('pointerout', event => ! event.relatedTarget?.closest?.('[data-editor-tooltip]') && this.#tip(null))
         this.addEventListener('focusin', event => {
-            this.#tip(event.target.closest?.('[data-editor-tooltip]'))
+            // A menu can restore focus while its popover is still changing state.
+            queueMicrotask(() => this.contains(document.activeElement) && this.#tip(document.activeElement.closest?.('[data-editor-tooltip]')))
             if (! this.#editor.view.dom.contains(event.target)) this.#focused ??= this.value
             this.#keyboard(this.#editor.isEditable)
         })
@@ -652,7 +653,7 @@ export class EditorElement extends HTMLElement {
             this.#fullscreen(false)
         }
 
-        if (target.matches?.('[data-slot="editor-swatch"], [data-slot="editor-spacing-value"]') && STEPS[event.key]) this.#step(event, [...target.closest('[popover]').querySelectorAll('[role="group"]')].map(group => [...group.querySelectorAll('button')]))
+        if (target.matches?.('[data-editor-swatch], [data-editor-spacing-value]') && STEPS[event.key]) this.#step(event, [...target.closest('[popover]').querySelectorAll('[role="group"]')].map(group => [...group.querySelectorAll('button')]))
 
         const popover = target.closest?.('[popover]')
         const bar = popover ? (popover.matches('[data-editor-more-content]') ? popover : null) : target.closest?.('[data-slot="editor-toolbar"], [data-slot="editor-bubble"]')
@@ -1237,6 +1238,7 @@ export class EditorElement extends HTMLElement {
     #fullscreen(on) {
         if (this.hasAttribute('data-fullscreen') === on) return
 
+        this.#tip(null)
         this.toggleAttribute('data-fullscreen', on)
         document.documentElement.style.overflow = on ? 'hidden' : ''
         this.#sync()
@@ -1255,6 +1257,9 @@ export class EditorElement extends HTMLElement {
 
         if (! control) return
 
+        // A fullscreen toolbar sits against the top edge. On touch screens it moves
+        // above the keyboard instead, where tips still need to open upward.
+        tip.dataset.side = this.hasAttribute('data-fullscreen') && ! this.hasAttribute('data-keyboard') ? 'bottom' : 'top'
         tip.querySelector('[data-editor-tip-label]').textContent = control.getAttribute('aria-label') ?? ''
 
         const shortcut = tip.querySelector('[data-editor-tip-keys]')
@@ -1380,7 +1385,12 @@ export class EditorElement extends HTMLElement {
             if (! command || (! visible && control.getAttribute('role') !== 'menuitemradio')) continue
 
             if (visible && (fresh || name === 'undo' || name === 'redo')) control.disabled = ! editable || ! this.#can(name, value, editor.can().chain().focus())
-            if (command.active) control.setAttribute(control.getAttribute('role') === 'menuitemradio' ? 'aria-checked' : 'aria-pressed', String(command.active(editor, value)))
+            if (command.active) {
+                const active = command.active(editor, value)
+
+                if (control.matches('input[type="radio"]')) control.checked = active
+                control.setAttribute(control.getAttribute('role') === 'menuitemradio' ? 'aria-checked' : 'aria-pressed', String(active))
+            }
         }
 
         // Menus show their checked item on their button: its icon, or its name (the menu's

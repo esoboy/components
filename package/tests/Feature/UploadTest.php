@@ -17,12 +17,12 @@ it('renders a drop area around the file input', function () {
 
     $view->assertSeeInOrder([
         '<eso-file-upload data-slot="file-upload" data-orientation="horizontal" data-uploading-label="Uploading… :progress%" class="max-w-md">',
-        '<label data-slot="file-upload-dropzone" >',
+        '<div data-slot="file-upload-dropzone" >',
         '<input type="file" data-slot="file-upload-input" multiple="multiple" accept="image/*" wire:model="files">',
         '<span data-slot="file-upload-title">Drop files here or click to upload</span>',
         '<span data-slot="file-upload-description">PNG up to 2 MB</span>',
-        '<span data-slot="file-upload-progress" hidden wire:ignore>',
-        '<div data-slot="attachment-group" data-file-upload-list  hidden >',
+        '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%" data-slot="progress"',
+        '<div data-slot="attachment-group" data-file-upload-list="data-file-upload-list" hidden="hidden">',
         '<div data-file-upload-pending wire:ignore></div>',
     ], false);
 });

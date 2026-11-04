@@ -68,9 +68,9 @@ describe('questionnaire', () => {
                 <fieldset data-slot="questionnaire-item" data-name="direction" data-required tabindex="-1">
                     <p data-slot="questionnaire-description">Choose one.</p>
                     <eso-radio-group name="direction">
-                        <label data-slot="questionnaire-choice"><input type="radio" value="a" data-slot="questionnaire-choice-input"><span data-slot="questionnaire-choice-shortcut" hidden></span></label>
-                        <label data-slot="questionnaire-choice"><input type="radio" value="b" data-slot="questionnaire-choice-input"><span data-slot="questionnaire-choice-shortcut" hidden></span></label>
-                        <input type="text" name="direction" data-slot="questionnaire-input">
+                        <label data-slot="questionnaire-choice"><input type="radio" value="a" data-slot="questionnaire-choice-input"><span data-questionnaire-choice-shortcut hidden></span></label>
+                        <label data-slot="questionnaire-choice"><input type="radio" value="b" data-slot="questionnaire-choice-input"><span data-questionnaire-choice-shortcut hidden></span></label>
+                        <input type="text" name="direction" data-questionnaire-input>
                     </eso-radio-group>
                     <p data-slot="questionnaire-error" hidden>Choose an answer to continue.</p>
                 </fieldset>
@@ -133,7 +133,7 @@ describe('questionnaire', () => {
         await tick()
 
         const radio = form.querySelector('[value="a"]')
-        const text = form.querySelector('[data-slot="questionnaire-input"]')
+        const text = form.querySelector('[data-questionnaire-input]')
 
         radio.click()
         text.value = 'Something else'
@@ -180,9 +180,9 @@ describe('questionnaire', () => {
 
         const item = form.querySelector('[data-name="direction"]')
 
-        expect([...item.querySelectorAll('[data-slot="questionnaire-choice-shortcut"]')].map(badge => badge.textContent)).toEqual(['A', 'B'])
+        expect([...item.querySelectorAll('[data-questionnaire-choice-shortcut]')].map(badge => badge.textContent)).toEqual(['A', 'B'])
 
-        press(form.querySelector('[data-slot="questionnaire-input"]'), 'b')
+        press(form.querySelector('[data-questionnaire-input]'), 'b')
         expect(item.querySelector('[value="b"]').checked).toBe(false)
 
         press(item, 'b')

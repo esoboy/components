@@ -22,16 +22,19 @@
             @apply fixed inset-0 z-50 rounded-none border-0 bg-background ring-0;
 
             & > [data-slot="editor-content"], & > [data-slot="editor-source"] {
-                @apply min-h-0 overflow-y-auto;
+                @apply min-h-0 max-h-none;
+            }
+
+            & > [data-slot="editor-toolbar"] {
+                @apply top-0;
             }
         }
     }
 
-    /* Sticks to the top of the page while the text scrolls by under it, below a fixed
-       header of --editor-sticky-top. One line, what doesn't fit in More (a toolbar of
-       one's own without it wraps). */
+    /* Outside the scrolling content. With an unbounded content height, it also sticks
+       below a page header of --editor-sticky-top. Without More, all controls wrap. */
     :where([data-slot="editor-toolbar"]) {
-        @apply sticky top-(--editor-sticky-top,0px) z-10 flex flex-wrap items-center gap-0.5 rounded-t-lg border-b border-input bg-background p-1;
+        @apply sticky top-(--editor-sticky-top,0px) z-10 flex shrink-0 flex-wrap items-center gap-0.5 rounded-t-lg border-b border-input bg-background p-1;
 
         /* As wide as the editor, never widening it (or the page) to fit its controls. */
         &:has(> [data-editor-more]) {
@@ -154,9 +157,7 @@
         }
     }
 
-    :where([data-slot="editor-spacing-value"]) {
-        @apply h-7 min-w-9 rounded-md border border-border px-1.5 text-xs tabular-nums outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50;
-
+    :where([data-editor-spacing-value]) {
         &[aria-pressed="true"] {
             @apply border-ring bg-muted ring-2 ring-ring/50;
         }
@@ -187,9 +188,7 @@
         @apply col-span-full text-xs font-medium text-muted-foreground;
     }
 
-    :where([data-slot="editor-swatch"]) {
-        @apply flex size-7 items-center justify-center rounded-md border border-border text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50;
-
+    :where([data-editor-swatch]) {
         /* A colored letter for text, a colored square for highlights. */
         & > span {
             @apply flex size-5 items-center justify-center rounded-sm;
@@ -222,7 +221,7 @@
 
     /* The find and replace bar, under the toolbar. */
     :where([data-slot="editor-find"]) {
-        @apply flex flex-wrap items-center gap-1 border-b border-input p-1;
+        @apply flex shrink-0 flex-wrap items-center gap-1 border-b border-input p-1;
 
         & > [data-slot="input-group"], & > [data-slot="input"] {
             @apply h-8 w-44 min-w-0 flex-1;
@@ -279,6 +278,12 @@
         & [data-editor-emoji] {
             @apply text-base;
         }
+    }
+
+    /* Only the document scrolls, keeping the toolbar, search and footer in place.
+       Set --editor-max-height to a length, or none for a page-height document. */
+    :where([data-slot="editor-content"], [data-slot="editor-source"]) {
+        @apply max-h-(--editor-max-height,24rem) overflow-y-auto;
     }
 
     :where([data-slot="editor-content"]) {
@@ -522,7 +527,7 @@
 
     /* Uploads and images not saved yet on the left, the count on the right; gone with none. */
     :where([data-slot="editor-footer"]) {
-        @apply flex items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
+        @apply flex shrink-0 items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
 
         &:not(:has(> :not([hidden]))) {
             @apply hidden;

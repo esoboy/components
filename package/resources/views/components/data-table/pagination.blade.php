@@ -24,10 +24,12 @@ $sizes = $table && method_exists($table, 'perPageOptions') ? $table->perPageOpti
             <p>{{ __('ui::data-table.rows_per_page') }}</p>
             <x-ui::select wire:model.live="perPage">
                 <x-ui::select.trigger class="h-8 w-[70px]"><x-ui::select.value :placeholder="(string) $table->perPage" /></x-ui::select.trigger>
-                <x-ui::select.content side="top">
-                    @foreach ($sizes as $size)
-                    <x-ui::select.item :value="(string) $size">{{ $size }}</x-ui::select.item>
-                    @endforeach
+                <x-ui::select.content>
+                    <x-ui::select.group>
+                        @foreach ($sizes as $size)
+                        <x-ui::select.item :value="(string) $size">{{ $size }}</x-ui::select.item>
+                        @endforeach
+                    </x-ui::select.group>
                 </x-ui::select.content>
             </x-ui::select>
         </div>

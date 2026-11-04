@@ -1,10 +1,12 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import full from '../Fixtures/editor-full.json'
+import { register as registerRadioGroup } from '../../resources/js/components/radio-group.js'
 
 /*
  * ProseMirror measures the selection to scroll it into view; jsdom lays nothing out.
  */
 beforeAll(async () => {
+    registerRadioGroup()
     const rect = () => ({ top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 })
 
     // jsdom has no canvas to read color names with.
@@ -52,15 +54,15 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                         <button type="button" data-editor-action="link-remove"></button>
                     </div>
                     <button type="button" data-editor-menu="heading" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Style"><svg data-editor-icon=""></svg><svg data-editor-icon="2" hidden></svg></button>
-                    <div id="headings" popover="auto" data-slot="dropdown-menu-content">
-                        <button type="button" role="menuitemradio" aria-checked="false" data-editor-command="paragraph" data-editor-value=""></button>
-                        <button type="button" role="menuitemradio" aria-checked="false" data-editor-command="heading" data-editor-value="2"></button>
-                    </div>
+                    <div id="headings" popover="auto" data-slot="dropdown-menu-content"><eso-radio-group role="group" data-slot="dropdown-menu-radio-group">
+                        <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="paragraph" data-editor-value=""><span data-slot="dropdown-menu-item-indicator"></span></label>
+                        <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="2" aria-checked="false" data-editor-command="heading" data-editor-value="2"><span data-slot="dropdown-menu-item-indicator"></span></label>
+                    </eso-radio-group></div>
                     <button type="button" data-editor-menu="font-size" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Size"><span data-editor-current data-editor-default="Default size"></span></button>
-                    <div id="sizes" popover="auto" data-slot="dropdown-menu-content">
-                        <button type="button" role="menuitemradio" aria-checked="false" data-editor-command="font-size" data-editor-value="" data-editor-label="Default size"></button>
-                        <button type="button" role="menuitemradio" aria-checked="false" data-editor-command="font-size" data-editor-value="18px" data-editor-label="18"></button>
-                    </div>
+                    <div id="sizes" popover="auto" data-slot="dropdown-menu-content"><eso-radio-group role="group" data-slot="dropdown-menu-radio-group">
+                        <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="font-size" data-editor-value="" data-editor-label="Default size"><span data-slot="dropdown-menu-item-indicator"></span></label>
+                        <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="18px" aria-checked="false" data-editor-command="font-size" data-editor-value="18px" data-editor-label="18"><span data-slot="dropdown-menu-item-indicator"></span></label>
+                    </eso-radio-group></div>
                     <div id="colors" popover="auto">
                         <button type="button" data-editor-command="color" data-editor-value="#dc2626" aria-pressed="false"></button>
                         <button type="button" data-editor-command="highlight" data-editor-value="#bbf7d0" aria-pressed="false"></button>
@@ -302,14 +304,21 @@ describe('commands', () => {
         select(element, 'Notes')
 
         expect(control(element, '[data-editor-command="heading"]').getAttribute('aria-checked')).toBe('true')
+        expect(control(element, '[data-editor-command="heading"]').checked).toBe(true)
         expect(style.querySelector('[data-editor-icon="2"]').hasAttribute('hidden')).toBe(false)
         expect(style.querySelector('[data-editor-icon=""]').hasAttribute('hidden')).toBe(true)
 
         select(element, 'world')
-        control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').click()
+        control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').closest('label').click()
 
         expect(element.value).toBe('<h2>Notes</h2><p>Hello <span style="font-size: 18px;">world</span></p>')
         expect(control(element, '[data-editor-current]').textContent).toBe('18')
+        expect(element.querySelector('#sizes').matches(':popover-open')).toBe(false)
+        expect(control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').checked).toBe(true)
+
+        select(element, 'Hello')
+        expect(control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').checked).toBe(false)
+        expect(control(element, '[data-editor-command="font-size"][data-editor-value=""]').checked).toBe(true)
     })
 })
 
@@ -1147,6 +1156,25 @@ describe('views', () => {
 
         expect(element.hasAttribute('data-fullscreen')).toBe(false)
         expect(document.documentElement.style.overflow).toBe('')
+    })
+
+    it('puts fullscreen tooltips below the controls and restores their side on exit', () => {
+        const [element] = mount()
+        const bold = button(element, 'bold')
+        const tip = element.querySelector('[data-editor-tip]')
+        const toggle = control(element, '[data-editor-action="fullscreen"]')
+        const hover = () => bold.dispatchEvent(new Event('pointerover', { bubbles: true }))
+
+        hover()
+        expect(tip.dataset.side).toBe('top')
+
+        toggle.click()
+        hover()
+        expect(tip.dataset.side).toBe('bottom')
+
+        toggle.click()
+        hover()
+        expect(tip.dataset.side).toBe('top')
     })
 
     it('counts characters as graphemes, as the server does: no spaces, line breaks or media', () => {

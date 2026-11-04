@@ -111,6 +111,7 @@ $none = match ($name) {
         <x-ui::icon name="chevron-down" data-editor-chevron />
     </x-ui::dropdown-menu.trigger>
     <x-ui::dropdown-menu.content data-editor-menu-content="{{ $name }}">
+        <x-dynamic-component :component="$radio ? 'ui::dropdown-menu.radio-group' : 'ui::dropdown-menu.group'">
         @foreach ($items as [$command, $value, $itemLabel, $icon, $style])
         @if ($command === null)
         @if (! $loop->first)
@@ -119,15 +120,13 @@ $none = match ($name) {
         <x-ui::dropdown-menu.label>{{ $itemLabel }}</x-ui::dropdown-menu.label>
         @continue
         @endif
-        <x-ui::dropdown-menu.item :role="$radio ? 'menuitemradio' : 'menuitem'" :aria-checked="$radio ? 'false' : false" data-editor-command="{{ $command }}" data-editor-value="{{ $value }}" data-editor-label="{{ $itemLabel }}" :variant="str_starts_with($command, 'delete') ? 'destructive' : 'default'">
+        <x-dynamic-component :component="$radio ? 'ui::dropdown-menu.radio-item' : 'ui::dropdown-menu.item'" :value="$radio ? $value : null" :data-editor-command="$command" :data-editor-value="$value" :data-editor-label="$itemLabel" :attributes="new \Illuminate\View\ComponentAttributeBag($radio ? ['aria-checked' => 'false'] : ['variant' => str_starts_with($command, 'delete') ? 'destructive' : 'default'])">
             @if ($icon)
             <x-ui::icon :name="$icon" />
             @endif
             <span @if ($style) style="{{ $style }}" @endif>{{ $itemLabel }}</span>
-            @if ($radio)
-            <span data-slot="dropdown-menu-item-indicator"><x-ui::icon name="check" /></span>
-            @endif
-        </x-ui::dropdown-menu.item>
+        </x-dynamic-component>
         @endforeach
+        </x-dynamic-component>
     </x-ui::dropdown-menu.content>
 </x-ui::dropdown-menu>

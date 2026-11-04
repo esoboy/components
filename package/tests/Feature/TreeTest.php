@@ -18,7 +18,7 @@ it('renders items as an ARIA tree, open where asked', function () use ($items) {
         ->toContain('<ul role="tree" data-slot="tree-list" aria-multiselectable="true" aria-label="Permissions">')
         ->toContain('<li role="treeitem" tabindex="-1" wire:key="tree-item-orders" data-slot="tree-item" data-value="orders" aria-expanded="true">')
         ->toContain('<span data-slot="tree-item-label">Orders</span>')
-        ->toContain('<input type="checkbox" data-slot="checkbox" data-tree-check tabindex="-1" aria-hidden="true" >')
+        ->toContain('<input type="checkbox" data-slot="checkbox" data-tree-check="data-tree-check" tabindex="-1" aria-hidden="true">')
         ->toContain('<ul role="group" data-slot="tree-group" >')
         ->toContain('data-value="orders.export" aria-disabled="true"')
         ->toContain('<li role="treeitem" tabindex="-1" wire:key="tree-item-settings" data-slot="tree-item" data-value="settings">')
@@ -50,7 +50,7 @@ it('puts a search box above a searchable tree, with its empty text', function ()
 
     expect($html)
         ->toContain('<div data-slot="tree-search">')
-        ->toContain('<input type="text" data-slot="tree-search-input" data-tree-search placeholder="搜索" aria-label="搜索" autocomplete="off" spellcheck="false">')
+        ->toContain('<input type="text" data-slot="input-group-control" class="px-2 text-sm" data-tree-search="data-tree-search" placeholder="搜索" aria-label="搜索" autocomplete="off" spellcheck="false">')
         ->toContain('<div data-slot="tree-empty" hidden>没有结果。</div>');
 
     expect((string) $this->blade('<x-ui::tree searchable placeholder="Find a file" :items="[]" />'))->toContain('placeholder="Find a file"');
@@ -62,7 +62,7 @@ it('renders lazy items as closed parents with a spinner, and names the load meth
     expect($html)
         ->toContain('<eso-tree data-slot="tree" data-value="null" data-load="loadChildren" data-draggable="data-draggable">')
         ->toContain('data-value="eng" data-lazy="data-lazy" aria-expanded="false">')
-        ->toContain('data-slot="tree-item-spinner"')
+        ->toContain('data-tree-item-spinner')
         ->toMatch('/data-value="eng" data-lazy="data-lazy"[\s\S]*?<ul role="group" data-slot="tree-group"  hidden >\s*<\/ul>/')
         ->toContain('data-value="ops" aria-expanded="false">');
 });
@@ -72,8 +72,8 @@ it('renders a tree select with the chosen labels', function () use ($items) {
 
     expect($html)
         ->toContain('<eso-tree-select data-slot="tree-select" data-placeholder="Pick" data-checkable="data-checkable">')
-        ->toContain('<button class="w-64" type="button" data-slot="select-trigger" data-tree-select-trigger')
-        ->toContain('<span data-slot="select-value">View, Settings</span>')
+        ->toContain('<button type="button" data-slot="select-trigger" data-size="default" aria-haspopup="tree" aria-expanded="false" command="toggle-popover" commandfor="" class="w-64" data-tree-select-trigger=')
+        ->toContain('<span data-slot="select-value" data-placeholder="View, Settings">View, Settings</span>')
         ->toContain('popover="auto" data-slot="tree-select-content"')
         ->toContain('<eso-tree data-slot="tree" data-checkable="data-checkable"')
         ->toContain('data-load="more"')

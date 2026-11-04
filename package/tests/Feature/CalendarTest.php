@@ -14,8 +14,8 @@ it('renders a calendar shell configured for the client', function () {
             'data-calendar-previous="data-calendar-previous" aria-label="上个月"><svg', '<path d="m15 18-6-6 6-6"/>',
             'data-calendar-next="data-calendar-next" aria-label="下个月"><svg',
             '<template data-template="month">', '<div data-slot="calendar-month">',
-            '<template data-template="dropdown-month">', '<select data-calendar-month aria-label="选择月份"></select>',
-            '<template data-template="dropdown-year">', '<select data-calendar-year aria-label="选择年份"></select>',
+            '<template data-template="dropdown-month">', '<select data-slot="native-select" data-size="sm" data-calendar-month="data-calendar-month" aria-label="选择月份"></select>',
+            '<template data-template="dropdown-year">', '<select data-slot="native-select" data-size="sm" data-calendar-year="data-calendar-year" aria-label="选择年份"></select>',
             '<template data-template="day"><td data-slot="calendar-day" role="gridcell"><button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-day="data-day" tabindex="-1"></button>',
             '</eso-calendar>',
         ], false);

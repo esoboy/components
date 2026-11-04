@@ -18,7 +18,7 @@ $rows = [
         <div data-slot="editor-spacing" role="group" aria-label="{{ $rowLabel }}">
             <p data-slot="editor-swatches-label">{{ $rowLabel }}</p>
             @foreach ($values as $value)
-            <button type="button" data-slot="editor-spacing-value" data-editor-command="{{ $property }}" data-editor-value="{{ $value === '0' ? '' : $value }}" aria-pressed="false" aria-label="{{ $value === '0' ? __('ui::editor.spacing-none') : $value }}">{{ $value === '0' ? __('ui::editor.spacing-none') : $value }}</button>
+            <x-ui::button variant="outline" size="sm" class="min-w-9 rounded-md px-1.5 text-xs tabular-nums" data-editor-spacing-value data-editor-command="{{ $property }}" data-editor-value="{{ $value === '0' ? '' : $value }}" aria-pressed="false" aria-label="{{ $value === '0' ? __('ui::editor.spacing-none') : $value }}">{{ $value === '0' ? __('ui::editor.spacing-none') : $value }}</x-ui::button>
             @endforeach
         </div>
         @endforeach

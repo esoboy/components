@@ -56,7 +56,7 @@ const CATEGORIES = ['smileys-emotion', 'animals-nature', 'flags']
 function markup(src, columns = 2) {
     return `
         <eso-emoji-picker data-slot="emoji-picker" data-src="${src}" data-columns="${columns}">
-            <div data-slot="emoji-picker-search-wrapper"><input type="text" data-slot="emoji-picker-search"></div>
+            <div data-slot="emoji-picker-search-wrapper"><input type="text" data-emoji-picker-search></div>
             <div data-slot="emoji-picker-viewport">
                 <div data-slot="emoji-picker-loading"></div>
                 <div data-slot="emoji-picker-empty" hidden>No emoji found.</div>

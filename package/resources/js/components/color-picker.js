@@ -56,7 +56,7 @@ export class ColorPickerElement extends HTMLElement {
             if (event.target === this) return
 
             event.stopPropagation()
-            if (event.target.matches('[data-slot="color-picker-hue"]')) this.#setHsv({ h: Number(event.target.value) }, 'input')
+            if (event.target.matches('[data-color-picker-hue]')) this.#setHsv({ h: Number(event.target.value) }, 'input')
         }, { signal })
 
         this.addEventListener('change', event => {
@@ -64,7 +64,7 @@ export class ColorPickerElement extends HTMLElement {
 
             event.stopPropagation()
 
-            if (event.target.matches('[data-slot="color-picker-hue"]')) this.#announce('change')
+            if (event.target.matches('[data-color-picker-hue]')) this.#announce('change')
             if (event.target.matches('[data-color-picker-input]')) this.#setHex(event.target.value)
         }, { signal })
 
@@ -125,6 +125,8 @@ export class ColorPickerElement extends HTMLElement {
         if (eyedropper && 'EyeDropper' in window) eyedropper.hidden = false
 
         this.render()
+        // Extras may load before the core bundle that defines the nested Slider.
+        customElements.whenDefined('eso-slider').then(() => this.isConnected && this.render())
 
         // Livewire morphs put back the server's trigger and inputs: show ours.
         this.#observer.observe(this, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['aria-invalid', 'aria-describedby', 'data-empty', 'aria-pressed'] })
@@ -212,9 +214,13 @@ export class ColorPickerElement extends HTMLElement {
 
         set(area, 'aria-valuetext', `${Math.round(s * 100)}%, ${Math.round(v * 100)}%`)
 
-        const hue = this.querySelector('[data-slot="color-picker-hue"]')
+        const hue = this.querySelector('[data-color-picker-hue]')
 
-        if (hue && Number(hue.value) !== Math.round(h)) hue.value = Math.round(h)
+        if (hue && customElements.get('eso-slider')) {
+            // A picker can connect before its nested Slider has upgraded.
+            customElements.upgrade(hue)
+            if (Number(hue.value) !== Math.round(h)) hue.value = Math.round(h)
+        }
 
         const input = this.querySelector('[data-color-picker-input]')
 

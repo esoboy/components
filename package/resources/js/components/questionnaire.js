@@ -12,7 +12,7 @@
 const FORM = 'form[data-slot="questionnaire"]'
 const ITEM = '[data-slot="questionnaire-item"]'
 const CHOICE = '[data-slot="questionnaire-choice-input"]'
-const TEXT = '[data-slot="questionnaire-input"]'
+const TEXT = '[data-questionnaire-input]'
 const TEXT_TYPES = ['email', 'password', 'search', 'tel', 'text', 'url']
 
 let ids = 0
@@ -92,7 +92,7 @@ export function register() {
 
             ownIn(item, CHOICE).filter(input => ! input.disabled).forEach((input, position) => {
                 const choice = input.closest('[data-slot="questionnaire-choice"]')
-                const badge = choice?.querySelector('[data-slot="questionnaire-choice-shortcut"]')
+                const badge = choice?.querySelector('[data-questionnaire-choice-shortcut]')
                 const key = keys[position] ?? null
 
                 if (choice) set(choice, 'data-shortcut', key)

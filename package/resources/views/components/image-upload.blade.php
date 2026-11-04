@@ -35,7 +35,7 @@ $image = $upload['url'] ?? $src;
         </span>
         <span data-slot="image-upload-overlay" aria-hidden="true">
             <x-ui::icon name="camera" data-overlay="change" />
-            <x-ui::icon name="loader-circle" data-overlay="uploading" />
+            <x-ui::spinner data-overlay="uploading" />
         </span>
     </label>
     @if ($upload && $model && ! $disabled)

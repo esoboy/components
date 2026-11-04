@@ -16,7 +16,7 @@ it('renders the parts the script fills, with the data for the app\'s language', 
     expect($html)
         ->toContain('<eso-emoji-picker data-slot="emoji-picker" data-src="http://localhost/esoboy-ui/emoji/en.json?id=1111aaaa2222" data-columns="9" style="--emoji-picker-columns: 9;" class="h-[342px]" wire:emoji-select="react($event.detail.emoji)">')
         ->toContain('<div data-slot="emoji-picker-search-wrapper" wire:ignore>')
-        ->toContain('<input type="text" data-slot="emoji-picker-search" placeholder="Search…" aria-label="Search…" autocomplete="off" spellcheck="false">')
+        ->toContain('<input type="text" data-slot="input-group-control" class="text-sm" data-emoji-picker-search="data-emoji-picker-search" placeholder="Search…" aria-label="Search…" autocomplete="off" spellcheck="false">')
         ->toContain('<div data-slot="emoji-picker-viewport" wire:ignore>')
         ->toContain('<div data-slot="emoji-picker-empty" hidden>No emoji found.</div>')
         ->toContain('<div data-slot="emoji-picker-list" role="listbox" aria-label="Emojis" hidden>')
@@ -32,7 +32,7 @@ it('renders the parts the script fills, with the data for the app\'s language', 
 it('passes the class to the search wrapper and the rest to the input', function () {
     $this->blade('<x-ui::emoji-picker.search class="h-10" placeholder="Find" id="emoji-search" />')
         ->assertSee('<div data-slot="emoji-picker-search-wrapper" class="h-10" wire:ignore>', false)
-        ->assertSee('<input type="text" data-slot="emoji-picker-search" placeholder="Find" aria-label="Search…" autocomplete="off" spellcheck="false" id="emoji-search">', false);
+        ->assertSee('<input type="text" data-slot="input-group-control" class="text-sm" data-emoji-picker-search="data-emoji-picker-search" placeholder="Find" aria-label="Search…" autocomplete="off" spellcheck="false" id="emoji-search">', false);
 });
 
 it('lays out the columns asked for', function () {

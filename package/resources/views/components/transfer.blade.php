@@ -34,24 +34,24 @@ $lists = [
     @foreach ($lists as $list => $data)
     <div role="group" data-slot="transfer-list" data-list="{{ $list }}" aria-label="{{ $data['title'] }}">
         <div data-slot="transfer-header">
-            <input type="checkbox" data-slot="checkbox" data-transfer-all aria-label="{{ $data['title'] }}" @disabled($disabled)>
+            <x-ui::checkbox data-transfer-all :aria-label="$data['title']" :disabled="$disabled" />
             <span data-slot="transfer-title">{{ $data['title'] }}</span>
             <span data-slot="transfer-count">{{ '0/'.count($data['options']) }}</span>
         </div>
         @if ($searchable)
         <div data-slot="transfer-search">
-            <div role="group" data-slot="input-group">
-                <input type="search" data-slot="input-group-control" data-transfer-search placeholder="{{ __('ui::transfer.search') }}" aria-label="{{ __('ui::transfer.search') }}" autocomplete="off">
-                <div role="group" data-slot="input-group-addon" data-align="inline-start">
+            <x-ui::input-group>
+                <x-ui::input-group.input type="search" data-transfer-search :placeholder="__('ui::transfer.search')" :aria-label="__('ui::transfer.search')" autocomplete="off" />
+                <x-ui::input-group.addon>
                     <x-ui::icon name="search" />
-                </div>
-            </div>
+                </x-ui::input-group.addon>
+            </x-ui::input-group>
         </div>
         @endif
         <div data-slot="transfer-items">
             @foreach ($data['options'] as $index => $option)
             <label data-slot="transfer-item" data-value="{{ $option['value'] }}" data-index="{{ $index }}" wire:key="transfer-{{ $option['value'] }}">
-                <input type="checkbox" data-slot="checkbox" @disabled($disabled || ! empty($option['disabled']))>
+                <x-ui::checkbox :disabled="$disabled || ! empty($option['disabled'])" />
                 <span>{{ $option['label'] }}</span>
             </label>
             @endforeach

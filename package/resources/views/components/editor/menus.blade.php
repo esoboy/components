@@ -81,9 +81,9 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
             <x-ui::popover.content align="start" data-editor-color-content>
                 <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.cell-background') }}">
                     <p data-slot="editor-swatches-label">{{ __('ui::editor.cell-background') }}</p>
-                    <button type="button" data-slot="editor-swatch" data-editor-command="cell-background" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.highlight-none') }}"><x-ui::icon name="ban" /></button>
+                    <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="cell-background" data-editor-value="" aria-pressed="false" aria-label="{{ __('ui::editor.highlight-none') }}"><x-ui::icon name="ban" /></x-ui::button>
                     @foreach (RichText::HIGHLIGHTS as $key => $color)
-                    <button type="button" data-slot="editor-swatch" data-editor-command="cell-background" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="background-color: {{ $color }}"></span></button>
+                    <x-ui::button variant="outline" size="icon-sm" class="rounded-md font-semibold" data-editor-swatch data-editor-command="cell-background" data-editor-value="{{ $color }}" aria-pressed="false" aria-label="{{ $names[$key] }}"><span style="background-color: {{ $color }}"></span></x-ui::button>
                     @endforeach
                 </div>
             </x-ui::popover.content>

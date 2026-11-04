@@ -32,6 +32,38 @@ it('pages ten users at a time', function () {
         ->assertNoJavaScriptErrors();
 });
 
+it('aligns the selected page size over its trigger with inset options', function () {
+    $size = USERS.' >> [data-slot="data-table-page-size"]';
+    $page = visit('/data')->resize(1280, 900);
+    // Leave room for the list so viewport collision handling does not shift it.
+    $center = "document.querySelector('[data-slot=\"data-table-page-size\"]').scrollIntoView({ block: 'center' })";
+    $page->script($center);
+    $page->click($size.' [data-slot="select-trigger"]');
+    $aligned = <<<'JS'
+        (() => {
+            const select = document.querySelector('[data-slot="data-table-page-size"] eso-select');
+            const value = select.querySelector('[data-slot="select-value"]').getBoundingClientRect();
+            const panel = select.querySelector('[data-slot="select-content"]').getBoundingClientRect();
+            const item = select.querySelector('[data-slot="select-item"][aria-selected="true"]');
+            const selected = item.querySelector('[data-slot="select-item-text"]').getBoundingClientRect();
+            const option = item.getBoundingClientRect();
+            return Math.abs(value.left - selected.left) < 1
+                && Math.abs(value.top - selected.top) < 1
+                && option.left - panel.left >= 4
+                && panel.right - option.right >= 4;
+        })()
+        JS;
+
+    $page->assertScript($aligned)
+        ->click($size.' [data-slot="select-item"][data-value="20"]')
+        ->assertSeeIn($size.' [data-slot="select-trigger"]', '20')
+        ->assertScript("document.querySelector('[data-slot=\"data-table\"]').querySelectorAll('tbody tr[data-row-id]').length", 15);
+    $page->script($center);
+    $page->click($size.' [data-slot="select-trigger"]')
+        ->assertScript($aligned)
+        ->assertNoJavaScriptErrors();
+});
+
 it('searches by email', function () {
     visit('/data')
         ->type('[wire\\:model\\.live\\.debounce\\.300ms="search"]', 'user07')

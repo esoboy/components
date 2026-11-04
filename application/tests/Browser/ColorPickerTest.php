@@ -31,3 +31,17 @@ it('moves the color with the arrow keys on its area', function () {
         ->keys(COLOR_PICKER.' [data-slot="color-picker-area"]', 'ArrowDown')
         ->assertScript("/^#[0-9a-f]{6}$/.test(document.getElementById('color').textContent.trim()) && document.getElementById('color').textContent.trim() !== '#2563eb'");
 });
+
+it('binds keyboard changes from the shared hue slider', function () {
+    $page = visit('/inputs')
+        ->click(COLOR_PICKER.' [data-color-picker-trigger]')
+        ->fill(COLOR_PICKER.' [data-color-picker-input]', '#ff0000')
+        ->keys(COLOR_PICKER.' [data-color-picker-input]', 'Enter')
+        ->assertSeeIn('#color', '#ff0000');
+
+    $page->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'End')
+        ->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'ArrowLeft')
+        ->assertScript("document.querySelector('#brand-color [data-color-picker-hue]').value === 359")
+        ->assertScript("document.getElementById('color').textContent.trim() !== '#ff0000'")
+        ->assertNoJavaScriptErrors();
+});

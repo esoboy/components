@@ -19,10 +19,10 @@ it('splits the options between the lists by value', function () {
         ->toContain('<div role="group" data-slot="transfer-list" data-list="target" aria-label="Picked">')
         ->toContain('<span data-slot="transfer-count">0/2</span>')
         ->toContain('<span data-slot="transfer-count">0/1</span>')
-        ->toContain('<input type="search" data-slot="input-group-control" data-transfer-search placeholder="Search"')
+        ->toContain('<input type="search" data-slot="input-group-control" data-transfer-search="data-transfer-search" placeholder="Search"')
         ->toContain('data-transfer-move="target" aria-label="Move to selected" disabled="disabled"')
         ->toContain('data-transfer-move="source" aria-label="Move to available" disabled="disabled"')
-        ->toMatch('/data-value="c" data-index="2" wire:key="transfer-c">\s*<input type="checkbox" data-slot="checkbox"\s+disabled>/')
+        ->toMatch('/data-value="c" data-index="2" wire:key="transfer-c">\s*<input type="checkbox" data-slot="checkbox"\s+disabled="disabled">/')
         ->toContain('<input type="hidden" name="roles[]" value="b">')
         ->and(strpos($html, 'Alpha'))->toBeLessThan(strpos($html, 'data-list="target"'))
         ->and(strpos($html, 'Beta'))->toBeGreaterThan(strpos($html, 'data-list="target"'));

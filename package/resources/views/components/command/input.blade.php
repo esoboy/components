@@ -1,10 +1,10 @@
 @blaze
 
 <div data-slot="command-input-wrapper">
-    <div data-slot="input-group" role="group">
-        <input {{ $attributes->merge(['type' => 'text', 'data-slot' => 'command-input', 'autocomplete' => 'off', 'spellcheck' => 'false', 'role' => 'combobox', 'aria-expanded' => 'true', 'aria-autocomplete' => 'list']) }}>
-        <div data-slot="input-group-addon" data-align="inline-start" role="group">
+    <x-ui::input-group>
+        <x-ui::input-group.input :attributes="$attributes->merge(['data-command-input' => true, 'class' => 'p-0 text-sm', 'autocomplete' => 'off', 'spellcheck' => 'false', 'role' => 'combobox', 'aria-expanded' => 'true', 'aria-autocomplete' => 'list'])" />
+        <x-ui::input-group.addon>
             <x-ui::icon name="search" />
-        </div>
-    </div>
+        </x-ui::input-group.addon>
+    </x-ui::input-group>
 </div>

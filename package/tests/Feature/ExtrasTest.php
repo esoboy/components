@@ -137,7 +137,7 @@ describe('questionnaire', function () {
             '<label data-slot="questionnaire-choice" data-type="radio">',
             '<input type="radio" value="a" data-slot="questionnaire-choice-input">',
             '<span data-slot="questionnaire-choice-description">About A</span>',
-            '<input type="text" name="direction" data-slot="questionnaire-input" aria-label="Other">',
+            '<input type="text" data-slot="input" class="min-h-11 sm:min-h-0" name="direction" data-questionnaire-input="data-questionnaire-input" aria-label="Other">',
             '<p data-slot="questionnaire-error" wire:key="questionnaire-error" hidden="hidden">Choose an answer to continue.</p>',
             '<fieldset data-slot="questionnaire-item" data-name="detail" data-multiple="data-multiple" hidden="hidden" inert="inert" tabindex="-1">',
             '<eso-checkbox-group role="group" name="detail[]" data-slot="questionnaire-choices">',

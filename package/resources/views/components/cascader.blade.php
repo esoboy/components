@@ -41,10 +41,9 @@ $labels = Options::labels($options, $value);
     <template data-template="column"><div data-slot="cascader-column" role="listbox"></div></template>
     <template data-template="option"><x-ui::select.item value="" data-cascader-item /></template>
     <template data-template="icon-parent"><x-ui::icon name="chevron-right" /></template>
-    <button {{ $attributes->only(['class', 'style']) }} type="button" data-slot="select-trigger" data-cascader-trigger data-size="{{ $size }}" aria-haspopup="listbox" aria-expanded="false" command="toggle-popover" commandfor="" {{ new \Illuminate\View\ComponentAttributeBag($state->attributes()) }} @if (! $labels) data-placeholder @endif @if ($disabled) disabled @endif>
-        <span data-slot="select-value">{{ $labels ? implode(" {$separator} ", $labels) : $placeholder }}</span>
-        <x-ui::icon name="chevron-down" data-slot="select-icon" />
-    </button>
+    <x-ui::select.trigger :size="$size" data-cascader-trigger :data-placeholder="! $labels" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($state->attributes())">
+        <x-ui::select.value :placeholder="$labels ? implode(' '.$separator.' ', $labels) : $placeholder" />
+    </x-ui::select.trigger>
     <div popover="auto" data-slot="cascader-content" data-side="bottom" data-align="start" style="--side-offset: 4px;" wire:ignore></div>
     @if ($attributes->has('name'))
         @foreach ($labels ? $value : [] as $part)

@@ -40,9 +40,9 @@ $expanded = $parent && ! $lazy && ($expandAll || in_array((string) $value, array
     'aria-disabled' => $disabled ? 'true' : false,
 ]) }}>
     <div data-slot="tree-item-row">
-        <span data-slot="tree-item-toggle" aria-hidden="true">@if ($parent)<x-ui::icon name="chevron-right" />@endif @if ($lazy)<x-ui::icon name="loader-circle" data-slot="tree-item-spinner" />@endif</span>
+        <span data-slot="tree-item-toggle" aria-hidden="true">@if ($parent)<x-ui::icon name="chevron-right" />@endif @if ($lazy)<x-ui::spinner data-tree-item-spinner />@endif</span>
         @if ($checkable)
-        <input type="checkbox" data-slot="checkbox" data-tree-check tabindex="-1" aria-hidden="true" @if ($disabled) disabled @endif>
+        <x-ui::checkbox data-tree-check tabindex="-1" aria-hidden="true" :disabled="$disabled" />
         @endif
         @isset ($icon)
         <span data-slot="tree-item-icon">{{ $icon }}</span>

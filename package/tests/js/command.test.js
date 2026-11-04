@@ -10,7 +10,7 @@ afterEach(() => {
 function mount(attributes = '') {
     document.body.innerHTML = `
         <eso-command ${attributes}>
-            <input data-slot="command-input">
+            <input data-command-input>
             <div data-slot="command-list">
                 <div data-slot="command-empty">No results</div>
                 <div data-slot="command-group">

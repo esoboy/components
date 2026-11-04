@@ -37,7 +37,7 @@ it('renders the trigger with the chosen path', function () use ($options) {
     expect($html)
         ->toContain('data-slot="cascader" data-value="[&quot;zj&quot;,&quot;hz&quot;]" data-separator="/" data-placeholder="Pick" data-name="region"')
         ->toContain('<script type="application/json" data-cascader-options>[{"value":"zj"')
-        ->toContain('<span data-slot="select-value">Zhejiang / Hangzhou</span>')
+        ->toContain('<span data-slot="select-value" data-placeholder="Zhejiang / Hangzhou">Zhejiang / Hangzhou</span>')
         ->toContain('popover="auto" data-slot="cascader-content"')
         ->toContain('<input type="hidden" name="region[]" value="zj">')
         ->not->toContain('data-placeholder >');
@@ -46,6 +46,6 @@ it('renders the trigger with the chosen path', function () use ($options) {
 it('shows the placeholder for an empty or unknown path', function () use ($options) {
     $this->blade('<x-ui::cascader :options="$options" :default-value="[\'nope\']" placeholder="Pick" />', ['options' => $options])
         ->assertSee('data-value="[]"', false)
-        ->assertSee('<span data-slot="select-value">Pick</span>', false)
+        ->assertSee('<span data-slot="select-value" data-placeholder="Pick">Pick</span>', false)
         ->assertSee('data-placeholder', false);
 });

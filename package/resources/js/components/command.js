@@ -68,7 +68,7 @@ export class CommandElement extends HTMLElement {
     }
 
     get input() {
-        return this.querySelector('[data-slot="command-input"]')
+        return this.querySelector('[data-command-input]')
     }
 
     get list() {

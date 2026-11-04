@@ -74,7 +74,8 @@ new class extends Component
     <form wire:submit="publish" class="space-y-4">
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
-            <x-ui::editor wire:model="article" :max-length="2000" :upload-context="['page' => 'editor']" />
+            <x-ui::editor wire:model="article" :collapse-toolbar="false" :max-length="2000" :upload-context="['page' => 'editor']" />
+            <x-ui::field.description>All tools stay visible and wrap onto new rows (:collapse-toolbar="false"). Long documents scroll inside the editor.</x-ui::field.description>
             <x-ui::field.description>The image, video, audio and file buttons, and files dropped or pasted, upload with the app's uploader (config ui.editor.uploader, here App\Editor\DemoUploader). Images from other sites and pasted ones are saved from their menu, or all at once from the footer (or as they come in, with ui.editor.auto_upload). Type / for blocks.</x-ui::field.description>
         </x-ui::field>
         <div class="flex gap-2">

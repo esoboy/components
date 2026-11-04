@@ -10,10 +10,11 @@
 
 @props([
     'type' => 'text',
+    'state' => null,
 ])
 
 @php
-$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state ??= ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 
 PendingControl::put($state);
 @endphp

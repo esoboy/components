@@ -20,7 +20,7 @@ it('renders a command menu', function () {
         BLADE);
 
     $view->assertSee('<eso-command data-slot="command" data-should-filter="false" class="rounded-lg border">', false)
-        ->assertSee('<input type="text" data-slot="command-input" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" placeholder="Search..." wire:model.live="q">', false)
+        ->assertSee('<input type="text" data-slot="input-group-control" class="p-0 text-sm" data-command-input="data-command-input" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" placeholder="Search..." wire:model.live="q">', false)
         ->assertSee('<div role="listbox" aria-label="Suggestions" data-slot="command-list" wire:key="command-list">', false)
         ->assertSee('<div role="presentation" data-slot="command-empty">No results.</div>', false)
         ->assertSee('<div data-slot="command-group-heading" aria-hidden="true">Suggestions</div>', false)
@@ -68,7 +68,7 @@ it('renders a combobox with its input, trigger and clear', function () {
 
     expect($html)
         ->toContain('<eso-combobox data-slot="combobox" data-should-filter="true" data-value="&quot;next&quot;" wire:model="framework">')
-        ->toContain('<div data-slot="input-group" role="group" data-combobox-anchor="data-combobox-anchor">')
+        ->toContain('<div role="group" data-slot="input-group" data-combobox-anchor="data-combobox-anchor">')
         ->toContain('<input type="text" data-slot="input-group-control" data-combobox-input="data-combobox-input" role="combobox" autocomplete="off" aria-autocomplete="list" aria-expanded="false" placeholder="Select a framework">')
         ->toContain('data-combobox-trigger')
         ->toContain('data-combobox-clear')
@@ -114,7 +114,7 @@ it('renders a combobox with a trigger, its value and the search inside, as shadc
 
     expect($html)
         ->toMatch('/<button type="button" class="w-64 justify-between" data-slot="button" data-variant="outline" data-size="default" data-combobox-trigger="data-combobox-trigger" aria-haspopup="listbox" aria-expanded="false"><span data-slot="combobox-value" data-placeholder="Select a country">Select a country<\/span><svg[^>]*data-slot="combobox-trigger-icon"/')
-        ->toMatch('/ data-slot="combobox-content"[^>]*>\s*<div data-slot="input-group"[^>]*>\s*<input type="text" data-slot="input-group-control" data-combobox-input/')
+        ->toMatch('/ data-slot="combobox-content"[^>]*>\s*<div role="group" data-slot="input-group"[^>]*>\s*<input type="text" data-slot="input-group-control" data-combobox-input/')
         ->toMatch('/<div data-slot="combobox-chip">\s*<span data-combobox-chip-label>Tag<\/span>\s*<button[^>]*data-combobox-chip-remove/')
         ->toMatch('/<span data-combobox-chip-label>Fixed<\/span>\s*<\/div>/')
         ->toMatch('/<button type="button" data-slot="button" data-variant="ghost" data-size="icon-xs" data-combobox-clear="data-combobox-clear" aria-label="Clear">/');

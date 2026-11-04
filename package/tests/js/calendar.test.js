@@ -19,8 +19,8 @@ const parts = `
     <template data-template="month"><div data-slot="calendar-month"><div data-slot="calendar-caption"></div><table data-slot="calendar-grid" role="grid"><thead><tr data-slot="calendar-weekdays"></tr></thead><tbody></tbody></table></div></template>
     <template data-template="caption"><span data-slot="calendar-caption-label" aria-live="polite"></span></template>
     <template data-template="dropdowns"><div data-slot="calendar-dropdowns"></div></template>
-    <template data-template="dropdown-month"><span data-slot="calendar-dropdown"><select data-calendar-month aria-label="Month"></select><span data-slot="calendar-caption-label" aria-hidden="true"><svg data-icon-name="dropdown"></svg></span></span></template>
-    <template data-template="dropdown-year"><span data-slot="calendar-dropdown"><select data-calendar-year aria-label="Year"></select><span data-slot="calendar-caption-label" aria-hidden="true"><svg data-icon-name="dropdown"></svg></span></span></template>
+    <template data-template="dropdown-month"><div data-slot="calendar-dropdown"><div data-slot="native-select-wrapper"><select data-slot="native-select" data-calendar-month aria-label="Month"></select><svg data-slot="native-select-icon" data-icon-name="dropdown"></svg></div></div></template>
+    <template data-template="dropdown-year"><div data-slot="calendar-dropdown"><div data-slot="native-select-wrapper"><select data-slot="native-select" data-calendar-year aria-label="Year"></select><svg data-slot="native-select-icon" data-icon-name="dropdown"></svg></div></div></template>
     <template data-template="option"><option></option></template>
     <template data-template="weekday"><th data-slot="calendar-weekday" scope="col"></th></template>
     <template data-template="week"><tr data-slot="calendar-week"></tr></template>
@@ -160,7 +160,7 @@ describe('navigation', () => {
 
         expect(icon('[data-calendar-previous]')).toBe('previous')
         expect(icon('[data-calendar-next]')).toBe('next')
-        expect(icon('[data-slot="calendar-caption-label"]')).toBe('dropdown')
+        expect(icon('[data-slot="native-select-wrapper"]')).toBe('dropdown')
         expect(calendar.querySelector('template')).toBeNull()
 
         calendar.querySelector('[data-calendar-next]').click()

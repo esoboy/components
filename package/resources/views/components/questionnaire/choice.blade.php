@@ -16,5 +16,5 @@
         <x-ui::icon name="check" data-slot="questionnaire-choice-indicator-check" />
     </span>
     <span data-slot="questionnaire-choice-label">{{ $slot }}</span>
-    <span data-slot="questionnaire-choice-shortcut" aria-hidden="true" hidden wire:ignore></span>
+    <x-ui::kbd data-questionnaire-choice-shortcut aria-hidden="true" hidden wire:ignore />
 </label>

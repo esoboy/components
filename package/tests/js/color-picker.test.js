@@ -1,7 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { register as registerSlider } from '../../resources/js/components/slider.js'
 import { hexToHsv, hsvToHex, parseHex, register as registerColorPicker } from '../../resources/js/components/color-picker.js'
 
-beforeAll(() => registerColorPicker())
+beforeAll(() => {
+    registerSlider()
+    registerColorPicker()
+})
 
 afterEach(() => {
     document.body.innerHTML = ''
@@ -30,7 +34,7 @@ describe('color picker', () => {
             <eso-color-picker data-value="${value}" data-name="color" data-placeholder="Pick">
                 <button data-color-picker-trigger><span data-slot="color-picker-swatch"></span><span data-slot="color-picker-value"></span></button>
                 <div data-slot="color-picker-area" tabindex="0"><span data-slot="color-picker-thumb"></span></div>
-                <input type="range" data-slot="color-picker-hue" min="0" max="360">
+                <eso-slider data-slot="slider" data-color-picker-hue><div data-slot="slider-control"><div data-slot="slider-track"><div data-slot="slider-range"></div></div><input type="range" data-slot="slider-thumb" min="0" max="360"></div></eso-slider>
                 <input data-color-picker-input>
                 <button data-color-picker-swatch="#ef4444"></button>
                 <input type="hidden" name="color">
@@ -53,6 +57,7 @@ describe('color picker', () => {
         expect(element.querySelector('[data-color-picker-input]').value).toBe('#2563eb')
         expect(element.querySelector('input[type="hidden"]').value).toBe('#2563eb')
         expect(element.querySelector('[data-color-picker-trigger]').dataset.empty).toBe('false')
+        expect(element.querySelector('[data-color-picker-hue]').value).toBe(Math.round(hexToHsv('#2563eb').h))
     })
 
     it('takes swatches and announces only from itself', () => {
@@ -67,7 +72,7 @@ describe('color picker', () => {
 
     it('changes the hue, keeping saturation and brightness', () => {
         const [element, seen] = mount('#ff0000')
-        const hue = element.querySelector('[data-slot="color-picker-hue"]')
+        const hue = element.querySelector('[data-color-picker-hue] input')
 
         hue.value = '240'
         hue.dispatchEvent(new Event('input', { bubbles: true }))

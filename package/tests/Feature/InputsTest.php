@@ -36,7 +36,7 @@ it('renders a number input as an input group with steppers', function () {
         ->toContain('<eso-number-input data-slot="number-input" data-min="1" data-max="10" data-step="0.5">')
         ->toContain('<div role="group" data-slot="input-group">')
         ->toMatch('/data-number-input="decrement" aria-label="Decrease" tabindex="-1" disabled="disabled"/')
-        ->toContain('<input type="text" inputmode="decimal" role="spinbutton" data-slot="input-group-control" value="1"')
+        ->toContain('<input type="text" data-slot="input-group-control" inputmode="decimal" role="spinbutton" value="1"')
         ->toContain('name="qty"')
         ->toMatch('/aria-valuemin="1"\s+aria-valuemax="10"\s+aria-valuenow="1"/')
         ->toMatch('/data-number-input="increment" aria-label="Increase" tabindex="-1"\s*>/');
@@ -65,6 +65,23 @@ it('validates a password input inside a field', function () {
         ->assertSee('aria-invalid="true" aria-describedby="password-error"', false)
         ->assertSeeInOrder(['</eso-password-input>', 'Too short.'], false);
 });
+
+it('keeps a compound inputs validation on its bound value and shows one error', function (string $component) {
+    $html = (string) $this->withViewErrors(['form.value' => 'Bound value is invalid.', 'other' => 'Wrong field.'])
+        ->blade('<x-ui::field><x-ui::'.$component.' id="value" name="other" wire:model="form.value" /></x-ui::field>');
+
+    expect($html)
+        ->toContain('aria-invalid="true" aria-describedby="value-error"')
+        ->not->toContain('Wrong field.')
+        ->and(substr_count($html, 'Bound value is invalid.'))->toBe(1);
+
+    expect(strpos($html, 'Bound value is invalid.'))->toBeGreaterThan(strpos($html, '</eso-'.$component.'>'));
+
+    $this->withViewErrors(['form.value' => 'Bound value is invalid.'])
+        ->blade('<x-ui::field :show-error="false"><x-ui::'.$component.' wire:model="form.value" /></x-ui::field>')
+        ->assertSee('aria-invalid="true"', false)
+        ->assertDontSee('Bound value is invalid.');
+})->with(['password-input', 'number-input']);
 
 it('renders a verification code button around a button', function () {
     $html = (string) $this->blade('<x-ui::verification-code-button name="sms" :seconds="30" wire:click="send">Send code</x-ui::verification-code-button>');

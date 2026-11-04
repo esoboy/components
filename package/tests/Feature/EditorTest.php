@@ -102,7 +102,7 @@ describe('the view', function () {
             ->toContain('<span data-editor-unsaved data-editor-label="Images not on this site: :count" hidden><span data-editor-unsaved-label></span>')
             ->toContain('data-editor-action="save-images">Save all</button>')
             ->toContain('<span data-editor-characters><span data-editor-count></span> characters</span>')
-            ->toContain('data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip')
+            ->toMatch('/data-slot="tooltip-content" data-side="top" data-align="center"[^>]*data-editor-tip/')
             ->not->toContain('onclick')
             ->not->toContain('alert(1)')
             ->and(controls($html))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'color', 'code', 'superscript', 'subscript', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule', 'image', 'video', 'audio', 'file', 'table', 'emoji', 'math', 'details', 'find', 'source', 'fullscreen']);
@@ -120,6 +120,21 @@ describe('the view', function () {
         }
 
         expect($ranked[1])->toBe(['undo', 'redo', 'heading', 'bold', 'italic', 'link', 'image']);
+    });
+
+    it('can show every toolbar control without a More menu', function () {
+        $default = (string) $this->blade('<x-ui::editor />');
+        $expanded = (string) $this->blade('<x-ui::editor :collapse-toolbar="false" />');
+        $custom = (string) $this->blade('<x-ui::editor><x-ui::editor.toolbar :collapse="false"><x-ui::editor.control name="bold" /></x-ui::editor.toolbar></x-ui::editor>');
+        $inherited = (string) $this->blade('<x-ui::editor :collapse-toolbar="false"><x-ui::editor.toolbar /></x-ui::editor>');
+        $overridden = (string) $this->blade('<x-ui::editor :collapse-toolbar="false"><x-ui::editor.toolbar :collapse="true" /></x-ui::editor>');
+
+        expect(controls($expanded))->toBe(controls($default))
+            ->and($expanded)->not->toContain('data-editor-more')->not->toContain('collapse-toolbar=')
+            ->and($custom)->not->toContain('data-editor-more')->not->toContain('collapse=')
+            ->and($inherited)->not->toContain('data-editor-more')
+            ->and($overridden)->toContain('data-editor-more')
+            ->and(controls($custom))->toBe(['bold']);
     });
 
     it('fits its toolbar and menus to the format', function () {
@@ -159,7 +174,7 @@ describe('the view', function () {
             ->and(substr_count($html, 'data-editor-command="font-size"'))->toBe(13)
             ->and(substr_count($html, 'data-editor-command="line-height"'))->toBe(8)
             ->and($html)->toContain('data-editor-command="color" data-editor-value="#dc2626" aria-pressed="false" aria-label="Red"><span style="color: #dc2626"><svg')
-            ->toContain('role="menuitemradio" data-slot="dropdown-menu-item" data-variant="default" aria-checked="false" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun"')
+            ->toContain('type="radio" role="menuitemradio" value="SimSun, &#039;Songti SC&#039;, serif" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun" aria-checked="false"')
             ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"')
             ->toContain('data-editor-command="heading" data-editor-value="6" data-editor-label="Heading 6"')
             ->toContain('data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')

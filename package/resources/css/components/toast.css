@@ -87,10 +87,6 @@
     :where([data-slot="toast-icon"]) {
         @apply shrink-0 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4;
         color: var(--tone, currentColor);
-
-        & > svg[data-spin] {
-            @apply animate-spin;
-        }
     }
 
     :where([data-toast-action]) {

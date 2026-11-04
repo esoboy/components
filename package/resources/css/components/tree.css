@@ -21,10 +21,6 @@
         }
     }
 
-    :where([data-slot="tree-search-input"]) {
-        @apply w-full min-w-0 flex-1 border-0 bg-transparent px-2 text-sm outline-hidden placeholder:text-muted-foreground;
-    }
-
     :where([data-slot="tree-empty"]) {
         @apply py-6 text-center text-sm text-muted-foreground;
     }
@@ -72,7 +68,7 @@
     }
 
     /* A lazy item turns its chevron into a spinner while it loads. */
-    :where([data-slot="tree-item-spinner"]) {
+    :where([data-tree-item-spinner]) {
         @apply hidden;
     }
 
@@ -81,8 +77,8 @@
             @apply hidden;
         }
 
-        & > [data-slot="tree-item-spinner"] {
-            @apply block animate-spin;
+        & > [data-tree-item-spinner] {
+            @apply block;
         }
     }
 

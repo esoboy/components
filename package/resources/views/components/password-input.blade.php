@@ -17,15 +17,15 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 <eso-password-input {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
-    <div role="group" data-slot="input-group">
-        <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'password', 'data-slot' => 'input-group-control', 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
-        <div role="group" data-slot="input-group-addon" data-align="inline-end">
+    <x-ui::input-group :render-error="false">
+        <x-ui::input-group.input type="password" :state="$state" :disabled="$disabled" :attributes="$attributes->except(['class', 'style'])" />
+        <x-ui::input-group.addon align="inline-end">
             <x-ui::input-group.button size="icon-xs" data-password-toggle aria-pressed="false" :aria-label="__('ui::password-input.toggle')" :disabled="$disabled">
                 <x-ui::icon name="eye-off" data-password-icon="hidden" />
                 <x-ui::icon name="eye" data-password-icon="shown" />
             </x-ui::input-group.button>
-        </div>
-    </div>
+        </x-ui::input-group.addon>
+    </x-ui::input-group>
 </eso-password-input>
 <x-ui::field.error :state="$state" />
 <x-ui::extras />

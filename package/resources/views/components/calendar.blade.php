@@ -58,16 +58,14 @@ $value = $defaultValue ?? Model::value($attributes);
     <template data-template="caption"><span data-slot="calendar-caption-label" aria-live="polite"></span></template>
     <template data-template="dropdowns"><div data-slot="calendar-dropdowns"></div></template>
     <template data-template="dropdown-month">
-        <span data-slot="calendar-dropdown">
-            <select data-calendar-month aria-label="{{ __('ui::calendar.month') }}"></select>
-            <span data-slot="calendar-caption-label" aria-hidden="true"><x-ui::icon name="chevron-down" /></span>
-        </span>
+        <div data-slot="calendar-dropdown">
+            <x-ui::native-select size="sm" data-calendar-month :aria-label="__('ui::calendar.month')" />
+        </div>
     </template>
     <template data-template="dropdown-year">
-        <span data-slot="calendar-dropdown">
-            <select data-calendar-year aria-label="{{ __('ui::calendar.year') }}"></select>
-            <span data-slot="calendar-caption-label" aria-hidden="true"><x-ui::icon name="chevron-down" /></span>
-        </span>
+        <div data-slot="calendar-dropdown">
+            <x-ui::native-select size="sm" data-calendar-year :aria-label="__('ui::calendar.year')" />
+        </div>
     </template>
     <template data-template="option"><option></option></template>
     <template data-template="weekday"><th data-slot="calendar-weekday" scope="col"></th></template>

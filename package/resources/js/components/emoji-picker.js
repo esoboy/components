@@ -64,7 +64,7 @@ export class EmojiPickerElement extends HTMLElement {
     }
 
     get search() {
-        return this.querySelector('[data-slot="emoji-picker-search"]')
+        return this.querySelector('[data-emoji-picker-search]')
     }
 
     get viewport() {
@@ -182,7 +182,7 @@ export class EmojiPickerElement extends HTMLElement {
     }
 
     #key(event) {
-        if (! event.target.closest?.('[data-slot="emoji-picker-search"], [data-slot="emoji-picker-viewport"]')) return
+        if (! event.target.closest?.('[data-emoji-picker-search], [data-slot="emoji-picker-viewport"]')) return
 
         if (event.key === 'Enter' && this.#active) {
             event.preventDefault()

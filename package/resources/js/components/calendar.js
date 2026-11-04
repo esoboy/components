@@ -229,7 +229,7 @@ export class CalendarElement extends HTMLElement {
         }
 
         const [startYear, endYear] = this.#yearRange()
-        const dropdown = (kind, options, text) => {
+        const dropdown = (kind, options) => {
             const element = clone(parts[`dropdown-${kind}`])
             const select = element.querySelector('select')
 
@@ -242,8 +242,6 @@ export class CalendarElement extends HTMLElement {
                 option.toggleAttribute('disabled', disabled)
                 select.append(option)
             }
-
-            element.querySelector('[data-slot="calendar-caption-label"]').prepend(text)
 
             return element
         }
@@ -262,8 +260,8 @@ export class CalendarElement extends HTMLElement {
         const dropdowns = clone(parts.dropdowns)
 
         dropdowns.append(
-            dropdown('month', months, month.toLocaleDateString(locale, { month: 'short' })),
-            dropdown('year', years, month.toLocaleDateString(locale, { year: 'numeric' })),
+            dropdown('month', months),
+            dropdown('year', years),
         )
 
         return dropdowns

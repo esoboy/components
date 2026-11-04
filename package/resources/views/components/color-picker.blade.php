@@ -39,9 +39,9 @@ $name = $attributes->get('name');
                 <x-ui::button variant="outline" size="icon-sm" data-color-picker-eyedropper :aria-label="__('ui::color-picker.eyedropper')" hidden>
                     <x-ui::icon name="pipette" />
                 </x-ui::button>
-                <input type="range" data-slot="color-picker-hue" min="0" max="360" step="1" aria-label="{{ __('ui::color-picker.hue') }}">
+                <x-ui::slider data-color-picker-hue :min="0" :max="360" :step="1" :aria-label="__('ui::color-picker.hue')" />
             </div>
-            <input type="text" data-slot="input" data-color-picker-input value="{{ $value }}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="{{ __('ui::color-picker.hex') }}">
+            <x-ui::input data-color-picker-input :value="$value" maxlength="7" spellcheck="false" autocomplete="off" :aria-label="__('ui::color-picker.hex')" />
             @if ($swatches)
             <div data-slot="color-picker-swatches">
                 @foreach ($swatches as $swatch)

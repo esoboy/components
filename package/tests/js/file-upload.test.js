@@ -54,10 +54,10 @@ describe('file upload', () => {
                         <div data-slot="attachment-content"><span data-slot="attachment-title"></span><span data-slot="attachment-description"></span></div>
                     </div>
                 </template>
-                <label data-slot="file-upload-dropzone">
-                    <input type="file" data-slot="file-upload-input" ${input}>
-                    <span data-slot="file-upload-progress" hidden></span>
-                </label>
+                <div data-slot="file-upload-dropzone">
+                    <label><input type="file" data-slot="file-upload-input" ${input}></label>
+                    <div data-slot="progress" data-file-upload-progress aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div data-slot="progress-track"><div data-slot="progress-indicator"></div></div></div>
+                </div>
                 <div data-file-upload-list hidden><div data-file-upload-pending></div></div>
             </eso-file-upload>`
 
@@ -108,6 +108,18 @@ describe('file upload', () => {
         expect(drag(disabled, 'dragover').defaultPrevented).toBe(false)
     })
 
+    it('opens the file input from the dropzone padding but not when disabled', () => {
+        const element = mount()
+        const open = vi.spyOn(element.input, 'click').mockImplementation(() => {})
+
+        element.dropzone.click()
+        expect(open).toHaveBeenCalledTimes(1)
+
+        element.input.disabled = true
+        element.dropzone.click()
+        expect(open).toHaveBeenCalledTimes(1)
+    })
+
     it('shows a chip per file with the progress while uploading', () => {
         const element = mount()
 
@@ -126,8 +138,24 @@ describe('file upload', () => {
 
         element.input.dispatchEvent(new CustomEvent('livewire-upload-progress', { bubbles: true, detail: { progress: 42 } }))
 
-        expect(element.style.getPropertyValue('--file-upload-progress')).toBe('42%')
+        expect(element.querySelector('[data-slot="progress-indicator"]').style.width).toBe('42%')
+        const progress = element.querySelector('[data-file-upload-progress]')
+
+        expect(progress.hidden).toBe(false)
+        expect(progress.getAttribute('aria-valuenow')).toBe('42')
+        expect(progress.getAttribute('aria-valuetext')).toBe('42%')
+        expect(progress.getAttribute('aria-label')).toBe('Uploading 42%')
+        expect(progress.hasAttribute('data-complete')).toBe(false)
         expect(chips[1].querySelector('[data-slot="attachment-description"]').textContent).toBe('Uploading 42%')
+
+        element.input.dispatchEvent(new CustomEvent('livewire-upload-progress', { bubbles: true, detail: { progress: 100 } }))
+        expect(progress.hasAttribute('data-complete')).toBe(true)
+
+        element.input.dispatchEvent(new CustomEvent('livewire-upload-finish', { bubbles: true }))
+        expect(progress.hidden).toBe(true)
+        element.input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }))
+        expect(progress.getAttribute('aria-valuenow')).toBe('0')
+        expect(progress.hasAttribute('data-complete')).toBe(false)
     })
 
     it('clears the stand-ins once the upload is done', async () => {
@@ -148,7 +176,7 @@ describe('image upload', () => {
     it('shows the new picture before the upload ends', () => {
         document.body.innerHTML = `
             <eso-file-upload data-slot="image-upload">
-                <label><input type="file" data-slot="file-upload-input"><img data-slot="image-upload-image" hidden><span data-slot="image-upload-placeholder"></span></label>
+                <label data-slot="image-upload-dropzone"><input type="file" data-slot="file-upload-input"><img data-slot="image-upload-image" hidden><span data-slot="image-upload-placeholder"></span></label>
             </eso-file-upload>`
 
         const element = document.querySelector('eso-file-upload')

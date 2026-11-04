@@ -5,11 +5,17 @@
 
 @aware([
     'format' => 'full',
+    'collapseToolbar' => true,
 ])
 
-{{-- One line: without a slot, every control the format has, in groups. What doesn't fit goes into More, the least used first (a control's priority). --}}
+@props([
+    'collapse' => null,
+])
+
+{{-- Without a slot, every control the format has, in groups. Collapsed: one line, what doesn't fit goes into More, the least used first (a control's priority). Otherwise, all controls wrap. --}}
 @php
 $rich = RichText::resolve($format);
+$collapse ??= $collapseToolbar;
 @endphp
 
 <div {{ $attributes->merge(['data-slot' => 'editor-toolbar', 'role' => 'toolbar', 'aria-label' => __('ui::editor.toolbar')]) }} wire:ignore>
@@ -25,8 +31,10 @@ $rich = RichText::resolve($format);
     @else
     {{ $slot }}
     @endif
+    @if ($collapse)
     <x-ui::popover>
         <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-more hidden :aria-label="__('ui::editor.more')"><x-ui::icon name="ellipsis" /></x-ui::popover.trigger>
         <x-ui::popover.content align="end" data-editor-more-content :aria-label="__('ui::editor.more')"></x-ui::popover.content>
     </x-ui::popover>
+    @endif
 </div>

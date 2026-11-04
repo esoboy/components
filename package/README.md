@@ -120,6 +120,23 @@ $post->body = Ui::sanitize($this->body, 'basic');
 Ui::editor('body')->insert([['url' => $file->url, 'name' => $file->name, 'mime' => $file->mime]]);
 ```
 
+The editor's toolbar collapses controls that do not fit into More by default. To show
+all tools, wrapping onto new rows, turn off `collapse-toolbar`. For a custom toolbar,
+use `<x-ui::editor.toolbar :collapse="false">…</x-ui::editor.toolbar>`; it also inherits
+the editor's `collapse-toolbar` setting.
+
+```blade
+<x-ui::editor wire:model="body" :collapse-toolbar="false" />
+```
+
+Long documents scroll inside the editor, keeping the toolbar and footer in place.
+The content area's maximum height is `24rem`; customize it with `--editor-max-height`
+(use `none` to let it grow with the document). Fullscreen uses the available window height.
+
+```blade
+<x-ui::editor wire:model="body" :collapse-toolbar="false" style="--editor-max-height: 32rem;" />
+```
+
 The toaster is kept across `wire:navigate`, so a toast shown before
 `$this->redirect('/orders', navigate: true)` stays on the next page.
 

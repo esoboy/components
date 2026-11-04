@@ -20,10 +20,6 @@
         }
     }
 
-    :where([data-slot="command-input"]) {
-        @apply w-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
-    }
-
     :where([data-slot="command-list"]) {
         @apply max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none;
         scrollbar-width: none;

@@ -75,7 +75,7 @@ it('renders the toaster as the toast viewport, with what toasts are cloned from'
         ->toMatch('/data-variant="outline" data-size="sm" data-toast-action="data-toast-action"><\/button>/')
         ->toMatch('/data-variant="ghost" data-size="icon-sm" data-toast-close="data-toast-close" aria-label="Close toast"><svg[^>]*><path d="M18 6 6 18"\/>/')
         ->toContain('<template data-template="icon-error"><svg')
-        ->toMatch('/<template data-template="icon-loading"><svg[^>]*data-spin/');
+        ->toMatch('/<template data-template="icon-loading"><svg[^>]*data-slot="spinner"/');
 
     $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')
         ->assertSee('data-limit="5" data-timeout="8000"', false);

@@ -24,7 +24,7 @@ beforeEach(() => {
             </div>
         </template>`
 
-    document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000">${toast}${icons}<template data-template="icon-loading"><svg data-spin></svg></template></div>`
+    document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000">${toast}${icons}<template data-template="icon-loading"><svg data-slot="spinner"></svg></template></div>`
     viewport = document.querySelector('[data-slot="toast-viewport"]')
 })
 
@@ -61,7 +61,7 @@ it('adds an icon for each type; errors are alerts', () => {
     expect(viewport.querySelectorAll('[data-slot="toast-icon"] svg')).toHaveLength(5)
     expect(viewport.querySelector('[data-type="warning"] [data-slot="toast-icon"] svg').dataset.iconName).toBe('warning')
     expect(viewport.querySelector('[data-type="error"]').getAttribute('role')).toBe('alertdialog')
-    expect(viewport.querySelector('[data-type="loading"] svg[data-spin]')).not.toBeNull()
+    expect(viewport.querySelector('[data-type="loading"] [data-slot="spinner"]')).not.toBeNull()
 })
 
 it('treats text as text', () => {

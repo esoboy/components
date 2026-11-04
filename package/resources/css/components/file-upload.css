@@ -37,12 +37,8 @@
         @apply text-muted-foreground;
     }
 
-    :where([data-slot="file-upload-progress"]) {
+    :where([data-file-upload-progress]) {
         @apply mt-3 w-full max-w-48;
-    }
-
-    :where([data-slot="file-upload-progress"] [data-slot="progress-indicator"]) {
-        width: var(--file-upload-progress, 0%);
     }
 
     :where([data-file-upload-pending]) {
@@ -92,7 +88,7 @@
         @apply absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 transition-opacity [&_svg]:size-5;
 
         & > [data-overlay="uploading"] {
-            @apply hidden animate-spin;
+            @apply hidden;
         }
     }
 

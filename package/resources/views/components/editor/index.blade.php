@@ -14,6 +14,7 @@
 {{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. Ui::editor($name) reaches it by its name, else the property its wire:model binds; a name also keeps a hidden input for forms. The bound HTML is sanitized to the format as it comes in here; the app sanitizes what comes back before storing it, with Ui::sanitize($html, the same format). What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
 @props([
     'format' => 'full',
+    'collapseToolbar' => true,
     'maxLength' => null,
     'uploadContext' => [],
     'placeholder' => null,
@@ -64,7 +65,7 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     @if (! $slot->isEmpty())
     {{ $slot }}
     @elseif ($rich->has('toolbar'))
-    <x-ui::editor.toolbar />
+    <x-ui::editor.toolbar :collapse="$collapseToolbar" />
     @endif
     @if ($rich->has('find-replace'))
     <x-ui::editor.find />
@@ -88,7 +89,7 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     </div>
     @endif
     <x-ui::editor.menus />
-    <div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" data-editor-tip style="--side-offset: 4px;" wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></div>
+    <x-ui::tooltip.content data-editor-tip wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></x-ui::tooltip.content>
     @if ($name)
     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
     @endif

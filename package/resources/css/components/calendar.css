@@ -33,21 +33,16 @@
         @apply flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium;
     }
 
-    /* As rendered on ui.shadcn.com: Nova's cn-calendar-* extras don't reach installed projects. */
-    :where([data-slot="calendar-dropdown"]) {
-        @apply relative rounded-(--cell-radius) has-focus-visible:ring-3 has-focus-visible:ring-ring/50;
-
-        & > select {
-            @apply absolute inset-0 size-full cursor-pointer appearance-none bg-popover opacity-0;
-        }
+    [data-slot="calendar-dropdown"] [data-slot="native-select"] {
+        @apply h-(--cell-size) w-auto min-w-0 cursor-pointer rounded-(--cell-radius) border-0 bg-transparent pl-1 font-medium shadow-none;
     }
 
     :where([data-slot="calendar-caption-label"]) {
         @apply text-sm font-medium select-none;
     }
 
-    :where([data-slot="calendar-dropdown"] [data-slot="calendar-caption-label"]) {
-        @apply flex items-center gap-1 rounded-(--cell-radius) [&>svg]:size-3.5 [&>svg]:text-muted-foreground;
+    [data-slot="calendar-dropdown"] [data-slot="native-select-icon"] {
+        @apply size-3.5;
     }
 
     :where([data-slot="calendar-grid"]) {

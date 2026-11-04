@@ -9,10 +9,11 @@
 
 @props([
     'type' => 'text',
+    'state' => null,
 ])
 
 @php
-$state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$state ??= ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
 <input {{ $attributes->merge(['type' => $type, 'data-slot' => 'input', ...$state->attributes()]) }}>
