@@ -21,6 +21,16 @@ it('moves to the next menu with the arrow keys', function () {
         ->assertSeeIn('[data-slot="menubar-content"]:popover-open', 'New Tab');
 });
 
+it('switches an open menu when an arrow key arrives on its trigger', function () {
+    visit('/overlays')
+        ->click('View')
+        ->assertSeeIn('[data-slot="menubar-content"]:popover-open', 'Always Show Bookmarks Bar')
+        ->keys('[data-slot="menubar-trigger"]:has-text("View")', 'ArrowLeft')
+        ->assertSeeIn('[data-slot="menubar-content"]:popover-open', 'New Tab')
+        ->keys('[data-slot="menubar-trigger"]:first-child', 'ArrowRight')
+        ->assertSeeIn('[data-slot="menubar-content"]:popover-open', 'Always Show Bookmarks Bar');
+});
+
 it('binds its checkbox and radio items, staying open', function () {
     // The Context Menu binds the same properties, so its items show what reached the server.
     visit('/overlays')

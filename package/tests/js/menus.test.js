@@ -89,6 +89,28 @@ describe('menubar', () => {
 
         expect(isOpen(menu('file'))).toBe(true)
     })
+
+    it('switches an open menu when an arrow key arrives before focus leaves its trigger', () => {
+        mount()
+        menu('view').showPopover()
+        const trigger = document.querySelector('[commandfor="view"]')
+        trigger.focus()
+
+        trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true }))
+
+        expect(isOpen(menu('file'))).toBe(true)
+    })
+
+    it('only moves focus between triggers when no menu is open', () => {
+        mount()
+        const trigger = document.querySelector('[commandfor="view"]')
+        trigger.focus()
+
+        trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true }))
+
+        expect(document.activeElement).toBe(document.querySelector('[commandfor="file"]'))
+        expect(isOpen(menu('file'))).toBe(false)
+    })
 })
 
 describe('hover card', () => {

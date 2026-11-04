@@ -138,7 +138,9 @@ export function register() {
         event.preventDefault()
         next.focus()
 
-        if (menu?.matches(':popover-open')) open(menuOf(next), next)
+        // The native toggle event moves focus into a menu asynchronously. A key
+        // can still arrive on its trigger while that menu is already open.
+        if ([...menubar.querySelectorAll('[data-slot="menubar-content"]')].some(content => content.matches(':popover-open'))) open(menuOf(next), next)
 
         return true
     }
