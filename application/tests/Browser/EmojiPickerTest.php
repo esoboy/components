@@ -7,8 +7,8 @@
 
 const EMOJI = '#mood-picker [data-slot="emoji-picker-emoji"]';
 
-it('loads its emojis once it shows and dispatches the one picked', function () {
-    $page = visit('/inputs')->assertCount(EMOJI, 0);
+it('renders emojis on the server and dispatches the one picked', function () {
+    $page = visit('/inputs')->assertPresent(EMOJI);
 
     $page->script("document.getElementById('mood-picker').scrollIntoView()");
 

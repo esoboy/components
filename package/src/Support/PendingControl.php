@@ -13,9 +13,24 @@ final class PendingControl
 {
     private ?ControlState $state = null;
 
-    public static function put(ControlState $state): void
+    private string $text = '';
+
+    private ?int $maxlength = null;
+
+    public static function put(ControlState $state, mixed $value = null, mixed $maxlength = null): void
     {
-        app(self::class)->state = $state;
+        $pending = app(self::class);
+        $pending->state = $state;
+        $pending->text = is_scalar($value) ? (string) $value : '';
+        $pending->maxlength = is_numeric($maxlength) && $maxlength > 0 ? (int) $maxlength : null;
+    }
+
+    /** @return array{count: int, max: ?int} */
+    public static function characters(?int $max = null): array
+    {
+        $pending = app(self::class);
+
+        return ['count' => mb_strlen($pending->text), 'max' => $max ?? $pending->maxlength];
     }
 
     public static function take(): ?ControlState
@@ -23,6 +38,8 @@ final class PendingControl
         $pending = app(self::class);
         $state = $pending->state;
         $pending->state = null;
+        $pending->text = '';
+        $pending->maxlength = null;
 
         return $state;
     }

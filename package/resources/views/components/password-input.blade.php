@@ -16,7 +16,7 @@
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
-<eso-password-input {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
+<eso-password-input x-data="uiPasswordInput" {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'password-input']) }}>
     <x-ui::input-group :render-error="false">
         <x-ui::input-group.input type="password" :state="$state" :disabled="$disabled" :attributes="$attributes->except(['class', 'style'])" />
         <x-ui::input-group.addon align="inline-end">

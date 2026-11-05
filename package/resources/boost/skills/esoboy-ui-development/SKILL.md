@@ -13,7 +13,7 @@ esoboy/ui is shadcn/ui for Laravel and Livewire 4: the same components, markup a
 ## Find the Component First
 
 - Every component is listed with its parts in [references/components.md](references/components.md). Read it before writing markup, and never invent a component, part or prop that isn't there.
-- shadcn's `<DropdownMenuItem>` is `<x-ui::dropdown-menu.item>`; its camelCase props are kebab-case attributes (`sideOffset` → `side-offset`, `defaultValue` → `default-value`). Pass PHP values with a colon: `:default-value="['bold']"`.
+- shadcn's `<DropdownMenuItem>` is `<x-ui::dropdown-menu.item>`; its camelCase props are kebab-case attributes (`sideOffset` → `side-offset`, `value` → `value`). Pass PHP values with a colon: `:value="['bold']"`.
 - Where shadcn passes `render` or `asChild` to a trigger, pass `as`, the component to render (it must render a button): `<x-ui::dropdown-menu.trigger as="sidebar.menu-button">`. Without `as`, triggers render a Button and take its `variant` and `size`.
 - `class` on a component or part styles that element. Utility classes win over the defaults without `!`.
 
@@ -45,6 +45,9 @@ Check these once in the app; the components need them.
 
 ## Binding Values
 
+PHP owns data and rendering; Livewire owns server actions. Alpine is limited to browser interaction. Do not add a custom JavaScript runtime, custom-element methods, or caller initialization. Use options arrays for common controls, keep compound slots only when custom markup is needed, and preserve the component CSS and visual design.
+
+
 Bind `wire:model` (with any modifier) on the control itself, never on an inner input:
 
 ```blade
@@ -63,11 +66,11 @@ Bind `wire:model` (with any modifier) on the control itself, never on an inner i
 |---|---|
 | Input, Textarea, Native Select, Password Input, Time Picker (`H:i`, `H:i:s` with `step="1"`) | string |
 | Checkbox, Switch, Toggle | bool; a Checkbox with `value` adds to an array |
-| Select, Radio Group, Combobox, Toggle Group `type="single"` | the item's `value` |
-| Combobox `multiple`, Toggle Group `type="multiple"`, Tags Input, Transfer, checkable Tree | list of values |
+| Select, Radio Group, Combobox, single Toggle Group | the item's `value` |
+| Combobox `multiple`, Toggle Group `multiple`, Tags Input, Transfer, checkable Tree | list of values |
 | Combobox `autocomplete` | the typed text |
 | Calendar, Date Picker | `Y-m-d`; with `time`, `Y-m-d H:i`; `mode="range"` gives `['from' => …, 'to' => …]` |
-| Slider | number, or a list for several thumbs (`:default-value="[25, 75]"`) |
+| Slider | number, or a list for several thumbs (`:value="[25, 75]"`) |
 | Number Input, Rating | number |
 | Cascader | the path of values, `['asia', 'china', 'beijing']` |
 | Color Picker | hex color |
@@ -75,9 +78,9 @@ Bind `wire:model` (with any modifier) on the control itself, never on an inner i
 | Cropper | `['x' => …, 'y' => …, 'width' => …, 'height' => …]` in the image's pixels |
 | File Upload, Image Upload | Livewire uploads (`WithFileUploads`) |
 
-Cascader, Tree, Tree Select and Transfer take options as a tree: `[['value' => 'asia', 'label' => 'Asia', 'children' => [...], 'disabled' => false]]`. For children loaded on demand, mark items `'lazy' => true` and give the Tree `load="loadChildren"`: the method gets the item's value and adds its children with `$this->items = \Esoboy\Ui\Support\Options::put($this->items, $value, $children)`. A `draggable` Tree dispatches `move` with `value`, `target` and `position`; apply it with `Options::move()`.
+Cascader, Tree, Tree Select and Transfer take options as a tree: `[['value' => 'asia', 'label' => 'Asia', 'children' => [...], 'disabled' => false]]`. For children loaded on demand, mark items `'lazy' => true` and give the Tree `:load="App\Support\TreeChildren::class"`: the invokable PHP class receives the item value and returns its children. A `draggable` Tree dispatches `move` with `value`, `target` and `position`; apply it with `Options::move()`.
 
-Without `wire:model`, `default-value` (or `default-pressed`, `default-open`) sets the initial state, as in shadcn.
+Without `wire:model`, `value` (or `checked`, `open`) sets the initial state, as in shadcn.
 
 ## Forms and Validation
 
@@ -224,7 +227,7 @@ new class extends Component
 ## Styling and Theme
 
 - One style, shadcn's. Restyle with utility classes; change the palette, radius and fonts with a `@theme` block after the imports, never with hardcoded colors on components.
-- Dark mode follows the user's choice: `@uiTheme('app')` on `<html>` renders it, `dark:` utilities follow it, and any control with `data-theme-value="light|dark|system|toggle"` changes it (render its state with `Ui::theme('app')`). There is no mode-toggle component.
+- Dark mode follows the user's choice: `@uiTheme('app')` on `<html>` renders it, `dark:` utilities follow it, and any control with `theme="light|dark|system|toggle"` changes it (render its state with `Ui::theme('app')`). There is no mode-toggle component.
 - Icons are Lucide's: `<x-ui::icon name="trash" class="size-4" />`. Only shipped names exist; check the name on lucide.dev. Inside Buttons, `data-icon="inline-start"` or `inline-end` spaces an icon as shadcn does.
 
 ## Translations
@@ -235,7 +238,7 @@ The components' own strings are `__('ui::component.key')`; override single lines
 
 - Binding `wire:model` on a part (`select.trigger`, an inner input) instead of the control.
 - Expecting errors on a control outside `<x-ui::field>` / `<x-ui::field.set>`.
-- Putting content before its trigger, or giving overlays ids to pair them; the trigger comes first and pairs itself.
+- Adding initialization or internal event bindings at call sites; PHP generates stable overlay targets and each component owns its Alpine lifecycle.
 - Adding `!` or inline colors to beat a component's style; plain utilities already win.
 - Storing the Editor's HTML without `Ui::sanitize()` and the Editor's format.
 - Calling the `Ui` facade outside a Livewire request.

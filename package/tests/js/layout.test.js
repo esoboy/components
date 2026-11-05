@@ -1,15 +1,14 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerCarousel } from '../../resources/js/components/carousel.js'
-import { register as registerResizable } from '../../resources/js/components/resizable.js'
-import { register as registerScrollArea } from '../../resources/js/components/scroll-area.js'
+import createCarousel from '../../resources/js/alpine/carousel.js'
+import createResizable from '../../resources/js/alpine/resizable.js'
+import createScrollArea from '../../resources/js/alpine/scroll-area.js'
 
 beforeAll(() => {
-    registerCarousel()
-    registerResizable()
-    registerScrollArea()
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -27,7 +26,7 @@ describe('scroll area', () => {
                 <div data-slot="scroll-area-scrollbar" data-orientation="horizontal" hidden><div data-slot="scroll-area-thumb"></div></div>
             </eso-scroll-area>`
 
-        return document.querySelector('eso-scroll-area')
+        return engineDriver(createScrollArea, document.querySelector('eso-scroll-area'))
     }
 
     it('shows a scrollbar for an overflowing axis and sizes its thumb', () => {
@@ -59,14 +58,14 @@ describe('resizable', () => {
     function mount(orientation = 'horizontal') {
         document.body.innerHTML = `
             <eso-resizable-panel-group data-orientation="${orientation}">
-                <div data-slot="resizable-panel" data-default-size="25" data-min-size="10"></div>
+                <div data-slot="resizable-panel" data-initial-size="25" data-min-size="10"></div>
                 <div data-slot="resizable-handle" tabindex="0"></div>
                 <div data-slot="resizable-panel" data-max-size="80"></div>
                 <div data-slot="resizable-handle" tabindex="0"></div>
                 <div data-slot="resizable-panel"></div>
             </eso-resizable-panel-group>`
 
-        return document.querySelector('eso-resizable-panel-group')
+        return engineDriver(createResizable, document.querySelector('eso-resizable-panel-group'))
     }
 
     const press = (handle, key) => handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
@@ -123,7 +122,7 @@ describe('carousel', () => {
                 <button data-carousel="next"></button>
             </eso-carousel>`
 
-        const carousel = document.querySelector('eso-carousel')
+        const carousel = engineDriver(createCarousel, document.querySelector('eso-carousel'))
 
         size(carousel.viewport, { scrollLeft: 0, scrollWidth: 640, clientWidth: 320 })
         size(carousel.querySelector('[data-slot="carousel-item"]'), { offsetWidth: 320 })

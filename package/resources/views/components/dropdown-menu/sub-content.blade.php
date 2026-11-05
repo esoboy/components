@@ -1,11 +1,13 @@
 @blaze(fold: true)
 
+@aware(['uiSubmenuId' => null])
+
 @props([
     'sideOffset' => 0,
     'alignOffset' => -3,
 ])
 
-<div {{ $attributes->merge([
+<div {{ $attributes->merge(['id' => $uiSubmenuId, 'x-data' => 'uiOverlayContent()', 'x-on:toggle' => 'toggled($event)', 'x-on:pointermove' => 'hover($event)', 'x-on:click' => 'click($event)', 'x-on:keydown' => 'key($event)',
     'popover' => 'auto',
     'role' => 'menu',
     'tabindex' => '-1',

@@ -6,30 +6,45 @@
  * download it.
  */
 
-import * as anchor from './components/anchor.js'
-import * as backToTop from './components/back-to-top.js'
-import * as cascader from './components/cascader.js'
-import * as colorPicker from './components/color-picker.js'
-import * as countdown from './components/countdown.js'
-import * as cropper from './components/cropper.js'
-import * as emojiPicker from './components/emoji-picker.js'
-import * as fileUpload from './components/file-upload.js'
-import * as imagePreview from './components/image-preview.js'
-import * as mentions from './components/mentions.js'
-import * as numberInput from './components/number-input.js'
-import * as passwordInput from './components/password-input.js'
-import * as rating from './components/rating.js'
-import * as tagsInput from './components/tags-input.js'
-import * as tour from './components/tour.js'
-import * as transfer from './components/transfer.js'
-import * as tree from './components/tree.js'
-import * as verificationCodeButton from './components/verification-code-button.js'
-import * as watermark from './components/watermark.js'
+import anchor from './alpine/anchor.js'
+import backToTop from './alpine/back-to-top.js'
+import cascader from './alpine/cascader.js'
+import colorPicker from './alpine/color-picker.js'
+import countdown from './alpine/countdown.js'
+import cropper from './alpine/cropper.js'
+import emojiPicker from './alpine/emoji-picker.js'
+import fileUpload from './alpine/file-upload.js'
+import imagePreview from './alpine/image-preview.js'
+import mentions from './alpine/mentions.js'
+import { numberInput, rating } from './alpine/inputs.js'
+import passwordInput from './alpine/password-input.js'
+import tour from './alpine/tour.js'
+import tree from './alpine/tree.js'
+import watermark from './alpine/watermark.js'
 
-const components = [
-    anchor, backToTop, cascader, colorPicker, countdown, cropper, emojiPicker, fileUpload,
-    imagePreview, mentions, numberInput, passwordInput, rating, tagsInput, tour, transfer,
-    tree, verificationCodeButton, watermark,
-]
 
-for (const component of components) component.register()
+window.Alpine.data('uiNumberInput', numberInput)
+window.Alpine.data('uiRating', rating)
+window.Alpine.data('uiTree', tree)
+window.Alpine.data('uiCascader', cascader)
+window.Alpine.data('uiColorPicker', colorPicker)
+window.Alpine.data('uiCountdown', countdown)
+window.Alpine.data('uiEmojiPicker', emojiPicker)
+
+window.Alpine.data('uiAnchor', anchor)
+
+window.Alpine.data('uiBackToTop', backToTop)
+
+window.Alpine.data('uiFileUpload', fileUpload)
+
+window.Alpine.data('uiImagePreview', imagePreview)
+
+window.Alpine.data('uiPasswordInput', passwordInput)
+
+window.Alpine.data('uiMentions', mentions)
+
+window.Alpine.data('uiTour', tour)
+
+window.Alpine.data('uiCropper', cropper)
+
+window.Alpine.data('uiWatermark', watermark)

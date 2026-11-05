@@ -1,9 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { register as registerDataTable } from '../../resources/js/components/data-table.js'
+import dataTable from '../../resources/js/alpine/data-table.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
-beforeAll(() => registerDataTable())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -20,26 +21,22 @@ function mount() {
             </table>
         </eso-data-table>`
 
-    return document.querySelector('eso-data-table')
+    return engineDriver(dataTable, document.querySelector('eso-data-table'))
 }
 
 const all = () => document.querySelector('[data-data-table-select-all]')
 const rows = () => [...document.querySelectorAll('[data-data-table-select-row]')]
 
-it('checks every enabled row from the select-all box, announcing each', () => {
-    mount()
-    const changed = vi.fn()
-    document.addEventListener('change', changed)
-
-    all().click()
-
-    expect(rows().map(box => box.checked)).toEqual([true, true, false])
-    expect(changed.mock.calls.filter(([event]) => event.target.matches('[data-data-table-select-row]'))).toHaveLength(2)
-    expect([...document.querySelectorAll('tbody tr')].map(row => row.getAttribute('data-state'))).toEqual(['selected', 'selected', null])
-
-    all().click()
-    expect(rows().map(box => box.checked)).toEqual([false, false, false])
-    document.removeEventListener('change', changed)
+it('sends one server action with enabled visible row ids', () => {
+    const table = mount()
+    const selectRows = vi.fn()
+    // The Alpine provider reads the owning Livewire component, not per-row change events.
+    const data = dataTable()
+    data.$el = table; data.$wire = { selectRows }
+    data._selectAll(true)
+    expect(selectRows).toHaveBeenCalledWith(['1', '2'], true)
+    data._selectAll(false)
+    expect(selectRows).toHaveBeenLastCalledWith(['1', '2'], false)
 })
 
 it('shows mixed while only some rows are checked', () => {
@@ -71,7 +68,7 @@ describe('expanding', () => {
         document.body.innerHTML = `
             <eso-data-table>
                 <table><tbody>
-                    <tr data-row-id="eng" data-default-expanded><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
+                    <tr data-row-id="eng" data-expanded><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
                     <tr data-row-id="eng/platform" data-parent="eng" hidden><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
                     <tr data-row-id="eng/platform/api" data-parent="eng/platform" hidden><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
                     <tr data-row-id="ops"><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
@@ -79,7 +76,7 @@ describe('expanding', () => {
                 </tbody></table>
             </eso-data-table>`
 
-        return document.querySelector('eso-data-table')
+        return engineDriver(dataTable, document.querySelector('eso-data-table'))
     }
 
     const visible = () => [...document.querySelectorAll('tr[data-row-id]')].filter(row => ! row.hidden).map(row => row.dataset.rowId)
@@ -139,9 +136,7 @@ describe('sticky columns', () => {
             </eso-data-table>`
 
         for (const cell of document.querySelectorAll('td')) cell.getBoundingClientRect = () => ({ width: Number(cell.dataset.width) })
-        document.querySelector('eso-data-table').connectedCallback()
-
-        return document.querySelector('eso-data-table')
+        return engineDriver(dataTable, document.querySelector('eso-data-table'))
     }
 
     it('offsets each sticky cell by the sticky cells before it on its edge', () => {
@@ -175,6 +170,7 @@ it('lights a merged cell with whichever of its rows is hovered', () => {
             </tbody></table>
         </eso-data-table>`
 
+    engineDriver(dataTable, document.querySelector('eso-data-table'))
     const [, , keyboard, license] = document.querySelectorAll('tbody tr')
     const lit = () => [...document.querySelectorAll('[data-span-hover]')].map(cell => cell.textContent)
 

@@ -36,7 +36,7 @@ it('sends a PNG with the form and clears from the server', function () {
         ->assertSee('Signature saved')
         ->assertAttributeContains('#saved-signature', 'src', 'data:image/png;base64,')
         ->click('Reset from server')
-        ->assertScript("document.querySelector('#signature').value === null");
+        ->assertValue('#signature input[type="hidden"]', '');
 });
 
 it('requires a signature to save', function () {

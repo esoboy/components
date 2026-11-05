@@ -1,7 +1,8 @@
 # esoboy/ui
 
-shadcn/ui for Laravel 13 and Livewire 4: the same components, markup and look, as Blade
-components that bind with `wire:model`.
+shadcn/ui for Laravel 13 and Livewire 4, with the same visual design and a
+PHP-first Blade interface. PHP renders content and values, Livewire handles server
+actions, and Alpine supplies the browser interactions that need it.
 
 ## Requirements
 
@@ -54,6 +55,31 @@ Apps created from the Laravel skeleton already republish the `laravel-assets` gr
 match the installed version; otherwise the route serves them.
 
 ## Usage
+
+Common controls need only their data and a binding. Initialization, internal
+references and event handlers belong to the component:
+
+```blade
+<x-ui::select wire:model="status" :options="['draft' => 'Draft', 'published' => 'Published']" placeholder="Choose status" />
+<x-ui::combobox wire:model.live="assignee" :options="$users" placeholder="Find a user" />
+<x-ui::tree-select wire:model="department" :items="$departments" />
+<x-ui::tags-input wire:model="tags" name="tags" :max="5" />
+
+<x-ui::sidebar.provider scope="admin">
+    <x-ui::sidebar>…</x-ui::sidebar>
+    <x-ui::sidebar.inset>…</x-ui::sidebar.inset>
+</x-ui::sidebar.provider>
+```
+
+Use `value` for an initial value, `checked` for a boolean control, `open` for a
+disclosure, and `active` for navigation. A bound Livewire property takes precedence.
+Use boolean `multiple` on Toggle Group and Combobox. Options may be a value-to-label
+map, a list of strings, or records with `value`, `label` and optional `disabled`
+and `children`.
+
+Compound slots remain available when a selected label or layout needs custom
+markup. The breaking API changes, value shapes and server-side responsibilities
+are documented in [UPGRADING.md](UPGRADING.md). Old APIs have no compatibility layer.
 
 Components are `<x-ui::name>`, their parts `<x-ui::name.part>`, named and shaped like
 shadcn/ui's:
@@ -150,19 +176,19 @@ page in it, so nothing flashes:
 <html lang="zh-CN" @uiTheme('admin')>
 ```
 
-Any control picks the theme with `data-theme-value`: `light`, `dark`, `system`, or
+Any supported button or choice control picks the theme with `theme`: `light`, `dark`, `system`, or
 `toggle` (between light and dark). Buttons act on click; Toggles, Switches, Toggle Group
 items and menu radio items act on change, and every one of them shows the current choice.
 `Ui::theme('admin')` gives the choice to render a control's initial state:
 
 ```blade
-<x-ui::toggle-group type="single" :default-value="Ui::theme('admin')">
-    <x-ui::toggle-group.item value="light" data-theme-value="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
-    <x-ui::toggle-group.item value="dark" data-theme-value="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
-    <x-ui::toggle-group.item value="system" data-theme-value="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
+<x-ui::toggle-group :value="Ui::theme('admin')">
+    <x-ui::toggle-group.item value="light" theme="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
+    <x-ui::toggle-group.item value="dark" theme="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
+    <x-ui::toggle-group.item value="system" theme="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
 </x-ui::toggle-group>
 
-<x-ui::switch data-theme-value="toggle" />
+<x-ui::switch theme="toggle" />
 ```
 
 Tailwind's `dark:` follows the same choice.

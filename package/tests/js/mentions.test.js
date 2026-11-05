@@ -1,9 +1,10 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerMentions } from '../../resources/js/components/mentions.js'
+import createMentions from '../../resources/js/alpine/mentions.js'
 
-beforeAll(() => registerMentions())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -23,7 +24,7 @@ function mount(prefix = ['@']) {
             <div data-slot="mentions-mirror"><span></span><span data-mentions-caret></span></div>
         </eso-mentions>`
 
-    const element = document.querySelector('eso-mentions')
+    const element = engineDriver(createMentions, document.querySelector('eso-mentions'))
     const seen = []
 
     element.input.addEventListener('mentions-search', event => seen.push(['search', event.detail]))

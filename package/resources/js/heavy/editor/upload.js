@@ -6,6 +6,8 @@
  * its address, for the server to fetch.
  */
 
+import axios from 'axios'
+
 const AT_ONCE = 3
 
 const waiting = []
@@ -35,7 +37,7 @@ function next() {
     }
 }
 
-// XMLHttpRequest rather than fetch: only it tells how much of a body has gone.
+// Transport stays outside the DOM event layer; the Alpine editor owns its lifecycle.
 function send(endpoint, { file, url, source, context, token, progress }) {
     const body = new FormData()
 
@@ -44,35 +46,16 @@ function send(endpoint, { file, url, source, context, token, progress }) {
     if (url) body.append('url', url)
     if (context) body.append('context', context)
 
-    return new Promise((resolve, reject) => {
-        const request = new XMLHttpRequest()
-
-        request.open('POST', endpoint)
-        request.withCredentials = true
-        request.setRequestHeader('Accept', 'application/json')
-        request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-        if (token) request.setRequestHeader('X-CSRF-TOKEN', token)
-
-        request.upload.addEventListener('progress', event => event.lengthComputable && progress?.(event.loaded, event.total))
-        request.addEventListener('error', () => reject(new UploadError('')))
-        request.addEventListener('load', () => {
-            let answer = {}
-
-            try {
-                answer = JSON.parse(request.responseText || '{}') ?? {}
-            } catch {
-                answer = {}
-            }
-
-            if (request.status >= 200 && request.status < 300) return resolve(answer.attachment ?? null)
-
-            // The app's reason: a validation message, an authorization one; none from a server error.
-            const status = request.status
-            const reason = status === 422 ? Object.values(answer.errors ?? {}).flat()[0] ?? answer.message : status < 500 && status !== 419 ? answer.message : null
-
-            reject(new UploadError(typeof reason === 'string' ? reason : ''))
-        })
-
-        request.send(body)
+    progress?.(0, file?.size ?? 1)
+    return axios.post(endpoint, body, {
+        withCredentials: true,
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(token ? { 'X-CSRF-TOKEN': token } : {}) },
+        onUploadProgress: event => progress?.(event.loaded, event.total ?? file?.size ?? 1),
+        validateStatus: () => true,
+    }).then(response => {
+        const answer = response.data && typeof response.data === 'object' ? response.data : {}
+        if (response.status >= 200 && response.status < 300) { progress?.(file?.size ?? 1, file?.size ?? 1); return answer.attachment ?? null }
+        const reason = response.status === 422 ? Object.values(answer.errors ?? {}).flat()[0] ?? answer.message : response.status < 500 && response.status !== 419 ? answer.message : null
+        throw new UploadError(typeof reason === 'string' ? reason : '')
     })
 }

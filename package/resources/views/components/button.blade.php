@@ -7,6 +7,7 @@
 ])
 
 @php
+$attributes = \Esoboy\Ui\Support\Theme::control($attributes);
 $attributes = $attributes->merge([
     'data-slot' => 'button',
     'data-variant' => $variant,

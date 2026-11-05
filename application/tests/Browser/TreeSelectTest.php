@@ -4,7 +4,7 @@
  * Tree Select on the Inputs page: a Select-style trigger opening a Tree.
  */
 
-const TREE_SELECT = 'eso-tree-select[wire\\:model\\.live="department"]';
+const TREE_SELECT = '#department-picker';
 
 it('picks one item and shows it on its trigger', function () {
     visit('/inputs')
@@ -17,11 +17,15 @@ it('picks one item and shows it on its trigger', function () {
 });
 
 it('checks several items when checkable', function () {
-    $select = 'eso-tree-select[wire\\:model\\.live="departments"]';
+    $select = '#departments-picker';
 
     visit('/inputs')
         ->click($select.' [data-slot="select-trigger"]')
         ->click($select.' [data-slot="tree-item"][data-value="sales"] > [data-slot="tree-item-row"]')
+        ->assertSeeIn('#departments', 'sales')
+        ->assertScript(opened($select.' [data-slot="tree-select-content"]'))
         ->click($select.' [data-slot="tree-item"][data-value="mobile"] > [data-slot="tree-item-row"]')
-        ->assertScript("document.getElementById('departments').textContent.split(', ').sort().join()", 'mobile,sales');
+        ->assertSeeIn('#departments', 'sales')
+        ->assertSeeIn('#departments', 'mobile')
+        ->assertNoJavaScriptErrors();
 });

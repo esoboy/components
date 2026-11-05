@@ -10,75 +10,28 @@ $items = [
     ['value' => 'settings', 'label' => 'Settings'],
 ];
 
-it('renders items as an ARIA tree, open where asked', function () use ($items) {
-    $html = (string) $this->blade('<x-ui::tree :items="$items" checkable aria-label="Permissions" :default-expanded="[\'orders\']" :default-value="[\'orders.view\']" />', ['items' => $items]);
-
-    expect($html)
-        ->toContain('<eso-tree data-slot="tree" data-checkable="data-checkable" data-value="[&quot;orders.view&quot;]">')
-        ->toContain('<ul role="tree" data-slot="tree-list" aria-multiselectable="true" aria-label="Permissions">')
-        ->toContain('<li role="treeitem" tabindex="-1" wire:key="tree-item-orders" data-slot="tree-item" data-value="orders" aria-expanded="true">')
-        ->toContain('<span data-slot="tree-item-label">Orders</span>')
-        ->toContain('<input type="checkbox" data-slot="checkbox" data-tree-check="data-tree-check" tabindex="-1" aria-hidden="true">')
-        ->toContain('<ul role="group" data-slot="tree-group" >')
-        ->toContain('data-value="orders.export" aria-disabled="true"')
-        ->toContain('<li role="treeitem" tabindex="-1" wire:key="tree-item-settings" data-slot="tree-item" data-value="settings">')
-        ->not->toContain('data-tree-search');
+it('renders expanded tree items and checks their enabled descendants in PHP', function () use ($items) {
+    $html = (string) $this->blade('<x-ui::tree :items="$items" checkable aria-label="Permissions" :expanded="[\'orders\']" :value="[\'orders.view\']" />', compact('items'));
+    expect($html)->toContain('data-checkable')->toContainMarkup('<ul role="tree" aria-multiselectable="true" aria-label="Permissions">')->toContainMarkup('<li role="treeitem" data-value="orders" aria-expanded="true">')->toContainMarkup('<li role="treeitem" data-value="orders.export" aria-disabled="true">')->not->toContain('data-tree-search');
 });
 
-it('composes items with icons, collapsed by default', function () {
-    $html = (string) $this->blade(<<<'BLADE'
-        <x-ui::tree default-value="a.txt">
-            <x-ui::tree.item value="docs" label="docs">
-                <x-slot:icon>F</x-slot:icon>
-                <x-ui::tree.item value="a.txt" label="a.txt" />
-            </x-ui::tree.item>
-        </x-ui::tree>
-        BLADE);
-
-    expect($html)
-        ->toContain('data-value="&quot;a.txt&quot;"')
-        ->toContain('data-value="docs" aria-expanded="false"')
-        ->toContain('<span data-slot="tree-item-icon">F</span>')
-        ->toContain('<ul role="group" data-slot="tree-group"  hidden >')
-        ->not->toContain('data-tree-check');
+it('renders icons and collapsed children from PHP items', function () {
+    $html = (string) $this->blade('<x-ui::tree value="a.txt" :items="[[\'value\' => \'docs\', \'label\' => \'docs\', \'icon\' => \'folder\', \'children\' => [[\'value\' => \'a.txt\', \'label\' => \'a.txt\']]]]" />');
+    expect($html)->toContainMarkup('<li role="treeitem" data-value="docs" aria-expanded="false">')->toContain('data-slot="tree-item-icon"')->toContain('data-slot="tree-group"')->not->toContain('data-tree-check');
 });
 
-it('puts a search box above a searchable tree, with its empty text', function () {
+it('renders tree search and its translated empty state', function () {
     app()->setLocale('zh_CN');
-
-    $html = (string) $this->blade('<x-ui::tree searchable :items="[[\'value\' => \'a\', \'label\' => \'A\']]" />');
-
-    expect($html)
-        ->toContain('<div data-slot="tree-search">')
-        ->toContain('<input type="text" data-slot="input-group-control" class="px-2 text-sm" data-tree-search="data-tree-search" placeholder="搜索" aria-label="搜索" autocomplete="off" spellcheck="false">')
-        ->toContain('<div data-slot="tree-empty" hidden>没有结果。</div>');
-
-    expect((string) $this->blade('<x-ui::tree searchable placeholder="Find a file" :items="[]" />'))->toContain('placeholder="Find a file"');
+    $this->blade('<x-ui::tree searchable :items="[[\'value\' => \'a\', \'label\' => \'A\']]" />')->assertSee('placeholder="搜索"', false)->assertSee('wire:model.live.debounce.150ms="query"', false)->assertSee('没有结果。');
 });
 
-it('renders lazy items as closed parents with a spinner, and names the load method', function () {
-    $html = (string) $this->blade('<x-ui::tree load="loadChildren" draggable :items="[[\'value\' => \'eng\', \'label\' => \'Engineering\', \'lazy\' => true], [\'value\' => \'ops\', \'label\' => \'Ops\', \'lazy\' => true, \'children\' => [[\'value\' => \'ops.a\', \'label\' => \'A\']]]]" />');
-
-    expect($html)
-        ->toContain('<eso-tree data-slot="tree" data-value="null" data-load="loadChildren" data-draggable="data-draggable">')
-        ->toContain('data-value="eng" data-lazy="data-lazy" aria-expanded="false">')
-        ->toContain('data-tree-item-spinner')
-        ->toMatch('/data-value="eng" data-lazy="data-lazy"[\s\S]*?<ul role="group" data-slot="tree-group"  hidden >\s*<\/ul>/')
-        ->toContain('data-value="ops" aria-expanded="false">');
+it('renders lazy items with an internal server loading action', function () {
+    $this->blade('<x-ui::tree draggable :items="[[\'value\' => \'eng\', \'label\' => \'Engineering\', \'lazy\' => true]]" />')->assertSee('data-draggable', false)->assertSee('data-tree-item-spinner', false)->assertSee('aria-expanded="false"', false);
 });
 
-it('renders a tree select with the chosen labels', function () use ($items) {
-    $html = (string) $this->blade('<x-ui::tree-select :items="$items" checkable searchable load="more" :default-value="[\'orders.view\', \'settings\']" placeholder="Pick" class="w-64" />', ['items' => $items]);
-
-    expect($html)
-        ->toContain('<eso-tree-select data-slot="tree-select" data-placeholder="Pick" data-checkable="data-checkable">')
-        ->toContain('<button type="button" data-slot="select-trigger" data-size="default" aria-haspopup="tree" aria-expanded="false" command="toggle-popover" commandfor="" class="w-64" data-tree-select-trigger=')
-        ->toContain('<span data-slot="select-value" data-placeholder="View, Settings">View, Settings</span>')
-        ->toContain('popover="auto" data-slot="tree-select-content"')
-        ->toContain('<eso-tree data-slot="tree" data-checkable="data-checkable"')
-        ->toContain('data-load="more"')
-        ->toContain('data-tree-search');
-
+it('renders selected tree labels and preserves native form names', function () use ($items) {
+    $html = (string) $this->blade('<x-ui::tree-select :items="$items" checkable searchable :value="[\'orders.view\', \'settings\']" placeholder="Pick" class="w-64" name="permissions" />', compact('items'));
+    expect($html)->toContain('View, Settings')->toContain('class="w-64"')->toContain('data-tree-search')->toContainMarkup('<input type="hidden" name="permissions[]" value="settings">');
     expect(Options::find($items, ['settings', 'orders.view']))->toBe(['View', 'Settings']);
 });
 

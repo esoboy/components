@@ -15,7 +15,7 @@ $remaining = Countdown::remaining($until, $seconds);
 @endphp
 
 <eso-countdown {{ $attributes->merge([
-    'role' => 'timer',
+    'role' => 'timer', 'x-data' => 'uiCountdown(false)', 'x-on:ui-countdown.window' => 'start($event.detail)',
     'data-slot' => 'countdown',
     'data-remaining' => $remaining,
     'data-seconds' => $until === null ? $seconds : null,

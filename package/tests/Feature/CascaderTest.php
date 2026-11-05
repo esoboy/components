@@ -32,20 +32,18 @@ it('takes options as value => label pairs too, children included', function () {
 });
 
 it('renders the trigger with the chosen path', function () use ($options) {
-    $html = (string) $this->blade('<x-ui::cascader :options="$options" :default-value="[\'zj\', \'hz\']" name="region" placeholder="Pick" />', ['options' => $options]);
+    $html = (string) $this->blade('<x-ui::cascader :options="$options" :value="[\'zj\', \'hz\']" name="region" placeholder="Pick" />', ['options' => $options]);
 
     expect($html)
-        ->toContain('data-slot="cascader" data-value="[&quot;zj&quot;,&quot;hz&quot;]" data-separator="/" data-placeholder="Pick" data-name="region"')
-        ->toContain('<script type="application/json" data-cascader-options>[{"value":"zj"')
-        ->toContain('<span data-slot="select-value" data-placeholder="Zhejiang / Hangzhou">Zhejiang / Hangzhou</span>')
+        ->toContain('data-slot="cascader"')->toContain('data-slot="cascader-column"')->not->toContain('<script')
+        ->toContainMarkup('<span data-slot="select-value" data-placeholder="Zhejiang / Hangzhou">Zhejiang / Hangzhou</span>')
         ->toContain('popover="auto" data-slot="cascader-content"')
-        ->toContain('<input type="hidden" name="region[]" value="zj">')
+        ->toContainMarkup('<input type="hidden" name="region[]" value="zj">')
         ->not->toContain('data-placeholder >');
 });
 
 it('shows the placeholder for an empty or unknown path', function () use ($options) {
-    $this->blade('<x-ui::cascader :options="$options" :default-value="[\'nope\']" placeholder="Pick" />', ['options' => $options])
-        ->assertSee('data-value="[]"', false)
-        ->assertSee('<span data-slot="select-value" data-placeholder="Pick">Pick</span>', false)
+    $this->blade('<x-ui::cascader :options="$options" :value="[\'nope\']" placeholder="Pick" />', ['options' => $options])
+        ->assertSeeMarkup('<span data-slot="select-value" data-placeholder="Pick">Pick</span>')
         ->assertSee('data-placeholder', false);
 });

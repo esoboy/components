@@ -4,10 +4,19 @@
     'max' => null,
 ])
 
-{{-- shadcn's "0/280 characters" in a block-end addon, kept up to date. It counts as Laravel's max rule does; max is a soft limit that turns it red, without it the control's maxlength is the limit. wire:ignore leaves it to its script; wire:key keeps morphs matching it by the id its script gives it. --}}
+@php
+$characters = \Esoboy\Ui\Support\PendingControl::characters($max === null ? null : (int) $max);
+$max = $characters['max'];
+$key = \Esoboy\Ui\Support\Model::scope('input-count', $loop ?? null);
+@endphp
+{{-- PHP renders the initial count; Alpine updates its presentation as the user types. --}}
 <eso-input-group-count {{ $attributes->merge([
+    'id' => $key,
+    'wire:key' => $key,
     'data-slot' => 'input-group-count',
     'data-max' => $max,
     'data-label' => __('ui::input-group.count'),
     'data-label-max' => __('ui::input-group.count-max'),
-]) }} wire:key="input-group-count" wire:ignore>{{ $max ? __('ui::input-group.count-max', ['count' => 0, 'max' => $max]) : __('ui::input-group.count', ['count' => 0]) }}</eso-input-group-count>
+    'x-data' => 'uiInputCount',
+    'x-effect' => 'render()',
+]) }} wire:ignore>{{ $max ? __('ui::input-group.count-max', $characters) : __('ui::input-group.count', $characters) }}</eso-input-group-count>

@@ -16,8 +16,8 @@
     'placeholder' => null,
     'size' => 'default',
     'disabled' => false,
-    'defaultValue' => null,
-    'defaultExpanded' => [],
+    'value' => null,
+    'expanded' => [],
     'expandAll' => false,
     'searchable' => false,
     'load' => null,
@@ -25,18 +25,12 @@
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? Model::value($attributes);
-$labels = Options::find($items, $checkable ? (array) ($value ?? []) : ($value === null ? [] : [$value]));
+$value = Model::value($attributes, $value);
+$validation = $state->attributes();
+$settings = compact('checkable', 'placeholder', 'size', 'disabled', 'expanded', 'expandAll', 'searchable', 'load', 'validation');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'tree-picker-'.\Esoboy\Ui\Support\Sequence::next('tree-select');
 @endphp
 
-{{-- <eso-tree-select> proxies its tree's .value, so wire:model binds on it. --}}
-<eso-tree-select {{ $attributes->except(['name', 'class', 'style'])->merge(['data-slot' => 'tree-select', 'data-placeholder' => $placeholder ?? false, 'data-checkable' => (bool) $checkable]) }}>
-    <x-ui::select.trigger :size="$size" data-tree-select-trigger aria-haspopup="tree" :data-placeholder="! $labels" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($state->attributes())">
-        <x-ui::select.value :placeholder="$labels ? implode(', ', $labels) : $placeholder" />
-    </x-ui::select.trigger>
-    <div popover="auto" data-slot="tree-select-content" data-side="bottom" data-align="start" style="--side-offset: 4px;" wire:ignore.self>
-        <x-ui::tree :items="$items" :checkable="$checkable" :default-value="$value" :default-expanded="$defaultExpanded" :expand-all="$expandAll" :searchable="$searchable" :load="$load" />
-    </div>
-</eso-tree-select>
+@livewire('ui.tree-select', ['items' => $items, 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-tree-select-'.$key))
 <x-ui::field.error :state="$state" />
 <x-ui::extras />

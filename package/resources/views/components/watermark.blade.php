@@ -16,7 +16,7 @@ $lines = array_values(array_filter(array_map('strval', (array) $content), fn (st
 $tile = $lines ? Watermark::tile($lines, (int) $fontSize, (int) $rotate, [(int) $gapX, (int) $gapY]) : null;
 @endphp
 
-<eso-watermark {{ $attributes->merge(['data-slot' => 'watermark']) }}>
+<eso-watermark {{ $attributes->merge(['data-slot' => 'watermark', 'x-data' => 'uiWatermark']) }}>
     {{ $slot }}
     @if ($tile)
     <div data-slot="watermark-layer" aria-hidden="true" style="--watermark-image: {{ $tile['image'] }}; --watermark-size: {{ $tile['width'] }}px {{ $tile['height'] }}px"></div>

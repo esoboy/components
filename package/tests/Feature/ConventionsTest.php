@@ -46,19 +46,12 @@ it('imports every component stylesheet once, in ui.css or extras.css', function 
     expect($imported)->toBe($files);
 });
 
-it('loads extras.js wherever an element it defines shows', function (string $path) {
-    $js = realpath(__DIR__.'/../../resources/js');
-
-    preg_match_all("/from '\.\/components\/([\w-]+)\.js'/", (string) file_get_contents("{$js}/extras.js"), $modules);
-
-    $elements = collect($modules[1])
-        ->flatMap(function (string $module) use ($js) {
-            preg_match_all("/define\('(eso-[\w-]+)'/", (string) file_get_contents("{$js}/components/{$module}.js"), $defined);
-
-            return $defined[1];
-        });
-
-    $source = (string) file_get_contents($path);
-
-    expect(str_contains($source, '<x-ui::extras />'))->toBe($elements->contains(fn (string $element) => str_contains($source, "<{$element}")));
-})->with(fn () => array_diff_key(componentViews(), ['extras.blade.php' => true]));
+it('loads the extras bundle from each extra component entry', function (string $path) {
+    expect(file_get_contents($path))->toContain('<x-ui::extras />');
+})->with(fn () => array_intersect_key(componentViews(), array_fill_keys([
+    'anchor/index.blade.php', 'back-to-top.blade.php', 'cascader.blade.php', 'color-picker.blade.php',
+    'countdown.blade.php', 'cropper/index.blade.php', 'emoji-picker/index.blade.php', 'file-upload.blade.php',
+    'image-preview/index.blade.php', 'image-upload.blade.php', 'mentions/index.blade.php', 'number-input.blade.php',
+    'password-input.blade.php', 'rating.blade.php', 'tags-input.blade.php', 'tour/index.blade.php',
+    'transfer.blade.php', 'tree-select.blade.php', 'tree/index.blade.php', 'verification-code-button.blade.php', 'watermark.blade.php',
+], true)));

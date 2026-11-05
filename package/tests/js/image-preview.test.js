@@ -1,9 +1,10 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerImagePreview } from '../../resources/js/components/image-preview.js'
+import createImagePreview from '../../resources/js/alpine/image-preview.js'
 
-beforeAll(() => registerImagePreview())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -22,7 +23,7 @@ function mount(count = 3) {
             </dialog>
         </eso-image-preview>`
 
-    return document.querySelector('eso-image-preview')
+    return engineDriver(createImagePreview, document.querySelector('eso-image-preview'))
 }
 
 const button = (element, action) => element.querySelector(`[data-image-preview="${action}"]`)

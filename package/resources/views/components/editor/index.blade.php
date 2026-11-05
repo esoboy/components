@@ -19,14 +19,14 @@
     'uploadContext' => [],
     'placeholder' => null,
     'label' => null,
-    'defaultValue' => null,
+    'value' => null,
     'disabled' => false,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $rich = RichText::resolve($format);
-$value = $defaultValue ?? Model::value($attributes);
+$value = Model::value($attributes, $value);
 $value = $rich->sanitize(is_string($value) ? $value : '');
 $name = $attributes->get('name');
 $counts = $rich->has('character-count') || $maxLength;
@@ -39,13 +39,9 @@ $locale = strtolower(str_replace('_', '-', app()->getLocale()));
 $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'emoji/'.strtok($locale, '-').'.json', 'emoji/en.json'])->first(fn (string $file) => $assets->path($file) !== null, 'emoji/en.json')) : null;
 @endphp
 
-@assets
-{!! app(Assets::class)->module('editor.js') !!}
-@endassets
 
-{{-- <eso-editor> exposes the HTML as .value ('' when empty), so wire:model binds on it. --}}
-<eso-editor {{ $attributes->except('name')->merge([
-    'data-slot' => 'editor',
+<eso-editor {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge([
+    'data-slot' => 'editor', 'x-data' => 'uiEngine('.json_encode(Model::binding($attributes)).')', 'data-engine' => app(Assets::class)->url('editor.js'),
     'data-format' => json_encode($rich->client(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox'), 'caption' => __('ui::editor.caption-placeholder'), 'failed' => __('ui::editor.upload-failed'), 'keyboard' => $rich->has('toolbar', 'bubble-menu') ? __('ui::editor.keyboard-hint') : ''], JSON_UNESCAPED_UNICODE),
     'data-upload' => $uploads ? route('esoboy-ui.editor.upload') : false,
@@ -90,8 +86,6 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     @endif
     <x-ui::editor.menus />
     <x-ui::tooltip.content data-editor-tip wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></x-ui::tooltip.content>
-    @if ($name)
-    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
-    @endif
+    <input type="hidden" data-editor-model @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes) }}>
 </eso-editor>
 <x-ui::field.error :state="$state" />

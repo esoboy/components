@@ -1,8 +1,8 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { accepts, formatSize, register as registerFileUpload } from '../../resources/js/components/file-upload.js'
+import createFileUpload, { accepts, formatSize } from '../../resources/js/alpine/file-upload.js'
 
 beforeAll(() => {
-    registerFileUpload()
     URL.createObjectURL ||= () => 'blob:preview'
     URL.revokeObjectURL ||= () => {}
 
@@ -15,6 +15,7 @@ beforeAll(() => {
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -61,7 +62,7 @@ describe('file upload', () => {
                 <div data-file-upload-list hidden><div data-file-upload-pending></div></div>
             </eso-file-upload>`
 
-        const element = document.querySelector('eso-file-upload')
+        const element = engineDriver(createFileUpload, document.querySelector('eso-file-upload'))
 
         // jsdom refuses to assign a plain list to input.files; keep what was dropped.
         let files = []
@@ -179,7 +180,7 @@ describe('image upload', () => {
                 <label data-slot="image-upload-dropzone"><input type="file" data-slot="file-upload-input"><img data-slot="image-upload-image" hidden><span data-slot="image-upload-placeholder"></span></label>
             </eso-file-upload>`
 
-        const element = document.querySelector('eso-file-upload')
+        const element = engineDriver(createFileUpload, document.querySelector('eso-file-upload'))
 
         Object.defineProperty(element.input, 'files', { value: [new File(['x'], 'me.png', { type: 'image/png' })] })
         element.input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }))

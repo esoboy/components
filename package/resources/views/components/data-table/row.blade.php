@@ -12,7 +12,7 @@
     'wire:key' => 'data-table-row-'.$id,
     'data-row-id' => $id,
     'data-parent' => $parent,
-    'data-default-expanded' => (bool) $expanded,
+    'data-expanded' => (bool) $expanded,
     'hidden' => $parent !== null,
     'style' => $level ? '--level: '.$level.';' : null,
 ])">{{ $slot }}</x-ui::table.row>

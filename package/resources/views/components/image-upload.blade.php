@@ -26,7 +26,7 @@ $image = $upload['url'] ?? $src;
 @endphp
 
 {{-- One image: the new upload, else src. Click or drop to replace; the new image shows before the upload ends. --}}
-<eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'image-upload', 'data-shape' => $shape]) }}>
+<eso-file-upload x-data="uiFileUpload" {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'image-upload', 'data-shape' => $shape]) }}>
     <label data-slot="image-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
         <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'accept' => $accept, 'disabled' => (bool) $disabled, 'aria-label' => __('ui::image-upload.label'), ...$state->attributes()]) }}>
         <img data-slot="image-upload-image" src="{{ $image }}" alt="{{ $alt }}" @if (! $image) hidden @endif>

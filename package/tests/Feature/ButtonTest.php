@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Blade;
 
 it('renders a button with shadcn defaults', function () {
     $this->blade('<x-ui::button>Save</x-ui::button>')
-        ->assertSee('<button type="button" data-slot="button" data-variant="default" data-size="default">Save</button>', false);
+        ->assertSeeMarkup('<button type="button" data-slot="button" data-variant="default" data-size="default">Save</button>');
 });
 
 it('reflects variant and size as data attributes', function () {
@@ -27,13 +27,13 @@ it('accepts a submit type', function () {
 it('renders an anchor when given an href', function () {
     $view = $this->blade('<x-ui::button href="/settings" variant="link">Settings</x-ui::button>');
 
-    $view->assertSee('<a data-slot="button" data-variant="link" data-size="default" href="/settings">Settings</a>', false);
+    $view->assertSeeMarkup('<a data-slot="button" data-variant="link" data-size="default" href="/settings">Settings</a>');
     $view->assertDontSee('<button', false);
 });
 
 it('renders an anchor for a dynamic href', function () {
     $this->blade('<x-ui::button :href="$url">Settings</x-ui::button>', ['url' => '/settings'])
-        ->assertSee('<a data-slot="button" data-variant="default" data-size="default" href="/settings">Settings</a>', false);
+        ->assertSeeMarkup('<a data-slot="button" data-variant="default" data-size="default" href="/settings">Settings</a>');
 });
 
 it('passes classes and Livewire directives through untouched', function () {

@@ -16,7 +16,8 @@
 @php
 $state ??= ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 
-PendingControl::put($state);
+$value = $type === 'file' ? null : \Esoboy\Ui\Support\Model::value($attributes, $attributes->get('value'));
+PendingControl::put($state, $value, $attributes->get('maxlength'));
 @endphp
 
-<input {{ $attributes->merge(['type' => $type, 'data-slot' => 'input-group-control', ...$state->attributes()]) }}>
+<input {{ $attributes->merge(['type' => $type, 'value' => $value, 'data-slot' => 'input-group-control', ...$state->attributes()]) }}>

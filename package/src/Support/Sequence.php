@@ -28,4 +28,14 @@ final class Sequence
 
         return $count;
     }
+
+    public static function resetPrefix(string $prefix): void
+    {
+        $sequence = app(self::class);
+        foreach (array_keys($sequence->counts) as $name) {
+            if (str_starts_with($name, $prefix)) {
+                unset($sequence->counts[$name]);
+            }
+        }
+    }
 }

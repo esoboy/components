@@ -1,5 +1,6 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerMessageScroller } from '../../resources/js/components/message-scroller.js'
+import createMessageScroller from '../../resources/js/alpine/message-scroller.js'
 
 /*
  * jsdom does no layout, so rows get their height from data-h and stack in the content;
@@ -9,7 +10,6 @@ const VIEWPORT = 300
 const nativeRect = Element.prototype.getBoundingClientRect
 
 beforeAll(() => {
-    registerMessageScroller()
 
     Element.prototype.getBoundingClientRect = function () {
         const viewport = this.closest('[data-slot="message-scroller-viewport"]')
@@ -33,6 +33,7 @@ afterAll(() => {
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -71,7 +72,7 @@ function mount(rows, attributes = '') {
 
     document.body.append(host)
 
-    return host.querySelector('eso-message-scroller')
+    return engineDriver(createMessageScroller, host.querySelector('eso-message-scroller'))
 }
 
 const offset = (scroller, id) => scroller.items.find(item => item.dataset.messageId === id).getBoundingClientRect().top
@@ -92,19 +93,19 @@ describe('opening', () => {
     })
 
     it('opens at the last anchored turn, with a peek of the row before', () => {
-        const scroller = mount([row('a', 400), row('b', 100, true), row('c', 500)], 'data-default-scroll-position="last-anchor" data-scroll-previous-item-peek="64"')
+        const scroller = mount([row('a', 400), row('b', 100, true), row('c', 500)], 'data-scroll-position="last-anchor" data-scroll-previous-item-peek="64"')
 
         expect(offset(scroller, 'b')).toBe(64)
     })
 
     it('opens at the end when the last turn fits', () => {
-        const scroller = mount([row('a', 400), row('b', 100, true), row('c', 100)], 'data-default-scroll-position="last-anchor"')
+        const scroller = mount([row('a', 400), row('b', 100, true), row('c', 100)], 'data-scroll-position="last-anchor"')
 
         expect(scroller.viewport.scrollTop).toBe(300)
     })
 
     it('opens at the start when told to', () => {
-        const scroller = mount([row('a', 400), row('b', 400)], 'data-default-scroll-position="start"')
+        const scroller = mount([row('a', 400), row('b', 400)], 'data-scroll-position="start"')
 
         expect(scroller.viewport.scrollTop).toBe(0)
     })
@@ -124,7 +125,7 @@ describe('turns', () => {
     })
 
     it('keeps the reader in place when history is prepended', async () => {
-        const scroller = mount([row('marker', 20), row('a', 200), row('b', 200), row('c', 200)], 'data-default-scroll-position="start"')
+        const scroller = mount([row('marker', 20), row('a', 200), row('b', 200), row('c', 200)], 'data-scroll-position="start"')
 
         scroller.viewport.scrollTop = 250
         scroller.viewport.dispatchEvent(new Event('scroll'))
@@ -165,7 +166,7 @@ describe('following', () => {
 
 describe('commands', () => {
     it('jumps to a message', () => {
-        const scroller = mount([row('a', 400), row('b', 100), row('c', 400)], 'data-default-scroll-position="start"')
+        const scroller = mount([row('a', 400), row('b', 100), row('c', 400)], 'data-scroll-position="start"')
 
         expect(scroller.scrollToMessage('b')).toBe(true)
         expect(offset(scroller, 'b')).toBe(0)

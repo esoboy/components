@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
-import { register as registerToast } from '../../resources/js/components/toast.js'
+import toastProvider from '../../resources/js/alpine/toast.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
 let viewport
 
 beforeAll(() => {
     document.hasFocus = () => true
-    registerToast()
 })
 
 beforeEach(() => {
@@ -25,10 +25,11 @@ beforeEach(() => {
         </template>`
 
     document.body.innerHTML = `<div data-slot="toast-viewport" popover="manual" data-limit="3" data-timeout="5000">${toast}${icons}<template data-template="icon-loading"><svg data-slot="spinner"></svg></template></div>`
-    viewport = document.querySelector('[data-slot="toast-viewport"]')
+    viewport = engineDriver(toastProvider, document.querySelector('[data-slot="toast-viewport"]'))
 })
 
 afterEach(() => {
+    cleanupControllers()
     vi.runAllTimers()
     vi.useRealTimers()
 })

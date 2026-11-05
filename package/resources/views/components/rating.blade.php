@@ -14,12 +14,12 @@
     'size' => 'default',
     'readonly' => false,
     'disabled' => false,
-    'defaultValue' => null,
+    'value' => null,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? Model::value($attributes);
+$value = Model::value($attributes, $value);
 $value = is_numeric($value) ? $value + 0 : null;
 $name = $attributes->get('name');
 $focusable = min($max, max(1, (int) round($value ?? 1)));
@@ -32,14 +32,11 @@ $focusable = min($max, max(1, (int) round($value ?? 1)));
     @endforeach
 </span>
 @else
-{{-- <eso-rating> exposes the stars as .value (null when cleared), so wire:model binds on it. --}}
-<eso-rating {{ $attributes->except('name')->merge(['role' => 'radiogroup', 'data-slot' => 'rating', 'data-size' => $size, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
+<eso-rating {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge(['role' => 'radiogroup', 'data-slot' => 'rating', 'data-size' => $size, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, 'x-data' => 'uiRating('.json_encode(Model::binding($attributes)).')', 'x-init' => '$nextTick(() => render())', 'x-effect' => 'render()', 'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()', 'x-on:click' => 'choose($event.target.closest(\'[data-slot="rating-item"]\'))', 'x-on:keydown' => 'key($event)', ...$state->attributes()]) }}>
     @foreach (range(1, $max) as $i)
     <button type="button" role="radio" data-slot="rating-item" data-value="{{ $i }}" aria-checked="{{ $value !== null && (int) round($value) === $i ? 'true' : 'false' }}" aria-label="{{ __('ui::rating.label', ['value' => $i, 'max' => $max]) }}" tabindex="{{ $i === $focusable ? 0 : -1 }}" style="--rating-fill: {{ $value !== null && $i <= $value ? 100 : 0 }}%" @disabled($disabled)><x-ui::icon name="star" fill="currentColor" stroke="none" /><x-ui::icon name="star" fill="currentColor" stroke="none" /></button>
     @endforeach
-    @if ($name)
-    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
-    @endif
+    <input type="hidden" x-ref="input" @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes, number: true) }}>
 </eso-rating>
 @endif
 <x-ui::field.error :state="$state" />

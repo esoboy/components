@@ -50,7 +50,7 @@ function drawable(data) {
  * box in the text colour, a missing sequence as several glyphs. Without a canvas to ask,
  * it says yes.
  */
-function draws(emoji) {
+export function draws(emoji) {
     canvas ??= document.createElement('canvas')
 
     const context = canvas.getContext('2d', { willReadFrequently: true })

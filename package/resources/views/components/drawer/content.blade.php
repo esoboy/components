@@ -1,6 +1,7 @@
 @blaze
 
 @use('Esoboy\Ui\Support\OverlayModel')
+@use('Esoboy\Ui\Support\Model')
 
 @aware([
     'name',
@@ -14,7 +15,6 @@
 $model = OverlayModel::attributes($uiModel);
 @endphp
 
-{!! $model ? '<eso-dialog '.$model.'>' : '' !!}
 {{-- A modal <dialog> that slides in from the edge it is swiped back to. wire:ignore.self keeps morphs from closing it. --}}
 <dialog id="{{ $name }}" data-slot="drawer-popup" data-swipe-direction="{{ $swipeDirection }}" data-swipe-axis="{{ in_array($swipeDirection, ['left', 'right'], true) ? 'x' : 'y' }}" aria-labelledby="{{ $name }}-title" aria-describedby="{{ $name }}-description" wire:ignore.self>
     @if ($showSwipeHandle)
@@ -22,4 +22,3 @@ $model = OverlayModel::attributes($uiModel);
     @endif
     <div {{ $attributes->merge(['data-slot' => 'drawer-content']) }}>{{ $slot }}</div>
 </dialog>
-{!! $model ? '</eso-dialog>' : '' !!}

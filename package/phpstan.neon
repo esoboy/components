@@ -2,6 +2,8 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
+    bootstrapFiles:
+        - tests/phpstan.php
     level: 8
     paths:
         - src

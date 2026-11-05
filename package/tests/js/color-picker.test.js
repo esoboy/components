@@ -1,124 +1,24 @@
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerSlider } from '../../resources/js/components/slider.js'
-import { hexToHsv, hsvToHex, parseHex, register as registerColorPicker } from '../../resources/js/components/color-picker.js'
-
-beforeAll(() => {
-    registerSlider()
-    registerColorPicker()
+import { afterEach, expect, it, vi } from 'vitest'
+import { provider, cleanupControllers } from './alpine-harness.js'
+import colorPicker, {parseHex,hexToHsv,hsvToHex} from '../../resources/js/alpine/color-picker.js'
+afterEach(()=>{cleanupControllers();document.body.innerHTML='';vi.restoreAllMocks()})
+it.each([['#2563EB','#2563eb'],['f80','#ff8800'],['red',null],[null,null]])('normalizes %s',(input,expected)=>expect(parseHex(input)).toBe(expected))
+it.each(['#2563eb','#22c55e','#a3a3a3','#ec4899','#000000'])('round trips %s through HSV',hex=>expect(hsvToHex(hexToHsv(hex))).toBe(hex))
+const mount=(initial='#ff0000')=>{
+    let current=initial;const wire={$get:()=>current,$set:vi.fn((_,v)=>current=v)}
+    return provider(colorPicker,'<div data-placeholder="Pick"><button data-color-picker-trigger><span data-slot="color-picker-swatch"></span><span data-slot="color-picker-value"></span></button><div data-slot="color-picker-area" tabindex="0"><span data-slot="color-picker-thumb"></span></div><input data-color-picker-input><button data-color-picker-swatch="#22c55e"></button></div>',{binding:{property:'color',live:true},wire})
+}
+it('paints the bound value and validates typed hex',()=>{
+    const data=mount();data.paint();expect(data.$el.querySelector('[data-slot="color-picker-value"]').textContent).toBe('#ff0000')
+    data.hex('0f0');expect(data.value).toBe('#00ff00');data.hex('invalid');expect(data.value).toBe('#00ff00');data.hex('');expect(data.value).toBeNull()
 })
-
-afterEach(() => {
-    document.body.innerHTML = ''
+it('supports swatches and keyboard movement in the area',()=>{
+    const data=mount();const area=data.$el.querySelector('[data-slot="color-picker-area"]');data.key({target:area,key:'ArrowDown',shiftKey:true,preventDefault(){}});expect(data.value).toBe('#e60000')
+    data.click({target:data.$el.querySelector('[data-color-picker-swatch]')});expect(data.value).toBe('#22c55e')
 })
-
-describe('colors', () => {
-    it('parses hex', () => {
-        expect(parseHex('#2563EB')).toBe('#2563eb')
-        expect(parseHex('f80')).toBe('#ff8800')
-        expect(parseHex('red')).toBeNull()
-        expect(parseHex(null)).toBeNull()
-    })
-
-    it('converts between hex and hsv', () => {
-        expect(hexToHsv('#ff0000')).toEqual({ h: 0, s: 1, v: 1 })
-        expect(hexToHsv('#000000')).toEqual({ h: 0, s: 0, v: 0 })
-        expect(hsvToHex({ h: 120, s: 1, v: 1 })).toBe('#00ff00')
-
-        for (const hex of ['#2563eb', '#22c55e', '#a3a3a3', '#ec4899']) expect(hsvToHex(hexToHsv(hex))).toBe(hex)
-    })
+it('keeps hue meaningful for gray and black',()=>{
+    const data=mount('#808080');data.hue=240;expect(data.hsv.h).toBe(240);data.color({s:1,v:1});expect(data.value).toBe('#0000ff')
 })
-
-describe('color picker', () => {
-    function mount(value = '#2563eb') {
-        document.body.innerHTML = `
-            <eso-color-picker data-value="${value}" data-name="color" data-placeholder="Pick">
-                <button data-color-picker-trigger><span data-slot="color-picker-swatch"></span><span data-slot="color-picker-value"></span></button>
-                <div data-slot="color-picker-area" tabindex="0"><span data-slot="color-picker-thumb"></span></div>
-                <eso-slider data-slot="slider" data-color-picker-hue><div data-slot="slider-control"><div data-slot="slider-track"><div data-slot="slider-range"></div></div><input type="range" data-slot="slider-thumb" min="0" max="360"></div></eso-slider>
-                <input data-color-picker-input>
-                <button data-color-picker-swatch="#ef4444"></button>
-                <input type="hidden" name="color">
-            </eso-color-picker>`
-
-        const element = document.querySelector('eso-color-picker')
-        const seen = []
-
-        element.addEventListener('change', event => event.target === element && seen.push([true, element.value]))
-
-        return [element, seen]
-    }
-
-    const text = element => element.querySelector('[data-slot="color-picker-value"]').textContent
-
-    it('shows its value on the trigger, the input and the hidden input', () => {
-        const [element] = mount()
-
-        expect(text(element)).toBe('#2563eb')
-        expect(element.querySelector('[data-color-picker-input]').value).toBe('#2563eb')
-        expect(element.querySelector('input[type="hidden"]').value).toBe('#2563eb')
-        expect(element.querySelector('[data-color-picker-trigger]').dataset.empty).toBe('false')
-        expect(element.querySelector('[data-color-picker-hue]').value).toBe(Math.round(hexToHsv('#2563eb').h))
-    })
-
-    it('takes swatches and announces only from itself', () => {
-        const [element, seen] = mount()
-
-        element.querySelector('[data-color-picker-swatch]').click()
-
-        expect(element.value).toBe('#ef4444')
-        expect(element.querySelector('[data-color-picker-swatch]').getAttribute('aria-pressed')).toBe('true')
-        expect(seen).toEqual([[true, '#ef4444']])
-    })
-
-    it('changes the hue, keeping saturation and brightness', () => {
-        const [element, seen] = mount('#ff0000')
-        const hue = element.querySelector('[data-color-picker-hue] input')
-
-        hue.value = '240'
-        hue.dispatchEvent(new Event('input', { bubbles: true }))
-        hue.dispatchEvent(new Event('change', { bubbles: true }))
-
-        expect(element.value).toBe('#0000ff')
-        expect(seen).toEqual([[true, '#0000ff']])
-    })
-
-    it('moves through the area with the arrows', () => {
-        const [element] = mount('#ff0000')
-        const area = element.querySelector('[data-slot="color-picker-area"]')
-
-        area.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true }))
-
-        expect(element.value).toBe(hsvToHex({ h: 0, s: 1, v: 0.9 }))
-        expect(area.getAttribute('aria-valuetext')).toBe('100%, 90%')
-    })
-
-    it('applies typed hex, restores invalid text and clears when emptied', () => {
-        const [element, seen] = mount()
-        const input = element.querySelector('[data-color-picker-input]')
-        const type = value => {
-            input.value = value
-            input.dispatchEvent(new Event('change', { bubbles: true }))
-        }
-
-        type('0f0')
-        expect(element.value).toBe('#00ff00')
-
-        type('nope')
-        expect(element.value).toBe('#00ff00')
-        expect(input.value).toBe('#00ff00')
-
-        type('')
-        expect(element.value).toBeNull()
-        expect(text(element)).toBe('Pick')
-        expect(seen.map(([, value]) => value)).toEqual(['#00ff00', null])
-    })
-
-    it('takes values set by Livewire without announcing', () => {
-        const [element, seen] = mount()
-
-        element.value = '#ec4899'
-
-        expect(text(element)).toBe('#ec4899')
-        expect(seen).toEqual([])
-    })
+it('uses the browser eyedropper as an input and handles cancellation',async()=>{
+    const open=vi.fn().mockResolvedValue({sRGBHex:'#123456'});window.EyeDropper=class{open=open};const data=mount();await data.pick();expect(data.value).toBe('#123456');open.mockRejectedValue(new Error('cancel'));await expect(data.pick()).resolves.toBeUndefined()
 })

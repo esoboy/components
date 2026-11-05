@@ -1,4 +1,3 @@
 @blaze
-
-{{-- The same item as Dropdown Menu's. --}}
-<x-ui::dropdown-menu.radio-group :attributes="$attributes">{{ $slot }}</x-ui::dropdown-menu.radio-group>
+@props(['value' => null, 'uiModel' => null, 'uiValue' => null, 'uiName' => null])
+<div {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge(['role' => 'group', 'data-slot' => 'dropdown-menu-radio-group']) }}>{{ $slot }}</div>

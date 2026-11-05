@@ -48,22 +48,22 @@ it('renders sortable headers with their sort menu', function () {
     $html = Livewire::test(Payments::class)->call('sort', 'email', 'desc')->html();
 
     expect($html)
-        ->toContain('<div data-slot="data-table-column-header">')
+        ->toContainMarkup('<div data-slot="data-table-column-header">')
         ->toContain('wire:click="sort(\'email\', \'asc\')"')
         ->toContain('wire:click="sort(\'email\', \'desc\')"')
         ->toContain('wire:click="toggleColumn(\'email\')"')
-        ->toContain('<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>')
-        ->toContain('<div >Status</div>');
+        ->toContainMarkup('<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>')
+        ->toContainMarkup('<div >Status</div>');
 });
 
 it('renders the selection boxes bound to the selected rows', function () {
     $html = Livewire::test(Payments::class)->html();
 
     expect($html)
-        ->toContain('<eso-data-table data-slot="data-table">')
+        ->toContainMarkup('<eso-data-table data-slot="data-table">')
         ->toMatch('/data-data-table-select-all="data-data-table-select-all" aria-label="Select all"/')
         ->toMatch('/wire:model.live="selected" value="1" data-data-table-select-row="data-data-table-select-row" aria-label="Select row"/')
-        ->toContain('<td data-slot="table-cell" colspan="3" data-data-table-empty="data-data-table-empty">')
+        ->toContainMarkup('<td data-slot="table-cell" colspan="3" data-data-table-empty="data-data-table-empty">')
         ->toContain('No results.');
 });
 
@@ -71,14 +71,14 @@ it('renders the pagination with count, page size and page buttons', function () 
     $html = Livewire::test(Payments::class)->set('selected', [1, 2])->call('setPage', 2)->html();
 
     expect($html)
-        ->toContain('<div data-slot="data-table-selection">2 of 42 row(s) selected.</div>')
-        ->toContain('<p>Rows per page</p>')
+        ->toContainMarkup('<div data-slot="data-table-selection">2 of 42 row(s) selected.</div>')
+        ->toContainMarkup('<p>Rows per page</p>')
         ->toContain('wire:model.live="perPage"')
-        ->toContain('<div data-slot="data-table-page">Page 2 of 5</div>')
+        ->toContainMarkup('<div data-slot="data-table-page">Page 2 of 5</div>')
         ->toContain('wire:click="setPage(1, \'page\')"')
         ->toContain('wire:click="previousPage(\'page\')"')
         ->toContain('wire:click="setPage(5, \'page\')"')
-        ->toContain('<span class="sr-only">Go to first page</span>');
+        ->toContainMarkup('<span class="sr-only">Go to first page</span>');
 });
 
 it('resets to the first page when the page size changes', function () {
@@ -172,7 +172,7 @@ it('renders the faceted filter, the reset button and a header filter from the fi
     expect($html)
         ->toMatch('/data-variant="outline" data-size="sm"[^>]*data-data-table-faceted-filter="data-data-table-faceted-filter"/')
         ->toMatch("/data-value=\"paid\"[^>]*wire:click=\"toggleFilter\\('status', 'paid'\\)\"/")
-        ->toContain('<span data-slot="data-table-filter-count">3</span>')
+        ->toContainMarkup('<span data-slot="data-table-filter-count">3</span>')
         ->not->toContain('data-chosen')
         ->not->toContain('data-data-table-reset')
         ->toContain("<input type=\"checkbox\" role=\"menuitemcheckbox\" wire:click=\"toggleFilter('method', 'card')\">");
@@ -181,8 +181,8 @@ it('renders the faceted filter, the reset button and a header filter from the fi
 
     expect($html)
         ->toMatch('/data-value="paid"[^>]*data-chosen="data-chosen"/')
-        ->toContain('<span data-data-table-filter-values>')
-        ->toContain('Paid</span>')
+        ->toContainMarkup('<span data-data-table-filter-values>')
+        ->toContainMarkup('Paid</span>')
         ->toMatch("/wire:click=\"clearFilters\\('status'\\)\">\\s*Clear filters/")
         ->toMatch('/wire:click="resetFilters" data-data-table-reset="data-data-table-reset">\s*Reset/');
 });
@@ -195,19 +195,19 @@ it('renders expandable and tree rows, starting children hidden', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<tr data-slot="table-row" style="--level: 1;" wire:key="data-table-row-eng" data-row-id="eng" data-default-expanded="data-default-expanded">')
+        ->toContainMarkup('<tr data-slot="table-row" style="--level: 1;" wire:key="data-table-row-eng" data-row-id="eng" data-expanded="data-expanded">')
         ->toMatch('/data-data-table-row-toggle="data-data-table-row-toggle" aria-expanded="false" aria-label="Expand row"/')
-        ->toContain('<tr data-slot="table-row" style="--level: 2;" wire:key="data-table-row-eng/api" data-row-id="eng/api" data-parent="eng" hidden="hidden">')
-        ->toContain('<tr data-slot="data-table-row-detail" data-detail-for="eng" wire:key="data-table-row-detail-eng" hidden>')
-        ->toContain('<td colspan="4" data-slot="table-cell" class="p-4">Details</td>');
+        ->toContainMarkup('<tr data-slot="table-row" style="--level: 2;" wire:key="data-table-row-eng/api" data-row-id="eng/api" data-parent="eng" hidden="hidden">')
+        ->toContainMarkup('<tr data-slot="data-table-row-detail" data-detail-for="eng" wire:key="data-table-row-detail-eng" hidden>')
+        ->toContainMarkup('<td colspan="4" data-slot="table-cell" class="p-4">Details</td>');
 });
 
 it('fixes columns and the header', function () {
     $this->blade('<x-ui::data-table.content sticky-header><x-ui::table.row><x-ui::table.head sticky="start">A</x-ui::table.head><x-ui::table.cell sticky="end">B</x-ui::table.cell><x-ui::table.cell>C</x-ui::table.cell></x-ui::table.row></x-ui::data-table.content>')
-        ->assertSee('<div data-slot="data-table-content" data-sticky-header="data-sticky-header">', false)
-        ->assertSee('<th data-slot="table-head" data-sticky="start">A</th>', false)
-        ->assertSee('<td data-slot="table-cell" data-sticky="end">B</td>', false)
-        ->assertSee('<td data-slot="table-cell">C</td>', false);
+        ->assertSeeMarkup('<div data-slot="data-table-content" data-sticky-header="data-sticky-header">')
+        ->assertSeeMarkup('<th data-slot="table-head" data-sticky="start">A</th>')
+        ->assertSeeMarkup('<td data-slot="table-cell" data-sticky="end">B</td>')
+        ->assertSeeMarkup('<td data-slot="table-cell">C</td>');
 });
 
 it('orders the columns the user moves, keeps new ones after them, and resets them', function () {
@@ -242,9 +242,9 @@ it('renders reorderable view options with drag handles, in the user\'s order', f
     $html = Livewire::test(Payments::class)->html();
 
     expect($html)
-        ->toContain('<div data-slot="data-table-column-list" wire:sort="moveColumn" wire:sort:group-id="email,amount">')
-        ->toContain('<div data-slot="data-table-column-option" wire:sort:item="email" wire:key="data-table-column-email">')
-        ->toContain('<span data-slot="data-table-column-handle" wire:sort:handle aria-hidden="true">')
+        ->toContainMarkup('<div data-slot="data-table-column-list" wire:sort="moveColumn" wire:sort:group-id="email,amount">')
+        ->toContainMarkup('<div data-slot="data-table-column-option" wire:sort:item="email" wire:key="data-table-column-email">')
+        ->toContainMarkup('<span data-slot="data-table-column-handle" wire:sort:handle aria-hidden="true">')
         ->not->toContain('data-data-table-reset-columns');
 
     $html = Livewire::test(Payments::class)->call('moveColumn', 'amount', 0, 'email,amount')->html();

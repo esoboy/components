@@ -9,16 +9,16 @@ it('renders an input group with addons', function () {
         </x-ui::input-group>
         BLADE);
 
-    $view->assertSee('<div role="group" data-slot="input-group">', false)
-        ->assertSee('<input type="text" data-slot="input-group-control" placeholder="Search" wire:model.live="q">', false)
-        ->assertSee('<div role="group" data-slot="input-group-addon" data-align="inline-start"><span data-slot="input-group-text">https://</span></div>', false)
-        ->assertSee('<div role="group" data-slot="input-group-addon" data-align="inline-end">', false)
-        ->assertSee('<button type="button" data-slot="button" data-variant="ghost" data-size="icon-xs">x</button>', false);
+    $view->assertSeeMarkup('<div role="group" data-slot="input-group">')
+        ->assertSeeMarkup('<input type="text" data-slot="input-group-control" placeholder="Search" wire:model.live="q">')
+        ->assertSeeMarkup('<div role="group" data-slot="input-group-addon" data-align="inline-start"><span data-slot="input-group-text">https://</span></div>')
+        ->assertSeeMarkup('<div role="group" data-slot="input-group-addon" data-align="inline-end">')
+        ->assertSeeMarkup('<button type="button" data-slot="button" data-variant="ghost" data-size="icon-xs">x</button>');
 });
 
 it('renders a textarea control', function () {
     $this->blade('<x-ui::input-group><x-ui::input-group.textarea rows="3">Hi</x-ui::input-group.textarea></x-ui::input-group>')
-        ->assertSee('<textarea data-slot="input-group-control" rows="3">Hi</textarea>', false);
+        ->assertSeeMarkup('<textarea data-slot="input-group-control" rows="3">Hi</textarea>');
 });
 
 it('shows the error after the group, not inside it', function (string $control) {
@@ -66,9 +66,17 @@ it('renders a character count for the script to keep up to date', function () {
             <x-ui::input-group.addon align="block-end"><x-ui::input-group.count /></x-ui::input-group.addon>
         </x-ui::input-group>
         BLADE)
-        ->assertSee('<eso-input-group-count data-slot="input-group-count" data-label=":count characters" data-label-max=":count/:max characters" wire:key="input-group-count" wire:ignore>0 characters</eso-input-group-count>', false);
+        ->assertSeeMarkup('<eso-input-group-count data-slot="input-group-count" data-label=":count characters" data-label-max=":count/:max characters" wire:ignore>0/280 characters</eso-input-group-count>');
 
     app()->setLocale('zh_CN');
     $this->blade('<x-ui::input-group.count :max="140" />')
-        ->assertSee('data-max="140" data-label=":count 字" data-label-max=":count/:max 字" wire:key="input-group-count" wire:ignore>0/140 字</eso-input-group-count>', false);
+        ->assertSeeMarkup('<eso-input-group-count data-max="140" data-label=":count 字" data-label-max=":count/:max 字" wire:ignore>0/140 字</eso-input-group-count>');
+});
+
+it('renders the initial Unicode character count and inherited limit in PHP', function () {
+    $this->blade('<x-ui::input-group><x-ui::input-group.textarea maxlength="10">😀ab</x-ui::input-group.textarea><x-ui::input-group.count /></x-ui::input-group>')
+        ->assertSee('3/10 characters');
+    $html = (string) $this->blade('<x-ui::input-group><x-ui::input-group.input value="Hello" /><x-ui::input-group.count /></x-ui::input-group><x-ui::input-group><x-ui::input-group.input value="Hi" /><x-ui::input-group.count /></x-ui::input-group>');
+    expect($html)->toContain('5 characters')->toContain('2 characters')
+        ->and(count(array_unique(idsOf($html, 'id'))))->toBe(2);
 });

@@ -65,7 +65,7 @@ it('renders the code as a labelled image', function () {
     $code = QrCode::draw('https://esoboy.com');
 
     expect((string) $this->blade('<x-ui::qr-code value="https://esoboy.com" :size="200" class="rounded-none" />'))
-        ->toContain('<div role="img" aria-label="二维码" data-slot="qr-code" class="rounded-none">')
+        ->toContainMarkup('<div role="img" aria-label="二维码" data-slot="qr-code" class="rounded-none">')
         ->toContain('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '.$code['modules'].' '.$code['modules'].'" width="200" height="200" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="'.$code['path'].'"/></svg>')
         ->not->toContain('qr-code-icon');
 });
@@ -76,7 +76,7 @@ it('raises the error level to H under an icon, unless one is given', function ()
 
     expect($withIcon)
         ->toContain('d="'.QrCode::draw('https://esoboy.com', 'H')['path'].'"')
-        ->toContain('<img data-slot="qr-code-icon" src="/logo.svg" alt="" width="32" height="32">')
+        ->toContainMarkup('<img data-slot="qr-code-icon" src="/logo.svg" alt="" width="32" height="32">')
         ->and($chosen)->toContain('d="'.QrCode::draw('https://esoboy.com', 'Q')['path'].'"');
 });
 

@@ -1,7 +1,7 @@
 @blaze
 
 {{-- The class goes to the wrapper, everything else to the input, as in shadcn. --}}
-<div {{ $attributes->only('class')->merge(['data-slot' => 'emoji-picker-search-wrapper']) }} wire:ignore>
+<div {{ $attributes->only('class')->merge(['data-slot' => 'emoji-picker-search-wrapper']) }}>
     <x-ui::input-group class="h-9 rounded-none border-0 bg-transparent shadow-none ring-0">
         <x-ui::input-group.input :attributes="$attributes->except('class')->merge([
             'data-emoji-picker-search' => true,

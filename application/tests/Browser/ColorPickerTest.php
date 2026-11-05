@@ -41,7 +41,7 @@ it('binds keyboard changes from the shared hue slider', function () {
 
     $page->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'End')
         ->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'ArrowLeft')
-        ->assertScript("document.querySelector('#brand-color [data-color-picker-hue]').value === 359")
+        ->assertScript("document.querySelector('#brand-color [data-color-picker-hue] input').value === '359'")
         ->assertScript("document.getElementById('color').textContent.trim() !== '#ff0000'")
         ->assertNoJavaScriptErrors();
 });

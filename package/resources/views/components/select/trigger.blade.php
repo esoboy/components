@@ -4,7 +4,6 @@
     'size' => 'default',
 ])
 
-{{-- Opens the Select Content natively; commandfor stays empty, <eso-select> points it there. --}}
 <button {{ $attributes->merge([
     'type' => 'button',
     'data-slot' => 'select-trigger',

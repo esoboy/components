@@ -1,3 +1,5 @@
+import createSignature from '../../resources/js/heavy/signature.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 /*
@@ -20,19 +22,16 @@ beforeAll(async () => {
     Object.defineProperty(HTMLCanvasElement.prototype, 'offsetWidth', { get: () => size.width })
     Object.defineProperty(HTMLCanvasElement.prototype, 'offsetHeight', { get: () => size.height })
 
-    window.Image = class {
-        naturalWidth = 800
-        naturalHeight = 200
-
-        set src(value) {
-            setTimeout(() => this.onload?.())
-        }
+    window.Image = function () {
+        const image = document.createElement('img')
+        Object.defineProperties(image, { naturalWidth: { value: 800 }, naturalHeight: { value: 200 }, src: { set() { setTimeout(() => image.dispatchEvent(new Event('load'))) } } })
+        return image
     }
 
-    await import('../../resources/js/heavy/signature.js')
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
     size = { width: 400, height: 160 }
     calls = []
@@ -48,7 +47,7 @@ function mount(attributes = '', type = 'image/png') {
             <button type="button" data-signature-clear hidden>Clear</button>
         </eso-signature>`
 
-    const signature = document.querySelector('eso-signature')
+    const signature = engineDriver(createSignature, document.querySelector('eso-signature'))
     const events = []
 
     signature.addEventListener('input', () => events.push('input'))
@@ -143,6 +142,7 @@ describe('a signature from the server', () => {
         size = { width: 200, height: 160 }
         signature.remove()
         document.body.append(signature)
+        signature.remeasure()
 
         await drawn(0, 55, 200, 50)
     })

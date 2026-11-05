@@ -1,11 +1,14 @@
 import { afterEach, beforeAll, expect, it } from 'vitest'
-import { register as registerWatermark } from '../../resources/js/components/watermark.js'
+import watermark from '../../resources/js/alpine/watermark.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
-beforeAll(() => registerWatermark())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
+
+window.Livewire = { hook: () => () => {} }
 
 const flush = () => new Promise(resolve => setTimeout(resolve))
 
@@ -16,7 +19,7 @@ function mount() {
             <!--[if BLOCK]><![endif]--><div data-slot="watermark-layer" aria-hidden="true" style="--watermark-image: url(&quot;tile&quot;); --watermark-size: 200px 160px"></div><!--[if ENDBLOCK]><![endif]-->
         </eso-watermark>`
 
-    return document.querySelector('eso-watermark')
+    return engineDriver(watermark, document.querySelector('eso-watermark'))
 }
 
 const layers = element => [...element.querySelectorAll(':scope > [data-slot="watermark-layer"]')]

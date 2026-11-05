@@ -1,8 +1,14 @@
 @blaze
 
 @aware([
-    'defaultValue' => null,
+    'uiValue' => null,
+    'uiModel' => null,
 ])
+
+@php
+$selected = \Esoboy\Ui\Support\Model::inherited($uiModel, $uiValue);
+$active = $selected !== null ? (string) $selected === (string) $value : \Esoboy\Ui\Support\Sequence::next('tabs-content') === 1;
+@endphp
 
 @props([
     'value',
@@ -15,5 +21,6 @@
     'tabindex' => '0',
     'data-slot' => 'tabs-content',
     'data-value' => $value,
-    'hidden' => $defaultValue === null || (string) $defaultValue !== (string) $value,
+    'hidden' => ! $active,
+    'x-bind:hidden' => 'value !== '.json_encode((string) $value),
 ]) }}>{{ $slot }}</div>

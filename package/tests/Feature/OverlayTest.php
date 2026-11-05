@@ -9,15 +9,13 @@
 use Esoboy\Ui\Tests\Fixtures\Menus;
 use Livewire\Livewire;
 
-it('renders triggers and contents without ids', function () {
+it('pairs every trigger with a unique PHP rendered target', function () {
     $html = Livewire::test(Menus::class)->html();
-
-    expect($html)
-        ->not->toMatch('/\sid="/')
-        ->not->toContain('anchor-name')
-        ->not->toContain('position-anchor')
-        ->toContain('data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor=""')
-        ->toContain('data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu"');
+    $ids = idsOf($html, 'id');
+    expect($ids)->not->toBeEmpty()->toHaveCount(count(array_unique($ids)));
+    foreach (idsOf($html, 'commandfor') as $target) {
+        expect($ids)->toContain($target);
+    }
 });
 
 it('renders the same overlays when a component re-renders', function () {

@@ -40,6 +40,18 @@ trait WithDataTable
     /** @var list<int|string> */
     public array $selected = [];
 
+    /**
+     * Select the visible rows in one request.
+     *
+     * @param  array<int|string, mixed>  $values
+     */
+    public function selectRows(array $values, bool $checked): void
+    {
+        $values = array_values(array_map('strval', array_filter($values, fn ($value) => is_string($value) || is_int($value))));
+        $selected = array_map('strval', $this->selected);
+        $this->selected = $checked ? array_values(array_unique([...$selected, ...$values])) : array_values(array_diff($selected, $values));
+    }
+
     /** @var list<string> */
     #[Session]
     public array $hiddenColumns = [];

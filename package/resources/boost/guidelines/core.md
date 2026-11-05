@@ -7,3 +7,6 @@ This application's UI components come from esoboy/ui: shadcn/ui as Blade compone
 - Bind value controls with `wire:model` on the control itself (Select, Combobox, Radio Group, Date Picker, …). Controls show validation errors only inside `<x-ui::field>` or `<x-ui::field.set>`.
 - Icons are Lucide names: `<x-ui::icon name="chevron-down" />`. An unknown name fails the render.
 - From Livewire code use the `Ui` facade: `Ui::toast()`, `Ui::dialog('name')->open()`, `Ui::sanitize()`; never build component markup in JavaScript.
+
+- PHP renders data and initial state; Livewire handles actions and binding. Alpine only handles necessary browser interaction. Components own initialization and internal events. Do not write a native JavaScript runtime or change the component UI during interface refactors.
+- Prefer `:options` / `:items` for common controls. Use `value`, `checked`, `open`, `active`, and boolean `multiple`; no frontend-style `default-*` properties.

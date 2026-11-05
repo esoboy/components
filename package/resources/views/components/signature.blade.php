@@ -13,28 +13,22 @@
 @props([
     'type' => 'image/png',
     'placeholder' => null,
-    'defaultValue' => null,
+    'value' => null,
     'disabled' => false,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? Model::value($attributes);
+$value = Model::value($attributes, $value);
 $value = is_string($value) && str_starts_with($value, 'data:image/') ? $value : null;
 $name = $attributes->get('name');
 @endphp
 
-@assets
-{!! app(Assets::class)->module('signature.js') !!}
-@endassets
 
-{{-- <eso-signature> exposes the signature as .value (a data URL or null), so wire:model binds on it. --}}
-<eso-signature {{ $attributes->except('name')->merge(['data-slot' => 'signature', 'data-type' => $type, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
+<eso-signature {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge(['data-slot' => 'signature', 'x-data' => 'uiEngine('.json_encode(Model::binding($attributes)).')', 'data-engine' => app(Assets::class)->url('signature.js'), 'data-type' => $type, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, ...$state->attributes()]) }}>
     <canvas data-slot="signature-canvas" role="img" aria-label="{{ __('ui::signature.label') }}" wire:ignore></canvas>
     <span data-slot="signature-placeholder" @if ($value) hidden @endif wire:ignore>{{ $placeholder ?? __('ui::signature.placeholder') }}</span>
     <x-ui::button variant="ghost" size="icon-sm" data-signature-clear :aria-label="__('ui::signature.clear')" :disabled="$disabled" :hidden="! $value" wire:ignore><x-ui::icon name="eraser" /></x-ui::button>
-    @if ($name)
-    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
-    @endif
+    <input type="hidden" x-ref="input" @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes) }}>
 </eso-signature>
 <x-ui::field.error :state="$state" />

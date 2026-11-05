@@ -36,7 +36,7 @@ final class Options
      * @param  list<array<string, mixed>>  $options
      * @return array<string, mixed>|null
      */
-    private static function child(array $options, string $value): ?array
+    public static function child(array $options, string $value): ?array
     {
         foreach ($options as $option) {
             if ((string) ($option['value'] ?? '') === $value) {
@@ -204,7 +204,7 @@ final class Options
         $normalized = [];
 
         foreach ($options as $key => $option) {
-            $option = is_array($option) ? $option : ['value' => $key, 'label' => $option];
+            $option = is_array($option) ? $option : ['value' => array_is_list($options) ? $option : $key, 'label' => $option];
 
             $normalized[] = array_filter([
                 'value' => (string) $option['value'],

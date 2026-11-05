@@ -11,5 +11,5 @@
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
-<textarea {{ $attributes->merge(['data-slot' => 'textarea', ...$state->attributes()]) }}>{{ $slot }}</textarea>
+<textarea {{ $attributes->merge(['data-slot' => 'textarea', ...$state->attributes()]) }}>{{ \Esoboy\Ui\Support\Model::value($attributes, (string) $slot) }}</textarea>
 <x-ui::field.error :state="$state" />

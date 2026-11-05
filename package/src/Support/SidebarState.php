@@ -10,9 +10,14 @@ final class SidebarState
 {
     public const COOKIE = 'sidebar_state';
 
-    public static function open(bool $default = true): bool
+    public static function cookie(string $scope = 'default'): string
     {
-        $state = request()->cookie(self::COOKIE);
+        return $scope === 'default' ? self::COOKIE : self::COOKIE.'_'.substr(hash('sha256', $scope), 0, 12);
+    }
+
+    public static function open(bool $default = true, string $scope = 'default'): bool
+    {
+        $state = request()->cookie(self::cookie($scope));
 
         return is_string($state) ? $state === 'true' : $default;
     }

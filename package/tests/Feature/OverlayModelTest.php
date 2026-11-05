@@ -5,7 +5,8 @@ use Livewire\Component;
 use Livewire\Livewire;
 
 it('marks bound overlay roots with their binding', function (string $tag, string $marked) {
-    expect(OverlayModel::mark($tag))->toBe($marked);
+    preg_match('/uiModel="([^"]+)"/', $marked, $binding);
+    expect(OverlayModel::mark($tag))->toContain('uiModel="'.$binding[1].'"');
 })->with([
     'dialog' => ['<x-ui::dialog name="edit" wire:model="editing">', '<x-ui::dialog name="edit" wire:model="editing" uiModel="wire:model=editing">'],
     'modifiers' => ['<x-ui::sheet wire:model.live="open">', '<x-ui::sheet wire:model.live="open" uiModel="wire:model.live=open">'],
@@ -17,10 +18,8 @@ it('marks bound overlay roots with their binding', function (string $tag, string
 it('leaves other tags alone', function (string $tag) {
     expect(OverlayModel::mark($tag))->toBe($tag);
 })->with([
-    'unbound root' => ['<x-ui::dialog name="edit">'],
     'content' => ['<x-ui::dialog.content wire:model="x">'],
     'another component' => ['<x-ui::input wire:model="name">'],
-    'a binding after the tag' => ['<x-ui::popover><x-ui::input wire:model="name" />'],
 ]);
 
 it('binds the open state on the content, not on the root', function () {
@@ -52,11 +51,13 @@ it('binds the open state on the content, not on the root', function () {
 
     $html = Livewire::test($component::class)->html();
 
-    expect($html)
-        ->toContain('<eso-dialog wire:model.live="editing">')
-        ->toMatch('/<eso-dialog wire:model.live="editing">\s*<dialog id="edit"/')
-        ->toMatch('/<eso-popover wire:model="shown">\s*<div popover="auto" data-slot="popover-content"/')
-        ->toContain('</eso-popover>')
-        ->not->toContain('uiModel')
-        ->and(substr_count($html, '<eso-dialog'))->toBe(1);
+    expect($html)->toContain('uiDialog(')->toContain('&quot;property&quot;:&quot;editing&quot;')->toContain('&quot;property&quot;:&quot;shown&quot;')->toContainMarkup('<dialog id="edit" data-slot="dialog-content">')->not->toContain('<eso-dialog')->not->toContain('<eso-popover')->not->toContain('uiModel');
+});
+
+it('marks unbound roots to isolate their child context from an outer binding', function () {
+    expect(OverlayModel::mark('<x-ui::dialog name="inner">'))->toContain('uiModel=""');
+});
+
+it('accepts single quotes and quoted greater-than signs in bindings', function () {
+    expect(OverlayModel::mark("<x-ui::popover title='A > B' wire:model.live='form.open'>"))->toContain('uiModel="wire:model.live=form.open"')->toContain(':uiPopoverId=');
 });

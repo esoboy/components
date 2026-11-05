@@ -2,6 +2,8 @@
 
 namespace Esoboy\Ui\Support;
 
+use Illuminate\View\ComponentAttributeBag;
+
 /**
  * The light / dark / system choice of each app on the site (admin, shop, ...), kept in
  * one cookie the browser writes: {"admin":"dark","shop":"light"}. No entry is system.
@@ -11,6 +13,20 @@ final class Theme
     public const COOKIE = 'ui_theme';
 
     private const CHOICES = ['light', 'dark', 'system'];
+
+    public static function control(ComponentAttributeBag $attributes): ComponentAttributeBag
+    {
+        $choice = $attributes->get('theme');
+        if (! in_array($choice, [...self::CHOICES, 'toggle'], true)) {
+            return $attributes;
+        }
+
+        return $attributes->except('theme')->merge([
+            'data-theme-value' => $choice, 'x-data' => 'uiThemeControl',
+            'x-on:click' => 'click()', 'x-on:change' => 'change()', 'x-effect' => 'sync()',
+            'x-on:focus.window' => '$store.uiTheme.refresh()',
+        ]);
+    }
 
     /**
      * The app's choice: light, dark or system.

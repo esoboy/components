@@ -22,7 +22,7 @@
             @elseif ($link['type'] === 'ellipsis')
             <x-ui::pagination.ellipsis />
             @else
-            <x-ui::pagination.link :is-active="$link['active']" :attributes="new \Illuminate\View\ComponentAttributeBag($link['attributes'])">{{ $link['page'] }}</x-ui::pagination.link>
+            <x-ui::pagination.link :active="$link['active']" :attributes="new \Illuminate\View\ComponentAttributeBag($link['attributes'])">{{ $link['page'] }}</x-ui::pagination.link>
             @endif
         </x-ui::pagination.item>
         @endforeach

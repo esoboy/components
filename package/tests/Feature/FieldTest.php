@@ -16,14 +16,14 @@ it('renders the field family with shadcn slots', function () {
         </x-ui::field.set>
         BLADE);
 
-    $view->assertSee('<fieldset data-slot="field-set">', false)
-        ->assertSee('<legend data-slot="field-legend" data-variant="label">Profile</legend>', false)
-        ->assertSee('<div data-slot="field-group">', false)
-        ->assertSee('<div role="group" data-slot="field" data-orientation="horizontal">', false)
-        ->assertSee('<div data-slot="field-content">', false)
-        ->assertSee('<div data-slot="field-title">Title</div>', false)
-        ->assertSee('<label data-slot="field-label" for="name">Name</label>', false)
-        ->assertSee('<p data-slot="field-description">Help</p>', false);
+    $view->assertSeeMarkup('<fieldset data-slot="field-set">')
+        ->assertSeeMarkup('<legend data-slot="field-legend" data-variant="label">Profile</legend>')
+        ->assertSeeMarkup('<div data-slot="field-group">')
+        ->assertSeeMarkup('<div role="group" data-slot="field" data-orientation="horizontal">')
+        ->assertSeeMarkup('<div data-slot="field-content">')
+        ->assertSeeMarkup('<div data-slot="field-title">Title</div>')
+        ->assertSeeMarkup('<label data-slot="field-label" for="name">Name</label>')
+        ->assertSeeMarkup('<p data-slot="field-description">Help</p>');
 });
 
 it('defaults to a vertical field', function () {
@@ -37,7 +37,7 @@ it('renders a separator with and without content', function () {
 
     $this->blade('<x-ui::field.separator>Or</x-ui::field.separator>')
         ->assertSee('data-content="true"', false)
-        ->assertSee('<span data-slot="field-separator-content">Or</span>', false);
+        ->assertSeeMarkup('<span data-slot="field-separator-content">Or</span>');
 });
 
 it('renders nothing for an error without messages', function () {
@@ -51,7 +51,7 @@ it('renders a single message as text and several as a list', function () {
         ->assertDontSee('<ul>', false);
 
     $this->blade('<x-ui::field.error :messages="[\'One.\', \'Two.\']" />')
-        ->assertSeeInOrder(['<ul>', '<li>One.</li>', '<li>Two.</li>'], false);
+        ->assertSeeMarkupInOrder(['<ul>', '<li>One.</li>', '<li>Two.</li>']);
 });
 
 it('prefers its own slot over messages', function () {
@@ -69,11 +69,11 @@ it('reads a named error bag', function () {
 
 it('renders a label and separators', function () {
     $this->blade('<x-ui::label for="x">Name</x-ui::label>')
-        ->assertSee('<label data-slot="label" for="x">Name</label>', false);
+        ->assertSeeMarkup('<label data-slot="label" for="x">Name</label>');
 
     $this->blade('<x-ui::separator />')
-        ->assertSee('<div data-slot="separator" data-orientation="horizontal" role="none"></div>', false);
+        ->assertSeeMarkup('<div data-slot="separator" data-orientation="horizontal" role="none"></div>');
 
     $this->blade('<x-ui::separator orientation="vertical" :decorative="false" />')
-        ->assertSee('<div data-slot="separator" data-orientation="vertical" role="separator" aria-orientation="vertical"></div>', false);
+        ->assertSeeMarkup('<div data-slot="separator" data-orientation="vertical" role="separator" aria-orientation="vertical"></div>');
 });

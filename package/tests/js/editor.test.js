@@ -1,12 +1,15 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import full from '../Fixtures/editor-full.json'
-import { register as registerRadioGroup } from '../../resources/js/components/radio-group.js'
+import createEditor from '../../resources/js/heavy/editor.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
+import axios from 'axios'
+
+vi.mock('axios', () => ({ default: { post: vi.fn() } }))
 
 /*
  * ProseMirror measures the selection to scroll it into view; jsdom lays nothing out.
  */
 beforeAll(async () => {
-    registerRadioGroup()
     const rect = () => ({ top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0 })
 
     // jsdom has no canvas to read color names with.
@@ -16,10 +19,10 @@ beforeAll(async () => {
     Element.prototype.getClientRects = () => []
     document.elementFromPoint = () => null
 
-    await import('../../resources/js/heavy/editor.js')
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
@@ -53,12 +56,12 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                         <button type="button" data-editor-action="link-apply"></button>
                         <button type="button" data-editor-action="link-remove"></button>
                     </div>
-                    <button type="button" data-editor-menu="heading" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Style"><svg data-editor-icon=""></svg><svg data-editor-icon="2" hidden></svg></button>
+                    <button type="button" data-editor-menu="heading" data-ui-dropdown-menu="headings" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Style"><svg data-editor-icon=""></svg><svg data-editor-icon="2" hidden></svg></button>
                     <div id="headings" popover="auto" data-slot="dropdown-menu-content"><eso-radio-group role="group" data-slot="dropdown-menu-radio-group">
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="paragraph" data-editor-value=""><span data-slot="dropdown-menu-item-indicator"></span></label>
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="2" aria-checked="false" data-editor-command="heading" data-editor-value="2"><span data-slot="dropdown-menu-item-indicator"></span></label>
                     </eso-radio-group></div>
-                    <button type="button" data-editor-menu="font-size" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Size"><span data-editor-current data-editor-default="Default size"></span></button>
+                    <button type="button" data-editor-menu="font-size" data-ui-dropdown-menu="sizes" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Size"><span data-editor-current data-editor-default="Default size"></span></button>
                     <div id="sizes" popover="auto" data-slot="dropdown-menu-content"><eso-radio-group role="group" data-slot="dropdown-menu-radio-group">
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="font-size" data-editor-value="" data-editor-label="Default size"><span data-slot="dropdown-menu-item-indicator"></span></label>
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="18px" aria-checked="false" data-editor-command="font-size" data-editor-value="18px" data-editor-label="18"><span data-slot="dropdown-menu-item-indicator"></span></label>
@@ -89,7 +92,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
             </eso-editor>
         </form>`
 
-    const element = document.querySelector('eso-editor')
+    const element = engineDriver(createEditor, document.querySelector('eso-editor'))
     const events = []
 
     element.addEventListener('input', () => events.push('input'))
@@ -143,41 +146,14 @@ const UPLOADS = 'data-upload="/upload" data-upload-token="token" data-upload-con
 function uploader({ readable = [] } = {}) {
     const posts = []
 
-    // Uploads go by XMLHttpRequest, for its progress: each one sent waits here.
-    vi.stubGlobal('XMLHttpRequest', class {
-        upload = new EventTarget()
-        headers = {}
-        listeners = {}
-
-        open(method, url) {
-            this.url = url
-        }
-
-        setRequestHeader(name, value) {
-            this.headers[name] = value
-        }
-
-        addEventListener(type, listener) {
-            this.listeners[type] = listener
-        }
-
-        send(body) {
-            posts.push({
-                url: this.url,
-                headers: this.headers,
-                form: Object.fromEntries(body.entries()),
-                progress: (loaded, total) => this.upload.dispatchEvent(Object.assign(new Event('progress'), { lengthComputable: true, loaded, total })),
-                answer: (attachment, status = 200, errors = {}) => {
-                    this.status = status
-                    this.responseText = JSON.stringify(status === 200 ? { attachment } : { message: 'The given data was invalid.', errors })
-                    this.listeners.load()
-                },
-            })
-        }
-    })
-
-    // The browser reading another site's image.
-    vi.stubGlobal('fetch', vi.fn(url => readable.includes(url) ? Promise.resolve(new Response('PNG', { headers: { 'Content-Type': 'image/png' } })) : Promise.reject(new TypeError('Failed to fetch'))))
+    axios.post.mockImplementation((url, body, options) => new Promise(resolve => posts.push({
+        url, headers: options.headers, form: Object.fromEntries(body.entries()),
+        progress: (loaded, total) => options.onUploadProgress({ loaded, total }),
+        answer: (attachment, status = 200, errors = {}) => resolve({ status, data: status === 200 ? { attachment } : { message: 'The given data was invalid.', errors } }),
+    })))
+    vi.stubGlobal('fetch', vi.fn((url, options) => {
+        return readable.includes(url) ? Promise.resolve(new Response('PNG', { headers: { 'Content-Type': 'image/png' } })) : Promise.reject(new TypeError('Failed to fetch'))
+    }))
 
     return posts
 }
@@ -976,7 +952,7 @@ describe('media', () => {
         const { overflow } = await import('../../resources/js/heavy/editor/toolbar.js')
         const control = (name, priority) => `<div data-slot="editor-control" data-priority="${priority}"><button type="button">${name}</button></div>`
 
-        document.body.innerHTML = `<div data-slot="editor-toolbar">${control('undo', 1)}<div data-slot="separator"></div>${control('bold', 1)}${control('code', 3)}${control('color', 2)}<div data-slot="separator"></div>${control('table', 2)}<button type="button" data-editor-more data-popover-trigger command="toggle-popover" commandfor="" hidden></button><div id="more" popover data-slot="popover-content"></div></div>`
+        document.body.innerHTML = `<div data-slot="editor-toolbar">${control('undo', 1)}<div data-slot="separator"></div>${control('bold', 1)}${control('code', 3)}${control('color', 2)}<div data-slot="separator"></div>${control('table', 2)}<button type="button" data-editor-more data-ui-popover="more" data-popover-trigger command="toggle-popover" commandfor="" hidden></button><div id="more" popover data-slot="popover-content"></div></div>`
 
         const toolbar = document.querySelector('[data-slot="editor-toolbar"]')
         const more = toolbar.querySelector('[data-editor-more]')

@@ -8,6 +8,8 @@ new class extends Component
 
     public bool $details = false;
 
+    public ?string $section = 'shipping';
+
     public string $viewer = 'Pedro Duarte';
 
     public function advance(): void
@@ -38,7 +40,7 @@ new class extends Component
 
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Accordion</h2>
-        <x-ui::accordion default-value="shipping" class="max-w-lg">
+        <x-ui::accordion wire:model.live="section" class="max-w-lg">
             <x-ui::accordion.item value="shipping">
                 <x-ui::accordion.trigger>What are your shipping options?</x-ui::accordion.trigger>
                 <x-ui::accordion.content>We offer standard (5-7 days), express (2-3 days), and overnight shipping. Free shipping on international orders.</x-ui::accordion.content>
@@ -130,13 +132,13 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Resizable</h2>
         <x-ui::resizable.panel-group class="max-w-md rounded-lg border">
-            <x-ui::resizable.panel default-size="50">
+            <x-ui::resizable.panel size="50">
                 <div class="flex h-[200px] items-center justify-center p-6"><span class="font-semibold">One</span></div>
             </x-ui::resizable.panel>
             <x-ui::resizable.handle with-handle />
-            <x-ui::resizable.panel default-size="50">
+            <x-ui::resizable.panel size="50">
                 <x-ui::resizable.panel-group orientation="vertical">
-                    <x-ui::resizable.panel default-size="25" min-size="15">
+                    <x-ui::resizable.panel size="25" min-size="15">
                         <div class="flex h-full items-center justify-center p-6"><span class="font-semibold">Two</span></div>
                     </x-ui::resizable.panel>
                     <x-ui::resizable.handle />

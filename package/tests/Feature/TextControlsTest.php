@@ -6,7 +6,7 @@
 
 it('renders an input', function () {
     $this->blade('<x-ui::input wire:model="email" placeholder="Email" />')
-        ->assertSee('<input type="text" data-slot="input" wire:model="email" placeholder="Email">', false);
+        ->assertSeeMarkup('<input type="text" data-slot="input" wire:model="email" placeholder="Email">');
 });
 
 it('accepts an input type', function () {
@@ -15,7 +15,7 @@ it('accepts an input type', function () {
 
 it('renders a textarea with its content', function () {
     $this->blade('<x-ui::textarea name="bio">Hello</x-ui::textarea>')
-        ->assertSee('<textarea data-slot="textarea" name="bio">Hello</textarea>', false);
+        ->assertSeeMarkup('<textarea data-slot="textarea" name="bio">Hello</textarea>');
 });
 
 it('renders a native select whose wrapper takes the class', function () {
@@ -27,10 +27,10 @@ it('renders a native select whose wrapper takes the class', function () {
         </x-ui::native-select>
         BLADE);
 
-    $view->assertSee('<div data-slot="native-select-wrapper" data-size="sm" class="w-full">', false)
-        ->assertSee('<select data-slot="native-select" data-size="sm" wire:model="role">', false)
-        ->assertSee('<optgroup data-slot="native-select-optgroup" label="Staff">', false)
-        ->assertSee('<option data-slot="native-select-option" value="admin">Admin</option>', false)
+    $view->assertSeeMarkup('<div data-slot="native-select-wrapper" data-size="sm" class="w-full">')
+        ->assertSeeMarkup('<select data-slot="native-select" data-size="sm" wire:model="role">')
+        ->assertSeeMarkup('<optgroup data-slot="native-select-optgroup" label="Staff">')
+        ->assertSeeMarkup('<option data-slot="native-select-option" value="admin">Admin</option>')
         ->assertSee('data-slot="native-select-icon"', false);
 });
 
@@ -44,7 +44,7 @@ it('shows the validation error inside a field', function (string $control, strin
     $this->withViewErrors(['email' => 'The email field is required.'])
         ->blade("<x-ui::field>{$control}</x-ui::field>")
         ->assertSee($opening.' aria-invalid="true" aria-describedby="email-error" id="email" wire:model="email"', false)
-        ->assertSeeInOrder([$opening, '<div role="alert" data-slot="field-error" id="email-error">', 'The email field is required.'], false);
+        ->assertSeeMarkupInOrder([$opening, '<div role="alert" data-slot="field-error" id="email-error">', 'The email field is required.']);
 })->with('text controls');
 
 it('does not validate a control used on its own', function (string $control) {

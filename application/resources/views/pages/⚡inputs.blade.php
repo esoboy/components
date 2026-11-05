@@ -29,21 +29,6 @@ new class extends Component
         ['value' => 'faq', 'label' => 'FAQ'],
     ];
 
-    /**
-     * A slow source of children for the lazy org tree: teams, then their people.
-     */
-    public function loadChildren(string $value): void
-    {
-        usleep(500_000);
-
-        $teams = ['eng' => ['Web', 'Mobile'], 'design' => ['Brand', 'Product'], 'sales' => ['EMEA', 'APAC']];
-        $children = str_contains($value, '.')
-            ? array_map(fn ($name) => ['value' => "{$value}.".strtolower($name), 'label' => $name], ['Ada', 'Grace', 'Linus'])
-            : array_map(fn ($team) => ['value' => "{$value}.".strtolower($team), 'label' => $team, 'lazy' => true], $teams[$value] ?? []);
-
-        $this->org = Options::put($this->org, $value, $children);
-    }
-
     public function move(string $value, string $target, string $position): void
     {
         $this->outline = Options::move($this->outline, $value, $target, $position);
@@ -175,12 +160,12 @@ new class extends Component
         <h2 class="text-lg font-semibold">Cascader</h2>
         <x-ui::field>
             <x-ui::field.label>Region</x-ui::field.label>
-            <x-ui::cascader wire:model.live="region" :options="$regions" placeholder="Select a region" class="w-64" />
+            <x-ui::cascader id="region-picker" wire:model.live="region" :options="$regions" placeholder="Select a region" class="w-64" />
             <x-ui::field.description>Value: <span id="region">{{ json_encode($region, JSON_UNESCAPED_UNICODE) }}</span></x-ui::field.description>
         </x-ui::field>
         <x-ui::field>
             <x-ui::field.label>Any level</x-ui::field.label>
-            <x-ui::cascader wire:model.live="category" :options="$regions" placeholder="Pick any level" change-on-select />
+            <x-ui::cascader id="category-picker" wire:model.live="category" :options="$regions" placeholder="Pick any level" change-on-select />
             <x-ui::field.description>Value: <span id="category">{{ json_encode($category, JSON_UNESCAPED_UNICODE) }}</span></x-ui::field.description>
         </x-ui::field>
     </section>
@@ -189,7 +174,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Tree</h2>
         <div class="grid gap-6 sm:grid-cols-2">
             <div class="space-y-2">
-                <x-ui::tree wire:model.live="permissions" checkable expand-all :items="[
+                <x-ui::tree id="permissions-tree" wire:model.live="permissions" checkable expand-all :items="[
                     ['value' => 'orders', 'label' => 'Orders', 'children' => [
                         ['value' => 'orders.view', 'label' => 'View orders'],
                         ['value' => 'orders.refund', 'label' => 'Refund orders'],
@@ -204,22 +189,20 @@ new class extends Component
                 <p class="text-xs text-muted-foreground">Checked: <span id="permissions">{{ implode(', ', $permissions) }}</span></p>
             </div>
             <div class="space-y-2">
-                <x-ui::tree wire:model.live="file" searchable placeholder="Search files" :default-expanded="['components', 'ui']">
-                    <x-ui::tree.item value="components" label="components">
-                        <x-slot:icon><x-ui::icon name="folder" /></x-slot:icon>
-                        <x-ui::tree.item value="ui" label="ui">
-                            <x-slot:icon><x-ui::icon name="folder" /></x-slot:icon>
-                            <x-ui::tree.item value="button.blade.php" label="button.blade.php" />
-                            <x-ui::tree.item value="card.blade.php" label="card.blade.php" />
-                        </x-ui::tree.item>
-                        <x-ui::tree.item value="layout.blade.php" label="layout.blade.php" />
-                    </x-ui::tree.item>
-                    <x-ui::tree.item value="app.css" label="app.css" />
-                </x-ui::tree>
+                <x-ui::tree id="file-tree" wire:model.live="file" searchable placeholder="Search files" :expanded="['components', 'ui']" :items="[
+                    ['value' => 'components', 'label' => 'components', 'icon' => 'folder', 'children' => [
+                        ['value' => 'ui', 'label' => 'ui', 'icon' => 'folder', 'children' => [
+                            ['value' => 'button.blade.php', 'label' => 'button.blade.php'],
+                            ['value' => 'card.blade.php', 'label' => 'card.blade.php'],
+                        ]],
+                        ['value' => 'layout.blade.php', 'label' => 'layout.blade.php'],
+                    ]],
+                    ['value' => 'app.css', 'label' => 'app.css'],
+                ]" />
                 <p class="text-xs text-muted-foreground">Selected: <span id="file">{{ $file }}</span></p>
             </div>
             <div class="space-y-2">
-                <x-ui::tree id="org-tree" wire:model.live="staff" checkable load="loadChildren" :items="$org" />
+                <x-ui::tree id="org-tree" wire:model.live="staff" checkable :load="\App\Support\DemoTree::class" :items="$org" />
                 <p class="text-xs text-muted-foreground">Lazy: teams and people load as you open them; checked Design checks them as they come. Checked: <span id="staff">{{ implode(', ', $staff) }}</span></p>
             </div>
             <div class="space-y-2">
@@ -237,9 +220,9 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Tree Select</h2>
         <div class="flex flex-wrap gap-4">
-            <x-ui::tree-select wire:model.live="department" :items="$depts" placeholder="Department" searchable expand-all class="w-56" />
-            <x-ui::tree-select wire:model.live="departments" :items="$depts" checkable placeholder="Departments" expand-all class="w-72" />
-            <x-ui::tree-select id="team-select" wire:model.live="team" :items="$org" load="loadChildren" searchable placeholder="Team" class="w-56" />
+            <x-ui::tree-select id="department-picker" wire:model.live="department" :items="$depts" placeholder="Department" searchable expand-all class="w-56" />
+            <x-ui::tree-select id="departments-picker" wire:model.live="departments" :items="$depts" checkable placeholder="Departments" expand-all class="w-72" />
+            <x-ui::tree-select id="team-select" wire:model.live="team" :items="$org" :load="\App\Support\DemoTree::class" searchable placeholder="Team" class="w-56" />
         </div>
         <p class="text-xs text-muted-foreground">Single: <span id="department">{{ $department }}</span> · Multiple: <span id="departments">{{ implode(', ', $departments) }}</span> · Lazy: <span id="team">{{ $team }}</span></p>
     </section>
@@ -298,7 +281,7 @@ new class extends Component
                 <x-ui::field.description>Score: <span id="score-value">{{ $score ?? 'none' }}</span></x-ui::field.description>
             </x-ui::field>
             <div class="flex items-center gap-2 text-sm">
-                <x-ui::rating readonly :default-value="4.5" size="sm" />
+                <x-ui::rating readonly :value="4.5" size="sm" />
                 <span class="text-muted-foreground">4.5 (128 reviews)</span>
             </div>
         </div>
@@ -330,20 +313,13 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Emoji Picker</h2>
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::emoji-picker id="mood-picker" class="h-[326px] rounded-lg border shadow-md" wire:emoji-select="$set('mood', $event.detail.emoji)">
-                <x-ui::emoji-picker.search />
-                <x-ui::emoji-picker.content />
-            </x-ui::emoji-picker>
+            <x-ui::emoji-picker id="mood-picker" class="h-[326px] rounded-lg border shadow-md" wire:emoji-select="$set('mood', $event.detail.emoji)" />
             <div class="space-y-3">
                 <p class="text-sm text-muted-foreground">Mood: <span id="mood">{{ $mood ?: '—' }}</span></p>
                 <x-ui::popover>
                     <x-ui::popover.trigger id="reaction-trigger" variant="outline">{{ $reaction ?: 'Open emoji picker' }}</x-ui::popover.trigger>
                     <x-ui::popover.content class="w-fit p-0">
-                        <x-ui::emoji-picker class="h-[342px]" wire:emoji-select="$set('reaction', $event.detail.emoji)">
-                            <x-ui::emoji-picker.search />
-                            <x-ui::emoji-picker.content />
-                            <x-ui::emoji-picker.footer />
-                        </x-ui::emoji-picker>
+                        <x-ui::emoji-picker class="h-[342px]" wire:emoji-select="$set('reaction', $event.detail.emoji)" footer />
                     </x-ui::popover.content>
                 </x-ui::popover>
             </div>

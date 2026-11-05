@@ -5,7 +5,7 @@
  * controls left in the toolbar. Laid out again whenever the toolbar's width changes.
  */
 
-import { contentOf } from '../../support/overlay.js'
+import { contentOf } from '../../alpine/overlay.js'
 
 const SEPARATOR = '[data-slot="separator"]'
 

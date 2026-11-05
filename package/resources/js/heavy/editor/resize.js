@@ -1,3 +1,4 @@
+import { bind } from '../../alpine/interaction.js'
 /*
  * Images, videos and embeds while editing: the media in a box as wide as its style's
  * width and placed by its margins, the rest of its style (a radius, a border, …) on
@@ -82,9 +83,9 @@ export function resizable(tag, attributes) {
             }
 
             const end = () => {
-                handle.removeEventListener('pointermove', move)
-                handle.removeEventListener('pointerup', end)
-                handle.removeEventListener('pointercancel', end)
+                stopPointermove()
+                stopPointerup()
+                stopPointercancel()
                 delete dom.dataset.resizing
 
                 const position = getPos()
@@ -96,16 +97,17 @@ export function resizable(tag, attributes) {
                 editor.view.dispatch(editor.state.tr.setNodeMarkup(position, undefined, { ...node.attrs, style }))
             }
 
-            handle.addEventListener('pointermove', move)
-            handle.addEventListener('pointerup', end)
-            handle.addEventListener('pointercancel', end)
+            const stopPointermove = bind(handle, 'pointermove', move)
+            const stopPointerup = bind(handle, 'pointerup', end)
+            const stopPointercancel = bind(handle, 'pointercancel', end)
         }
 
-        handles.forEach(handle => handle.addEventListener('pointerdown', start))
+        const stops = handles.map(handle => bind(handle, 'pointerdown', start))
         render()
 
         return {
             dom,
+            destroy() { stops.forEach(stop => stop()) },
             update(next) {
                 if (next.type !== node.type) return false
 

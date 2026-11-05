@@ -2,6 +2,16 @@
 
 namespace Esoboy\Ui;
 
+use Esoboy\Ui\Livewire\Calendar;
+use Esoboy\Ui\Livewire\Cascader;
+use Esoboy\Ui\Livewire\Combobox;
+use Esoboy\Ui\Livewire\DatePicker;
+use Esoboy\Ui\Livewire\EmojiPicker;
+use Esoboy\Ui\Livewire\Questionnaire;
+use Esoboy\Ui\Livewire\TagsInput;
+use Esoboy\Ui\Livewire\Transfer;
+use Esoboy\Ui\Livewire\Tree;
+use Esoboy\Ui\Livewire\TreeSelect;
 use Esoboy\Ui\Support\FieldContext;
 use Esoboy\Ui\Support\OverlayModel;
 use Esoboy\Ui\Support\PendingControl;
@@ -11,6 +21,7 @@ use Esoboy\Ui\Support\Theme;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class UiServiceProvider extends ServiceProvider
 {
@@ -27,6 +38,18 @@ class UiServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'ui');
+        Livewire::listen('render', fn ($component) => Sequence::resetPrefix('scope:'.$component->getId().':'));
+        Livewire::component('ui.calendar', Calendar::class);
+        Livewire::component('ui.date-picker', DatePicker::class);
+        Livewire::component('ui.tree', Tree::class);
+        Livewire::component('ui.tree-select', TreeSelect::class);
+        Livewire::component('ui.transfer', Transfer::class);
+        Livewire::component('ui.tags-input', TagsInput::class);
+        Livewire::component('ui.cascader', Cascader::class);
+        Livewire::component('ui.combobox', Combobox::class);
+        Livewire::component('ui.questionnaire', Questionnaire::class);
+        Livewire::component('ui.emoji-picker', EmojiPicker::class);
 
         $this->bootConfig();
         $this->bootAssets();
@@ -37,7 +60,7 @@ class UiServiceProvider extends ServiceProvider
         Blade::directive('uiTheme', fn (string $expression) => "<?php echo \Esoboy\Ui\Support\Theme::attributes({$expression}); ?>");
 
         // The browser writes the sidebar and theme cookies, so they can't be encrypted.
-        EncryptCookies::except([SidebarState::COOKIE, Theme::COOKIE]);
+        EncryptCookies::except([SidebarState::COOKIE, SidebarState::COOKIE.'_*', Theme::COOKIE]);
     }
 
     /**

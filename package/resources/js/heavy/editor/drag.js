@@ -1,3 +1,4 @@
+import { bind } from '../../alpine/interaction.js'
 /*
  * The drag handle: a grip beside the block under the pointer (a mouse or a pen).
  * Dragging it moves the block, as ProseMirror moves a dragged node; clicking it selects
@@ -87,19 +88,19 @@ export function dragHandle(handle) {
 
                     handle.hidden = true
                     container.append(handle)
-                    container.addEventListener('pointermove', move)
-                    container.addEventListener('pointerleave', hide)
-                    handle.addEventListener('dragstart', start)
-                    handle.addEventListener('click', click)
+                    const stopPointermove = bind(container, 'pointermove', move)
+                    const stopPointerleave = bind(container, 'pointerleave', hide)
+                    const stopDragstart = bind(handle, 'dragstart', start)
+                    const stopClick = bind(handle, 'click', click)
 
                     return {
                         // The block it was beside may have moved: it comes back on the next move.
                         update: (_, previous) => view.state.doc.eq(previous.doc) || hide(),
                         destroy: () => {
-                            container.removeEventListener('pointermove', move)
-                            container.removeEventListener('pointerleave', hide)
-                            handle.removeEventListener('dragstart', start)
-                            handle.removeEventListener('click', click)
+                            stopPointermove()
+                            stopPointerleave()
+                            stopDragstart()
+                            stopClick()
                             handle.remove()
                         },
                     }

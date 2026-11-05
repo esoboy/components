@@ -11,7 +11,7 @@
     'data-slot' => 'combobox-item',
     'data-value' => $value,
     'aria-selected' => 'false',
-    'aria-disabled' => $attributes->has('disabled') ? 'true' : false,
+    'aria-disabled' => (bool) $attributes->get('disabled', false) ? 'true' : false,
 ]) }}>
     {{ $slot }}
     <span data-slot="combobox-item-indicator"><x-ui::icon name="check" /></span>

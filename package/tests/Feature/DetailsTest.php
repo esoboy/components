@@ -12,12 +12,12 @@ it('renders a description list as dl with groups', function () {
                 <x-ui::description-list.details>#4189</x-ui::description-list.details>
             </x-ui::description-list.item>
         </x-ui::description-list>
-        BLADE)->assertSeeInOrder([
+        BLADE)->assertSeeMarkupInOrder([
         '<dl data-slot="description-list" data-orientation="horizontal" style="--columns: 2;">',
         '<div data-slot="description-list-item" style="--span: 2;">',
         '<dt data-slot="description-list-term">Order</dt>',
         '<dd data-slot="description-list-details">#4189</dd>',
-    ], false);
+    ]);
 });
 
 it('numbers steps and derives their status from the current one', function () {
@@ -38,12 +38,12 @@ it('numbers steps and derives their status from the current one', function () {
 
     expect($statuses[1])->toBe(['complete', 'current', 'upcoming', 'error', 'upcoming'])
         ->and($numbers[1])->toBe(['2', '3', '2'])
-        ->and($html)->toContain('<ol data-slot="steps" data-orientation="vertical">')
+        ->and($html)->toContainMarkup('<ol data-slot="steps" data-orientation="vertical">')
         ->toContain('data-status="current" aria-current="step"')
-        ->toContain('<span data-slot="steps-title">Account</span>')
-        ->toContain('<span data-slot="steps-description">Sign up</span>')
-        ->toContain('<path d="M20 6 9 17l-5-5"/>')
-        ->toContain('<path d="M18 6 6 18"/>');
+        ->toContainMarkup('<span data-slot="steps-title">Account</span>')
+        ->toContainMarkup('<span data-slot="steps-description">Sign up</span>')
+        ->toContainMarkup('<path d="M20 6 9 17l-5-5"/>')
+        ->toContainMarkup('<path d="M18 6 6 18"/>');
 });
 
 it('renders timeline items with their variant and icon', function () {
@@ -59,7 +59,7 @@ it('renders timeline items with their variant and icon', function () {
             </x-ui::timeline.item>
             <x-ui::timeline.item>Plain</x-ui::timeline.item>
         </x-ui::timeline>
-        BLADE)->assertSeeInOrder([
+        BLADE)->assertSeeMarkupInOrder([
         '<ol data-slot="timeline">',
         '<li data-slot="timeline-item" data-variant="success">',
         '<span data-slot="timeline-indicator" aria-hidden="true">✓</span>',
@@ -68,5 +68,5 @@ it('renders timeline items with their variant and icon', function () {
         '<div data-slot="timeline-description">Signed for.</div>',
         '<li data-slot="timeline-item" data-variant="default">',
         '<span data-slot="timeline-indicator" aria-hidden="true"></span>',
-    ], false);
+    ]);
 });

@@ -18,13 +18,13 @@ it('renders a popover trigger before its content', function () {
         </x-ui::popover>
         BLADE);
 
-    expect($html)->toContain('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor="">Open</button>')
-        ->and($html)->toContain('<div popover="auto" data-slot="popover-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: 0px;">')
-        ->and($html)->toContain('<h2 data-slot="popover-title">Dimensions</h2>')
-        ->and($html)->toContain('<p data-slot="popover-description">Set them.</p>');
+    expect($html)->toContainMarkup('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-popover-trigger="data-popover-trigger" command="toggle-popover">Open</button>')
+        ->and($html)->toContainMarkup('<div popover="auto" data-slot="popover-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: 0px;">')
+        ->and($html)->toContainMarkup('<h2 data-slot="popover-title">Dimensions</h2>')
+        ->and($html)->toContainMarkup('<p data-slot="popover-description">Set them.</p>');
 });
 
-it('renders nested popovers without ids', function () {
+it('gives nested popovers independent generated ids', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::popover>
             <x-ui::popover.trigger>A</x-ui::popover.trigger>
@@ -37,9 +37,9 @@ it('renders nested popovers without ids', function () {
         </x-ui::popover>
         BLADE);
 
-    expect(substr_count($html, 'data-popover-trigger="data-popover-trigger" command="toggle-popover" commandfor=""'))->toBe(2)
+    expect(substr_count($html, 'data-popover-trigger="data-popover-trigger" command="toggle-popover"'))->toBe(2)
         ->and(substr_count($html, 'data-slot="popover-content"'))->toBe(2)
-        ->and($html)->not->toMatch('/\sid="/');
+        ->and($html)->and(count(array_unique(idsOf($html, 'id'))))->toBe(2);
 });
 
 it('renders a tooltip shown on hover', function () {
@@ -50,8 +50,8 @@ it('renders a tooltip shown on hover', function () {
         </x-ui::tooltip>
         BLADE);
 
-    expect($html)->toContain('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-tooltip-trigger="data-tooltip-trigger">Hover</button>')
-        ->and($html)->toContain('<div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" style="--side-offset: 4px; --align-offset: 0px;">Add to library</div>');
+    expect($html)->toContainMarkup('<button type="button" data-slot="button" data-variant="outline" data-size="default" data-tooltip-trigger="data-tooltip-trigger">Hover</button>')
+        ->and($html)->toContainMarkup('<div popover="manual" role="tooltip" data-slot="tooltip-content" data-side="top" data-align="center" style="--side-offset: 4px; --align-offset: 0px;">Add to library</div>');
 });
 
 it('renders a dropdown menu whose items close the root menu', function () {
@@ -76,15 +76,15 @@ it('renders a dropdown menu whose items close the root menu', function () {
         </x-ui::dropdown-menu>
         BLADE);
 
-    expect($html)->toContain('<button type="button" data-slot="button" data-variant="default" data-size="default" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu">Open</button>')
-        ->and($html)->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-content" data-side="bottom" data-align="start" style="--side-offset: 4px; --align-offset: 0px;">')
-        ->and($html)->toContain('<div data-slot="dropdown-menu-label" data-inset="data-inset">Account</div>')
-        ->and($html)->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default" wire:click="profile">')
-        ->and($html)->toContain('<span data-slot="dropdown-menu-shortcut">⌘P</span>')
-        ->and($html)->toContain('<a role="menuitem" data-slot="dropdown-menu-item" data-variant="default" href="/billing">Billing</a>')
-        ->and($html)->toContain('<div role="separator" data-slot="dropdown-menu-separator"></div>')
-        ->and($html)->toContain('aria-haspopup="menu" data-slot="dropdown-menu-sub-trigger" command="toggle-popover" commandfor="">')
-        ->and($html)->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-sub-content" data-side="right" data-align="start" style="--side-offset: 0px; --align-offset: -3px;">')
+    expect($html)->toContainMarkup('<button type="button" data-slot="button" data-variant="default" data-size="default" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu">Open</button>')
+        ->and($html)->toContainMarkup('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-content" data-side="bottom" data-align="start" style="--side-offset: 4px; --align-offset: 0px;">')
+        ->and($html)->toContainMarkup('<div data-slot="dropdown-menu-label" data-inset="data-inset">Account</div>')
+        ->and($html)->toContainMarkup('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default" wire:click="profile">')
+        ->and($html)->toContainMarkup('<span data-slot="dropdown-menu-shortcut">⌘P</span>')
+        ->and($html)->toContainMarkup('<a role="menuitem" data-slot="dropdown-menu-item" data-variant="default" href="/billing">Billing</a>')
+        ->and($html)->toContainMarkup('<div role="separator" data-slot="dropdown-menu-separator"></div>')
+        ->and($html)->toContainMarkup('<button aria-haspopup="menu" data-slot="dropdown-menu-sub-trigger" command="toggle-popover">')
+        ->and($html)->toContainMarkup('<div popover="auto" role="menu" tabindex="-1" data-slot="dropdown-menu-sub-content" data-side="right" data-align="start" style="--side-offset: 0px; --align-offset: -3px;">')
         ->and($html)->toContain('data-variant="destructive"')
         // ui.js closes the root menu when an item is chosen.
         ->and($html)->not->toContain('hide-popover');
@@ -98,15 +98,15 @@ it('binds checkbox and radio items with wire:model', function () {
         </x-ui::dropdown-menu.radio-group>
         BLADE);
 
-    expect($html)->toContain('<label data-slot="dropdown-menu-checkbox-item" class="w-full">')
-        ->and($html)->toContain('<input type="checkbox" role="menuitemcheckbox" wire:model.live="statusBar">')
-        ->and($html)->toContain('<eso-radio-group role="group" data-slot="dropdown-menu-radio-group" wire:model.live="position">')
-        ->and($html)->toContain('<input type="radio" role="menuitemradio" value="top">');
+    expect($html)->toContainMarkup('<label data-slot="dropdown-menu-checkbox-item" class="w-full">')
+        ->and($html)->toContainMarkup('<input type="checkbox" role="menuitemcheckbox" wire:model.live="statusBar">')
+        ->and($html)->toContainMarkup('<div role="group" data-slot="dropdown-menu-radio-group">')
+        ->and($html)->toContainMarkup('<input type="radio" role="menuitemradio" value="top">');
 });
 
 it('keeps a style given to a component after its own', function () {
     $this->blade('<x-ui::popover><x-ui::popover.trigger style="color: red">Open</x-ui::popover.trigger><x-ui::popover.content style="width: 10rem">x</x-ui::popover.content></x-ui::popover>')
-        ->assertSeeInOrder(['style="color: red;"', '--align-offset: 0px; width: 10rem;"'], false);
+        ->assertSeeMarkupInOrder(['style="color: red;"', '--align-offset: 0px; width: 10rem;"']);
 
     $this->blade('<x-ui::sidebar.provider style="--sidebar-width: 20rem">x</x-ui::sidebar.provider>')
         ->assertSee('style="--sidebar-width: 16rem; --sidebar-width-icon: 3rem; --sidebar-width: 20rem;"', false);
@@ -133,6 +133,6 @@ it('renders another component as the trigger, like shadcn\'s render', function (
         BLADE);
 
     expect($html)
-        ->toContain('<button type="button" data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="lg" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu">Me</button>')
-        ->toContain('<button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" commandfor="" aria-haspopup="menu" data-tooltip-trigger="data-tooltip-trigger">More</button>');
+        ->toContainMarkup('<button type="button" data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="lg" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu">Me</button>')
+        ->toContainMarkup('<button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu" data-tooltip-trigger="data-tooltip-trigger">More</button>');
 });

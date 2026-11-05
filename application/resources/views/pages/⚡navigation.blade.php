@@ -104,7 +104,7 @@ new class extends Component
                 </x-ui::tabs.content>
             </x-ui::tabs>
 
-            <x-ui::tabs default-value="overview">
+            <x-ui::tabs value="overview">
                 <x-ui::tabs.list variant="line">
                     <x-ui::tabs.trigger value="overview">Overview</x-ui::tabs.trigger>
                     <x-ui::tabs.trigger value="analytics">Analytics</x-ui::tabs.trigger>
@@ -115,7 +115,7 @@ new class extends Component
                 <x-ui::tabs.content value="reports">Reports content.</x-ui::tabs.content>
             </x-ui::tabs>
 
-            <x-ui::tabs default-value="general" orientation="vertical">
+            <x-ui::tabs value="general" orientation="vertical">
                 <x-ui::tabs.list>
                     <x-ui::tabs.trigger value="general">General</x-ui::tabs.trigger>
                     <x-ui::tabs.trigger value="security">Security</x-ui::tabs.trigger>
@@ -131,7 +131,7 @@ new class extends Component
                 <x-ui::pagination.content>
                     <x-ui::pagination.item><x-ui::pagination.previous href="#" /></x-ui::pagination.item>
                     <x-ui::pagination.item><x-ui::pagination.link href="#">1</x-ui::pagination.link></x-ui::pagination.item>
-                    <x-ui::pagination.item><x-ui::pagination.link href="#" is-active>2</x-ui::pagination.link></x-ui::pagination.item>
+                    <x-ui::pagination.item><x-ui::pagination.link href="#" active>2</x-ui::pagination.link></x-ui::pagination.item>
                     <x-ui::pagination.item><x-ui::pagination.link href="#">3</x-ui::pagination.link></x-ui::pagination.item>
                     <x-ui::pagination.item><x-ui::pagination.ellipsis /></x-ui::pagination.item>
                     <x-ui::pagination.item><x-ui::pagination.next href="#" /></x-ui::pagination.item>

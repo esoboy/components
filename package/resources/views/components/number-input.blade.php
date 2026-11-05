@@ -15,12 +15,12 @@
     'step' => 1,
     'placeholder' => null,
     'disabled' => false,
-    'defaultValue' => null,
+    'value' => null,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = $defaultValue ?? Model::value($attributes);
+$value = Model::value($attributes, $value);
 $value = is_numeric($value) ? $value + 0 : null;
 $name = $attributes->get('name');
 
@@ -28,12 +28,20 @@ $name = $attributes->get('name');
 $labelling = ['id', 'aria-label', 'aria-labelledby'];
 @endphp
 
-{{-- <eso-number-input> exposes the number as .value (null when empty), so wire:model binds on it. --}}
-<eso-number-input {{ $attributes->except(['name', ...$labelling])->merge([
+<eso-number-input {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', ...$labelling])->merge([
     'data-slot' => 'number-input',
     'data-min' => $min ?? false,
     'data-max' => $max ?? false,
     'data-step' => $step,
+    'x-data' => 'uiNumberInput('.json_encode(Model::binding($attributes)).')',
+    'x-init' => '$nextTick(() => render())',
+    'x-effect' => 'render()',
+    'x-on:pointerdown' => 'press($event)',
+    'x-on:pointerup.window' => 'stop()',
+    'x-on:pointercancel.window' => 'stop()',
+    'x-on:keydown' => 'key($event)',
+    'x-on:input' => 'revision++; render()',
+    'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()',
 ]) }}>
     <x-ui::input-group :render-error="false">
         <x-ui::input-group.addon>
@@ -41,7 +49,7 @@ $labelling = ['id', 'aria-label', 'aria-labelledby'];
                 <x-ui::icon name="minus" />
             </x-ui::button>
         </x-ui::input-group.addon>
-        <x-ui::input-group.input inputmode="decimal" role="spinbutton" :value="$value ?? ''" :placeholder="$placeholder" autocomplete="off" :name="$name" :aria-valuemin="$min" :aria-valuemax="$max" :aria-valuenow="$value" :state="$state" :disabled="$disabled" :attributes="$attributes->only($labelling)" />
+        <x-ui::input-group.input x-ref="input" inputmode="decimal" role="spinbutton" :value="$value ?? ''" :placeholder="$placeholder" autocomplete="off" :name="$name" :aria-valuemin="$min" :aria-valuemax="$max" :aria-valuenow="$value" :state="$state" :disabled="$disabled" :attributes="$attributes->only($labelling)->merge(Model::input($attributes, number: true)->getAttributes())" />
         <x-ui::input-group.addon align="inline-end">
             <x-ui::button variant="ghost" size="icon-xs" data-number-input="increment" :aria-label="__('ui::number-input.increment')" tabindex="-1" :disabled="$disabled || ($max !== null && $value !== null && $value >= $max)">
                 <x-ui::icon name="plus" />

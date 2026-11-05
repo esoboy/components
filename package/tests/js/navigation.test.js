@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { register as registerAnchor } from '../../resources/js/components/anchor.js'
-import { register as registerBackToTop } from '../../resources/js/components/back-to-top.js'
+import anchor from '../../resources/js/alpine/anchor.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
+import backToTop from '../../resources/js/alpine/back-to-top.js'
 
 beforeAll(() => {
-    registerAnchor()
-    registerBackToTop()
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
     set(window, { scrollY: 0 })
 })
@@ -36,7 +36,7 @@ describe('anchor', () => {
             <section id="intro"></section><section id="usage"></section><section id="api"></section>`
 
         place({ intro: 100, usage: 500, api: 900 })
-        document.querySelector('eso-anchor').connectedCallback()
+        engineDriver(anchor, document.querySelector('eso-anchor'))
 
         return document.querySelector('eso-anchor')
     }
@@ -83,7 +83,7 @@ describe('back to top', () => {
     it('shows past the threshold and scrolls the window back up', async () => {
         window.scrollTo = vi.fn()
         document.body.innerHTML = '<eso-back-to-top data-threshold="400" hidden><button>Up</button></eso-back-to-top>'
-        const element = document.querySelector('eso-back-to-top')
+        const element = engineDriver(backToTop, document.querySelector('eso-back-to-top'))
 
         expect(element.hidden).toBe(true)
 
@@ -103,7 +103,7 @@ describe('back to top', () => {
         document.body.innerHTML = '<main id="main"></main><eso-back-to-top data-target="#main" data-threshold="200" hidden><button>Up</button></eso-back-to-top>'
         const main = document.getElementById('main')
         main.scrollTo = vi.fn()
-        const element = document.querySelector('eso-back-to-top')
+        const element = engineDriver(backToTop, document.querySelector('eso-back-to-top'))
 
         set(main, { scrollTop: 300 })
         main.dispatchEvent(new Event('scroll'))

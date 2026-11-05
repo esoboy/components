@@ -1,3 +1,4 @@
+import { bind } from '../../alpine/interaction.js'
 /*
  * Menus while typing. / lists what the format can insert (the view's slash template,
  * narrowed by each item's label and data-keywords); : and a word list the emojis it
@@ -25,13 +26,13 @@ class Options {
         menu.id ||= `editor-suggestion-${++lists}`
         input.setAttribute('aria-controls', menu.id)
 
-        menu.addEventListener('pointerdown', event => event.preventDefault())
-        menu.addEventListener('click', event => {
+        bind(menu, 'pointerdown', event => event.preventDefault())
+        bind(menu, 'click', event => {
             const option = event.target.closest('[role="option"]')
 
             if (option) this.pick(option)
         })
-        menu.addEventListener('pointermove', event => {
+        bind(menu, 'pointermove', event => {
             const option = event.target.closest('[role="option"]')
 
             if (option) this.activate(option)

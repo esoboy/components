@@ -21,6 +21,7 @@ it('moves the focused day with the arrow keys and picks it with Enter', function
     visit('/controls')
         ->keys('#demo-calendar button[data-day="2026-10-26"]', 'ArrowRight')
         ->keys('*:focus', 'ArrowDown')
+        ->assertScript('document.activeElement.dataset.day', '2026-11-03')
         ->keys('*:focus', 'Enter')
         ->assertSeeIn('#date', '2026-11-03');
 });

@@ -20,7 +20,7 @@ $rows = $code === null ? null : implode('', array_map(
 @endphp
 
 <pre {{ $attributes->merge([
-    'data-slot' => 'code-block-content',
+    'data-slot' => 'code-block-content', ...($language ? ['x-data' => 'uiEngine({})', 'data-engine' => app(Assets::class)->url('code-block.js')] : []),
     'data-language' => $language ?? false,
     'data-wrap' => (bool) $wrap,
     'data-numbered' => (bool) $lineNumbers,
@@ -28,10 +28,3 @@ $rows = $code === null ? null : implode('', array_map(
     'tabindex' => '0',
     'style' => 'counter-reset: line '.($startLine - 1).';',
 ]) }}><code data-slot="code-block-code">{!! $rows ?? $slot !!}</code></pre>
-
-{{-- Livewire loads this once per page, also when the block arrives in a later update. --}}
-@if ($language)
-@assets
-{!! app(Assets::class)->module('code-block.js') !!}
-@endassets
-@endif

@@ -1,5 +1,7 @@
 @blaze
 
+@php($attributes = \Esoboy\Ui\Support\Theme::control($attributes))
+
 {{-- A native checkbox, so wire:model binds as usual; class styles the row. --}}
 <label {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'dropdown-menu-checkbox-item']) }}>
     <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'checkbox', 'role' => 'menuitemcheckbox']) }}>

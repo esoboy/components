@@ -1,22 +1,10 @@
 @blaze
-
-@use('Esoboy\Ui\Assets')
-
-{{-- Not in shadcn's core: its registry's Emoji Picker (Liveblocks' Frimousse). The emojis come from Emojibase in the app's language when the build has it, else English, loaded when the picker first shows; picking one dispatches emoji-select { emoji, label }. --}}
-@props([
-    'columns' => 9,
-])
-
+@use('Esoboy\Ui\Support\Model')
+@props(['columns' => 9, 'footer' => false, 'value' => null])
 @php
-$assets = app(Assets::class);
-$locale = strtolower(str_replace('_', '-', app()->getLocale()));
-$data = collect(["emoji/{$locale}.json", 'emoji/'.strtok($locale, '-').'.json', 'emoji/en.json'])->first(fn (string $file) => $assets->path($file) !== null, 'emoji/en.json');
+$forward = $attributes->except('wire:key')->getAttributes();
+foreach (['wire:emoji-select'] as $event) if (isset($forward[$event])) $forward[$event] = '$parent.'.$forward[$event];
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'emoji-picker-'.\Esoboy\Ui\Support\Sequence::next('emoji-picker');
 @endphp
-
-<eso-emoji-picker {{ $attributes->merge([
-    'data-slot' => 'emoji-picker',
-    'data-src' => $assets->url($data),
-    'data-columns' => $columns,
-    'style' => "--emoji-picker-columns: {$columns};",
-]) }}>{{ $slot }}</eso-emoji-picker>
+@livewire('ui.emoji-picker', ['columns' => max(1, (int) $columns), 'footer' => $footer, 'value' => Model::value($attributes, $value), ...$forward], key('ui-emoji-picker-'.$key))
 <x-ui::extras />

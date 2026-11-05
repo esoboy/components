@@ -5,7 +5,7 @@
  * with search, children loaded from the server, and drag to reorder.
  */
 
-const PERMISSIONS = 'eso-tree[wire\\:model\\.live="permissions"]';
+const PERMISSIONS = '#permissions-tree';
 
 function treeItem(string $tree, string $value): string
 {
@@ -24,8 +24,8 @@ it('selects one item and filters by search', function () {
     visit('/inputs')
         ->click('[data-slot="tree-item-label"]:text-is("card.blade.php")')
         ->assertSeeIn('#file', 'card.blade.php')
-        ->type('eso-tree[wire\\:model\\.live="file"] input', 'layout')
-        ->assertScript("[...document.querySelectorAll('eso-tree[wire\\\\:model\\\\.live=\"file\"] [data-slot=\"tree-item-label\"]')].filter(label => label.checkVisibility()).map(label => label.textContent.trim()).join()", 'components,layout.blade.php');
+        ->type('#file-tree input', 'layout')
+        ->assertScript("[...document.querySelectorAll('#file-tree [data-slot=\"tree-item-label\"]')].filter(label => label.checkVisibility()).map(label => label.textContent.trim()).join()", 'components,layout.blade.php');
 });
 
 it('loads children from the server when an item opens', function () {

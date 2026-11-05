@@ -51,7 +51,9 @@ it('shows a validation error inside a field', function () {
 });
 
 it('keeps the selected text aligned when the page scrolls and the trigger resizes', function () {
-    $page = visit('/controls')->click('#demo-select [data-slot="select-trigger"]');
+    $page = visit('/controls');
+    $page->script("document.documentElement.style.scrollBehavior = 'instant'; document.querySelector('#demo-select [data-slot=select-trigger]').scrollIntoView({ block: 'center', behavior: 'instant' })");
+    $page->click('#demo-select [data-slot="select-trigger"]');
     $aligned = <<<'JS'
         (() => {
             const select = document.querySelector('#demo-select');

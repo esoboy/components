@@ -8,7 +8,7 @@
 it('binds one thumb from the keyboard', function () {
     visit('/controls')
         ->assertSeeIn('#volume', '50')
-        ->keys('[wire\\:model\\.live="volume"] [data-slot="slider-thumb"]', ['ArrowRight', 'ArrowRight'])
+        ->keys('#volume-slider [data-slot="slider-thumb"]', ['ArrowRight', 'ArrowRight'])
         ->assertSeeIn('#volume', '52')
         ->assertNoJavaScriptErrors();
 });
@@ -16,22 +16,22 @@ it('binds one thumb from the keyboard', function () {
 it('binds two thumbs as a list by their step', function () {
     visit('/controls')
         ->assertSeeIn('#price', '25-75')
-        ->keys('[wire\\:model\\.live="price"] [data-slot="slider-thumb"] >> nth=1', 'ArrowLeft')
+        ->keys('#price-slider [data-slot="slider-thumb"] >> nth=1', 'ArrowLeft')
         ->assertSeeIn('#price', '25-70');
 });
 
 it('keeps a thumb from crossing the other', function () {
     visit('/controls')
-        ->keys('[wire\\:model\\.live="price"] [data-slot="slider-thumb"] >> nth=0', 'End')
+        ->keys('#price-slider [data-slot="slider-thumb"] >> nth=0', 'End')
         ->assertSeeIn('#price', '75-75');
 });
 
 it('follows the pointer along its track', function () {
     $page = visit('/controls');
 
-    $box = $page->page()->locator('[wire\\:model\\.live="volume"]')->boundingBox();
+    $box = $page->page()->locator('#volume-slider')->boundingBox();
 
-    $page->page()->locator('[wire\\:model\\.live="volume"]')->click(['position' => ['x' => $box['width'] * 0.8, 'y' => $box['height'] / 2]]);
+    $page->page()->locator('#volume-slider')->click(['position' => ['x' => $box['width'] * 0.8, 'y' => $box['height'] / 2]]);
 
     $page->assertScript("Math.abs(Number(document.getElementById('volume').textContent) - 80) <= 2");
 });

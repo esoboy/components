@@ -14,5 +14,5 @@
     'data-value' => $value,
     'data-prefix' => $prefix ?? false,
     'aria-selected' => 'false',
-    'aria-disabled' => $attributes->has('disabled') ? 'true' : false,
+    'aria-disabled' => (bool) $attributes->get('disabled', false) ? 'true' : false,
 ]) }}>{{ $slot }}</div>

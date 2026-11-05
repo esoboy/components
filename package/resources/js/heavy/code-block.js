@@ -3,7 +3,7 @@
  * every <x-ui::code-block.content language="..."> gets GitHub light and dark colours,
  * and is highlighted again whenever Livewire morphs or streams new code into it.
  *
- * Built into dist/code-block.js; code-block.content loads it through @assets, so a
+ * Built into dist/code-block.js; Alpine loads it for code-block.content, so a
  * page downloads Shiki only when it shows highlighted code, and each language only
  * when that language is on the page.
  */
@@ -82,21 +82,19 @@ async function highlight(pre) {
     })
 }
 
-export function initCodeHighlighting(root = document) {
-    let timer = 0
-
-    // Batches a burst of mutations (a morph, a streamed chunk) into one pass.
-    const run = () => {
-        clearTimeout(timer)
-        timer = setTimeout(() => {
-            const blocks = new Set([...root.querySelectorAll(PENDING)].map(row => row.closest('[data-slot="code-block-content"]')))
-
-            blocks.forEach(pre => highlight(pre).catch(() => {}))
+export default () => ({
+    observer: null,
+    timer: null,
+    init() {
+        this.observer = new MutationObserver(() => this.run())
+        this.observer.observe(this.$el, { childList: true, subtree: true, characterData: true })
+        this.run()
+    },
+    run() {
+        clearTimeout(this.timer)
+        this.timer = setTimeout(() => {
+            if (this.$el.querySelector('[data-slot="code-block-line-content"]:not([data-highlighted])')) highlight(this.$el).catch(() => {})
         })
-    }
-
-    new MutationObserver(run).observe(root, { childList: true, subtree: true, characterData: true })
-    run()
-}
-
-initCodeHighlighting()
+    },
+    destroy() { this.observer.disconnect(); clearTimeout(this.timer) },
+})

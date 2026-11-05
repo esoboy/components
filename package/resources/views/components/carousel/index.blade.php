@@ -6,7 +6,7 @@
 ])
 
 {{-- <eso-carousel> scrolls a native scroll-snap track and enables Previous / Next as it moves. --}}
-<eso-carousel {{ $attributes->merge([
+<eso-carousel x-data="uiCarousel" {{ $attributes->merge([
     'role' => 'region',
     'aria-roledescription' => __('ui::carousel.label'),
     'data-slot' => 'carousel',

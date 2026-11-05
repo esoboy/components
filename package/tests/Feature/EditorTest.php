@@ -80,28 +80,28 @@ describe('the view', function () {
     beforeEach(fn () => config()->set('ui.editor.uploader', Uploads::class));
 
     it('renders the editor with its format and sanitized content', function () {
-        $html = (string) $this->blade('<x-ui::editor wire:model="body" placeholder="Write" :max-length="500" default-value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
+        $html = (string) $this->blade('<x-ui::editor wire:model="body" placeholder="Write" :max-length="500" value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
 
         expect($html)
-            ->toContain('<eso-editor data-slot="editor" data-format="{&quot;features&quot;:[&quot;heading&quot;,')
+            ->toContain('data-format="{&quot;features&quot;:[&quot;heading&quot;,')
             ->toContain('&quot;layout&quot;,&quot;toolbar&quot;,&quot;bubble-menu&quot;,&quot;slash-menu&quot;,&quot;drag-handle&quot;,&quot;find-replace&quot;,&quot;source&quot;,')
             ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;failed&quot;:&quot;The upload failed.&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-upload="http://localhost/esoboy-ui/editor/upload" data-image-hosts="localhost" data-max-length="500" data-emoji="http://localhost/esoboy-ui/emoji/en.json?id=')
             ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
             ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
-            ->toContain('data-placeholder="Write" data-label="Rich text editor" data-editor-name="body" wire:model="body">')
-            ->toContain('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" wire:ignore>')
-            ->toContain('<div data-slot="editor-control" data-priority="1">')
-            ->toContain('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
-            ->toContain('data-editor-action="media" data-editor-value="image" aria-label="Image"><svg')
-            ->toContain('command="toggle-popover" commandfor="" data-editor-more="data-editor-more" hidden="hidden" aria-label="More"')
+            ->toContain('data-placeholder="Write" data-label="Rich text editor" data-editor-name="body"')
+            ->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" wire:ignore>')
+            ->toContainMarkup('<div data-slot="editor-control" data-priority="1">')
+            ->toContainMarkup('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
+            ->toContainMarkup('data-editor-action="media" data-editor-value="image" aria-label="Image"><svg')
+            ->toContainMarkup('<button command="toggle-popover" data-editor-more="data-editor-more" hidden="hidden" aria-label="More">')
             ->toContain('data-editor-more-content="data-editor-more-content" aria-label="More"')
-            ->toContain('<div data-slot="editor-find" role="search" aria-label="Find and replace" hidden wire:ignore>')
-            ->toContain('<div data-slot="editor-content" wire:ignore><p>Hi <b>there</b></p></div>')
-            ->toContain('<textarea data-slot="editor-source" aria-label="HTML source" spellcheck="false" hidden wire:ignore></textarea>')
-            ->toContain('<div data-slot="editor-footer" wire:ignore>')
-            ->toContain('<span data-editor-unsaved data-editor-label="Images not on this site: :count" hidden><span data-editor-unsaved-label></span>')
-            ->toContain('data-editor-action="save-images">Save all</button>')
-            ->toContain('<span data-editor-characters><span data-editor-count></span> characters</span>')
+            ->toContainMarkup('<div data-slot="editor-find" role="search" aria-label="Find and replace" hidden wire:ignore>')
+            ->toContainMarkup('<div data-slot="editor-content" wire:ignore><p>Hi <b>there</b></p></div>')
+            ->toContainMarkup('<textarea data-slot="editor-source" aria-label="HTML source" spellcheck="false" hidden wire:ignore></textarea>')
+            ->toContainMarkup('<div data-slot="editor-footer" wire:ignore>')
+            ->toContainMarkup('<span data-editor-unsaved data-editor-label="Images not on this site: :count" hidden><span data-editor-unsaved-label></span>')
+            ->toContainMarkup('data-editor-action="save-images">Save all</button>')
+            ->toContainMarkup('<span data-editor-characters><span data-editor-count></span> characters</span>')
             ->toMatch('/data-slot="tooltip-content" data-side="top" data-align="center"[^>]*data-editor-tip/')
             ->not->toContain('onclick')
             ->not->toContain('alert(1)')
@@ -147,7 +147,7 @@ describe('the view', function () {
             ->and(array_slice(controls($basic), -9))->toBe(['blockquote', 'horizontal-rule', 'image', 'video', 'audio', 'file', 'emoji', 'find', 'fullscreen'])
             ->and($basic)->toContain('data-template="slash"')->toContain('data-template="drag-handle"')->not->toContain('data-slot="editor-source"')
             ->and(controls($comment))->toBe(['undo', 'redo', 'bold', 'clear-formatting', 'link'])
-            ->and($comment)->toContain('<template data-template="bubble-text">')
+            ->and($comment)->toContainMarkup('<template data-template="bubble-text">')
             ->not->toContain('data-template="bubble-table"')
             ->not->toContain('data-template="slash"')
             ->not->toContain('data-slot="editor-find"');
@@ -173,11 +173,11 @@ describe('the view', function () {
             ->and(substr_count($html, 'data-editor-command="font-family"'))->toBe(13)
             ->and(substr_count($html, 'data-editor-command="font-size"'))->toBe(13)
             ->and(substr_count($html, 'data-editor-command="line-height"'))->toBe(8)
-            ->and($html)->toContain('data-editor-command="color" data-editor-value="#dc2626" aria-pressed="false" aria-label="Red"><span style="color: #dc2626"><svg')
+            ->and($html)->toContainMarkup('data-editor-command="color" data-editor-value="#dc2626" aria-pressed="false" aria-label="Red"><span style="color: #dc2626"><svg')
             ->toContain('type="radio" role="menuitemradio" value="SimSun, &#039;Songti SC&#039;, serif" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun" aria-checked="false"')
             ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"')
             ->toContain('data-editor-command="heading" data-editor-value="6" data-editor-label="Heading 6"')
-            ->toContain('data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')
+            ->toContainMarkup('data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')
             ->and(substr_count($html, 'data-editor-command="heading"'))->toBe(6);
     });
 
@@ -197,13 +197,13 @@ describe('the view', function () {
             ->and(substr_count($html, 'data-editor-command="letter-spacing"'))->toBe(6)
             ->and(substr_count($html, 'data-editor-command="callout"'))->toBe(6)
             ->and($html)->toContain('data-editor-command="callout" data-editor-value="background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6" data-editor-label="Note"')
-            ->toContain('<template data-template="bubble-link">')
-            ->toContain('<a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer" title="Open link"></a>')
+            ->toContainMarkup('<template data-template="bubble-link">')
+            ->toContainMarkup('<a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer" title="Open link"></a>')
             ->toContain('data-editor-command="caption" aria-label="Caption" aria-pressed="false"')
             ->toContain('data-editor-image-link-input')
             ->toContain('data-editor-command="cell-background" data-editor-value="#fef08a"')
             ->toContain('data-editor-command="cell-align" data-editor-value="middle"')
-            ->toContain('<template data-template="uploading">')
+            ->toContainMarkup('<template data-template="uploading">')
             ->toContain('data-editor-action="format-painter" aria-label="Format painter" aria-pressed="false"');
     });
 
@@ -218,7 +218,7 @@ describe('the view', function () {
             ->toContain('data-editor-action="save-image" aria-label="Save to this site" hidden="hidden"')
             ->toContain('data-editor-menu="embed-ratio" aria-label="Shape" data-editor-for="embed"')
             ->toContain('data-editor-command="embed-ratio" data-editor-value="9 / 16" data-editor-label="9:16"')
-            ->toContain('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden></p>')
+            ->toContainMarkup('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden></p>')
             ->and($html)->toContain('data-editor-opens="video" aria-label="Video"')
             ->toContain('data-editor-action="media" data-editor-value="video" data-editor-upload="data-editor-upload">')
             ->toContain('data-editor-video-input')
@@ -237,7 +237,7 @@ describe('the view', function () {
             </x-ui::editor>
             BLADE);
 
-        expect($html)->toContain('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" class="justify-end" wire:ignore>')
+        expect($html)->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" class="justify-end" wire:ignore>')
             ->toContain('data-editor-more="data-editor-more" hidden="hidden"')
             ->and(controls($html))->toBe(['undo', 'bold', 'fullscreen']);
     });
@@ -250,16 +250,16 @@ describe('the view', function () {
     ]);
 
     it('keeps the HTML in a hidden input for forms, and shows the disabled state', function () {
-        $this->blade('<x-ui::editor name="body" default-value="<p>Hi</p>" disabled />')
+        $this->blade('<x-ui::editor name="body" value="<p>Hi</p>" disabled />')
             ->assertSee('data-name="body" data-editor-name="body" data-disabled="data-disabled"', false)
-            ->assertSee('<input type="hidden" name="body" value="&lt;p&gt;Hi&lt;/p&gt;">', false);
+            ->assertSeeMarkup('<input type="hidden" name="body" value="&lt;p&gt;Hi&lt;/p&gt;">');
     });
 
     it('validates inside a field', function () {
         $this->withViewErrors(['body' => 'Write something.'])
             ->blade('<x-ui::field><x-ui::editor id="body" wire:model="body" /></x-ui::field>')
-            ->assertSee('aria-invalid="true" aria-describedby="body-error" id="body" wire:model="body">', false)
-            ->assertSeeInOrder(['</eso-editor>', 'Write something.'], false);
+            ->assertSeeMarkup('<eso-editor aria-invalid="true" aria-describedby="body-error" id="body">')
+            ->assertSeeMarkupInOrder(['</eso-editor>', 'Write something.']);
     });
 
     it('translates its labels', function () {
@@ -271,15 +271,16 @@ describe('the view', function () {
             ->assertSee('aria-label="粗体"', false)
             ->assertSee('placeholder="粘贴链接…"', false)
             ->assertSee('&quot;expand&quot;:&quot;展开&quot;', false)
-            ->assertSee('>宋体</span>', false);
+            ->assertSeeMarkup('>宋体</span>');
     });
 
-    it('loads its module once per page', function () {
+    it('marks each engine instance for lazy Alpine initialization', function () {
         Route::get('/editors', fn () => Blade::render('<html><head></head><body><x-ui::editor /><x-ui::editor /></body></html>'));
 
         $html = $this->get('/editors')->getContent();
 
-        expect(substr_count($html, '<script type="module" src="http://localhost/esoboy-ui/editor.js?id=7777dddd8888"></script>'))->toBe(1);
+        expect(substr_count($html, 'data-engine="http://localhost/esoboy-ui/editor.js?id=7777dddd8888"'))->toBe(2)
+            ->and($html)->not->toContain('<script type="module" src="http://localhost/esoboy-ui/editor.js');
     });
 
     it('renders what a Livewire property holds, sanitized', function () {
@@ -291,10 +292,10 @@ describe('the view', function () {
 
     it('shows rich text as written, sanitized to its format', function () {
         $this->blade('<x-ui::rich-text class="prose" html="<h2 style=\'color:red;position:fixed\'>Hi</h2><p>a<script>x</script></p>" />')
-            ->assertSee('<div data-slot="rich-text" class="prose"><h2 style="color:red" id="hi">Hi</h2><p>a</p></div>', false);
+            ->assertSeeMarkup('<div data-slot="rich-text" class="prose"><h2 style="color:red" id="hi">Hi</h2><p>a</p></div>');
 
         $this->blade('<x-ui::rich-text format="text" html="<h2>Hi</h2><p><b>a</b><img src=\'/a.png\'></p>" />')
-            ->assertSee('<div data-slot="rich-text"><h2 id="hi">Hi</h2><p><b>a</b></p></div>', false);
+            ->assertSeeMarkup('<div data-slot="rich-text"><h2 id="hi">Hi</h2><p><b>a</b></p></div>');
     });
 
     it('gives headings ids to link to, numbered when they repeat, and lets images load as they come into view', function () {
@@ -315,12 +316,12 @@ describe('the view', function () {
         $html = '<h2>A</h2><h3>B</h3><h4>C</h4><h5>D</h5><h3>E</h3>';
         $toc = (string) $this->blade('<x-ui::rich-text.toc :html="$html" class="sticky">On this page</x-ui::rich-text.toc>', ['html' => $html]);
 
-        expect($toc)->toContain('<eso-anchor role="navigation" aria-label="On this page" data-slot="anchor" class="sticky">')
-            ->toContain('<p data-slot="anchor-title">On this page</p>')
-            ->toContain('<a data-slot="anchor-item" data-level="1" href="#a">A</a>')
-            ->toContain('<a data-slot="anchor-item" data-level="2" href="#b">B</a>')
-            ->toContain('<a data-slot="anchor-item" data-level="3" href="#c">C</a>')
-            ->toContain('<a data-slot="anchor-item" data-level="2" href="#e">E</a>')
+        expect($toc)->toContainMarkup('<eso-anchor role="navigation" aria-label="On this page" data-slot="anchor" class="sticky">')
+            ->toContainMarkup('<p data-slot="anchor-title">On this page</p>')
+            ->toContainMarkup('<a data-slot="anchor-item" data-level="1" href="#a">A</a>')
+            ->toContainMarkup('<a data-slot="anchor-item" data-level="2" href="#b">B</a>')
+            ->toContainMarkup('<a data-slot="anchor-item" data-level="3" href="#c">C</a>')
+            ->toContainMarkup('<a data-slot="anchor-item" data-level="2" href="#e">E</a>')
             ->not->toContain('#d')
             ->and(trim((string) $this->blade('<x-ui::rich-text.toc html="<p>No headings</p>" />')))->toBe('');
     });
@@ -506,14 +507,8 @@ describe('sanitizing', function () {
     it('gives the text of rich text', function () {
         $html = '<h2>Title</h2><p>One<br>two <strong>bold</strong> &amp; more</p><ul><li><p>Item</p></li></ul><table><tbody><tr><td><p>a</p></td><td><p>b</p></td></tr></tbody></table><p>Formula <math><semantics><mi>x</mi><annotation encoding="application/x-tex">x^2</annotation></semantics></math></p><script>alert(1)</script>';
 
-        expect(Ui::plainText($html))->toBe('Title
-One
-two bold & more
-Item
-a	b
-Formula x^2')
-            ->and(Ui::plainText('<section><span>Title</span><p>Body</p></section>'))->toBe('Title
-Body')
+        expect(Ui::plainText($html))->toBe("Title\nOne\ntwo bold & more\nItem\na\tb\nFormula x^2")
+            ->and(Ui::plainText('<section><span>Title</span><p>Body</p></section>'))->toBe("Title\nBody")
             ->and(Ui::plainText(null))->toBe('');
     });
 
@@ -567,7 +562,7 @@ describe('uploads', function () {
             ->not->toContain('data-editor-action="media"')
             ->not->toContain('data-editor-action="save-image"')
             ->not->toContain('data-editor-unsaved')
-            ->not->toContain('<template data-template="uploading">')
+            ->not->toContainMarkup('<template data-template="uploading">')
             ->toContain('data-editor-opens="video"')
             ->toContain('data-editor-video-input')
             ->and($missing[1])->toContain('This picture couldn’t be pasted')->not->toContain('upload-missing')
@@ -587,7 +582,7 @@ describe('uploads', function () {
         expect($html)->toContain('data-upload="http://localhost/esoboy-ui/editor/upload"')
             ->toContain('data-image-hosts="cdn.app.test img.app.test:8443 *.oss.test localhost assets.app.test bucket.s3.test"')
             ->toContain('data-auto-upload="external"')
-            ->toContain('<template data-template="upload-failed">')
+            ->toContainMarkup('<template data-template="upload-failed">')
             ->and(EditorUploads::open(html_entity_decode($context[1])))->toBe(['post' => 7])
             ->and(controls($html))->toContain('image', 'audio', 'file');
     });

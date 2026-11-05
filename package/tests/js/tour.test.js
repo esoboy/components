@@ -1,9 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { register as registerTour } from '../../resources/js/components/tour.js'
+import tourProvider from '../../resources/js/alpine/tour.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
-beforeAll(() => registerTour())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -29,7 +30,7 @@ function mount() {
             </div>
         </eso-tour>`
 
-    const tour = document.querySelector('eso-tour')
+    const tour = engineDriver(tourProvider, document.querySelector('eso-tour'))
     const seen = []
 
     tour.addEventListener('tour-change', event => seen.push(['change', event.detail]))
@@ -83,7 +84,7 @@ describe('starting', () => {
     it('starts from the server at the step given', () => {
         const [tour, seen] = mount()
 
-        window.dispatchEvent(new CustomEvent('ui-tour', { detail: { name: 'onboarding', open: true, step: 1 } }))
+        tour.requested({ name: 'onboarding', open: true, step: 1 })
 
         expect(tour.step).toBe(1)
         expect(seen).toEqual([['change', { step: 1 }]])
@@ -163,9 +164,9 @@ describe('closing', () => {
     it('closes unfinished by its button, Escape, a command or the server', () => {
         const ways = [
             tour => click(tour, 'close'),
-            () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+            tour => tour.escape(new KeyboardEvent('keydown', { key: 'Escape' })),
             tour => command(tour, '--close'),
-            () => window.dispatchEvent(new CustomEvent('ui-tour', { detail: { name: 'onboarding', open: false, step: null } })),
+            tour => tour.requested({ name: 'onboarding', open: false }),
         ]
 
         for (const close of ways) {
@@ -191,7 +192,7 @@ describe('closing', () => {
             const escape = () => {
                 const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
 
-                document.dispatchEvent(event)
+                tour.escape(event)
 
                 return event
             }
@@ -227,7 +228,7 @@ describe('closing', () => {
         document.body.insertAdjacentHTML('beforeend', '<div id="toaster" popover="manual"></div>')
         document.getElementById('toaster').showPopover()
         tour.start()
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+        tour.escape(new KeyboardEvent('keydown', { key: 'Escape' }))
 
         expect(tour.isOpen).toBe(false)
     })

@@ -1,5 +1,6 @@
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { CropperElement, register as registerCropper } from '../../resources/js/components/cropper.js'
+import createCropper from '../../resources/js/alpine/cropper.js'
 
 /*
  * jsdom lays nothing out: the cropper is 400×300 (a 250×250 crop area at the default
@@ -8,25 +9,23 @@ import { CropperElement, register as registerCropper } from '../../resources/js/
 let natural = { '/photo.jpg': [1600, 1000], '/portrait.jpg': [900, 1200] }
 
 beforeAll(() => {
-    registerCropper()
 
-    Object.defineProperty(CropperElement.prototype, 'clientWidth', { get: () => 400 })
-    Object.defineProperty(CropperElement.prototype, 'clientHeight', { get: () => 300 })
-    CropperElement.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 300 })
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { get: () => 400 })
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { get: () => 300 })
+    HTMLElement.prototype.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 300 })
 
-    window.Image = class {
-        set src(value) {
-            setTimeout(() => {
-                if (! natural[value]) return this.onerror?.()
-
-                ;[this.naturalWidth, this.naturalHeight] = natural[value]
-                this.onload?.()
-            })
-        }
+    window.Image = function () {
+        const image = document.createElement('img')
+        Object.defineProperty(image, 'src', { set(value) { setTimeout(() => {
+            if (natural[value]) Object.defineProperties(image, { naturalWidth: { value: natural[value][0], configurable: true }, naturalHeight: { value: natural[value][1], configurable: true } })
+            image.dispatchEvent(new Event(natural[value] ? 'load' : 'error'))
+        }) } })
+        return image
     }
 })
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
     vi.useRealTimers()
 })
@@ -38,7 +37,7 @@ function mount(attributes = 'data-image="/photo.jpg"') {
             <div data-slot="cropper-crop-area" hidden></div>
         </eso-cropper>`
 
-    const cropper = document.querySelector('eso-cropper')
+    const cropper = engineDriver(createCropper, document.querySelector('eso-cropper'))
     const events = []
 
     for (const type of ['input', 'change']) cropper.addEventListener(type, () => events.push(type))
@@ -104,6 +103,7 @@ describe('framing', () => {
 
         await loaded(cropper, SQUARE)
         cropper.setAttribute('data-image', '/portrait.jpg')
+        await Promise.resolve()
 
         expect(cropper.value).toEqual(SQUARE)
         expect(cropper.querySelector('[data-slot="cropper-image"]').getAttribute('src')).toBe('/portrait.jpg')
@@ -215,6 +215,7 @@ describe('zooming', () => {
         expect(cropper.value).toEqual({ x: 550, y: 250, width: 500, height: 500 })
 
         cropper.setAttribute('data-zoom', '9')
+        await Promise.resolve()
 
         expect(cropper.zoom).toBe(4)
         expect(events).toContain('zoom 4')

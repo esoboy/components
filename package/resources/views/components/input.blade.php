@@ -16,5 +16,5 @@
 $state ??= ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
-<input {{ $attributes->merge(['type' => $type, 'data-slot' => 'input', ...$state->attributes()]) }}>
+<input {{ $attributes->merge(['type' => $type, 'value' => $type === 'file' ? null : \Esoboy\Ui\Support\Model::value($attributes, $attributes->get('value')), 'data-slot' => 'input', ...$state->attributes()]) }}>
 <x-ui::field.error :state="$state" />

@@ -11,7 +11,8 @@
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 
-PendingControl::put($state);
+$value = \Esoboy\Ui\Support\Model::value($attributes, (string) $slot);
+PendingControl::put($state, $value, $attributes->get('maxlength'));
 @endphp
 
-<textarea {{ $attributes->merge(['data-slot' => 'input-group-control', ...$state->attributes()]) }}>{{ $slot }}</textarea>
+<textarea {{ $attributes->merge(['data-slot' => 'input-group-control', ...$state->attributes()]) }}>{{ $value }}</textarea>

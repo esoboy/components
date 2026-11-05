@@ -6,7 +6,7 @@
 
 it('renders a checkbox', function () {
     $this->blade('<x-ui::checkbox id="terms" wire:model="terms" />')
-        ->assertSee('<input type="checkbox" data-slot="checkbox" id="terms" wire:model="terms">', false);
+        ->assertSeeMarkup('<input type="checkbox" data-slot="checkbox" id="terms" wire:model="terms">');
 });
 
 it('shows the error of a single checkbox inside a field', function () {
@@ -32,7 +32,7 @@ it('leaves the error of a checkbox set to field.error', function () {
 
 it('renders a switch', function () {
     $this->blade('<x-ui::switch wire:model="notify" size="sm" />')
-        ->assertSee('<input type="checkbox" role="switch" data-slot="switch" data-size="sm" wire:model="notify">', false);
+        ->assertSeeMarkup('<input type="checkbox" role="switch" data-slot="switch" data-size="sm" wire:model="notify">');
 });
 
 it('shows switch errors inside a field', function () {
@@ -52,7 +52,7 @@ it('does not validate choices used on their own', function (string $blade) {
     'radio group' => ['<x-ui::radio-group wire:model="terms"><x-ui::radio-group.item value="1" /></x-ui::radio-group>'],
 ]);
 
-it('renders a radio group bound on the group', function () {
+it('forwards a radio group binding to its native radios', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::radio-group wire:model="plan">
             <x-ui::radio-group.item value="starter" />
@@ -60,21 +60,21 @@ it('renders a radio group bound on the group', function () {
         </x-ui::radio-group>
         BLADE);
 
-    $view->assertSee('<eso-radio-group role="radiogroup" data-slot="radio-group" wire:model="plan">', false)
-        ->assertSee('<input type="radio" data-slot="radio-group-item" value="starter">', false)
-        ->assertSee('<input type="radio" data-slot="radio-group-item" value="pro">', false);
+    $view->assertSeeMarkup('<div role="radiogroup" data-slot="radio-group">')
+        ->assertSeeMarkup('<input type="radio" data-slot="radio-group-item" value="starter" wire:model="plan">')
+        ->assertSeeMarkup('<input type="radio" data-slot="radio-group-item" value="pro" wire:model="plan">');
 });
 
 it('checks the item matching the default value', function () {
     $view = $this->blade(<<<'BLADE'
-        <x-ui::radio-group name="plan" default-value="pro">
+        <x-ui::radio-group name="plan" value="pro">
             <x-ui::radio-group.item value="starter" />
             <x-ui::radio-group.item value="pro" />
         </x-ui::radio-group>
         BLADE);
 
-    $view->assertSee('value="starter">', false)
-        ->assertSee('value="pro" checked="checked">', false);
+    $view->assertSeeMarkup('<input value="starter">')
+        ->assertSeeMarkup('<input value="pro" checked="checked">');
 });
 
 it('shows the radio group error once, after the group in a field set', function () {
@@ -89,7 +89,7 @@ it('shows the radio group error once, after the group in a field set', function 
             BLADE);
 
     $view->assertSee('aria-invalid="true"', false)
-        ->assertSeeInOrder(['</eso-radio-group>', 'Choose a plan.'], false);
+        ->assertSeeMarkupInOrder(['</div>', 'Choose a plan.']);
 
     expect(substr_count($view, 'Choose a plan.'))->toBe(1);
 });

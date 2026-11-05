@@ -49,6 +49,11 @@ final class Assets
      */
     public function scripts(array $options = []): string
     {
+        // A plain Blade page may contain no Livewire component. Its Alpine
+        // interactions still use the single runtime supplied by Livewire.
+        if (config('livewire.inject_assets', true)) {
+            app('livewire')->forceAssetInjection();
+        }
         $nonce = $options['nonce'] ?? Vite::cspNonce();
 
         return '<script src="'.e($this->url('ui.js')).'" defer data-navigate-once'.($nonce ? ' nonce="'.e($nonce).'"' : '').'></script>';

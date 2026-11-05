@@ -1,105 +1,101 @@
 /*
  * <eso-signature>
  *
- * A signature drawn with signature_pad, exposed as .value: a data URL (PNG, or SVG when
- * data-type="image/svg+xml") or null while empty. input/change come from the element at
- * the end of each stroke and on Clear, so wire:model binds on it; data-name keeps a
- * hidden input for classic forms. A value from the server is drawn fitted into the pad,
+ * An Alpine adapter for signature_pad. Livewire owns the data URL (PNG, or SVG when
+ * data-type="image/svg+xml") or null while empty. The native hidden input forwards
+ * model events after each stroke and Clear, and supports classic form submission. A value from the server is drawn fitted into the pad,
  * and new strokes add to it.
  *
  * The ink is the canvas's CSS color, black unless --signature-color says otherwise, so a
  * saved signature reads on paper; in dark mode the CSS shows the canvas inverted.
  *
- * Built into dist/signature.js; the view loads it through @assets.
+ * Built into dist/signature.js; Alpine loads it on demand.
  */
 
 import SignaturePad from 'signature_pad'
-import { announce, define, writeHidden } from '../support/element.js'
+import boundValue from '../alpine/value.js'
 
-export class SignatureElement extends HTMLElement {
-    #pad = null
-    #value = null
-    #image = null
-    #drawing = 0
-    #observer = new ResizeObserver(() => this.#resize())
+import { listen, unlisten, emit, disconnected } from '../alpine/interaction.js'
 
-    connectedCallback() {
+export default binding => Object.defineProperties(boundValue(binding), Object.getOwnPropertyDescriptors({
+    _pad: null,
+    _image: null,
+    _published: null,
+    _drawing: 0,
+    _observer: null,
+
+    init() {
+        this._observer = new ResizeObserver(() => this._resize())
         if (! this.canvas) return
 
-        if (! this.#pad) {
-            this.#value = this.dataset.value || null
-            this.#image = this.#value
-            this.#pad = new SignaturePad(this.canvas)
-            this.#pad.addEventListener('beginStroke', () => {
-                this.#pad.penColor = getComputedStyle(this.canvas).color
+        if (! this._pad) {
+            this._image = this.value
+            this._published = this.value
+            this._pad = new SignaturePad(this.canvas)
+            this._pad.addEventListener('beginStroke', () => {
+                this._pad.penColor = getComputedStyle(this.canvas).color
             })
-            this.#pad.addEventListener('endStroke', () => this.#commit(this.#export()))
+            this._pad.addEventListener('endStroke', () => this._commit(this._export()))
 
-            this.addEventListener('click', event => {
+            listen(this, this.$el, 'click', event => {
                 if (event.target.closest?.('[data-signature-clear]')) this.clear()
             })
+            listen(this, this.$el, 'focusout', event => {
+                if (!this.$el.contains(event.relatedTarget)) this.blur()
+            })
 
-            if (this.hasAttribute('data-disabled')) this.#pad.off()
+            if (this.$el.hasAttribute('data-disabled')) this._pad.off()
         }
 
-        this.#observer.observe(this.canvas)
-        this.#resize()
-    }
+        this._observer.observe(this.canvas)
+        this._resize()
+        if (binding.property) this.$watch('$wire.' + binding.property, value => {
+            if (value === this._published) return
+            this._published = value; this._image = value; this._render(); this._draw([])
+        })
+        this._render()
+    },
 
-    disconnectedCallback() {
-        this.#observer.disconnect()
-    }
+    destroy() {
+        disconnected(this)
+        this._pad?.off()
+        this._drawing++
+        this._observer.disconnect()
+    },
 
     get canvas() {
-        return this.querySelector('[data-slot="signature-canvas"]')
-    }
-
-    get value() {
-        return this.#value
-    }
-
-    // From the server (wire:model): its signature replaces what is drawn.
-    set value(value) {
-        value ||= null
-
-        if (value === this.#value) return
-
-        this.#value = value
-        this.#image = value
-        this.#render()
-        this.#draw([])
-    }
+        return this.$el.querySelector('[data-slot="signature-canvas"]')
+    },
 
     clear() {
-        this.#pad?.clear()
-        this.#image = null
-        this.#commit(null)
-    }
+        this._pad?.clear()
+        this._image = null
+        this._commit(null)
+    },
 
-    #export() {
-        if (this.#pad.isEmpty()) return null
+    _export() {
+        if (this._pad.isEmpty()) return null
 
-        const type = this.dataset.type || 'image/png'
+        const type = this.$el.dataset.type || 'image/png'
 
-        return this.#pad.toDataURL(type, type === 'image/svg+xml' ? { includeDataUrl: true } : undefined)
-    }
+        return this._pad.toDataURL(type, type === 'image/svg+xml' ? { includeDataUrl: true } : undefined)
+    },
 
-    #commit(value) {
-        if (value === this.#value) return
+    _commit(value) {
+        if (value === this.value) return
+        this._published = value
+        this.value = value
+        this._render()
+        this.changed()
+    },
 
-        this.#value = value
-        this.#render()
-        announce(this)
-    }
-
-    #render() {
-        writeHidden(this, this.dataset.name, this.#value ?? '')
-        this.querySelector('[data-slot="signature-placeholder"]')?.toggleAttribute('hidden', !! this.#value)
-        this.querySelector('[data-signature-clear]')?.toggleAttribute('hidden', ! this.#value)
-    }
+    _render() {
+        this.$el.querySelector('[data-slot="signature-placeholder"]')?.toggleAttribute('hidden', !! this.value)
+        this.$el.querySelector('[data-signature-clear]')?.toggleAttribute('hidden', ! this.value)
+    },
 
     // The canvas holds device pixels for its CSS size; resizing it wipes it, so the drawing is put back.
-    #resize() {
+    _resize() {
         const canvas = this.canvas
         const ratio = Math.max(window.devicePixelRatio || 1, 1)
         const width = Math.round(canvas.offsetWidth * ratio)
@@ -108,51 +104,49 @@ export class SignatureElement extends HTMLElement {
         // Not laid out (in a closed dialog, say), or already the right size.
         if (! width || ! height || (canvas.width === width && canvas.height === height)) return
 
-        const strokes = this.#pad.toData()
+        const strokes = this._pad.toData()
 
         canvas.width = width
         canvas.height = height
         canvas.getContext('2d').scale(ratio, ratio)
-        this.#draw(strokes)
-    }
+        this._draw(strokes)
+    },
 
     // The server's signature, fitted and centred, with the strokes drawn since over it.
-    async #draw(strokes) {
-        if (! this.#pad) return
+    async _draw(strokes) {
+        if (! this._pad) return
 
-        const drawing = ++this.#drawing
+        const drawing = ++this._drawing
 
-        this.#pad.clear()
+        this._pad.clear()
 
-        if (this.#image) {
-            const fit = await this.#fit(this.#image)
+        if (this._image) {
+            const fit = await this._fit(this._image)
 
             // A later draw (another resize, a new value) took over.
-            if (drawing !== this.#drawing) return
+            if (drawing !== this._drawing) return
 
-            await this.#pad.fromDataURL(this.#image, fit).catch(() => {})
+            await this._pad.fromDataURL(this._image, fit).catch(() => {})
         }
 
-        if (drawing === this.#drawing) this.#pad.fromData(strokes, { clear: false })
-    }
+        if (drawing === this._drawing) this._pad.fromData(strokes, { clear: false })
+    },
 
-    #fit(url) {
+    _fit(url) {
         const width = this.canvas.offsetWidth
         const height = this.canvas.offsetHeight
 
         return new Promise(resolve => {
             const image = new Image()
 
-            image.onload = () => {
+            listen(this, image, 'load', () => {
                 const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight) || 1
                 const fitted = { width: image.naturalWidth * scale, height: image.naturalHeight * scale }
 
                 resolve({ ...fitted, xOffset: (width - fitted.width) / 2, yOffset: (height - fitted.height) / 2 })
-            }
-            image.onerror = () => resolve({})
+            }, { once: true })
+            listen(this, image, 'error', () => resolve({}), { once: true })
             image.src = url
         })
-    }
-}
-
-define('eso-signature', SignatureElement)
+    },
+}))

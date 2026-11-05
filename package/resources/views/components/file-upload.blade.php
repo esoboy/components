@@ -28,7 +28,7 @@ $files = UploadedFiles::of(Model::value($attributes));
 @endphp
 
 {{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
-<eso-file-upload {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui::file-upload.uploading')]) }}>
+<eso-file-upload x-data="uiFileUpload" {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation, 'data-uploading-label' => __('ui::file-upload.uploading')]) }}>
     {{-- A file on its way up, cloned for each one; the script fills in its name, size and picture. --}}
     <template data-template="pending">
         <x-ui::attachment state="uploading" :orientation="$orientation">

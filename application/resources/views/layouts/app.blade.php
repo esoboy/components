@@ -39,7 +39,7 @@ $page = collect(config('demo'))->collapse()->get($current);
                             <x-ui::sidebar.menu>
                                 @foreach ($pages as $path => [$label, $components])
                                 <x-ui::sidebar.menu-item>
-                                    <x-ui::sidebar.menu-button :href="'/'.$path" :is-active="$current === $path" wire:navigate>{{ $label }}</x-ui::sidebar.menu-button>
+                                    <x-ui::sidebar.menu-button :href="'/'.$path" :active="$current === $path" wire:navigate>{{ $label }}</x-ui::sidebar.menu-button>
                                     <x-ui::sidebar.menu-badge>{{ count(explode(', ', $components)) }}</x-ui::sidebar.menu-badge>
                                 </x-ui::sidebar.menu-item>
                                 @endforeach
@@ -72,10 +72,10 @@ $page = collect(config('demo'))->collapse()->get($current);
                             @endif
                         </x-ui::breadcrumb.list>
                     </x-ui::breadcrumb>
-                    <x-ui::toggle-group type="single" variant="outline" size="sm" :default-value="Ui::theme('demo')" class="ml-auto">
-                        <x-ui::toggle-group.item value="light" data-theme-value="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
-                        <x-ui::toggle-group.item value="dark" data-theme-value="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
-                        <x-ui::toggle-group.item value="system" data-theme-value="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
+                    <x-ui::toggle-group variant="outline" size="sm" :value="Ui::theme('demo')" class="ml-auto">
+                        <x-ui::toggle-group.item value="light" theme="light" aria-label="Light"><x-ui::icon name="sun" /></x-ui::toggle-group.item>
+                        <x-ui::toggle-group.item value="dark" theme="dark" aria-label="Dark"><x-ui::icon name="moon" /></x-ui::toggle-group.item>
+                        <x-ui::toggle-group.item value="system" theme="system" aria-label="System"><x-ui::icon name="monitor" /></x-ui::toggle-group.item>
                     </x-ui::toggle-group>
                 </header>
 

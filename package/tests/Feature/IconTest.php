@@ -15,14 +15,14 @@ it('renders a lucide icon as lucide-react does, decorative by default', function
 
 it('folds a static name into plain svg at compile time', function () {
     expect(Blade::compileString('<x-ui::icon name="x" />'))
-        ->toContain('<path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>')
+        ->toContainMarkup('<path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>')
         ->not->toContain('x-ui::icon');
 });
 
 it('renders a dynamic name at runtime', function () {
     expect((string) $this->blade('@foreach ($names as $name)<x-ui::icon :name="$name" />@endforeach', ['names' => ['check', 'plus']]))
-        ->toContain('<path d="M20 6 9 17l-5-5"/></svg>')
-        ->toContain('<path d="M5 12h14"/><path d="M12 5v14"/></svg>');
+        ->toContainMarkup('<path d="M20 6 9 17l-5-5"/></svg>')
+        ->toContainMarkup('<path d="M5 12h14"/><path d="M12 5v14"/></svg>');
 });
 
 it('lets attributes override the defaults', function () {

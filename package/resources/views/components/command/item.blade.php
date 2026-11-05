@@ -14,7 +14,7 @@
     'data-value' => $value,
     'data-keywords' => $keywords ? implode(' ', (array) $keywords) : false,
     'aria-selected' => 'false',
-    'aria-disabled' => $attributes->has('disabled') ? 'true' : false,
+    'aria-disabled' => (bool) $attributes->get('disabled', false) ? 'true' : false,
 ]) }}>
     {{ $slot }}
     <x-ui::icon name="check" data-slot="command-item-check" />

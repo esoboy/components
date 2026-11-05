@@ -6,6 +6,7 @@
 ])
 
 @php
+$attributes = \Esoboy\Ui\Support\Theme::control($attributes);
 // Choosing an item closes the whole menu, submenus included (ui.js).
 $attributes = $attributes->merge([
     'role' => 'menuitem',

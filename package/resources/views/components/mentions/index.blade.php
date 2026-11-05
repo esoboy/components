@@ -18,7 +18,7 @@
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 @endphp
 
-<eso-mentions data-slot="mentions" data-prefix="{{ json_encode(array_values((array) $prefix)) }}" data-split="{{ $split }}">
+<eso-mentions x-data="uiMentions" data-slot="mentions" data-prefix="{{ json_encode(array_values((array) $prefix)) }}" data-split="{{ $split }}">
     <x-ui::textarea :attributes="$attributes->merge(['role' => 'combobox', 'aria-autocomplete' => 'list', 'aria-expanded' => 'false', 'data-mentions-input' => true, ...$state->attributes()])" />
     <div popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>
         <div data-slot="mentions-list">{{ $slot }}</div>

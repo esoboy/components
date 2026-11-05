@@ -1,9 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { matches, register as registerCommand } from '../../resources/js/components/command.js'
+import commandProvider, { matches } from '../../resources/js/alpine/command.js'
+import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
-beforeAll(() => registerCommand())
 
 afterEach(() => {
+    cleanupControllers()
     document.body.innerHTML = ''
 })
 
@@ -25,7 +26,9 @@ function mount(attributes = '') {
             </div>
         </eso-command>`
 
-    return document.querySelector('eso-command')
+    const root = engineDriver(commandProvider, document.querySelector('eso-command'))
+    window.Alpine.bind(root, { 'x-on:input': () => root.refresh(), 'x-on:keydown': event => root.key(event), 'x-on:pointermove': event => root.hover(event) })
+    return root
 }
 
 const type = (command, text) => {
@@ -81,7 +84,7 @@ describe('filtering', () => {
     })
 
     it('can leave filtering to the server', () => {
-        const command = mount('data-should-filter="false"')
+        const command = mount('data-filter="false"')
 
         type(command, 'zzz')
 
@@ -129,12 +132,14 @@ describe('aria', () => {
     it('points the input at the list it controls, again after a morph strips it', async () => {
         const command = mount()
 
-        expect(command.list.id).toMatch(/^ui-command-list-\d+$/)
-        expect(command.input.getAttribute('aria-controls')).toBe(command.list.id)
+        const list = command.querySelector('[data-slot="command-list"]')
+        expect(list.id).toBeTruthy()
+        expect(command.input.getAttribute('aria-controls')).toBe(list.id)
 
         command.input.removeAttribute('aria-controls')
-        await new Promise(resolve => setTimeout(resolve))
+        commandProvider().init.call({ $el: command, $id: name => name, get input() { return command.input }, refresh: () => command.refresh() })
+        await Promise.resolve()
 
-        expect(command.input.getAttribute('aria-controls')).toBe(command.list.id)
+        expect(command.input.getAttribute('aria-controls')).toBe(list.id)
     })
 })

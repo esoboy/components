@@ -9,7 +9,7 @@
 {{-- Kept across wire:navigate, so toasts shown before a page change stay, as sonner's do in a layout. --}}
 @persist('ui-toaster')
 <div {{ $attributes->merge([
-    'role' => 'region',
+    'role' => 'region', 'x-data' => 'uiToast',
     'aria-live' => 'polite',
     'aria-atomic' => 'false',
     'aria-relevant' => 'additions text',

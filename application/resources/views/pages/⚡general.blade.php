@@ -53,15 +53,15 @@ PHP;
         <h2 class="text-lg font-semibold">Theme</h2>
         <p class="text-sm text-muted-foreground">Any control with data-theme-value switches this app's theme; the header uses a Toggle Group.</p>
         <div class="flex flex-wrap items-center gap-4">
-            <x-ui::button variant="outline" size="icon" data-theme-value="toggle" aria-label="Toggle theme"><x-ui::icon name="sun-moon" /></x-ui::button>
-            <label class="flex items-center gap-2 text-sm"><x-ui::switch data-theme-value="toggle" /> Dark mode</label>
+            <x-ui::button variant="outline" size="icon" theme="toggle" aria-label="Toggle theme"><x-ui::icon name="sun-moon" /></x-ui::button>
+            <label class="flex items-center gap-2 text-sm"><x-ui::switch theme="toggle" /> Dark mode</label>
             <x-ui::dropdown-menu>
                 <x-ui::dropdown-menu.trigger variant="outline">Theme</x-ui::dropdown-menu.trigger>
                 <x-ui::dropdown-menu.content>
                     <x-ui::dropdown-menu.radio-group>
-                        <x-ui::dropdown-menu.radio-item value="light" data-theme-value="light">Light</x-ui::dropdown-menu.radio-item>
-                        <x-ui::dropdown-menu.radio-item value="dark" data-theme-value="dark">Dark</x-ui::dropdown-menu.radio-item>
-                        <x-ui::dropdown-menu.radio-item value="system" data-theme-value="system">System</x-ui::dropdown-menu.radio-item>
+                        <x-ui::dropdown-menu.radio-item value="light" theme="light">Light</x-ui::dropdown-menu.radio-item>
+                        <x-ui::dropdown-menu.radio-item value="dark" theme="dark">Dark</x-ui::dropdown-menu.radio-item>
+                        <x-ui::dropdown-menu.radio-item value="system" theme="system">System</x-ui::dropdown-menu.radio-item>
                     </x-ui::dropdown-menu.radio-group>
                 </x-ui::dropdown-menu.content>
             </x-ui::dropdown-menu>

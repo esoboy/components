@@ -3,9 +3,8 @@
  *
  * A Tiptap editor on the HTML its view rendered, sanitized, into [data-slot="editor-content"],
  * writing what data-format allows and offering the tools it lists (its features, palette,
- * fonts, …, from the server). .value is the HTML, '' when empty: input comes from the
- * element on every change and change when it loses focus, so wire:model binds on it, and
- * data-name keeps a hidden input for forms.
+ * fonts, …, from the server). Livewire owns the HTML value; the hidden native input
+ * forwards model events and modifiers. Change is reported when editing ends.
  *
  * Controls: [data-editor-command] (and data-editor-value) runs a command and shows whether
  * it is on (aria-pressed, aria-checked in menus) or possible; [data-editor-action] opens
@@ -17,10 +16,10 @@
  * uploader (config ui.editor.uploader; data-upload, upload.js), and what it answers ({
  * url, name, mime, size, alt, width, height, poster }) in place; so do images it has no
  * copy of (external, data:), when saved (images.js). Without an uploader there are no
- * media buttons. Ui::editor(name)->insert() (or the element's insert()) puts in
- * attachments the app has itself (its media library); insertContent(), HTML.
+ * media buttons. Ui::editor(name)->insert() inserts attachments from the app's
+ * media library; insertContent() inserts HTML through the same PHP facade.
  *
- * Built into dist/editor.js; the view loads it through @assets.
+ * Built into dist/editor.js; Alpine loads it on demand.
  */
 
 import { Editor, createDocument } from '@tiptap/core'
@@ -35,8 +34,7 @@ import { NodeSelection, TextSelection } from '@tiptap/pm/state'
 import { CellSelection } from '@tiptap/pm/tables'
 import StarterKit from '@tiptap/starter-kit'
 import { marked } from 'marked'
-import { define, writeHidden } from '../support/element.js'
-import { contentOf } from '../support/overlay.js'
+import { contentOf } from '../alpine/overlay.js'
 import { clone, readTemplates } from '../support/templates.js'
 import { COMMANDS } from './editor/commands.js'
 import { MoveBlocks, dragHandle } from './editor/drag.js'
@@ -95,227 +93,241 @@ const MEDIA = ['image', 'video', 'audio', 'file']
 
 let uploaded = 0
 
-export class EditorElement extends HTMLElement {
-    static observedAttributes = ['aria-invalid', 'aria-describedby', 'data-disabled']
+import { listen, unlisten, emit, disconnected } from '../alpine/interaction.js'
 
-    #editor = null
-    #focused = null
-    #reported = ''
-    #format = null
-    #whitelist = null
-    #labels = {}
-    #saving = new Set()
-    #uploading = 0
-    #refused = false
-    #saved = new Map()
-    #failed = new Map()
-    #loaded = new Set()
-    #unsaved = { doc: null, images: [] }
-    #hosts = []
-    #rtf = ''
-    #painter = null
-    #toolbar = null
-    #requests = new Set()
-    #tracked = new Set()
-    #selected = null
-    #anchor = null
-    #context = ''
-    #menus = []
-    #mathPreview = 0
+export default (binding = {}) => ({
 
-    connectedCallback() {
-        if (this.#editor) {
-            window.addEventListener('ui-editor', this.#server)
+    _editor: null,
+    _focused: null,
+    _reported: '',
+    _format: null,
+    _whitelist: null,
+    _labels: {},
+    _saving: new Set(),
+    _uploading: 0,
+    _refused: false,
+    _saved: new Map(),
+    _failed: new Map(),
+    _loaded: new Set(),
+    _unsaved: { doc: null, images: [] },
+    _hosts: [],
+    _rtf: '',
+    _painter: null,
+    _toolbar: null,
+    _requests: new Set(),
+    _tracked: new Set(),
+    _selected: null,
+    _anchor: null,
+    _context: '',
+    _menus: [],
+    _mathPreview: 0,
+
+    init() {
+
+        if (this._editor) {
+            listen(this, window, 'ui-editor', event => this._server(event))
 
             return
         }
 
-        const content = this.querySelector(':scope > [data-slot="editor-content"]')
+        const content = this.$el.querySelector(':scope > [data-slot="editor-content"]')
 
         if (! content) return
 
-        this.#format = { features: [], headings: [1, 2, 3, 4, 5, 6], colors: [], highlights: [], fonts: [], sizes: [], lineHeights: [], indents: 8, platforms: [], styles: {}, ...JSON.parse(this.dataset.format || '{}') }
-        this.#whitelist = whitelist(this.#format)
-        this.#hosts = (this.dataset.imageHosts ?? '').split(/\s+/).filter(Boolean)
+        this._format = { features: [], headings: [1, 2, 3, 4, 5, 6], colors: [], highlights: [], fonts: [], sizes: [], lineHeights: [], indents: 8, platforms: [], styles: {}, ...JSON.parse(this.$el.dataset.format || '{}') }
+        this._whitelist = whitelist(this._format)
+        this._hosts = (this.$el.dataset.imageHosts ?? '').split(/\s+/).filter(Boolean)
 
         const html = content.innerHTML
-        const labels = this.#labels = JSON.parse(this.dataset.labels || '{}')
+        const labels = this._labels = JSON.parse(this.$el.dataset.labels || '{}')
 
         content.replaceChildren()
 
-        this.#editor = new Editor({
+        this._editor = new Editor({
             element: content,
             content: html,
-            editable: ! this.hasAttribute('data-disabled'),
-            extensions: this.#extensions(),
+            editable: ! this.$el.hasAttribute('data-disabled'),
+            extensions: this._extensions(),
             editorProps: {
                 attributes: () => ({
                     'data-slot': 'editor-input',
                     'role': 'textbox',
                     'aria-multiline': 'true',
-                    'aria-label': this.dataset.label ?? '',
+                    'aria-label': this.$el.dataset.label ?? '',
                     // How to reach the toolbar and the bubble menus from the text.
                     'aria-description': labels.keyboard ?? '',
-                    ...this.dataset.placeholder ? { 'aria-placeholder': this.dataset.placeholder } : {},
-                    ...this.hasAttribute('data-disabled') ? { 'aria-disabled': 'true' } : {},
-                    ...this.#aria(),
+                    ...this.$el.dataset.placeholder ? { 'aria-placeholder': this.$el.dataset.placeholder } : {},
+                    ...this.$el.hasAttribute('data-disabled') ? { 'aria-disabled': 'true' } : {},
+                    ...this._aria(),
                 }),
                 // On phones the toolbar is over the keyboard: the cursor stays clear of it.
                 scrollMargin: TOUCH ? { top: 8, right: 8, bottom: 64, left: 8 } : 5,
                 // Word's pictures come in its RTF, read as the paste or drop begins.
-                transformPastedHTML: html => this.#whitelist.restrict(wordLists(this.#has('image') ? wordImages(html, this.#rtf) : html)),
-                handlePaste: (view, event, slice) => this.#paste(view, event, slice),
-                handleDrop: (view, event, slice, moved) => this.#drop(view, event, moved),
+                transformPastedHTML: html => this._whitelist.restrict(wordLists(this._has('image') ? wordImages(html, this._rtf) : html)),
+                handlePaste: (view, event, slice) => this._paste(view, event, slice),
+                handleDrop: (view, event, slice, moved) => this._drop(view, event, moved),
                 handleDOMEvents: {
-                    paste: (view, event) => this.#readRtf(event.clipboardData),
-                    drop: (view, event) => this.#readRtf(event.dataTransfer),
-                    pointerup: () => this.#paint(),
-                    keyup: () => this.#paint(),
+                    paste: (view, event) => this._readRtf(event.clipboardData),
+                    drop: (view, event) => this._readRtf(event.dataTransfer),
+                    pointerup: () => this._paint(),
+                    keyup: () => this._paint(),
                 },
             },
             onUpdate: () => {
                 const value = this.value
 
-                writeHidden(this, this.dataset.name, value)
 
                 // A change that leaves the value as it was (the paragraph kept after a last
                 // table or image) isn't one.
-                if (value === this.#reported) return
+                if (value === this._reported) return
 
-                this.#reported = value
-                this.dispatchEvent(new Event('input', { bubbles: true }))
-                queueMicrotask(() => this.#autoSave())
+                this._reported = value
+                if (!this.publish(value)) this.$dispatch('input')
+                queueMicrotask(() => this._autoSave())
             },
             onFocus: () => {
-                this.#focused ??= this.value
+                this._focused ??= this.value
             },
             onBlur: ({ event }) => {
                 // Into the toolbar, a menu or a form of the editor's is still editing.
-                if (event?.relatedTarget && this.contains(event.relatedTarget)) return
-                this.#changed()
+                if (event?.relatedTarget && this.$el.contains(event.relatedTarget)) return
+                this._changed()
             },
             onTransaction: ({ transaction }) => {
-                for (const request of [...this.#requests, ...this.#tracked]) {
+                for (const request of [...this._requests, ...this._tracked]) {
                     request.from = transaction.mapping.map(request.from)
                     request.to = transaction.mapping.map(request.to)
                 }
 
-                this.#sync()
+                this._sync()
             },
         })
 
         // What keeps the document in shape (a paragraph after a last table or image) is
         // done now, not on the first change: on phones Tiptap focuses the editor in the
         // middle of a command, and the document changing then would fail the command.
-        this.#editor.view.dispatch(this.#editor.state.tr.setMeta('addToHistory', false).setMeta('preventUpdate', true))
+        this._editor.view.dispatch(this._editor.state.tr.setMeta('addToHistory', false).setMeta('preventUpdate', true))
 
-        this.#reported = this.value
-        this.#loaded = new Set(this.#unsavedImages())
-        this.#listen()
-        this.#prepareControls(this)
+        this._reported = this.value
+        this._loaded = new Set(this._unsavedImages())
+        this._listen()
+        const form = this.$el.closest('form')
+        if (form) listen(this, form, 'submit', event => {
+            if (!this.busy) return
+            event.preventDefault(); event.stopImmediatePropagation(); this._refused = true; this._syncBusy()
+        }, { capture: true })
+        this._prepareControls(this.$el)
 
-        const toolbar = this.#part('editor-toolbar')
+        const toolbar = this._part('editor-toolbar')
 
-        if (toolbar && typeof ResizeObserver === 'function') this.#toolbar = overflow(toolbar, () => this.#rovingStart())
+        if (toolbar && typeof ResizeObserver === 'function') this._toolbar = overflow(toolbar, () => this._rovingStart())
 
-        this.#sync()
-    }
+        this._sync()
+        if (binding.property) this.$watch('$wire.' + binding.property, value => this.restore(value))
+        this._attributes = new MutationObserver(records => records.forEach(record => this.attributeChangedCallback(record.attributeName)))
+        this._attributes.observe(this.$el, { attributes: true, attributeFilter: ['aria-invalid', 'aria-describedby', 'data-disabled'] })
+    },
 
-    disconnectedCallback() {
-        window.removeEventListener('ui-editor', this.#server)
+    publish(value) {
+        const input = this.$el.querySelector('[data-editor-model]')
+        if (input) input.value = value
+        const native = input && [...input.attributes].some(attribute => attribute.name.startsWith('wire:model'))
+        if (binding.property) this.$wire.$set(binding.property, value, !native && binding.live && !binding.blur)
+        if (native) emit(input, 'input', value)
+        return native
+    },
 
-        // Moved, it comes back at once; removed, its editor goes.
-        queueMicrotask(() => {
-            if (this.isConnected) return
-
-            this.#fullscreen(false)
-            this.#keyboard(false)
-            this.#toolbar?.disconnect()
-            this.#editor?.destroy()
-            this.#editor = null
-        })
-    }
+    destroy() {
+        disconnected(this)
+        this._attributes?.disconnect()
+        this._fullscreen(false)
+        this._keyboard(false)
+        this._toolbar?.disconnect()
+        this._editor?.destroy()
+        this._editor = null
+    },
 
     attributeChangedCallback(name) {
-        if (! this.#editor) return
+        if (! this._editor) return
 
-        if (name === 'data-disabled') this.#editor.setEditable(! this.hasAttribute('data-disabled'))
+        if (name === 'data-disabled') this._editor.setEditable(! this.$el.hasAttribute('data-disabled'))
 
         // The text box carries the field's error state.
-        this.#editor.view.setProps({})
-        this.#sync()
-    }
+        this._editor.view.setProps({})
+        this._sync()
+    },
 
     get editor() {
-        return this.#editor
-    }
+        return this._editor
+    },
 
     // The HTML, without the empty paragraph kept last to write after a table or image.
     get value() {
-        if (! this.#editor) return this.querySelector('[data-slot="editor-content"]')?.innerHTML.trim() ?? ''
+        if (! this._editor) return this.$el.querySelector('[data-slot="editor-content"]')?.innerHTML.trim() ?? ''
 
-        return this.#editor.isEmpty ? '' : this.#editor.getHTML().replace(/<p><\/p>$/, '')
-    }
+        return this._editor.isEmpty ? '' : this._editor.getHTML().replace(/<p><\/p>$/, '')
+    },
 
     // From the server (wire:model): its HTML replaces ours, without reporting back, the
     // cursor staying where it was. The same content written differently (the server's
     // sanitized copy) leaves it be.
-    set value(value) {
+    restore(value) {
         value ??= ''
 
-        if (! this.#editor || value === this.value || this.#holds(value)) return
+        if (! this._editor || value === this.value || this._holds(value)) return
 
-        const { from, to } = this.#editor.state.selection
+        const { from, to } = this._editor.state.selection
         const near = (doc, position) => doc.resolve(Math.min(position, doc.content.size))
 
-        this.#editor.chain()
+        this._editor.chain()
             .setContent(value, { emitUpdate: false })
             .command(({ tr }) => !! tr.setSelection(TextSelection.between(near(tr.doc, from), near(tr.doc, to))))
             .run()
-        this.#reported = this.value
-        this.#unsavedImages().forEach(src => this.#loaded.add(src))
-        writeHidden(this, this.dataset.name, this.value)
-    }
+        this._reported = this.value
+        this._unsavedImages().forEach(src => this._loaded.add(src))
+        const input = this.$el.querySelector('[data-editor-model]')
+        if (input) input.value = this.value
+    },
 
     // Whether the editor has this content, give or take its last empty paragraph.
-    #holds(html) {
-        const incoming = createDocument(html, this.#editor.schema)
-        const { doc } = this.#editor.state
+    _holds(html) {
+        const incoming = createDocument(html, this._editor.schema)
+        const { doc } = this._editor.state
         const last = doc.lastChild
 
         if (incoming.eq(doc)) return true
 
         return doc.childCount > 1 && last.type.name === 'paragraph' && ! last.content.size && incoming.eq(doc.copy(doc.content.cut(0, doc.content.size - last.nodeSize)))
-    }
+    },
 
     /**
      * Inserts attachments where the cursor is: images, audio and video as themselves, the
      * rest as files.
      */
     insert(attachments) {
-        this.#insert(attachments, null)
-    }
+        this._insert(attachments, null)
+    },
 
     /**
      * Inserts HTML where the cursor is (a template, a reply), as far as the format allows.
      */
     insertContent(html) {
-        this.#editor?.chain().focus().insertContent(this.#whitelist.restrict(html)).run()
-    }
+        this._editor?.chain().focus().insertContent(this._whitelist.restrict(html)).run()
+    },
 
     // A feature of the format: what can be written, or a tool.
-    #has(feature) {
-        return this.#format.features.includes(feature)
-    }
+    _has(feature) {
+        return this._format.features.includes(feature)
+    },
 
-    #extensions() {
-        const has = feature => this.#has(feature)
-        const templates = readTemplates(this)
+    _extensions() {
+        const has = feature => this._has(feature)
+        const templates = readTemplates(this.$el)
         const lists = has('bullet-list') || has('ordered-list')
-        const max = Number(this.dataset.maxLength) || null
-        const labels = { expand: 'Expand', collapse: 'Collapse', task: 'Done', caption: '', ...JSON.parse(this.dataset.labels || '{}') }
-        const list = this.#whitelist
-        const styles = this.#format.styles
+        const max = Number(this.$el.dataset.maxLength) || null
+        const labels = { expand: 'Expand', collapse: 'Collapse', task: 'Done', caption: '', ...JSON.parse(this.$el.dataset.labels || '{}') }
+        const list = this._whitelist
+        const styles = this._format.styles
 
         return [
             // What the whitelist keeps of every node and mark, and of the tags no feature
@@ -325,7 +337,7 @@ export class EditorElement extends HTMLElement {
             // A paragraph is kept after a last table or image, to write after it; the value
             // leaves it out.
             StarterKit.configure({
-                heading: has('heading') && { levels: this.#format.headings },
+                heading: has('heading') && { levels: this._format.headings },
                 bold: has('bold') && {},
                 italic: has('italic') && {},
                 underline: has('underline') && {},
@@ -345,9 +357,9 @@ export class EditorElement extends HTMLElement {
             // has the new one: positions in it would be out of date.
             Placeholder.configure({
                 includeChildren: true,
-                placeholder: ({ node }) => node.type.name === 'figcaption' ? labels.caption : this.dataset.placeholder ?? '',
+                placeholder: ({ node }) => node.type.name === 'figcaption' ? labels.caption : this.$el.dataset.placeholder ?? '',
             }),
-            styleExtensions(this.#format, list),
+            styleExtensions(this._format, list),
             has('superscript') && Superscript,
             has('subscript') && Subscript,
             has('task-list') && tasks(labels),
@@ -358,23 +370,23 @@ export class EditorElement extends HTMLElement {
             has('video') && Video,
             has('audio') && Audio,
             has('file') && file(styles.card),
-            has('embed') && embed(this.#format.platforms),
+            has('embed') && embed(this._format.platforms),
             has('math') && formulas(),
             has('callout') && callout(styles),
             (templates.uploading || templates['missing-image']) && uploads({ uploading: templates.uploading, failed: templates['upload-failed'], missing: has('image') ? templates['missing-image'] : null }),
             has('find-replace') && Find,
             (has('character-count') || max) && CharacterCount.configure({ limit: max, textCounter: characters }),
             has('typography') && Typography,
-            has('drag-handle') && templates['drag-handle'] && dragHandle(this.#menu(clone(templates['drag-handle']))),
+            has('drag-handle') && templates['drag-handle'] && dragHandle(this._menu(clone(templates['drag-handle']))),
             has('drag-handle') && MoveBlocks,
-            has('slash-menu') && templates.slash && slashMenu(templates.slash, option => this.#run(option)),
-            has('emoji') && this.dataset.emoji && templates.emoji && emojiMenu(templates.emoji, this.dataset.emoji),
-            has('bubble-menu') && this.#bubbles(templates),
+            has('slash-menu') && templates.slash && slashMenu(templates.slash, option => this._run(option)),
+            has('emoji') && this.$el.dataset.emoji && templates.emoji && emojiMenu(templates.emoji, this.$el.dataset.emoji),
+            has('bubble-menu') && this._bubbles(templates),
         ].flat(Infinity).filter(Boolean)
-    }
+    },
 
     // The bubble menus: for selected text, in a table, on a selected block, on a formula.
-    #bubbles(templates) {
+    _bubbles(templates) {
         const node = state => state.selection.node?.type.name
         const menus = {
             text: ({ editor, view, state, from, to, element }) => state.selection instanceof TextSelection && ! state.selection.empty && !! state.doc.textBetween(from, to).trim() && ! editor.isActive('codeBlock') && focused(view, element),
@@ -387,33 +399,33 @@ export class EditorElement extends HTMLElement {
 
         return Object.entries(menus).filter(([name]) => templates[`bubble-${name}`]).map(([name, shouldShow]) => BubbleMenu.extend({ name: `bubble-${name}` }).configure({
             pluginKey: `bubble-${name}`,
-            element: this.#menu(clone(templates[`bubble-${name}`])),
+            element: this._menu(clone(templates[`bubble-${name}`])),
             updateDelay: 100,
             shouldShow: props => props.editor.isEditable && shouldShow(props),
             // The table's menu sits above the table, not the cursor; the others above the
             // selection, or under it on touch screens, clear of their own menu.
-            getReferencedVirtualElement: name === 'table' ? () => this.#tableRect() : undefined,
-            options: { placement: TOUCH && name !== 'table' ? 'bottom' : 'top', offset: 8, flip: {}, shift: { padding: 8 }, onShow: () => queueMicrotask(() => this.#sync(true)) },
+            getReferencedVirtualElement: name === 'table' ? () => this._tableRect() : undefined,
+            options: { placement: TOUCH && name !== 'table' ? 'bottom' : 'top', offset: 8, flip: {}, shift: { padding: 8 }, onShow: () => queueMicrotask(() => this._sync(true)) },
         }))
-    }
+    },
 
-    #tableRect() {
-        const { $from } = this.#editor.state.selection
+    _tableRect() {
+        const { $from } = this._editor.state.selection
 
         for (let depth = $from.depth; depth > 0; depth--) {
             if ($from.node(depth).type.name === 'table') {
-                const dom = this.#editor.view.nodeDOM($from.before(depth))
+                const dom = this._editor.view.nodeDOM($from.before(depth))
 
                 return dom instanceof Element ? { getBoundingClientRect: () => dom.getBoundingClientRect(), getClientRects: () => [dom.getBoundingClientRect()] } : null
             }
         }
 
         return null
-    }
+    },
 
     // Tooltips and shortcuts for the controls in an element (a menu cloned later, too);
     // menu items say what they are themselves.
-    #prepareControls(root) {
+    _prepareControls(root) {
         for (const control of root?.querySelectorAll?.('button[aria-label]') ?? []) {
             if (control.closest('[popover]')) continue
             control.toggleAttribute('data-editor-tooltip', true)
@@ -421,107 +433,110 @@ export class EditorElement extends HTMLElement {
         }
 
         return root
-    }
+    },
 
     // A bubble menu, kept to update while it is out of the page.
-    #menu(element) {
-        this.#menus.push(this.#prepareControls(element))
+    _menu(element) {
+        this._menus.push(this._prepareControls(element))
 
         return element
-    }
+    },
 
     // The elements matching, in the editor and its menus wherever they are.
-    #all(selector) {
-        return [...new Set([...this.querySelectorAll(selector), ...this.#menus.flatMap(menu => [...menu.matches(selector) ? [menu] : [], ...menu.querySelectorAll(selector)])])]
-    }
+    _all(selector) {
+        return [...new Set([...this.$el.querySelectorAll(selector), ...this._menus.flatMap(menu => [...menu.matches(selector) ? [menu] : [], ...menu.querySelectorAll(selector)])])]
+    },
 
-    #listen() {
-        this.addEventListener('click', event => {
+    _listen() {
+        listen(this, this.$el, 'click', event => {
             const control = event.target.closest?.('[data-editor-command], [data-editor-action]')
 
-            if (control && ! control.disabled && this.contains(control)) this.#run(control)
+            if (control && ! control.disabled && this.$el.contains(control)) this._run(control)
         })
 
-        this.addEventListener('keydown', event => this.#key(event))
-        this.addEventListener('input', event => this.#typed(event))
-        this.addEventListener('change', event => {
-            if (event.target.matches?.('[data-editor-alt-input]')) this.#setAlt(event.target.value)
+        listen(this, this.$el, 'keydown', event => this._key(event))
+        listen(this, this.$el, 'input', event => this._typed(event))
+        listen(this, this.$el, 'change', event => {
+            if (event.target.matches?.('[data-editor-alt-input]')) this._setAlt(event.target.value)
         })
-        this.addEventListener('toggle', event => this.#opened(event), true)
-        this.addEventListener('emoji-select', event => {
-            this.#editor.chain().focus().insertContent(event.detail.emoji).run()
+        listen(this, this.$el, 'toggle', event => this._opened(event), true)
+        listen(this, this.$el, 'emoji-select', event => {
+            this._editor.chain().focus().insertContent(event.detail.emoji).run()
         })
 
         // The tooltip follows the control pointed at or focused.
-        this.addEventListener('pointerover', event => this.#tip(event.target.closest?.('[data-editor-tooltip]')))
-        this.addEventListener('pointerout', event => ! event.relatedTarget?.closest?.('[data-editor-tooltip]') && this.#tip(null))
-        this.addEventListener('focusin', event => {
+        listen(this, this.$el, 'pointerover', event => this._tip(event.target.closest?.('[data-editor-tooltip]')))
+        listen(this, this.$el, 'pointerout', event => ! event.relatedTarget?.closest?.('[data-editor-tooltip]') && this._tip(null))
+        listen(this, this.$el, 'focusin', event => {
             // A menu can restore focus while its popover is still changing state.
-            queueMicrotask(() => this.contains(document.activeElement) && this.#tip(document.activeElement.closest?.('[data-editor-tooltip]')))
-            if (! this.#editor.view.dom.contains(event.target)) this.#focused ??= this.value
-            this.#keyboard(this.#editor.isEditable)
+            queueMicrotask(() => this.$el.contains(document.activeElement) && this._tip(document.activeElement.closest?.('[data-editor-tooltip]')))
+            if (! this._editor.view.dom.contains(event.target)) this._focused ??= this.value
+            this._keyboard(this._editor.isEditable)
         })
-        this.addEventListener('focusout', event => {
-            if (! event.relatedTarget?.closest?.('[data-editor-tooltip]')) this.#tip(null)
-            if (! this.contains(event.relatedTarget)) this.#changed()
-            if (! this.contains(event.relatedTarget)) this.#keyboard(false)
+        listen(this, this.$el, 'focusout', event => {
+            if (! event.relatedTarget?.closest?.('[data-editor-tooltip]')) this._tip(null)
+            if (! this.$el.contains(event.relatedTarget)) this._changed()
+            if (! this.$el.contains(event.relatedTarget)) this._keyboard(false)
         })
 
-        window.addEventListener('ui-editor', this.#server)
-    }
+        listen(this, window, 'ui-editor', event => this._server(event))
+    },
 
     /**
      * On phones, while writing in it: the toolbar over the keyboard (the foot of the
      * visual viewport, which the keyboard shortens), where the thumbs are, not at the
      * top of a page scrolled away; its place kept, so the text doesn't jump.
      */
-    #keyboard(on) {
-        const toolbar = this.#part('editor-toolbar')
+    _keyboard(on) {
+        const toolbar = this._part('editor-toolbar')
         const viewport = window.visualViewport
 
-        if (! TOUCH || ! toolbar || on === this.hasAttribute('data-keyboard')) return
+        if (! TOUCH || ! toolbar || on === this.$el.hasAttribute('data-keyboard')) return
 
         if (on) {
-            this.style.setProperty('--editor-toolbar-space', `${toolbar.offsetHeight}px`)
-            this.#placeToolbar()
-            viewport?.addEventListener('resize', this.#placeToolbar)
-            viewport?.addEventListener('scroll', this.#placeToolbar)
+            this.$el.style.setProperty('--editor-toolbar-space', `${toolbar.offsetHeight}px`)
+            this._placeToolbar()
+            clearInterval(this._keyboardTimer)
+            this._keyboardTimer = setInterval(() => this._placeToolbar(), 100)
         } else {
-            viewport?.removeEventListener('resize', this.#placeToolbar)
-            viewport?.removeEventListener('scroll', this.#placeToolbar)
+            clearInterval(this._keyboardTimer)
         }
 
-        this.toggleAttribute('data-keyboard', on)
-    }
+        this.$el.toggleAttribute('data-keyboard', on)
+    },
 
-    #placeToolbar = () => {
+    _placeToolbar() {
         const viewport = window.visualViewport
 
-        this.style.setProperty('--editor-keyboard', `${viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0}px`)
-    }
+        this.$el.style.setProperty('--editor-keyboard', `${viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0}px`)
+    },
 
     // change once editing ends, if it changed anything.
-    #changed() {
-        if (this.#focused !== null && this.#focused !== this.value) this.dispatchEvent(new Event('change', { bubbles: true }))
-        this.#focused = null
-    }
+    _changed() {
+        if (this._focused !== null && this._focused !== this.value) {
+            const input = this.$el.querySelector('[data-editor-model]')
+            if (input) { emit(input, 'change', this.value); emit(input, 'blur', this.value) }
+            else this.$dispatch('change')
+        }
+        this._focused = null
+    },
 
-    #server = event => {
+    _server(event) {
         const { name, owner, action, attachments, html } = event.detail ?? {}
 
         // Ui::editor(name): this one's name, from the component it is in.
-        if (! this.#editor || ! name || name !== this.dataset.editorName) return
-        if (owner && owner !== this.closest('[wire\\:id]')?.getAttribute('wire:id')) return
+        if (! this._editor || ! name || name !== this.$el.dataset.editorName) return
+        if (owner && owner !== this.$el.closest('[wire\\:id]')?.getAttribute('wire:id')) return
 
         if (action === 'insert') this.insert(attachments)
         if (action === 'insert-content' && html) this.insertContent(html)
-        if (action === 'focus') this.#editor.commands.focus()
-    }
+        if (action === 'focus') this._editor.commands.focus()
+    },
 
     // What a control does.
-    #run(control) {
+    _run(control) {
         const { editorCommand: command, editorValue: value = '', editorAction: action } = control.dataset
-        const editor = this.#editor
+        const editor = this._editor
 
         // A swatch or an item picked in a popover closes it, and More around it.
         const done = () => {
@@ -530,7 +545,7 @@ export class EditorElement extends HTMLElement {
         }
 
         if (command) {
-            this.#can(command, value, editor.chain().focus())
+            this._can(command, value, editor.chain().focus())
             done()
 
             return
@@ -539,145 +554,145 @@ export class EditorElement extends HTMLElement {
         if (['media', 'find', 'source', 'fullscreen', 'format-painter'].includes(action)) done()
 
         // Media of the button's kind, or the selected one's to replace it.
-        if (action === 'media') this.#media(value)
-        if (action === 'video-apply') this.#video(control.closest('[popover]'))
-        if (action === 'save-image') this.#save([editor.state.selection.node?.attrs.src].filter(Boolean))
-        if (action === 'save-images') this.#save(this.#unsavedImages())
-        if (action === 'find') this.#find(this.#part('editor-find')?.hidden ?? false)
-        if (action === 'source') this.#source(! this.hasAttribute('data-source'))
-        if (action === 'fullscreen') this.#fullscreen(! this.hasAttribute('data-fullscreen'))
-        if (action === 'link-apply') this.#link(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-link-input]')?.value ?? '')
-        if (action === 'link-remove') this.#link(control.closest('[popover]'), '')
-        if (action === 'math-apply') this.#math(control.closest('[data-editor-math-form]'))
+        if (action === 'media') this._media(value)
+        if (action === 'video-apply') this._video(control.closest('[popover]'))
+        if (action === 'save-image') this._save([editor.state.selection.node?.attrs.src].filter(Boolean))
+        if (action === 'save-images') this._save(this._unsavedImages())
+        if (action === 'find') this._find(this._part('editor-find')?.hidden ?? false)
+        if (action === 'source') this._source(! this.$el.hasAttribute('data-source'))
+        if (action === 'fullscreen') this._fullscreen(! this.$el.hasAttribute('data-fullscreen'))
+        if (action === 'link-apply') this._link(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-link-input]')?.value ?? '')
+        if (action === 'link-remove') this._link(control.closest('[popover]'), '')
+        if (action === 'math-apply') this._math(control.closest('[data-editor-math-form]'))
         if (action === 'find-next') editor.commands.findNext(1)
         if (action === 'find-previous') editor.commands.findNext(-1)
-        if (action === 'find-case') this.#search(control.getAttribute('aria-pressed') !== 'true')
-        if (action === 'replace') editor.chain().replace(this.#field('editor-replace-input')).findNext(0).run()
-        if (action === 'replace-all') editor.commands.replaceAll(this.#field('editor-replace-input'))
-        if (action === 'find-close') this.#find(false)
-        if (action === 'format-painter') this.#pick(! this.#painter)
-        if (action === 'dismiss-upload') this.#dismiss(value)
-        if (action === 'upload-missing') this.#uploadMissing(value)
-        if (action === 'image-link-apply') this.#imageLink(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-image-link-input]')?.value ?? '')
-        if (action === 'image-link-remove') this.#imageLink(control.closest('[popover]'), '')
+        if (action === 'find-case') this._search(control.getAttribute('aria-pressed') !== 'true')
+        if (action === 'replace') editor.chain().replace(this._field('editor-replace-input')).findNext(0).run()
+        if (action === 'replace-all') editor.commands.replaceAll(this._field('editor-replace-input'))
+        if (action === 'find-close') this._find(false)
+        if (action === 'format-painter') this._pick(! this._painter)
+        if (action === 'dismiss-upload') this._dismiss(value)
+        if (action === 'upload-missing') this._uploadMissing(value)
+        if (action === 'image-link-apply') this._imageLink(control.closest('[popover]'), control.closest('[popover]')?.querySelector('[data-editor-image-link-input]')?.value ?? '')
+        if (action === 'image-link-remove') this._imageLink(control.closest('[popover]'), '')
 
         // A control in a menu or a popover opens one elsewhere: the toolbar's, More first
         // when it is in there.
         if (action === 'open') {
-            const trigger = this.querySelector(`[data-slot="editor-toolbar"] [data-editor-opens="${control.dataset.editorValue}"]`)
+            const trigger = this.$el.querySelector(`[data-slot="editor-toolbar"] [data-editor-opens="${control.dataset.editorValue}"]`)
             const more = trigger?.closest('[data-editor-more-content]')
 
             if (more && ! more.matches(':popover-open')) more.showPopover()
             trigger?.click()
         }
-    }
+    },
 
-    #part(slot) {
-        return this.querySelector(`:scope > [data-slot="${slot}"]`)
-    }
+    _part(slot) {
+        return this.$el.querySelector(`:scope > [data-slot="${slot}"]`)
+    },
 
-    #field(name) {
-        return this.querySelector(`[data-${name}]`)?.value ?? ''
-    }
+    _field(name) {
+        return this.$el.querySelector(`[data-${name}]`)?.value ?? ''
+    },
 
-    #key(event) {
+    _key(event) {
         const target = event.target
 
         // Enter in an editor's field applies it, rather than submitting a form around the editor.
         if (event.key === 'Enter' && ! event.shiftKey && target.matches?.('[data-editor-link-input]')) {
             event.preventDefault()
-            this.#link(target.closest('[popover]'), target.value)
+            this._link(target.closest('[popover]'), target.value)
         }
 
         if (event.key === 'Enter' && target.matches?.('[data-editor-video-input]')) {
             event.preventDefault()
-            this.#video(target.closest('[popover]'))
+            this._video(target.closest('[popover]'))
         }
 
         if (event.key === 'Enter' && target.matches?.('[data-editor-alt-input]')) {
             event.preventDefault()
-            this.#setAlt(target.value)
-            this.#editor.commands.focus()
+            this._setAlt(target.value)
+            this._editor.commands.focus()
         }
 
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && target.matches?.('[data-editor-math-input]')) {
             event.preventDefault()
-            this.#math(target.closest('[data-editor-math-form]'))
+            this._math(target.closest('[data-editor-math-form]'))
         }
 
         if (target.matches?.('[data-editor-find-input], [data-editor-replace-input]')) {
             if (event.key === 'Enter') {
                 event.preventDefault()
-                target.matches('[data-editor-find-input]') ? this.#editor.commands.findNext(event.shiftKey ? -1 : 1) : this.#run({ dataset: { editorAction: 'replace' } })
+                target.matches('[data-editor-find-input]') ? this._editor.commands.findNext(event.shiftKey ? -1 : 1) : this._run({ dataset: { editorAction: 'replace' } })
             }
 
             if (event.key === 'Escape') {
                 event.preventDefault()
-                this.#find(false)
+                this._find(false)
             }
         }
 
         // Mod-K: the link's popover, from the toolbar or the bubble menu, whichever shows.
-        if ((event.key === 'k' || event.key === 'K') && (MAC ? event.metaKey : event.ctrlKey) && this.#editor.view.dom.contains(target)) {
-            const link = this.#all('[data-editor-opens="link"]').find(control => control.isConnected && ! control.disabled && (control.checkVisibility?.() ?? true))
+        if ((event.key === 'k' || event.key === 'K') && (MAC ? event.metaKey : event.ctrlKey) && this._editor.view.dom.contains(target)) {
+            const link = this._all('[data-editor-opens="link"]').find(control => control.isConnected && ! control.disabled && (control.checkVisibility?.() ?? true))
 
             event.preventDefault()
             link?.click()
         }
 
         // Find opens over the browser's own, from the text or the bar.
-        if ((event.key === 'f' || event.key === 'F') && (MAC ? event.metaKey : event.ctrlKey) && ! event.altKey && this.#part('editor-find') && this.contains(target)) {
+        if ((event.key === 'f' || event.key === 'F') && (MAC ? event.metaKey : event.ctrlKey) && ! event.altKey && this._part('editor-find') && this.$el.contains(target)) {
             event.preventDefault()
-            this.#find(true)
+            this._find(true)
         }
 
-        if (event.key === 'Escape' && this.#painter) {
+        if (event.key === 'Escape' && this._painter) {
             event.preventDefault()
-            this.#pick(false)
+            this._pick(false)
         }
 
         // Alt+F10: from the text to the bubble menu beside it, else the toolbar; Escape
         // there goes back to the text, where it was.
-        if (event.key === 'F10' && event.altKey && this.#editor.view.dom.contains(target)) {
+        if (event.key === 'F10' && event.altKey && this._editor.view.dom.contains(target)) {
             event.preventDefault()
-            this.#enterBars()
+            this._enterBars()
         }
 
         if (event.key === 'Escape' && ! event.defaultPrevented && ! popoverOpen() && target.closest?.('[data-slot="editor-toolbar"], [data-slot="editor-bubble"]') && ! target.closest('[popover]')) {
             event.preventDefault()
-            this.#editor.view.focus()
+            this._editor.view.focus()
         }
 
-        if (event.key === 'Escape' && this.hasAttribute('data-fullscreen') && ! event.defaultPrevented && ! popoverOpen()) {
+        if (event.key === 'Escape' && this.$el.hasAttribute('data-fullscreen') && ! event.defaultPrevented && ! popoverOpen()) {
             event.preventDefault()
-            this.#fullscreen(false)
+            this._fullscreen(false)
         }
 
-        if (target.matches?.('[data-editor-swatch], [data-editor-spacing-value]') && STEPS[event.key]) this.#step(event, [...target.closest('[popover]').querySelectorAll('[role="group"]')].map(group => [...group.querySelectorAll('button')]))
+        if (target.matches?.('[data-editor-swatch], [data-editor-spacing-value]') && STEPS[event.key]) this._step(event, [...target.closest('[popover]').querySelectorAll('[role="group"]')].map(group => [...group.querySelectorAll('button')]))
 
         const popover = target.closest?.('[popover]')
         const bar = popover ? (popover.matches('[data-editor-more-content]') ? popover : null) : target.closest?.('[data-slot="editor-toolbar"], [data-slot="editor-bubble"]')
 
-        if (bar?.matches('[data-editor-more-content]') && STEPS[event.key] && ! target.matches('input, textarea')) this.#step(event, [...bar.querySelectorAll('[data-slot="editor-more-group"]')].map(row => this.#controlsOf(bar).filter(control => row.contains(control))))
-        else if (bar && ROVE.includes(event.key) && ! target.matches('input, textarea')) this.#rove(event, bar)
-    }
+        if (bar?.matches('[data-editor-more-content]') && STEPS[event.key] && ! target.matches('input, textarea')) this._step(event, [...bar.querySelectorAll('[data-slot="editor-more-group"]')].map(row => this._controlsOf(bar).filter(control => row.contains(control))))
+        else if (bar && ROVE.includes(event.key) && ! target.matches('input, textarea')) this._rove(event, bar)
+    },
 
-    #typed(event) {
+    _typed(event) {
         const target = event.target
 
-        if (target.matches?.('[data-editor-find-input]')) this.#search()
-        if (target.matches?.('[data-slot="editor-source"]')) this.#editor.commands.setContent(this.#whitelist.restrict(target.value), { emitUpdate: true })
-        if (target.matches?.('[data-editor-math-input], [data-editor-math-display]')) this.#previewMath(target.closest('[data-editor-math-form]'))
+        if (target.matches?.('[data-editor-find-input]')) this._search()
+        if (target.matches?.('[data-slot="editor-source"]')) this._editor.commands.setContent(this._whitelist.restrict(target.value), { emitUpdate: true })
+        if (target.matches?.('[data-editor-math-input], [data-editor-math-display]')) this._previewMath(target.closest('[data-editor-math-form]'))
         if (target.matches?.('[data-editor-video-input]')) target.removeAttribute('aria-invalid')
-    }
+    },
 
     // A popover of the editor's opened: its fields start from the selection.
-    #opened(event) {
+    _opened(event) {
         const popover = event.target
 
         if (event.newState !== 'open' || ! popover.matches?.('[popover]')) return
 
-        const editor = this.#editor
+        const editor = this._editor
         const link = popover.querySelector('[data-editor-link-input]')
         const video = popover.querySelector('[data-editor-video-input]')
         const math = popover.querySelector('[data-editor-math-form]')
@@ -699,56 +714,56 @@ export class EditorElement extends HTMLElement {
             video.removeAttribute('aria-invalid')
         }
 
-        if (math) this.#fillMath(math, '', false)
+        if (math) this._fillMath(math, '', false)
 
-        this.#sync(true)
+        this._sync(true)
 
         // Its first field, else its current choice or first control, takes focus, so typing
         // and arrow keys work at once (menus focus themselves; More, its first control).
         if (popover.matches('[popover="manual"], [role="menu"]') || popover.contains(document.activeElement)) return
 
         const first = popover.matches('[data-editor-more-content]')
-            ? this.#controlsOf(popover)[0]
+            ? this._controlsOf(popover)[0]
             : popover.querySelector('input:not([type="hidden"]):not([disabled]), textarea') ?? popover.querySelector('[aria-pressed="true"]') ?? popover.querySelector('button:not([disabled])')
 
         first?.focus()
-    }
+    },
 
     // Sets the selection's link to the address, or removes it for none.
-    #link(popover, href) {
-        const chain = this.#editor.chain().focus().extendMarkRange('link')
+    _link(popover, href) {
+        const chain = this._editor.chain().focus().extendMarkRange('link')
 
         href = href.trim()
         ;(href ? chain.setLink({ href }) : chain.unsetLink()).run()
         popover?.hidePopover()
-    }
+    },
 
     // A video from its link: a file's address, a platform's share link or embed code.
-    #video(popover) {
+    _video(popover) {
         const input = popover?.querySelector('[data-editor-video-input]')
-        const node = videoNode(input?.value, this.#format.features, this.#format.platforms)
+        const node = videoNode(input?.value, this._format.features, this._format.platforms)
 
         if (! node) return input?.setAttribute('aria-invalid', 'true')
 
-        this.#editor.chain().focus().insertContent(node).run()
+        this._editor.chain().focus().insertContent(node).run()
         popover.hidePopover()
         popover.closest('[data-editor-more-content]')?.hidePopover()
-    }
+    },
 
-    #fillMath(form, latex, display) {
+    _fillMath(form, latex, display) {
         form.querySelector('[data-editor-math-input]').value = latex
         form.querySelector('[data-editor-math-display]')?.toggleAttribute('checked', display)
         if (form.querySelector('[data-editor-math-display]')) form.querySelector('[data-editor-math-display]').checked = display
-        this.#previewMath(form)
-    }
+        this._previewMath(form)
+    },
 
     // The formula as it will show, or KaTeX's complaint.
-    async #previewMath(form) {
+    async _previewMath(form) {
         const latex = form.querySelector('[data-editor-math-input]').value.trim()
         const display = !! form.querySelector('[data-editor-math-display]')?.checked
         const preview = form.querySelector('[data-editor-math-preview]')
         const error = form.querySelector('[data-editor-math-error]')
-        const token = ++this.#mathPreview
+        const token = ++this._mathPreview
 
         let mathml = null
         let message = ''
@@ -759,7 +774,7 @@ export class EditorElement extends HTMLElement {
             message = failure.message
         }
 
-        if (token !== this.#mathPreview) return
+        if (token !== this._mathPreview) return
 
         if (preview) preview.innerHTML = mathml ?? ''
         if (error) {
@@ -767,10 +782,10 @@ export class EditorElement extends HTMLElement {
             error.hidden = ! message
         }
         form.querySelector('[data-editor-math-input]').toggleAttribute('aria-invalid', !! message)
-    }
+    },
 
     // Inserts the form's formula, or replaces the selected one with it.
-    async #math(form) {
+    async _math(form) {
         if (! form) return
 
         const latex = form.querySelector('[data-editor-math-input]').value.trim()
@@ -782,43 +797,43 @@ export class EditorElement extends HTMLElement {
         try {
             mathml = await toMathML(latex, display)
         } catch {
-            return this.#previewMath(form)
+            return this._previewMath(form)
         }
 
         const node = { type: display ? 'blockMath' : 'inlineMath', attrs: { latex, mathml } }
-        const { selection } = this.#editor.state
-        const chain = this.#editor.chain().focus()
+        const { selection } = this._editor.state
+        const chain = this._editor.chain().focus()
 
         ;(MATH.includes(selection.node?.type.name) && ! form.closest('[popover]') ? chain.insertContentAt({ from: selection.from, to: selection.to }, node) : chain.insertContent(node)).run()
         form.closest('[popover]')?.hidePopover()
         form.closest('[data-editor-more-content]')?.hidePopover()
-    }
+    },
 
-    #setAlt(alt) {
-        if (this.#editor.state.selection.node?.type.name === 'image') this.#editor.commands.updateAttributes('image', { alt })
-    }
+    _setAlt(alt) {
+        if (this._editor.state.selection.node?.type.name === 'image') this._editor.commands.updateAttributes('image', { alt })
+    },
 
     // A media button: files of its kind to insert; without one, of the selected media's
     // kind, one to replace it.
-    #media(kind) {
-        const { selection } = this.#editor.state
+    _media(kind) {
+        const { selection } = this._editor.state
         const selected = MEDIA.includes(selection.node?.type.name) ? selection.node.type.name : null
 
-        if (kind) this.#choose([kind])
-        else if (selected) this.#choose([selected], { from: selection.from, to: selection.to })
-    }
+        if (kind) this._choose([kind])
+        else if (selected) this._choose([selected], { from: selection.from, to: selection.to })
+    },
 
     /**
      * Picks files to upload: of these kinds, many (to insert at the selection) or one (to
      * replace the range, or for the placeholder of a picture that couldn't be pasted).
      * They go where that place has moved to by the time they are chosen.
      */
-    #choose(kinds, range = null, placeholder = null) {
-        const accept = kinds.filter(kind => accepted(this.#format.features).includes(kind))
+    _choose(kinds, range = null, placeholder = null) {
+        const accept = kinds.filter(kind => accepted(this._format.features).includes(kind))
 
-        if (! this.dataset.upload || ! accept.length) return
+        if (! this.$el.dataset.upload || ! accept.length) return
 
-        const { from, to } = range ?? this.#editor.state.selection
+        const { from, to } = range ?? this._editor.state.selection
         const place = { from, to }
         const input = document.createElement('input')
 
@@ -826,14 +841,14 @@ export class EditorElement extends HTMLElement {
         input.multiple = ! range
         input.accept = accept.includes('file') ? '' : accept.map(kind => `${kind}/*`).join(',')
 
-        this.#tracked.add(place)
-        input.addEventListener('cancel', () => this.#tracked.delete(place))
-        input.addEventListener('change', () => {
-            this.#tracked.delete(place)
-            this.#uploadFiles(input.files, place, 'pick', accept, placeholder)
+        this._tracked.add(place)
+        listen(this, input, 'cancel', () => this._tracked.delete(place))
+        listen(this, input, 'change', () => {
+            this._tracked.delete(place)
+            this._uploadFiles(input.files, place, 'pick', accept, placeholder)
         })
         input.click()
-    }
+    },
 
     /**
      * Uploads files to go at the range (the selection, or where they were dropped): of
@@ -842,12 +857,12 @@ export class EditorElement extends HTMLElement {
      * time later, wherever that place has moved to; what wouldn't leaves one saying why
      * (the picture's placeholder, to try again). Dismissed, nothing goes there.
      */
-    async #uploadFiles(files, range, source, kinds = null, placeholder = null) {
-        const accept = kinds ?? accepted(this.#format.features)
+    async _uploadFiles(files, range, source, kinds = null, placeholder = null) {
+        const accept = kinds ?? accepted(this._format.features)
 
         files = [...files].filter(file => accept.includes(kindOf({ mime: file.type, url: file.name })) || accept.includes('file'))
 
-        if (! this.dataset.upload || ! files.length || ! this.#editor) return
+        if (! this.$el.dataset.upload || ! files.length || ! this._editor) return
 
         const request = { from: range.from, to: range.to, id: placeholder ?? `upload-${++uploaded}` }
 
@@ -856,93 +871,93 @@ export class EditorElement extends HTMLElement {
         const size = files.reduce((sum, file) => sum + file.size, 0) || 1
         const progress = index => (loaded, total) => {
             sent[index] = files[index].size * loaded / total
-            this.#progress(request.id, sent.reduce((sum, part) => sum + part, 0) / size)
+            this._progress(request.id, sent.reduce((sum, part) => sum + part, 0) / size)
         }
 
-        this.#requests.add(request)
-        this.#placeholder(request.id, request.from, 'uploading')
-        this.#busy(files.length)
+        this._requests.add(request)
+        this._placeholder(request.id, request.from, 'uploading')
+        this._busy(files.length)
 
-        const results = await Promise.allSettled(files.map((file, index) => this.#send({ file, source }, progress(index)).finally(() => this.#busy(-1))))
+        const results = await Promise.allSettled(files.map((file, index) => this._send({ file, source }, progress(index)).finally(() => this._busy(-1))))
 
-        if (! this.#requests.delete(request) || ! this.#editor) return
+        if (! this._requests.delete(request) || ! this._editor) return
 
         const attachments = results.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])
-        const reason = results.find(result => result.status === 'rejected')?.reason?.message || this.#labels.failed
+        const reason = results.find(result => result.status === 'rejected')?.reason?.message || this._labels.failed
 
         // What wouldn't upload is said after what did.
-        this.#placeholder(request.id)
-        this.#tracked.add(request)
-        this.#insert(attachments, request)
-        this.#tracked.delete(request)
-        if (attachments.length < files.length) this.#placeholder(request.id, request.to, placeholder ? 'missing' : 'failed', reason)
-    }
+        this._placeholder(request.id)
+        this._tracked.add(request)
+        this._insert(attachments, request)
+        this._tracked.delete(request)
+        if (attachments.length < files.length) this._placeholder(request.id, request.to, placeholder ? 'missing' : 'failed', reason)
+    },
 
     // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
     // taken off for none.
-    #placeholder(id, position, kind = null, message = null) {
-        this.#editor?.view.dispatch(this.#editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, message }] : [] }))
-    }
+    _placeholder(id, position, kind = null, message = null) {
+        this._editor?.view.dispatch(this._editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, message }] : [] }))
+    },
 
     // The share of an upload placeholder's files sent, as a percentage and a bar.
-    #progress(id, share) {
-        const placeholder = this.#editor?.view.dom.querySelector(`[data-editor-upload="${id}"]`)
+    _progress(id, share) {
+        const placeholder = this._editor?.view.dom.querySelector(`[data-editor-upload="${id}"]`)
         const percent = `${Math.min(100, Math.round(share * 100))}%`
 
         placeholder?.style.setProperty('--editor-upload-progress', percent)
         placeholder?.querySelector('[data-editor-upload-progress]')?.replaceChildren(percent)
-    }
+    },
 
     // A placeholder dismissed: what it waited for goes nowhere.
-    #dismiss(id) {
-        for (const request of this.#requests) if (request.id === id) this.#requests.delete(request)
+    _dismiss(id) {
+        for (const request of this._requests) if (request.id === id) this._requests.delete(request)
 
-        this.#placeholder(id)
-    }
+        this._placeholder(id)
+    },
 
     // To the uploader. The address of its answer is the app's: its copies are never external.
-    async #send(item, progress = null) {
-        const attachment = await upload(this.dataset.upload, { ...item, progress, context: this.dataset.uploadContext, token: this.dataset.uploadToken })
+    async _send(item, progress = null) {
+        const attachment = await upload(this.$el.dataset.upload, { ...item, progress, context: this.$el.dataset.uploadContext, token: this.$el.dataset.uploadToken })
 
         if (! attachment?.url || ! safeUrl(attachment.url)) return null
 
         const { host } = new URL(attachment.url, document.baseURI)
 
-        if (host !== location.host && ! this.#hosts.includes(host)) {
-            this.#hosts.push(host)
-            this.#unsaved = { doc: null, images: [] }
+        if (host !== location.host && ! this._hosts.includes(host)) {
+            this._hosts.push(host)
+            this._unsaved = { doc: null, images: [] }
         }
 
         return attachment
-    }
+    },
 
-    #insert(attachments, range) {
-        const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this.#format.features, this.#format.styles.card)).filter(Boolean)
+    _insert(attachments, range) {
+        const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this._format.features, this._format.styles.card)).filter(Boolean)
 
-        if (! this.#editor || ! nodes.length) return
+        if (! this._editor || ! nodes.length) return
 
-        const size = this.#editor.state.doc.content.size
-        const { from, to } = range ?? this.#editor.state.selection
+        const size = this._editor.state.doc.content.size
+        const { from, to } = range ?? this._editor.state.selection
 
-        this.#editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
-    }
+        this._editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
+    },
 
     // A picture that couldn't be pasted, uploaded where its placeholder stands.
-    #uploadMissing(id) {
-        const [placeholder] = uploadsKey.getState(this.#editor.state)?.find(undefined, undefined, spec => spec.id === id) ?? []
+    _uploadMissing(id) {
+        const [placeholder] = uploadsKey.getState(this._editor.state)?.find(undefined, undefined, spec => spec.id === id) ?? []
 
-        if (placeholder) this.#choose(['image'], { from: placeholder.from, to: placeholder.from }, id)
-    }
+        if (placeholder) this._choose(['image'], { from: placeholder.from, to: placeholder.from }, id)
+    },
 
     // The images the app has no copy of, by address, each once (for the footer, kept
     // until the document changes).
-    #unsavedImages() {
-        const { doc } = this.#editor.state
+    _unsavedImages() {
+        const { doc } = this._editor.state
 
-        if (this.#unsaved.doc !== doc) this.#unsaved = { doc, images: this.#has('image') && this.dataset.upload ? unsavedImages(doc, this.#hosts) : [] }
+        if (this._unsaved.doc !== doc) this._unsaved = { doc, images: this._has('image') && this.$el.dataset.upload ? unsavedImages(doc, this._hosts) : [] }
 
-        return this.#unsaved.images
-    }
+        return this._unsaved.images
+    },
 
     /**
      * Saves images the app has no copy of (someone asked, or they came in), each to the
@@ -952,36 +967,36 @@ export class EditorElement extends HTMLElement {
      * then. One saved before takes its copy at once; one that wouldn't says why in its
      * menu, saved again only when asked.
      */
-    #save(sources) {
-        if (! this.#editor || ! this.dataset.upload) return
+    _save(sources) {
+        if (! this._editor || ! this.$el.dataset.upload) return
 
-        this.#swapImages(new Map(sources.filter(src => this.#saved.has(src)).map(src => [src, this.#saved.get(src)])))
+        this._swapImages(new Map(sources.filter(src => this._saved.has(src)).map(src => [src, this._saved.get(src)])))
 
         for (const src of new Set(sources)) {
-            const kind = unsaved(src, this.#hosts)
+            const kind = unsaved(src, this._hosts)
 
-            if (! kind || this.#saving.has(src) || this.#saved.has(src)) continue
+            if (! kind || this._saving.has(src) || this._saved.has(src)) continue
 
-            this.#saving.add(src)
-            this.#failed.delete(src)
-            this.#busy(1)
-            this.#saveImage(src, kind)
+            this._saving.add(src)
+            this._failed.delete(src)
+            this._busy(1)
+            this._saveImage(src, kind)
                 .then(attachment => {
-                    if (! attachment) return this.#failed.set(src, this.#labels.failed)
+                    if (! attachment) return this._failed.set(src, this._labels.failed)
 
-                    this.#saved.set(src, attachment)
-                    this.#swapImages(new Map([[src, attachment]]))
+                    this._saved.set(src, attachment)
+                    this._swapImages(new Map([[src, attachment]]))
                 })
-                .catch(error => this.#failed.set(src, error.message || this.#labels.failed))
+                .catch(error => this._failed.set(src, error.message || this._labels.failed))
                 .finally(() => {
-                    this.#saving.delete(src)
-                    this.#editor?.commands.setSaving([...this.#saving])
-                    this.#busy(-1)
+                    this._saving.delete(src)
+                    this._editor?.commands.setSaving([...this._saving])
+                    this._busy(-1)
                 })
         }
 
-        this.#editor.commands.setSaving([...this.#saving])
-    }
+        this._editor.commands.setSaving([...this._saving])
+    },
 
     /**
      * Whether files or images are on their way to the uploader: what they will be isn't
@@ -989,60 +1004,42 @@ export class EditorElement extends HTMLElement {
      * says why). aria-busy says so, and editor-busy { busy } when it changes.
      */
     get busy() {
-        return this.#uploading > 0
-    }
+        return this._uploading > 0
+    },
 
-    #busy(change) {
+    _busy(change) {
         const was = this.busy
 
-        this.#uploading = Math.max(0, this.#uploading + change)
-        this.busy ? this.setAttribute('aria-busy', 'true') : this.removeAttribute('aria-busy')
-        if (! this.busy) this.#refused = false
-        this.#syncBusy()
+        this._uploading = Math.max(0, this._uploading + change)
+        this.busy ? this.$el.setAttribute('aria-busy', 'true') : this.$el.removeAttribute('aria-busy')
+        if (! this.busy) this._refused = false
+        this._syncBusy()
 
-        if (was !== this.busy) this.dispatchEvent(new CustomEvent('editor-busy', { bubbles: true, detail: { busy: this.busy } }))
-    }
+        if (was !== this.busy) this.$dispatch('editor-busy', { busy: this.busy })
+    },
 
     // The footer's word on the uploads: how many, and why the form didn't submit.
-    #syncBusy() {
-        const notice = this.querySelector('[data-editor-busy]')
+    _syncBusy() {
+        const notice = this.$el.querySelector('[data-editor-busy]')
 
         if (! notice) return
 
-        const text = ((this.#refused ? notice.dataset.editorRefused : notice.dataset.editorLabel) ?? ':count').replace(':count', this.#uploading)
+        const text = ((this._refused ? notice.dataset.editorRefused : notice.dataset.editorLabel) ?? ':count').replace(':count', this._uploading)
 
         notice.hidden = ! this.busy
-        notice.setAttribute('role', this.#refused ? 'alert' : 'status')
+        notice.setAttribute('role', this._refused ? 'alert' : 'status')
         if (notice.textContent !== text) notice.textContent = text
-    }
+    },
 
     // A form submitted around it while it uploads doesn't; before Livewire's wire:submit
     // (on the form) hears of it.
-    static {
-        document.addEventListener('submit', event => {
-            const busy = [...event.target.querySelectorAll?.('eso-editor') ?? []].filter(editor => editor.busy)
-
-            if (! busy.length) return
-
-            event.preventDefault()
-            event.stopImmediatePropagation()
-
-            for (const editor of busy) {
-                editor.#refused = true
-                editor.#syncBusy()
-            }
-
-            busy[0].querySelector('[data-editor-busy]')?.scrollIntoView?.({ block: 'nearest' })
-        }, true)
-    }
-
-    async #saveImage(src, kind) {
-        if (kind === 'data') return this.#send({ file: dataFile(src), source: 'data' })
+    async _saveImage(src, kind) {
+        if (kind === 'data') return this._send({ file: dataFile(src), source: 'data' })
 
         const file = await imageFile(src).catch(() => null)
 
-        return this.#send({ file, url: src, source: 'external' })
-    }
+        return this._send({ file, url: src, source: 'external' })
+    },
 
     /**
      * Images that came in (pasted, dropped, from the source view, inserted) saved as
@@ -1050,21 +1047,21 @@ export class EditorElement extends HTMLElement {
      * when it loaded or the server set it, one put back (undone) after it was saved, or
      * one that wouldn't save.
      */
-    #autoSave() {
-        const auto = (this.dataset.autoUpload ?? '').split(' ').filter(Boolean)
+    _autoSave() {
+        const auto = (this.$el.dataset.autoUpload ?? '').split(' ').filter(Boolean)
 
-        if (! this.#editor || ! auto.length) return
+        if (! this._editor || ! auto.length) return
 
-        const sources = this.#unsavedImages().filter(src => auto.includes(unsaved(src, this.#hosts)) && ! this.#loaded.has(src) && ! this.#saved.has(src) && ! this.#failed.has(src) && ! this.#saving.has(src))
+        const sources = this._unsavedImages().filter(src => auto.includes(unsaved(src, this._hosts)) && ! this._loaded.has(src) && ! this._saved.has(src) && ! this._failed.has(src) && ! this._saving.has(src))
 
-        if (sources.length) this.#save(sources)
-    }
+        if (sources.length) this._save(sources)
+    },
 
     // The images at these addresses take the app's copies, a step of its own to undo.
-    #swapImages(answers) {
-        if (! answers.size || ! this.#editor) return
+    _swapImages(answers) {
+        if (! answers.size || ! this._editor) return
 
-        const { tr } = this.#editor.state
+        const { tr } = this._editor.state
 
         tr.doc.descendants((node, position) => {
             const attachment = node.type.name === 'image' && answers.get(node.attrs.src)
@@ -1072,62 +1069,62 @@ export class EditorElement extends HTMLElement {
             if (attachment) tr.setNodeMarkup(position, undefined, { ...node.attrs, src: attachment.url, alt: node.attrs.alt || attachment.alt || null, width: node.attrs.width ?? attachment.width ?? null, height: node.attrs.height ?? attachment.height ?? null })
         })
 
-        if (tr.docChanged) this.#editor.view.dispatch(closeHistory(tr))
-    }
+        if (tr.docChanged) this._editor.view.dispatch(closeHistory(tr))
+    },
 
     // Sets the selected image's link, or takes it off for none.
-    #imageLink(popover, href) {
+    _imageLink(popover, href) {
         href = href.trim()
 
-        if (this.#editor.state.selection.node?.type.name === 'image' && (! href || safeUrl(href))) this.#editor.chain().focus().updateAttributes('image', { href: href || null }).run()
+        if (this._editor.state.selection.node?.type.name === 'image' && (! href || safeUrl(href))) this._editor.chain().focus().updateAttributes('image', { href: href || null }).run()
         popover?.hidePopover()
-    }
+    },
 
     /**
      * The format painter: picks up the selection's marks (but links) and its block's
      * style, and puts them on the next text selected, once.
      */
-    #pick(on) {
-        const { state } = this.#editor
+    _pick(on) {
+        const { state } = this._editor
 
-        this.#painter = on ? { marks: (state.storedMarks ?? state.selection.$from.marks()).filter(mark => mark.type.name !== 'link'), style: blockStyle(this.#editor) } : null
-        this.toggleAttribute('data-painting', on)
-        this.#sync()
-    }
+        this._painter = on ? { marks: (state.storedMarks ?? state.selection.$from.marks()).filter(mark => mark.type.name !== 'link'), style: blockStyle(this._editor) } : null
+        this.$el.toggleAttribute('data-painting', on)
+        this._sync()
+    },
 
-    #paint() {
-        const { state, view } = this.#editor ?? {}
+    _paint() {
+        const { state, view } = this._editor ?? {}
 
-        if (! this.#painter || ! state || state.selection.empty) return
+        if (! this._painter || ! state || state.selection.empty) return
 
         const { from, to } = state.selection
         const { tr } = state
 
         Object.values(state.schema.marks).filter(type => type.name !== 'link').forEach(type => tr.removeMark(from, to, type))
-        this.#painter.marks.forEach(mark => tr.addMark(from, to, mark))
+        this._painter.marks.forEach(mark => tr.addMark(from, to, mark))
         state.doc.nodesBetween(from, to, (node, position) => {
             if (! ['paragraph', 'heading'].includes(node.type.name)) return
 
-            tr.setNodeMarkup(position, undefined, { ...node.attrs, style: this.#painter.style })
+            tr.setNodeMarkup(position, undefined, { ...node.attrs, style: this._painter.style })
 
             return false
         })
 
         view.dispatch(tr)
-        this.#pick(false)
-    }
+        this._pick(false)
+    },
 
     // What Word copied as RTF, for the paste or drop under way (its HTML parsed next).
-    #readRtf(data) {
-        this.#rtf = data?.types?.includes?.('text/rtf') ? data.getData('text/rtf') : ''
+    _readRtf(data) {
+        this._rtf = data?.types?.includes?.('text/rtf') ? data.getData('text/rtf') : ''
 
         return false
-    }
+    },
 
-    #paste(view, event, slice) {
+    _paste(view, event, slice) {
         const data = event.clipboardData
 
-        this.#rtf = ''
+        this._rtf = ''
 
         if (! data) return false
 
@@ -1137,7 +1134,7 @@ export class EditorElement extends HTMLElement {
         // Files alone (a screenshot, files copied in a file manager): uploaded.
         if (data.files.length && ! text && ! html) {
             event.preventDefault()
-            this.#uploadFiles(data.files, { from: view.state.selection.from, to: view.state.selection.to }, 'paste')
+            this._uploadFiles(data.files, { from: view.state.selection.from, to: view.state.selection.to }, 'paste')
 
             return true
         }
@@ -1156,27 +1153,27 @@ export class EditorElement extends HTMLElement {
         if (html || ! text) return false
 
         // A video's link alone: its player.
-        const video = /^\S+$/.test(text.trim()) ? videoNode(text, this.#format.features, this.#format.platforms) : null
+        const video = /^\S+$/.test(text.trim()) ? videoNode(text, this._format.features, this._format.platforms) : null
 
         if (video) {
-            this.#editor.chain().focus().insertContent(video).run()
+            this._editor.chain().focus().insertContent(video).run()
 
             return true
         }
 
-        if (this.#has('markdown') && MARKDOWN.test(text)) {
-            this.#editor.chain().focus().insertContent(marked.parse(text, { gfm: true, async: false })).run()
+        if (this._has('markdown') && MARKDOWN.test(text)) {
+            this._editor.chain().focus().insertContent(marked.parse(text, { gfm: true, async: false })).run()
 
             return true
         }
 
         return false
-    }
+    },
 
-    #drop(view, event, moved) {
+    _drop(view, event, moved) {
         const files = event.dataTransfer?.files
 
-        this.#rtf = ''
+        this._rtf = ''
 
         if (moved || ! files?.length) return false
 
@@ -1184,82 +1181,82 @@ export class EditorElement extends HTMLElement {
 
         // Taken without an uploader too, so the browser doesn't open the file instead.
         event.preventDefault()
-        this.#uploadFiles(files, { from: position, to: position }, 'drop')
+        this._uploadFiles(files, { from: position, to: position }, 'drop')
 
         return true
-    }
+    },
 
-    #find(open) {
-        const bar = this.#part('editor-find')
+    _find(open) {
+        const bar = this._part('editor-find')
 
         if (! bar) return
 
         bar.hidden = ! open
-        this.querySelector('[data-editor-action="find"]')?.setAttribute('aria-pressed', String(open))
+        this.$el.querySelector('[data-editor-action="find"]')?.setAttribute('aria-pressed', String(open))
 
         if (open) {
             const input = bar.querySelector('[data-editor-find-input]')
-            const { from, to } = this.#editor.state.selection
-            const selected = this.#editor.state.doc.textBetween(from, to)
+            const { from, to } = this._editor.state.selection
+            const selected = this._editor.state.doc.textBetween(from, to)
 
             if (selected && ! selected.includes('\n')) input.value = selected
             input.focus()
             input.select()
-            this.#search()
+            this._search()
         } else {
-            this.#editor.chain().focus().find('').run()
+            this._editor.chain().focus().find('').run()
         }
-    }
+    },
 
-    #search(caseSensitive) {
-        const toggle = this.querySelector('[data-editor-action="find-case"]')
+    _search(caseSensitive) {
+        const toggle = this.$el.querySelector('[data-editor-action="find-case"]')
 
         if (caseSensitive !== undefined) toggle?.setAttribute('aria-pressed', String(caseSensitive))
 
-        this.#editor.commands.find(this.#field('editor-find-input'), toggle?.getAttribute('aria-pressed') === 'true')
-    }
+        this._editor.commands.find(this._field('editor-find-input'), toggle?.getAttribute('aria-pressed') === 'true')
+    },
 
-    #source(on) {
-        const textarea = this.#part('editor-source')
-        const content = this.#part('editor-content')
+    _source(on) {
+        const textarea = this._part('editor-source')
+        const content = this._part('editor-content')
 
         if (! textarea) return
 
         if (on) textarea.value = lines(this.value)
-        else this.#editor.commands.setContent(this.#whitelist.restrict(textarea.value), { emitUpdate: true })
+        else this._editor.commands.setContent(this._whitelist.restrict(textarea.value), { emitUpdate: true })
 
-        this.toggleAttribute('data-source', on)
+        this.$el.toggleAttribute('data-source', on)
         textarea.hidden = ! on
         content.hidden = on
-        on ? textarea.focus() : this.#editor.commands.focus()
-        this.#sync()
-    }
+        on ? textarea.focus() : this._editor.commands.focus()
+        this._sync()
+    },
 
-    #fullscreen(on) {
-        if (this.hasAttribute('data-fullscreen') === on) return
+    _fullscreen(on) {
+        if (this.$el.hasAttribute('data-fullscreen') === on) return
 
-        this.#tip(null)
-        this.toggleAttribute('data-fullscreen', on)
+        this._tip(null)
+        this.$el.toggleAttribute('data-fullscreen', on)
         document.documentElement.style.overflow = on ? 'hidden' : ''
-        this.#sync()
-        if (this.#editor && ! this.hasAttribute('data-source')) this.#editor.commands.focus()
-    }
+        this._sync()
+        if (this._editor && ! this.$el.hasAttribute('data-source')) this._editor.commands.focus()
+    },
 
     // The tooltip names the control and its shortcut, anchored to it; none, it hides.
-    #tip(control) {
-        const tip = this.querySelector(':scope > [data-editor-tip]')
+    _tip(control) {
+        const tip = this.$el.querySelector(':scope > [data-editor-tip]')
 
-        if (! tip || (control && control === this.#anchor && tip.matches(':popover-open'))) return
+        if (! tip || (control && control === this._anchor && tip.matches(':popover-open'))) return
 
         if (tip.matches(':popover-open')) tip.hidePopover()
 
-        this.#anchor = control
+        this._anchor = control
 
         if (! control) return
 
         // A fullscreen toolbar sits against the top edge. On touch screens it moves
         // above the keyboard instead, where tips still need to open upward.
-        tip.dataset.side = this.hasAttribute('data-fullscreen') && ! this.hasAttribute('data-keyboard') ? 'bottom' : 'top'
+        tip.dataset.side = this.$el.hasAttribute('data-fullscreen') && ! this.$el.hasAttribute('data-keyboard') ? 'bottom' : 'top'
         tip.querySelector('[data-editor-tip-label]').textContent = control.getAttribute('aria-label') ?? ''
 
         const shortcut = tip.querySelector('[data-editor-tip-keys]')
@@ -1270,35 +1267,35 @@ export class EditorElement extends HTMLElement {
         }
 
         tip.showPopover({ source: control })
-    }
+    },
 
     // The bars of controls: the toolbar, and the bubble menus.
-    #bars() {
-        return [this.#part('editor-toolbar'), ...this.#menus.filter(menu => menu.matches('[data-slot="editor-bubble"][role="toolbar"]'))].filter(Boolean)
-    }
+    _bars() {
+        return [this._part('editor-toolbar'), ...this._menus.filter(menu => menu.matches('[data-slot="editor-bubble"][role="toolbar"]'))].filter(Boolean)
+    },
 
     // A bar's controls that can be focused, minus those in its menus and popovers (More
     // being a bar of its own).
-    #controlsOf(bar) {
+    _controlsOf(bar) {
         const own = bar.matches('[popover]') ? bar : null
 
         return [...bar.querySelectorAll('button')].filter(button => button.closest('[popover]') === own && ! button.disabled && ! button.closest('[hidden]'))
-    }
+    },
 
     // Alt+F10: the bubble menu showing, else the toolbar, at its tab stop.
-    #enterBars() {
+    _enterBars() {
         const shown = bar => bar.isConnected && ! bar.closest('[hidden]') && getComputedStyle(bar).visibility !== 'hidden'
-        const bar = this.#bars().find(one => one.matches('[data-slot="editor-bubble"]') && shown(one)) ?? this.#part('editor-toolbar')
-        const controls = bar ? this.#controlsOf(bar) : []
+        const bar = this._bars().find(one => one.matches('[data-slot="editor-bubble"]') && shown(one)) ?? this._part('editor-toolbar')
+        const controls = bar ? this._controlsOf(bar) : []
 
         ;(controls.find(control => control.getAttribute('tabindex') === '0') ?? controls[0])?.focus()
-    }
+    },
 
     // One control of each bar is its tab stop: the first, until another is moved to.
     // Those in More are a list of their own, tabbed through.
-    #rovingStart() {
-        for (const bar of this.#bars()) {
-            const controls = this.#controlsOf(bar)
+    _rovingStart() {
+        for (const bar of this._bars()) {
+            const controls = this._controlsOf(bar)
             const current = controls.find(control => control.getAttribute('tabindex') === '0') ?? controls[0]
 
             for (const button of bar.querySelectorAll('button')) {
@@ -1309,11 +1306,11 @@ export class EditorElement extends HTMLElement {
                 else if (! popover && button.getAttribute('tabindex') !== index) button.setAttribute('tabindex', index)
             }
         }
-    }
+    },
 
     // Left and right along a bar, Home and End to its ends; it keeps the tab stop.
-    #rove(event, bar) {
-        const controls = this.#controlsOf(bar)
+    _rove(event, bar) {
+        const controls = this._controlsOf(bar)
         const index = controls.indexOf(event.target)
         const next = { ArrowLeft: index - 1, ArrowRight: index + 1, Home: 0, End: controls.length - 1 }[event.key]
         const control = controls[(next + controls.length) % controls.length]
@@ -1324,11 +1321,11 @@ export class EditorElement extends HTMLElement {
         controls.forEach(button => (button.tabIndex = -1))
         control.tabIndex = 0
         control.focus()
-    }
+    },
 
     // Arrow keys in rows (More's, swatches'): along the row, or to the row before or
     // after, as near the same place as it has.
-    #step(event, rows) {
+    _step(event, rows) {
         rows = rows.filter(row => row.length)
 
         const row = rows.findIndex(controls => controls.includes(event.target))
@@ -1339,22 +1336,22 @@ export class EditorElement extends HTMLElement {
 
         event.preventDefault()
         target[Math.max(0, Math.min(target.length - 1, rows[row].indexOf(event.target) + across))]?.focus()
-    }
+    },
 
     // Runs a command on a chain, or says whether it could; one the format lacks can't.
-    #can(name, value, chain) {
+    _can(name, value, chain) {
         try {
-            return COMMANDS[name]?.run(chain, value, this.#editor).run() ?? false
+            return COMMANDS[name]?.run(chain, value, this._editor).run() ?? false
         } catch {
             return false
         }
-    }
+    },
 
-    #aria() {
+    _aria() {
         return Object.fromEntries(['aria-invalid', 'aria-describedby']
-            .filter(name => this.hasAttribute(name))
-            .map(name => [name, this.getAttribute(name)]))
-    }
+            .filter(name => this.$el.hasAttribute(name))
+            .map(name => [name, this.$el.getAttribute(name)]))
+    },
 
     /**
      * The controls show what is on at the selection and what can be done there. What can
@@ -1362,21 +1359,21 @@ export class EditorElement extends HTMLElement {
      * (or when a menu or popover opens: force), undo and redo every time; controls out of
      * sight wait to be shown, but a menu's items still say which is current.
      */
-    #sync(force = false) {
-        const editor = this.#editor
+    _sync(force = false) {
+        const editor = this._editor
 
         if (! editor) return
 
-        const editable = editor.isEditable && ! this.hasAttribute('data-source')
+        const editable = editor.isEditable && ! this.$el.hasAttribute('data-source')
         const { selection } = editor.state
         const path = $position => Array.from({ length: $position.depth + 1 }, (_, depth) => $position.node(depth).type.name).join('/')
         const context = [editable, selection.toJSON().type, selection.empty, selection.node?.type.name, path(selection.$from), path(selection.$to)].join('|')
-        const fresh = force || context !== this.#context
+        const fresh = force || context !== this._context
         const shown = control => control.isConnected && (! control.closest('[popover]') || control.closest('[popover]').matches(':popover-open'))
 
-        this.#context = context
+        this._context = context
 
-        for (const control of this.#all('[data-editor-command]')) {
+        for (const control of this._all('[data-editor-command]')) {
             const name = control.dataset.editorCommand
             const command = COMMANDS[name]
             const value = control.dataset.editorValue ?? ''
@@ -1384,7 +1381,7 @@ export class EditorElement extends HTMLElement {
 
             if (! command || (! visible && control.getAttribute('role') !== 'menuitemradio')) continue
 
-            if (visible && (fresh || name === 'undo' || name === 'redo')) control.disabled = ! editable || ! this.#can(name, value, editor.can().chain().focus())
+            if (visible && (fresh || name === 'undo' || name === 'redo')) control.disabled = ! editable || ! this._can(name, value, editor.can().chain().focus())
             if (command.active) {
                 const active = command.active(editor, value)
 
@@ -1395,7 +1392,7 @@ export class EditorElement extends HTMLElement {
 
         // Menus show their checked item on their button: its icon, or its name (the menu's
         // own for its default, none).
-        for (const trigger of this.#all('[data-editor-menu]')) {
+        for (const trigger of this._all('[data-editor-menu]')) {
             const menu = contentOf(trigger, 'dropdown-menu')
             const checked = menu?.querySelector('[aria-checked="true"]')
             const current = trigger.querySelector('[data-editor-current]')
@@ -1409,63 +1406,63 @@ export class EditorElement extends HTMLElement {
             for (const icon of trigger.querySelectorAll('[data-editor-icon]')) icon.toggleAttribute('hidden', icon.dataset.editorIcon !== (checked?.dataset.editorValue ?? ''))
         }
 
-        for (const control of this.#all('[data-editor-opens], [data-editor-action="media"]')) {
+        for (const control of this._all('[data-editor-opens], [data-editor-action="media"]')) {
             control.disabled = ! editable || (control.dataset.editorOpens === 'link' && editor.state.selection.empty && ! editor.isActive('link'))
             if (control.dataset.editorOpens === 'link') control.setAttribute('aria-pressed', String(editor.isActive('link')))
         }
 
-        for (const control of this.querySelectorAll('[data-editor-action="find"]')) control.disabled = ! editable
+        for (const control of this.$el.querySelectorAll('[data-editor-action="find"]')) control.disabled = ! editable
 
-        this.querySelector('[data-editor-action="source"]')?.setAttribute('aria-pressed', String(this.hasAttribute('data-source')))
-        this.querySelector('[data-editor-action="format-painter"]')?.setAttribute('aria-pressed', String(!! this.#painter))
-        this.querySelector('[data-editor-action="fullscreen"]')?.setAttribute('aria-pressed', String(this.hasAttribute('data-fullscreen')))
+        this.$el.querySelector('[data-editor-action="source"]')?.setAttribute('aria-pressed', String(this.$el.hasAttribute('data-source')))
+        this.$el.querySelector('[data-editor-action="format-painter"]')?.setAttribute('aria-pressed', String(!! this._painter))
+        this.$el.querySelector('[data-editor-action="fullscreen"]')?.setAttribute('aria-pressed', String(this.$el.hasAttribute('data-fullscreen')))
 
-        this.#syncSelection(editor)
-        this.#syncFind(editor)
-        this.#syncCount(editor)
-        this.#syncUnsaved(editor, editable)
-        this.#rovingStart()
-    }
+        this._syncSelection(editor)
+        this._syncFind(editor)
+        this._syncCount(editor)
+        this._syncUnsaved(editor, editable)
+        this._rovingStart()
+    },
 
     // The media, formula and link menus' parts and fields, for the node selected or the link.
-    #syncSelection(editor) {
+    _syncSelection(editor) {
         const node = editor.state.selection.node ?? null
         const type = node?.type.name
         const href = editor.getAttributes('link').href ?? ''
 
-        for (const part of this.#all('[data-editor-for]')) part.hidden = ! part.dataset.editorFor.split(' ').includes(type)
+        for (const part of this._all('[data-editor-for]')) part.hidden = ! part.dataset.editorFor.split(' ').includes(type)
 
         // An image the app has no copy of can be saved to it; one that wouldn't says why.
-        for (const save of this.#all('[data-editor-action="save-image"]')) {
-            save.hidden = type !== 'image' || ! unsaved(node.attrs.src, this.#hosts)
+        for (const save of this._all('[data-editor-action="save-image"]')) {
+            save.hidden = type !== 'image' || ! unsaved(node.attrs.src, this._hosts)
             save.disabled = ! editor.isEditable || !! savingKey.getState(editor.state)?.pending.has(node?.attrs.src)
         }
 
-        for (const error of this.#all('[data-editor-image-error]')) {
-            const reason = type === 'image' ? this.#failed.get(node.attrs.src) ?? '' : ''
+        for (const error of this._all('[data-editor-image-error]')) {
+            const reason = type === 'image' ? this._failed.get(node.attrs.src) ?? '' : ''
 
             if (error.textContent !== reason) error.textContent = reason
             error.hidden = ! reason
         }
 
-        for (const link of this.#all('[data-editor-link-href]')) {
+        for (const link of this._all('[data-editor-link-href]')) {
             if (link.getAttribute('href') !== href) link.setAttribute('href', href)
             link.textContent = href
         }
 
-        if (node === this.#selected) return
+        if (node === this._selected) return
 
-        this.#selected = node
+        this._selected = node
 
-        const [alt] = this.#all('[data-editor-alt-input]')
-        const math = this.#all('[data-editor-math-form]').find(form => ! form.closest('[popover]'))
+        const [alt] = this._all('[data-editor-alt-input]')
+        const math = this._all('[data-editor-math-form]').find(form => ! form.closest('[popover]'))
 
         if (alt && type === 'image') alt.value = node.attrs.alt ?? ''
-        if (math && MATH.includes(type)) this.#fillMath(math, node.attrs.latex, type === 'blockMath')
-    }
+        if (math && MATH.includes(type)) this._fillMath(math, node.attrs.latex, type === 'blockMath')
+    },
 
-    #syncFind(editor) {
-        const count = this.querySelector('[data-editor-find-count]')
+    _syncFind(editor) {
+        const count = this.$el.querySelector('[data-editor-find-count]')
         const state = findKey.getState(editor.state)
 
         if (! count || ! state) return
@@ -1474,30 +1471,30 @@ export class EditorElement extends HTMLElement {
 
         count.textContent = query ? `${matches.length ? current + 1 : 0}/${matches.length}` : ''
 
-        for (const control of this.querySelectorAll('[data-editor-action^="find-"]:not([data-editor-action="find-case"]):not([data-editor-action="find-close"]), [data-editor-action^="replace"]')) {
+        for (const control of this.$el.querySelectorAll('[data-editor-action^="find-"]:not([data-editor-action="find-case"]):not([data-editor-action="find-close"]), [data-editor-action^="replace"]')) {
             control.disabled = ! matches.length || (control.dataset.editorAction.startsWith('replace') && ! editor.isEditable)
         }
-    }
+    },
 
-    #syncCount(editor) {
-        const count = this.querySelector('[data-editor-count]')
+    _syncCount(editor) {
+        const count = this.$el.querySelector('[data-editor-count]')
 
         if (! count || ! editor.storage.characterCount) return
 
         const characters = editor.storage.characterCount.characters()
-        const max = Number(this.dataset.maxLength) || null
+        const max = Number(this.$el.dataset.maxLength) || null
 
         count.textContent = max ? `${characters} / ${max}` : String(characters)
         count.toggleAttribute('data-full', !! max && characters >= max)
-    }
+    },
 
     // The footer says how many images the app has no copy of, to save them all.
-    #syncUnsaved(editor, editable) {
-        const notice = this.querySelector('[data-editor-unsaved]')
+    _syncUnsaved(editor, editable) {
+        const notice = this.$el.querySelector('[data-editor-unsaved]')
 
         if (! notice) return
 
-        const images = this.#unsavedImages()
+        const images = this._unsavedImages()
         const saving = savingKey.getState(editor.state)?.pending ?? new Set()
         const label = notice.querySelector('[data-editor-unsaved-label]')
         const text = (notice.dataset.editorLabel ?? ':count').replace(':count', images.length)
@@ -1505,7 +1502,5 @@ export class EditorElement extends HTMLElement {
         notice.hidden = ! images.length
         if (label.textContent !== text) label.textContent = text
         notice.querySelector('[data-editor-action="save-images"]').disabled = ! editable || images.every(src => saving.has(src))
-    }
-}
-
-define('eso-editor', EditorElement)
+    },
+})

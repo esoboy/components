@@ -1,6 +1,7 @@
 @blaze
 
 @use('Esoboy\Ui\Support\OverlayModel')
+@use('Esoboy\Ui\Support\Model')
 
 @aware([
     'name',
@@ -17,10 +18,18 @@
 $model = OverlayModel::attributes($uiModel);
 @endphp
 
-{!! $model ? '<eso-dialog '.$model.'>' : '' !!}
 {{-- wire:ignore.self keeps Livewire morphs from stripping the open state. --}}
 <dialog {{ $attributes->merge([
     'id' => $name,
+    'x-data' => 'uiDialog('.json_encode(Model::binding($model ?? new \Illuminate\View\ComponentAttributeBag)).')',
+    'x-on:toggle' => 'changed()',
+    'x-on:close' => 'changed()',
+    'x-on:ui-dialog.window' => 'requested($event.detail)',
+    'x-on:click' => 'backdrop($event)',
+    'x-on:pointerdown' => 'start($event)',
+    'x-on:pointermove' => 'move($event)',
+    'x-on:pointerup' => 'end($event)',
+    'x-on:pointercancel' => 'end($event)',
     'data-slot' => 'sheet-content',
     'data-side' => $side,
     'aria-labelledby' => $name.'-title',
@@ -34,4 +43,3 @@ $model = OverlayModel::attributes($uiModel);
         </x-ui::button>
     @endif
 </dialog>
-{!! $model ? '</eso-dialog>' : '' !!}

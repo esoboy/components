@@ -1,7 +1,7 @@
 @blaze
 
 @aware([
-    'defaultScrollPosition' => 'end',
+    'scrollPosition' => 'end',
 ])
 
 @props([
@@ -15,5 +15,5 @@
     'tabindex' => '0',
     'data-slot' => 'message-scroller-viewport',
     'data-preserve-scroll-on-prepend' => $preserveScrollOnPrepend ? false : 'false',
-    'data-pending-scroll' => in_array($defaultScrollPosition, ['end', 'last-anchor'], true),
+    'data-pending-scroll' => in_array($scrollPosition, ['end', 'last-anchor'], true),
 ]) }} wire:ignore.self>{{ $slot }}</div>

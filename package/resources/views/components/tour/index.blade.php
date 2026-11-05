@@ -6,7 +6,7 @@
     'blocking' => true,
 ])
 
-<eso-tour {{ $attributes->merge(['id' => $name, 'data-slot' => 'tour']) }}>
+<eso-tour {{ $attributes->merge(['id' => $name, 'x-data' => 'uiTour', 'x-on:ui-tour.window' => 'requested($event.detail)', 'x-on:keydown.escape.document' => 'escape($event)', 'x-on:livewire:navigating.document' => 'close()', 'x-on:livewire:navigated.document' => 'refresh()', 'data-slot' => 'tour']) }}>
     {{ $slot }}
     <div popover="manual" data-slot="tour-spotlight" aria-hidden="true" wire:ignore @if ($blocking) data-blocking @endif></div>
     <div popover="manual" role="dialog" aria-modal="false" data-slot="tour-content" wire:ignore>

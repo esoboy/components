@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
 /*
  * Editor on the Editor page: Tiptap loads with its own script and binds HTML with
  * wire:model, the format decides its tools, Ui::editor() inserts the app's media, and
@@ -8,14 +11,47 @@
 
 const ARTICLE = '[data-slot="editor"][data-editor-name="article"]';
 
+it('sends pasted files as multipart and inserts the uploader response', function () {
+    // Pest's HTTP driver does not parse multipart files. Check the browser's
+    // actual request body here; package feature tests exercise the PHP uploader.
+    Route::middleware('web')->post('/browser-editor-upload', function (Request $request) {
+        expect($request->header('content-type'))->toStartWith('multipart/form-data; boundary=');
+        expect($request->getContent())->toContain('name="source"', 'paste', 'filename="upload-check.txt"', 'Upload integration check');
+
+        return response()->json(['attachment' => ['url' => '/demo/guide.pdf', 'name' => 'upload-check.txt', 'mime' => 'text/plain', 'size' => 24]]);
+    });
+
+    $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
+    $page->script(<<<'JS'
+        (() => {
+            document.querySelector('[data-editor-name="article"]').dataset.upload = '/browser-editor-upload';
+            const input = document.querySelector('[data-editor-name="article"] .ProseMirror');
+            const clipboard = new DataTransfer();
+            clipboard.items.add(new File(['Upload integration check'], 'upload-check.txt', { type: 'text/plain' }));
+            input.focus();
+            input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: clipboard, bubbles: true, cancelable: true }));
+        })()
+        JS);
+    $page->assertPresent(ARTICLE.' a[href="/demo/guide.pdf"][download="upload-check.txt"]')
+        ->assertNoJavaScriptErrors();
+});
+
 it('executes a radio menu choice and follows the next document selection', function () {
     $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
 
     $page->script(<<<'JS'
         (() => {
             const element = document.querySelector('[data-editor-name="article"]');
-            element.value = '<p>First</p><p>Second</p>';
-            element.editor.commands.setTextSelection({ from: 1, to: 6 });
+            Livewire.find(element.closest('[wire\\:id]').getAttribute('wire:id')).$set('article', '<p>First</p><p>Second</p>');
+        })()
+        JS);
+    $page->assertSeeIn(ARTICLE.' .ProseMirror', 'First');
+    $page->script(<<<'JS'
+        (() => {
+            const p = document.querySelector('[data-editor-name="article"] .ProseMirror p');
+            p.closest('.ProseMirror').focus();
+            const range = document.createRange(); range.selectNodeContents(p);
+            getSelection().removeAllRanges(); getSelection().addRange(range);
         })()
         JS);
 
@@ -26,7 +62,14 @@ it('executes a radio menu choice and follows the next document selection', funct
         ->assertScript("document.querySelector('[data-editor-name=\"article\"] .ProseMirror p span').style.fontSize", '18px')
         ->assertScript("document.querySelector('[data-editor-name=\"article\"] input[data-editor-command=\"font-size\"][data-editor-value=\"18px\"]').checked");
 
-    $page->script("document.querySelector('[data-editor-name=\"article\"]').editor.commands.setTextSelection(9)");
+    $page->script(<<<'JS'
+        (() => {
+            const p = document.querySelector('[data-editor-name="article"] .ProseMirror p:last-child');
+            p.closest('.ProseMirror').focus();
+            const range = document.createRange(); range.setStart(p.firstChild, 1); range.collapse(true);
+            getSelection().removeAllRanges(); getSelection().addRange(range);
+        })()
+        JS);
     $page->assertScript("document.querySelector('[data-editor-name=\"article\"] input[data-editor-command=\"font-size\"][data-editor-value=\"18px\"]').checked", false)
         ->assertScript("document.querySelector('[data-editor-name=\"article\"] input[data-editor-command=\"font-size\"][data-editor-value=\"\"]').checked")
         ->assertNoJavaScriptErrors();
@@ -79,10 +122,12 @@ it('scrolls long content inside the editor while keeping its toolbar in place', 
     $page->script(<<<'JS'
         (() => {
             const editor = document.querySelector('[data-editor-name="article"]');
-            editor.value = '<p>Line</p>'.repeat(80);
+            Livewire.find(editor.closest('[wire\\:id]').getAttribute('wire:id')).$set('article', '<p>Line</p>'.repeat(80));
             editor.scrollIntoView({ block: 'center' });
         })()
         JS);
+    $page->assertSeeIn(ARTICLE.' .ProseMirror p >> nth=0', 'Line');
+    $page->page()->waitForLoadState('networkidle');
     $page->assertScript(<<<'JS'
         (() => {
             const content = document.querySelector('[data-editor-name="article"] [data-slot="editor-content"]');
@@ -92,7 +137,7 @@ it('scrolls long content inside the editor while keeping its toolbar in place', 
     $page->script(<<<'JS'
         (() => {
             const editor = document.querySelector('[data-editor-name="article"]');
-            editor.dataset.toolbarTop = editor.querySelector('[data-slot="editor-toolbar"]').getBoundingClientRect().top;
+            window.editorToolbarTop = editor.querySelector('[data-slot="editor-toolbar"]').getBoundingClientRect().top;
             editor.querySelector('[data-slot="editor-content"]').scrollTop = 300;
         })()
         JS);
@@ -100,7 +145,7 @@ it('scrolls long content inside the editor while keeping its toolbar in place', 
         (() => {
             const editor = document.querySelector('[data-editor-name="article"]');
             return editor.querySelector('[data-slot="editor-content"]').scrollTop === 300
-                && Math.abs(editor.querySelector('[data-slot="editor-toolbar"]').getBoundingClientRect().top - Number(editor.dataset.toolbarTop)) < 1;
+                && Math.abs(editor.querySelector('[data-slot="editor-toolbar"]').getBoundingClientRect().top - window.editorToolbarTop) < 1;
         })()
         JS)->assertNoJavaScriptErrors();
 });

@@ -52,10 +52,16 @@ it('prints a deferred script that runs once across wire:navigate', function () {
     expect(Blade::render('@uiScripts'))
         ->toBe('<script src="http://localhost/esoboy-ui/ui.js?id=aaaaaaaaaaaa" defer data-navigate-once></script>')
         ->and(Blade::render("@uiScripts(['nonce' => 'abc'])"))
-        ->toContain('defer data-navigate-once nonce="abc"></script>');
+        ->toContainMarkup('defer data-navigate-once nonce="abc"></script>');
 });
 
-it('loads a heavy component module once per page through @assets', function () {
+it('loads Livewires Alpine runtime for a plain Blade page using uiScripts', function () {
+    Route::middleware('web')->get('/blade-only', fn () => Blade::render('<html><head></head><body><x-ui::button>Save</x-ui::button>@uiScripts</body></html>'));
+    $html = $this->get('/blade-only')->assertOk()->getContent();
+    expect($html)->toContain('/esoboy-ui/ui.js')->toContain('/livewire-')->toContain('data-csrf');
+});
+
+it('marks each heavy component for lazy loading through Alpine', function () {
     $this->app->instance(Assets::class, new Assets(__DIR__.'/../Fixtures/dist'));
 
     Route::get('/blocks', fn () => Blade::render(<<<'BLADE'
@@ -67,8 +73,8 @@ it('loads a heavy component module once per page through @assets', function () {
 
     $html = $this->get('/blocks')->getContent();
 
-    expect(substr_count($html, '<script type="module" src="http://localhost/esoboy-ui/code-block.js?id=cdef01234567"></script>'))->toBe(1)
-        ->and(strpos($html, 'code-block.js'))->toBeLessThan(strpos($html, '</head>'));
+    expect(substr_count($html, 'data-engine="http://localhost/esoboy-ui/code-block.js?id=cdef01234567"'))->toBe(2)
+        ->and($html)->not->toContain('<script type="module"');
 });
 
 it('leaves heavy modules out of pages that do not need them', function () {

@@ -1,9 +1,9 @@
 @blaze
 
 @aware([
-    'defaultOpen' => false,
+    'open' => false,
 ])
 
-<div data-slot="trace-collapsible-content" data-collapsible-content @if (! $defaultOpen) hidden @endif>
+<div data-slot="trace-collapsible-content" data-collapsible-content x-bind:hidden="! open" @if (! $open) hidden @endif>
     <div {{ $attributes->merge(['data-slot' => 'trace-collapsible-content-inner']) }}>{{ $slot }}</div>
 </div>

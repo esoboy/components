@@ -126,7 +126,7 @@ new class extends Component
         <p class="text-sm text-muted-foreground">time: <span id="time">{{ $time ?? 'none' }}</span></p>
         <div class="flex flex-wrap items-start gap-6">
             <x-ui::date-picker id="demo-datetime" time wire:model.live="startsAt" placeholder="Pick a date and time" />
-            <x-ui::date-picker id="demo-shift" mode="range" time default-time="09:00" wire:model.live="shift" placeholder="Pick a shift" />
+            <x-ui::date-picker id="demo-shift" mode="range" time time-value="09:00" wire:model.live="shift" placeholder="Pick a shift" />
         </div>
         <p class="text-sm text-muted-foreground">startsAt: <span id="starts-at">{{ $startsAt ?? 'none' }}</span>, shift: <span id="shift">{{ ($shift['from'] ?? '').' → '.($shift['to'] ?? '') }}</span></p>
         <form wire:submit="saveBirthday" class="flex items-start gap-3">
@@ -188,54 +188,14 @@ new class extends Component
         <h2 class="text-lg font-semibold">Combobox</h2>
         @php $options = ['next' => 'Next.js', 'sveltekit' => 'SvelteKit', 'nuxt' => 'Nuxt.js', 'remix' => 'Remix', 'astro' => 'Astro']; @endphp
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::combobox id="demo-combobox" wire:model.live="framework">
-                <x-ui::combobox.input placeholder="Select a framework" show-clear />
-                <x-ui::combobox.content>
-                    <x-ui::combobox.empty>No items found.</x-ui::combobox.empty>
-                    <x-ui::combobox.list>
-                        @foreach ($options as $value => $label)
-                            <x-ui::combobox.item :value="$value">{{ $label }}</x-ui::combobox.item>
-                        @endforeach
-                    </x-ui::combobox.list>
-                </x-ui::combobox.content>
-            </x-ui::combobox>
-            <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks">
-                <x-ui::combobox.chips class="w-full max-w-xs">
-                    <x-ui::combobox.chips-input placeholder="Add framework" />
-                </x-ui::combobox.chips>
-                <x-ui::combobox.content>
-                    <x-ui::combobox.empty>No items found.</x-ui::combobox.empty>
-                    <x-ui::combobox.list>
-                        @foreach ($options as $value => $label)
-                            <x-ui::combobox.item :value="$value">{{ $label }}</x-ui::combobox.item>
-                        @endforeach
-                    </x-ui::combobox.list>
-                </x-ui::combobox.content>
-            </x-ui::combobox>
+            <x-ui::combobox id="demo-combobox" wire:model.live="framework" :options="$options" placeholder="Select a framework" clearable empty="No items found." />
+            <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks" :options="$options" placeholder="Add framework" class="w-full max-w-xs" empty="No items found." />
         </div>
         <p class="text-sm text-muted-foreground">framework: <span id="framework">{{ $framework ?? 'none' }}</span>, frameworks: <span id="frameworks">{{ implode(',', $frameworks) }}</span></p>
         <p class="text-sm text-muted-foreground">With autocomplete the value is the typed text: suggestions from the server as you type, or filtered here.</p>
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::combobox id="demo-email" autocomplete :should-filter="false" wire:model.live.debounce.150ms="email">
-                <x-ui::combobox.input placeholder="Email" :show-trigger="false" class="w-64" />
-                <x-ui::combobox.content>
-                    <x-ui::combobox.list>
-                        @foreach ($this->emailSuggestions as $suggestion)
-                            <x-ui::combobox.item :value="$suggestion" wire:key="email-{{ $suggestion }}">{{ $suggestion }}</x-ui::combobox.item>
-                        @endforeach
-                    </x-ui::combobox.list>
-                </x-ui::combobox.content>
-            </x-ui::combobox>
-            <x-ui::combobox id="demo-city" autocomplete wire:model.live="city">
-                <x-ui::combobox.input placeholder="City" :show-trigger="false" show-clear class="w-56" />
-                <x-ui::combobox.content>
-                    <x-ui::combobox.list>
-                        @foreach (['Hangzhou', 'Shanghai', 'Shenzhen', 'Suzhou', 'Beijing', 'Chengdu'] as $name)
-                            <x-ui::combobox.item :value="$name">{{ $name }}</x-ui::combobox.item>
-                        @endforeach
-                    </x-ui::combobox.list>
-                </x-ui::combobox.content>
-            </x-ui::combobox>
+            <x-ui::combobox id="demo-email" autocomplete :filter="false" wire:model.live.debounce.150ms="email" :options="$this->emailSuggestions" placeholder="Email" :trigger="false" class="w-64" />
+            <x-ui::combobox id="demo-city" autocomplete wire:model.live="city" :options="['Hangzhou', 'Shanghai', 'Shenzhen', 'Suzhou', 'Beijing', 'Chengdu']" placeholder="City" :trigger="false" clearable class="w-56" />
         </div>
         <p class="text-sm text-muted-foreground">email: <span id="email">{{ $email ?: 'none' }}</span>, city: <span id="city">{{ $city ?: 'none' }}</span></p>
     </section>
@@ -279,7 +239,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Toggle</h2>
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::toggle aria-label="Toggle bold" wire:model.live="bold"><x-ui::icon name="bold" /></x-ui::toggle>
-            <x-ui::toggle variant="outline" aria-label="Toggle italic" default-pressed><x-ui::icon name="italic" /> Italic</x-ui::toggle>
+            <x-ui::toggle variant="outline" aria-label="Toggle italic" checked><x-ui::icon name="italic" /> Italic</x-ui::toggle>
             <x-ui::toggle size="sm" aria-label="Toggle underline" disabled><x-ui::icon name="underline" /></x-ui::toggle>
             <span class="text-sm text-muted-foreground">bold: <span id="bold">{{ $bold ? 'on' : 'off' }}</span></span>
         </div>
@@ -293,7 +253,7 @@ new class extends Component
                 <x-ui::toggle-group.item value="center">Center</x-ui::toggle-group.item>
                 <x-ui::toggle-group.item value="right">Right</x-ui::toggle-group.item>
             </x-ui::toggle-group>
-            <x-ui::toggle-group type="multiple" variant="outline" spacing="0" size="sm" wire:model.live="styles">
+            <x-ui::toggle-group multiple variant="outline" spacing="0" size="sm" wire:model.live="styles">
                 <x-ui::toggle-group.item value="bold" aria-label="Bold"><x-ui::icon name="bold" /></x-ui::toggle-group.item>
                 <x-ui::toggle-group.item value="italic" aria-label="Italic"><x-ui::icon name="italic" /></x-ui::toggle-group.item>
                 <x-ui::toggle-group.item value="underline" aria-label="Underline"><x-ui::icon name="underline" /></x-ui::toggle-group.item>
@@ -305,14 +265,14 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Slider</h2>
         <div class="grid max-w-xs gap-6">
-            <x-ui::slider wire:model.live="volume" :max="100" :step="1" aria-label="Volume" />
-            <x-ui::slider wire:model.live="price" :max="100" :step="5" aria-label="Price" />
-            <x-ui::slider :default-value="[33]" aria-label="Disabled" disabled />
+            <x-ui::slider id="volume-slider" wire:model.live="volume" :max="100" :step="1" aria-label="Volume" />
+            <x-ui::slider id="price-slider" wire:model.live="price" :max="100" :step="5" aria-label="Price" />
+            <x-ui::slider :value="[33]" aria-label="Disabled" disabled />
         </div>
         <p class="text-sm text-muted-foreground">volume: <span id="volume">{{ $volume }}</span>, price: <span id="price">{{ implode('-', $price) }}</span></p>
         <div class="flex h-40 gap-6">
-            <x-ui::slider :default-value="[50]" orientation="vertical" aria-label="Vertical" />
-            <x-ui::slider :default-value="[25, 75]" orientation="vertical" aria-label="Vertical range" />
+            <x-ui::slider :value="[50]" orientation="vertical" aria-label="Vertical" />
+            <x-ui::slider :value="[25, 75]" orientation="vertical" aria-label="Vertical range" />
         </div>
     </section>
 

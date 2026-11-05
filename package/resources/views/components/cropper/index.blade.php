@@ -12,17 +12,17 @@
     'zoomSensitivity' => 0.005,
     'keyboardStep' => 10,
     'zoom' => null,
-    'defaultValue' => null,
+    'value' => null,
 ])
 
 @php
-$value = $defaultValue ?? Model::value($attributes);
+$value = Model::value($attributes, $value);
 $value = is_array($value) && isset($value['x'], $value['y'], $value['width'], $value['height']) ? array_map('intval', array_intersect_key($value, array_flip(['x', 'y', 'width', 'height']))) : null;
 @endphp
 
-{{-- <eso-cropper> exposes the crop as .value, so wire:model binds on it. --}}
-<eso-cropper {{ $attributes->merge([
-    'data-slot' => 'cropper',
+<eso-cropper {{ $attributes->whereDoesntStartWith('wire:model')->merge([
+    'data-slot' => 'cropper', 'x-data' => 'uiCropper('.json_encode(Model::binding($attributes)).')',
+    'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()',
     'role' => 'application',
     'tabindex' => '0',
     'aria-label' => __('ui::cropper.label'),
@@ -38,5 +38,6 @@ $value = is_array($value) && isset($value['x'], $value['y'], $value['width'], $v
     'data-value' => $value ? json_encode($value) : false,
 ]) }}>
     {{ $slot }}
+    <input type="hidden" x-ref="input" value="{{ json_encode($value) }}" {{ Model::input($attributes) }}>
 </eso-cropper>
 <x-ui::extras />

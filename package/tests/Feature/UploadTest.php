@@ -15,7 +15,7 @@ beforeEach(fn () => Storage::fake('tmp-for-tests'));
 it('renders a drop area around the file input', function () {
     $view = $this->blade('<x-ui::file-upload wire:model="files" multiple accept="image/*" description="PNG up to 2 MB" class="max-w-md" />');
 
-    $view->assertSeeInOrder([
+    $view->assertSeeMarkupInOrder([
         '<eso-file-upload data-slot="file-upload" data-orientation="horizontal" data-uploading-label="Uploading… :progress%" class="max-w-md">',
         '<div data-slot="file-upload-dropzone" >',
         '<input type="file" data-slot="file-upload-input" multiple="multiple" accept="image/*" wire:model="files">',
@@ -24,12 +24,12 @@ it('renders a drop area around the file input', function () {
         '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%" data-slot="progress"',
         '<div data-slot="attachment-group" data-file-upload-list="data-file-upload-list" hidden="hidden">',
         '<div data-file-upload-pending wire:ignore></div>',
-    ], false);
+    ]);
 });
 
 it('takes its own content and title', function () {
     $this->blade('<x-ui::file-upload title="Drop the contract" disabled />')
-        ->assertSee('<span data-slot="file-upload-title">Drop the contract</span>', false)
+        ->assertSeeMarkup('<span data-slot="file-upload-title">Drop the contract</span>')
         ->assertSee('disabled="disabled"', false);
 
     $this->blade('<x-ui::file-upload>Custom</x-ui::file-upload>')
@@ -46,9 +46,9 @@ it('lists the uploaded files with previews and remove buttons', function () {
 
     expect($html)
         ->toContain('<div data-slot="attachment" data-state="done" data-size="default" data-orientation="horizontal" wire:key="upload-'.$files[0]->getFilename().'">')
-        ->toContain('<span data-slot="attachment-title">cover.png</span>')
-        ->toContain('<span data-slot="attachment-title">notes.pdf</span>')
-        ->toContain('<span data-slot="attachment-description">3 KB</span>')
+        ->toContainMarkup('<span data-slot="attachment-title">cover.png</span>')
+        ->toContainMarkup('<span data-slot="attachment-title">notes.pdf</span>')
+        ->toContainMarkup('<span data-slot="attachment-description">3 KB</span>')
         ->toMatch('/<div data-slot="attachment-media" data-variant="image">(?:\s|<!--.*?-->)*<img src="[^"]+preview-file[^"]+" alt="">/')
         ->toContain("wire:click=\"\$removeUpload('files', '".$files[1]->getFilename()."')\"")
         ->not->toMatch('/data-file-upload-list\s+hidden/');
@@ -74,9 +74,9 @@ it('shows the current image, or the new upload with a remove button', function (
     $component = Livewire::test(Uploader::class);
 
     expect($component->html())
-        ->toContain('<eso-file-upload data-slot="image-upload" data-shape="circle">')
-        ->toContain('<img data-slot="image-upload-image" src="/old.png" alt="" >')
-        ->toContain('<span data-slot="image-upload-placeholder"  hidden >')
+        ->toContainMarkup('<eso-file-upload data-slot="image-upload" data-shape="circle">')
+        ->toContainMarkup('<img data-slot="image-upload-image" src="/old.png" alt="" >')
+        ->toContainMarkup('<span data-slot="image-upload-placeholder"  hidden >')
         ->not->toContain('data-image-upload-remove');
 
     $component->set('avatar', UploadedFile::fake()->image('me.png'));

@@ -13,6 +13,10 @@
     'aria-label' => __('ui::code-block.copy'),
     'data-label-copy' => __('ui::code-block.copy'),
     'data-label-copied' => __('ui::code-block.copied'),
+    'x-data' => 'uiCopyCode',
+    'x-on:click' => 'copy()',
+    'x-bind:data-copied' => 'copied',
+    'x-bind:aria-label' => 'copied ? $el.dataset.labelCopied : $el.dataset.labelCopy',
 ])">
     <x-ui::icon name="copy" data-copy-icon="copy" />
     <x-ui::icon name="check" data-copy-icon="copied" />

@@ -5,7 +5,7 @@
  * min and max.
  */
 
-const QUANTITY = 'eso-number-input[wire\\:model\\.live="quantity"]';
+const QUANTITY = 'eso-number-input:has(#quantity-input)';
 
 it('steps with its buttons within its bounds', function () {
     visit('/inputs')
@@ -26,7 +26,7 @@ it('steps with the arrow keys', function () {
 
 it('steps decimals without float errors', function () {
     visit('/inputs')
-        ->click('eso-number-input[wire\\:model\\.live="price"] [data-number-input="increment"]')
+        ->click('eso-number-input:has(#price-input) [data-number-input="increment"]')
         ->assertSeeIn('#price', '10')
-        ->assertValue('eso-number-input[wire\\:model\\.live="price"] input', '10');
+        ->assertValue('eso-number-input:has(#price-input) input', '10');
 });

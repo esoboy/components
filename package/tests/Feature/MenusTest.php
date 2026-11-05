@@ -13,8 +13,8 @@ it('pairs a hover card trigger with its content', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<a data-slot="button" data-variant="link" data-size="default" data-hover-card-trigger="data-hover-card-trigger" data-delay="10" data-close-delay="300" href="/u/nextjs">@nextjs</a>')
-        ->toContain('<div popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="--side-offset: 4px; --align-offset: 4px;">Card</div>');
+        ->toContainMarkup('<a data-slot="button" data-variant="link" data-size="default" data-hover-card-trigger="data-hover-card-trigger" data-delay="10" data-close-delay="300" href="/u/nextjs">@nextjs</a>')
+        ->toContainMarkup('<div popover="manual" data-slot="hover-card-content" data-side="bottom" data-align="center" style="--side-offset: 4px; --align-offset: 4px;">Card</div>');
 });
 
 it('opens a context menu from its trigger area, with dropdown menu items', function () {
@@ -30,11 +30,11 @@ it('opens a context menu from its trigger area, with dropdown menu items', funct
         BLADE);
 
     expect($html)
-        ->toContain('<div data-slot="context-menu-trigger">Right click</div>')
-        ->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="context-menu-content" data-align-offset="4">')
-        ->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="destructive" data-inset="data-inset">Delete')
-        ->toContain('<span data-slot="dropdown-menu-shortcut">⌘⌫</span>')
-        ->toContain('<div role="separator" data-slot="dropdown-menu-separator"></div>')
+        ->toContainMarkup('<div data-slot="context-menu-trigger">Right click</div>')
+        ->toContainMarkup('<div popover="auto" role="menu" tabindex="-1" data-slot="context-menu-content" data-align-offset="4">')
+        ->toContainMarkup('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="destructive" data-inset="data-inset">Delete')
+        ->toContainMarkup('<span data-slot="dropdown-menu-shortcut">⌘⌫</span>')
+        ->toContainMarkup('<div role="separator" data-slot="dropdown-menu-separator"></div>')
         ->toMatch('/<input(?=[^>]*wire:model="bookmarks")(?=[^>]*role="menuitemcheckbox")/');
 });
 
@@ -49,10 +49,10 @@ it('renders a menubar whose triggers toggle their menus', function () {
         BLADE);
 
     expect($html)
-        ->toContain('<div role="menubar" data-slot="menubar">')
-        ->toContain('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" command="toggle-popover" commandfor="">File</button>')
-        ->toContain('<div popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: -4px;">')
-        ->toContain('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default">New Tab</button>');
+        ->toContainMarkup('<div role="menubar" data-slot="menubar">')
+        ->toContainMarkup('<button type="button" role="menuitem" aria-haspopup="menu" data-slot="menubar-trigger" command="toggle-popover">File</button>')
+        ->toContainMarkup('<div popover="auto" role="menu" tabindex="-1" data-slot="menubar-content" data-side="bottom" data-align="start" style="--side-offset: 8px; --align-offset: -4px;">')
+        ->toContainMarkup('<button type="button" role="menuitem" data-slot="dropdown-menu-item" data-variant="default">New Tab</button>');
 });
 
 it('renders a navigation menu with trigger-styled links and aligned content', function () {
@@ -69,12 +69,12 @@ it('renders a navigation menu with trigger-styled links and aligned content', fu
         BLADE);
 
     expect($html)
-        ->toContain('<nav data-slot="navigation-menu">')
-        ->toContain('<ul data-slot="navigation-menu-list">')
-        ->toContain('<button type="button" aria-expanded="false" data-slot="navigation-menu-trigger">')
-        ->toContain('<div popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="--side-offset: 8px;">')
-        ->toContain('<a data-slot="navigation-menu-link" data-active="data-active" aria-current="page" href="/tabs">Tabs</a>')
-        ->toContain('<li data-slot="navigation-menu-item"><a data-slot="navigation-menu-link" href="/docs">Docs</a></li>');
+        ->toContainMarkup('<nav data-slot="navigation-menu">')
+        ->toContainMarkup('<ul data-slot="navigation-menu-list">')
+        ->toContainMarkup('<button type="button" aria-expanded="false" data-slot="navigation-menu-trigger">')
+        ->toContainMarkup('<div popover="auto" data-slot="navigation-menu-content" data-side="bottom" data-align="center" style="--side-offset: 8px;">')
+        ->toContainMarkup('<a data-slot="navigation-menu-link" data-active="data-active" aria-current="page" href="/tabs">Tabs</a>')
+        ->toContainMarkup('<li data-slot="navigation-menu-item"><a data-slot="navigation-menu-link" href="/docs">Docs</a></li>');
 });
 
 it('renders a drawer as a dialog swiped towards its edge', function () {
@@ -91,7 +91,7 @@ it('renders a drawer as a dialog swiped towards its edge', function () {
         </x-ui::drawer>
         BLADE);
 
-    $view->assertSeeInOrder([
+    $view->assertSeeMarkupInOrder([
         'commandfor="goal" command="show-modal"',
         '<dialog id="goal" data-slot="drawer-popup" data-swipe-direction="right" data-swipe-axis="x" aria-labelledby="goal-title" aria-describedby="goal-description" wire:ignore.self>',
         '<div data-slot="drawer-swipe-handle" aria-hidden="true"></div>',
@@ -101,5 +101,5 @@ it('renders a drawer as a dialog swiped towards its edge', function () {
         '<p id="goal-description" data-slot="drawer-description">Daily goal.</p>',
         '<div data-slot="drawer-footer">',
         'commandfor="goal" command="close"',
-    ], false);
+    ]);
 });

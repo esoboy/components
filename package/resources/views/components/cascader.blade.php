@@ -17,39 +17,17 @@
     'changeOnSelect' => false,
     'size' => 'default',
     'disabled' => false,
-    'defaultValue' => null,
+    'value' => null,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
-$value = array_values(array_map('strval', (array) ($defaultValue ?? Model::value($attributes) ?? [])));
-$options = Options::normalize($options);
-$labels = Options::labels($options, $value);
+$value = Model::value($attributes, $value) ?? [];
+$validation = $state->attributes();
+$settings = compact('placeholder', 'separator', 'changeOnSelect', 'size', 'disabled', 'validation');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'cascader-'.\Esoboy\Ui\Support\Sequence::next('cascader');
 @endphp
 
-{{-- <eso-cascader> exposes the chosen path as .value, so wire:model binds on it. --}}
-<eso-cascader {{ $attributes->except(['name', 'class', 'style'])->merge([
-    'data-slot' => 'cascader',
-    'data-value' => json_encode($labels ? $value : []),
-    'data-separator' => $separator,
-    'data-placeholder' => $placeholder ?? false,
-    'data-change-on-select' => (bool) $changeOnSelect,
-    'data-name' => $attributes->get('name') ?? false,
-]) }}>
-    <script type="application/json" data-cascader-options>@json($options)</script>
-    {{-- A column and an option, cloned as the path opens; a parent option shows the chevron instead of the check. --}}
-    <template data-template="column"><div data-slot="cascader-column" role="listbox"></div></template>
-    <template data-template="option"><x-ui::select.item value="" data-cascader-item /></template>
-    <template data-template="icon-parent"><x-ui::icon name="chevron-right" /></template>
-    <x-ui::select.trigger :size="$size" data-cascader-trigger :data-placeholder="! $labels" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($state->attributes())">
-        <x-ui::select.value :placeholder="$labels ? implode(' '.$separator.' ', $labels) : $placeholder" />
-    </x-ui::select.trigger>
-    <div popover="auto" data-slot="cascader-content" data-side="bottom" data-align="start" style="--side-offset: 4px;" wire:ignore></div>
-    @if ($attributes->has('name'))
-        @foreach ($labels ? $value : [] as $part)
-        <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $part }}">
-        @endforeach
-    @endif
-</eso-cascader>
+@livewire('ui.cascader', ['options' => $options, 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-cascader-'.$key))
 <x-ui::field.error :state="$state" />
 <x-ui::extras />
