@@ -28,6 +28,24 @@ it('commits editor blur bindings when focus leaves the entire editor', function 
         ->assertNoJavaScriptErrors();
 });
 
+it('morphs an editor toolbar slot and runs its owner action from More', function () {
+    $page = visit('/model-binding-ui')->assertPresent('#slot-editor .ProseMirror');
+    $page->click('#slot-editor [data-editor-more]')
+        ->assertSeeIn('#slot-editor [data-editor-overflow-group] #toolbar-action', 'Toolbar action disabled')
+        ->assertAttribute('#toolbar-action', 'disabled', 'disabled');
+
+    $page->click('#enable-toolbar-action')
+        ->assertScript('document.querySelector("#toolbar-action")?.textContent.trim()', 'Run toolbar action')
+        ->assertNotPresent('#toolbar-action[disabled]');
+    if (! $page->script(opened('#slot-editor [data-editor-more-content]'))) {
+        $page->click('#slot-editor [data-editor-more]');
+    }
+    $page->click('#toolbar-action')
+        ->assertSeeIn('#toolbar-actions', '1')
+        ->assertPresent('#toolbar-result')
+        ->assertNoJavaScriptErrors();
+});
+
 it('uses Livewire debounce and lazy modifiers for composite native controls', function () {
     visit('/model-binding-ui')
         ->click('eso-number-input:has(#quantity) [data-number-input="increment"]')
@@ -132,11 +150,25 @@ it('updates PHP combobox labels and chips after the parent replaces their values
 
 it('updates PHP date labels and time controls after a parent reset', function () {
     $page = visit('/controls');
-    $page->script("Livewire.first().\$set('startsAt', '2026-11-12 15:45')");
+    $page->script("Livewire.first().\$set('startsAt', '2026-11-12 15:40')");
     $page->assertSeeIn('#demo-datetime [data-slot="date-picker-value"]', 'November 12, 2026')
         ->click('#demo-datetime [data-date-picker-trigger]')
-        ->assertValue('#demo-datetime [data-date-picker-time="from"]', '15:45')
+        ->assertSeeIn('#demo-datetime [data-time-hour-label]', '15:00')
+        ->assertAttribute('#demo-datetime [data-time-option="15:40"]', 'aria-pressed', 'true')
         ->assertPresent('#demo-datetime button[data-day="2026-11-12"]')
+        ->assertNoJavaScriptErrors();
+});
+
+it('keeps the time picker slot reactive and runs its action in the caller', function () {
+    $page = visit('/model-binding-ui')
+        ->click('#fixture-time')
+        ->assertSeeIn('#time-slot-action', 'Confirm 10:30');
+
+    $page->script("Livewire.first().\$set('fixtureTime', '15:20')");
+    $page->assertSeeIn('#fixture-time', '15:20')
+        ->assertSeeIn('#time-slot-action', 'Confirm 15:20')
+        ->click('#time-slot-action')
+        ->assertSeeIn('#time-slot-result', '15:20')
         ->assertNoJavaScriptErrors();
 });
 

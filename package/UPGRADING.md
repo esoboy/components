@@ -64,7 +64,7 @@ component events.
 
 ## Server components
 
-Calendar, Date Picker, Cascader, Combobox, Emoji Picker, Questionnaire, Tags Input,
+Calendar, Date Picker, Time Picker, Cascader, Combobox, Emoji Picker, Questionnaire, Tags Input,
 Transfer, Tree and Tree Select render through internal Livewire components.
 Their Blade facades handle keys, parent binding and validation. A caller does not
 need to register or mount those Livewire classes.
@@ -72,6 +72,11 @@ need to register or mount those Livewire classes.
 - Calendar and Date Picker: `Y-m-d`, a list in `multiple` mode, or
   `['from' => ?string, 'to' => ?string]` in `range` mode. `time` adds `H:i`
   (`H:i:s` with a seconds step). Constraints, ordering and presets run in PHP.
+- Time Picker: `H:i` or `H:i:s` with `step="1"`. The trigger opens a Blade
+  popover. `mode="combined"` groups complete time choices by hour and uses
+  five-minute intervals by default. Set `step="600"` for ten-minute intervals.
+  In Date Picker, use `time time-mode="combined"` with the same `step` option.
+  Use server-side validation for named form values.
 - Select and single Combobox: the selected option value or `null`.
 - Multiple Combobox, Tags Input, Transfer and checkable Tree: a list of values.
 - Autocomplete Combobox: the typed string; pass suggestions from PHP.
@@ -98,6 +103,7 @@ the current data on each internal update.
 | --- | --- | --- |
 | Calendar | Header and default footer | `day-view` receives `$day` |
 | Date Picker | Default footer in the popup | `day-view` receives `$day`, `selected-view` receives `$value` and `$label` |
+| Time Picker | Default footer in the popup | |
 | Cascader | Default supplementary region | `option-view` receives `$option` and `$depth` |
 | Tree and Tree Select | Default region below the tree | `node-view` receives `$node`, `$level` and `$checked` |
 | Transfer | Default region below the lists, optional `actions` slot | `option-view` receives `$option` and `$list`, `actions-view` can use internal move actions |
@@ -182,8 +188,14 @@ editable content, selection, the KaTeX preview, and upload decorations inside
 the document. Blade renders search results, toolbar overflow groups, form
 messages, the URL in the link toolbar, and status. The editor footer shows
 up to eight active upload percentages and detailed errors. The document keeps the upload bar and
-a localized placeholder for failures. Keep using
-`Ui::editor()`, `Ui::sanitize()` and the existing server upload contract.
+a localized placeholder for failures. Keep using `Ui::editor()` and `Ui::sanitize()`.
+
+For toolbar and slash-menu media selection, declare the supported kinds with
+`media-picker` and handle `ui-editor-media-request` in the application. Return
+the selected attachments with `Ui::editor($name)->resolveMedia($requestId, $attachments)`.
+The package uploader handles dropped and pasted files and remote image imports.
+Implement `EditorUploader::authorize($source, $url, $context)` to check permissions
+before the package retrieves remote content. Remote image imports require PHP cURL.
 
 Code Block highlights snippets during rendering using the Composer highlighter.
 Unknown languages and snippets over 128 KiB use escaped plain text. The

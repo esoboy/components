@@ -31,6 +31,17 @@ final class EditorHandle
     }
 
     /**
+     * Completes a media selection at its original position. An empty list cancels it.
+     * Image, audio and video requests require the matching attachment MIME type.
+     *
+     * @param  array<array<string, mixed>>  $attachments
+     */
+    public function resolveMedia(string $requestId, array $attachments = []): void
+    {
+        $this->send('resolve-media', attachments: array_values($attachments), requestId: $requestId);
+    }
+
+    /**
      * Inserts HTML at the cursor (a template, a reply), as far as the format allows.
      */
     public function insertContent(string $html): void
@@ -46,8 +57,8 @@ final class EditorHandle
     /**
      * @param  list<array<string, mixed>>  $attachments
      */
-    private function send(string $action, array $attachments = [], ?string $html = null): void
+    private function send(string $action, array $attachments = [], ?string $html = null, ?string $requestId = null): void
     {
-        $this->component->dispatch('ui-editor', name: $this->name, owner: $this->component->getId(), action: $action, attachments: $attachments, html: $html);
+        $this->component->dispatch('ui-editor', name: $this->name, owner: $this->component->getId(), action: $action, attachments: $attachments, html: $html, requestId: $requestId);
     }
 }

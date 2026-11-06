@@ -4,8 +4,12 @@ Every component of esoboy/ui with its parts. A component is `<x-ui::name>`, a pa
 
 Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghost`, `link`, `destructive`, `success`, `info` or `warning`; Button `size` is `xs`, `sm`, `default`, `lg`, `icon-xs`, `icon-sm`, `icon` or `icon-lg`. Overlay content takes `side`, `align`, `side-offset` and `align-offset` as in shadcn.
 
+Use the shadcn/ui Base UI documentation and registry as the component reference. For visual details, use shadcn's Nova preset for Base UI (`base-nova`), which matches the library's existing Button and Card sizing. Follow each component's own size presets and default. Use `class` for dimensions when the upstream component uses utility classes.
+
 ## General
 
+- **heading** — Blade typography component with native `h1`–`h6` via `level` (default `2`), independent `size` (`xs`, `sm`, `default`, `lg`, `xl`, `2xl`), and `color`.
+- **text** — Blade inline typography component with `size` (`sm`, `default`, `lg`) and `color`.
 - **button** — `variant`, `size`, `type` (`button` by default). Renders `<a>` when given `href`.
 - **button-group** — Buttons joined into one control; `orientation`. Parts: separator, text.
 - **badge** — `variant`; `:count` with `max` and `show-zero`, or `dot`, for a counter. Parts: wrapper.
@@ -26,12 +30,14 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **statistic** — *(not in shadcn)* a figure with its label and trend. Parts: label, trend, value.
 - **progress** — `value`, `min`, `max`; `variant="circle"` for a ring. Parts: label, value.
 
+Heading and Text use the sizes from the original shadcn Typography examples. Heading adds `xl` (`text-5xl`) and `2xl` (`text-6xl`). Colors are `default` (inherit), `foreground`, `muted`, `primary`, `destructive`, `success`, `warning`, and `info`.
+
 ## Forms
 
 - **field** — wraps one control with its label, description and validation error; `orientation` (`vertical`, `horizontal`, `responsive`), `:show-error="false"` to hide errors. Parts: content, description, error, group, label, legend, separator, set, title.
 - **input** — a text input; `type`.
 - **textarea** — a multi-line input.
-- **input-group** — an Input with addons. Parts: addon, button, count, input, text, textarea.
+- **input-group** — an Input with addons. Its button has sizes `xs` (default), `sm`, `icon-xs`, and `icon-sm`. Parts: addon, button, count, input, text, textarea.
 - **native-select** — the browser's select, styled; `size`. Parts: opt-group, option.
 - **checkbox** — bool, or one option of an array with `value`.
 - **radio-group** — `wire:model` on the group. Parts: item.
@@ -40,8 +46,8 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **combobox** — `multiple` for chips, `autocomplete` for free text with suggestions, `:filter="false"` to filter on the server. Parts: chips-input, clear, content, empty, input, item, list, trigger, value.
 - **command** — a searchable command list; `:filter="false"` to filter on the server. Parts: dialog, empty, group, input, item, list, separator, shortcut.
 - **calendar** — `mode` (`single`, `multiple`, `range`), `min`, `max`, `:disabled-dates`, `caption-layout="dropdown"`, `number-of-months`, `week-starts-on`.
-- **date-picker** — a Calendar in a popover, bound on the picker; `mode`, `time` for date and time, `step`, `time-value`, `:presets`, `placeholder`, and the Calendar's props.
-- **time-picker** — a time Input; `step="1"` shows seconds.
+- **date-picker** — a Calendar in a popover. Add `time` to bind a date and time to one property, or `time time-mode="combined" step="600"` to choose a complete time in 10-minute intervals. `mode="range"` provides separate start and end times. `time-value` sets the initial time.
+- **time-picker** — a 24-hour popover with separate hour and minute grids. Use `wire:model` or `name`, and `step="1"` to show the seconds grid. In `mode="combined"`, open the hour range to jump to an available hour or use the arrows to browse adjacent hours. Selecting a complete time updates the value. Combined mode defaults to five minutes and accepts `step` in seconds for whole-minute intervals, such as `300` or `600`. `min` and `max` limit choices. The default slot adds caller-owned content inside the popup.
 - **toggle** — a two-state button; `variant`, `size`, `checked`.
 - **toggle-group** — `multiple`, `variant`, `size`, `spacing`. Parts: item.
 - **slider** — `min`, `max`, `step`, `orientation`; several thumbs with an array value.
@@ -59,7 +65,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **tree** — *(not in shadcn)* `:items`; `checkable`, `searchable`, `expand-all`, `:expanded`, `load` for lazy children, `draggable`.
 - **tree-select** — *(not in shadcn)* a Select-style trigger opening a Tree; the Tree's props.
 - **transfer** — *(not in shadcn)* two checkbox lists; the value is the right list; `:titles`, `searchable`.
-- **editor** — *(not in shadcn)* rich text (Tiptap); `format`, `max-length`, `placeholder`, `upload-context`. Clean its value with `Ui::sanitize()` before storing.
+- **editor** — *(not in shadcn)* rich text (Tiptap); `format`, `max-length`, `placeholder`, `media-picker`, `upload-context`. Clean its value with `Ui::sanitize()` before storing.
 - **rich-text** — *(not in shadcn)* shows rich text cleaned to `format`: `:html`. Parts: toc.
 
 ## Uploads
@@ -91,7 +97,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **sidebar** — inside `sidebar.provider`, beside `sidebar.inset`; `side`, `variant` (`sidebar`, `floating`, `inset`), `collapsible` (`offcanvas`, `icon`, `none`). Parts: content, footer, group, group-action, group-content, group-label, header, input, inset, menu, menu-action, menu-badge, menu-button, menu-item, menu-skeleton, menu-sub, menu-sub-button, menu-sub-item, provider, rail, separator, trigger.
 - **breadcrumb** — Parts: ellipsis, item, link, list, page, separator.
 - **tabs** — `value` or `wire:model`, `orientation`; list `variant` (`default`, `line`). Parts: content, list, trigger.
-- **pagination** — `:paginator` renders a Laravel paginator; or compose it. Parts: content, ellipsis, item, link, next, previous.
+- **pagination** — `:paginator` renders a Laravel paginator. The link, next, and previous parts take Button sizes. Parts: content, ellipsis, item, link, next, previous.
 - **navigation-menu** — Parts: content, item, link, list, trigger.
 - **anchor** — *(not in shadcn)* the "On This Page" list; the item of the section being read is `aria-current`. Parts: item, title.
 - **float-button** — *(not in shadcn)* a round raised Button, in a group at the window's corner. Parts: group.
@@ -103,7 +109,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **collapsible** — `open`. Parts: content, trigger.
 - **scroll-area** — a styled scroll container.
 - **resizable** — Parts: handle, panel, panel-group.
-- **carousel** — `orientation`, `align`. Parts: content, item, next, previous.
+- **carousel** — `orientation`, `align`. Next and previous take Button sizes, with `icon-sm` as the default. Parts: content, item, next, previous.
 - **watermark** — *(not in shadcn)* repeats `content` over what it wraps; `rotate`, `:gap`, `font-size`.
 
 ## Data
@@ -120,7 +126,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **message** — a chat message; `align` (`start`, `end`). Parts: avatar, content, footer, group, header.
 - **bubble** — the bubble around a message's text; `variant`, `align`. Parts: content, group, reactions.
 - **message-scroller** — a scroller that keeps to the latest message. Parts: button, content, item, provider, viewport.
-- **attachment** — a file in a message; `state`, `size`, `orientation`. Parts: action, actions, content, description, group, media, title, trigger.
+- **attachment** — a file in a message with `state`, `size`, and `orientation`. The action takes Button sizes, with `icon-xs` as the default. Parts: action, actions, content, description, group, media, title, trigger.
 - **marker** — a divider or note between messages; `variant`. Parts: content, icon.
 - **code-block** — highlighted code: `code`, `language`, `line-numbers`, `wrap`. Parts: actions, content, copy-button, footer, header, line, title.
 - **trace** — the steps an agent took. Parts: collapsible, collapsible-content, collapsible-trigger, description, icon, line, title.

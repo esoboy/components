@@ -128,14 +128,96 @@ it('offers only the tools its format has', function () {
         ->assertPresent(ARTICLE.' [data-editor-command="bold"]');
 });
 
-it('inserts media from the server with Ui::editor()', function () {
-    visit('/editor')
-        ->click('Insert from the library')
+it('inserts library media at the original selection and isolates the two editors', function () {
+    $intro = '[data-editor-name="intro"]';
+    $image = ' [data-editor-action="media"][data-editor-value="image"]';
+    $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror')->assertPresent($intro.' .ProseMirror');
+    $page->script(<<<'JS'
+        Livewire.first().$set('article', '<p>Before</p><p>After</p>', false)
+        Livewire.first().$set('intro', '<p>Introduction</p>', false)
+        JS);
+    $page->assertSeeIn(ARTICLE.' .ProseMirror', 'Before')
+        ->click(ARTICLE.' .ProseMirror p:first-child')
+        ->keys(ARTICLE.' .ProseMirror', 'End')
+        ->click(ARTICLE.$image)
         ->assertScript(opened('#library'))
         ->click('#library label:has-text("photo-1.svg")')
         ->click('#library button:has-text("Insert")')
+        ->assertPresent(ARTICLE.' .ProseMirror p:first-child + div img[src="/demo/photo-1.svg"]')
+        ->assertNotPresent($intro.' .ProseMirror img');
+
+    $page->click($intro.' .ProseMirror p')
+        ->click($intro.$image)
+        ->assertScript(opened('#library'))
+        ->click('#library label:has-text("photo-2.svg")')
+        ->click('#library button:has-text("Insert")')
+        ->assertPresent($intro.' .ProseMirror img[src="/demo/photo-2.svg"]')
+        ->assertNotPresent(ARTICLE.' .ProseMirror img[src="/demo/photo-2.svg"]');
+
+    $page->click($intro.' .ProseMirror img[src="/demo/photo-2.svg"]')
+        ->click($intro.' [data-editor-action="media"][aria-label="Replace"]')
+        ->assertScript(opened('#library'))
+        ->click('#library label:has-text("landscape.jpg")')
+        ->assertPresent('#library input[type="radio"]:checked')
+        ->click('#library button:has-text("Insert")')
+        ->assertNotPresent($intro.' .ProseMirror img[src="/demo/photo-2.svg"]')
+        ->assertPresent($intro.' .ProseMirror img[src="/demo/landscape.jpg"]')
+        ->assertPresent(ARTICLE.' .ProseMirror img[src="/demo/photo-1.svg"]')
+        ->assertNoJavaScriptErrors();
+});
+
+it('opens the app-owned audio input during the click and resolves a native cancellation', function () {
+    $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
+    $page->script(<<<'JS'
+        const picker = document.querySelector('[data-demo-audio-picker]')
+        picker.addEventListener('click', () => {
+            picker.dataset.openedWithGesture = navigator.userActivation.isActive ? 'true' : 'false'
+        })
+        window.addEventListener('ui-editor', event => {
+            if (event.detail.name === 'article' && event.detail.action === 'resolve-media') {
+                picker.dataset.cancelled = String(event.detail.attachments.length === 0)
+            }
+        })
+        JS);
+    $page->click(ARTICLE.' [data-editor-action="media"][data-editor-value="audio"]')
+        ->assertAttribute('[data-demo-audio-picker]', 'data-opened-with-gesture', 'true');
+    $page->script(<<<'JS'
+        document.querySelector('[data-demo-audio-picker]').dispatchEvent(new Event('cancel', { bubbles: true }))
+        JS);
+    $page->assertAttribute('[data-demo-audio-picker]', 'data-cancelled', 'true')
+        ->assertNotPresent(ARTICLE.' .ProseMirror audio')
+        ->assertNoJavaScriptErrors();
+});
+
+it('cancels the application picker and discards a response to a replaced document', function () {
+    $image = ARTICLE.' [data-editor-action="media"][data-editor-value="image"]';
+    $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
+    $page->script(<<<'JS'
+        document.querySelector('[data-editor-name="article"]').addEventListener('ui-editor-media-request', event => {
+            window.editorMediaRequest = event.detail
+        })
+        JS);
+    $page->click($image)->assertScript(opened('#library'))->keys('#library', 'Escape')
         ->assertScript(opened('#library'), false)
-        ->assertPresent(ARTICLE.' .ProseMirror img[src="/demo/photo-1.svg"]');
+        ->assertScript('Livewire.first().$get("mediaRequest") === null');
+    $page->script(<<<'JS'
+        window.dispatchEvent(new CustomEvent('ui-editor', { detail: {
+            ...window.editorMediaRequest, action: 'resolve-media',
+            attachments: [{ url: '/cancelled.png', mime: 'image/png' }],
+        } }))
+        JS);
+    $page->assertNotPresent(ARTICLE.' .ProseMirror img[src="/cancelled.png"]');
+
+    $page->click($image)->assertScript(opened('#library'));
+    $page->script(<<<'JS'
+        Livewire.first().$set('article', '<p>New document</p>', false)
+        JS);
+    $page->assertSeeIn(ARTICLE.' .ProseMirror', 'New document')
+        ->click('#library label:has-text("photo-1.svg")')
+        ->click('#library button:has-text("Insert")')
+        ->assertScript(opened('#library'), false)
+        ->assertNotPresent(ARTICLE.' .ProseMirror img')
+        ->assertNoJavaScriptErrors();
 });
 
 it('publishes sanitized HTML that Rich Text shows with a table of contents', function () {
@@ -180,20 +262,69 @@ it('scrolls long content inside the editor while keeping its toolbar in place', 
         JS)->assertNoJavaScriptErrors();
 });
 
-it('shows fullscreen tooltips below the toolbar', function () {
+it('shows fullscreen tooltips below the toolbar without a Livewire request for their text', function () {
     $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
 
-    $page->script("document.querySelector('[data-editor-name=\"article\"] [data-editor-action=\"fullscreen\"]').click()");
+    $page->script(<<<'JS'
+        const originalFetch = window.fetch
+        window.editorTipRequests = 0
+        window.fetch = (url, options) => {
+            if (typeof options?.body === 'string' && options.body.includes('"method":"showTip"')) window.editorTipRequests++
+            return originalFetch(url, options)
+        }
+        document.querySelector('[data-editor-name="article"] [data-editor-action="fullscreen"]').click()
+        JS);
     $page->hover(ARTICLE.' [data-editor-command="bold"]')
         ->assertScript(<<<'JS'
             (() => {
                 const editor = document.querySelector('[data-editor-name="article"]');
-                const tip = editor.querySelector('[data-editor-tip]');
+                const tip = editor.querySelector('[data-editor-tip]:popover-open');
+                if (!tip) return false;
                 const button = editor.querySelector('[data-editor-command="bold"]').getBoundingClientRect();
                 const box = tip.getBoundingClientRect();
                 return tip.matches(':popover-open') && box.top >= button.bottom && box.bottom <= innerHeight;
             })()
-            JS)->assertNoJavaScriptErrors();
+            JS)->assertScript('window.editorTipRequests', 0)
+        ->assertNoJavaScriptErrors();
+});
+
+it('can replace a media node next to the editor scroll boundary', function () {
+    $intro = '[data-editor-name="intro"]';
+    $page = visit('/editor')->assertPresent($intro.' .ProseMirror');
+    $page->page()->setViewportSize(1280, 900);
+    $page->script(<<<'JS'
+        Livewire.first().$set('intro', '<img src="/demo/photo-2.svg">' + '<p>Below the image</p>'.repeat(35), false)
+        document.querySelector('[data-editor-name="intro"]').scrollIntoView({ block: 'center' })
+        JS);
+    $replace = $intro.' [data-editor-action="media"][aria-label="Replace"]';
+    $page->click($intro.' .ProseMirror img[src="/demo/photo-2.svg"]')->assertVisible($replace);
+    $page->script(<<<'JS'
+        (() => {
+            const intro = document.querySelector('[data-editor-name="intro"]')
+            const image = intro.querySelector('.ProseMirror img')
+            const replace = intro.querySelector('[data-editor-action="media"][aria-label="Replace"]')
+            const content = intro.querySelector('[data-slot="editor-content"]')
+            window.editorBubbleDistance = replace.getBoundingClientRect().top - image.getBoundingClientRect().top
+            content.scrollTop += 30
+            window.scrollBy(0, 30)
+        })()
+        JS);
+    $page->assertScript(<<<'JS'
+        (() => {
+            const intro = document.querySelector('[data-editor-name="intro"]')
+            const image = intro.querySelector('.ProseMirror img')
+            const replace = intro.querySelector('[data-editor-action="media"][aria-label="Replace"]')
+            const distance = replace.getBoundingClientRect().top - image.getBoundingClientRect().top
+            return intro.querySelector('[data-slot="editor-content"]').scrollTop >= 30
+                && Math.abs(distance - window.editorBubbleDistance) < 3
+        })()
+        JS)
+        ->click($replace)
+        ->assertScript(opened('#library'))
+        ->click('#library label:has-text("photo-1.svg")')
+        ->click('#library button:has-text("Insert")')
+        ->assertPresent($intro.' .ProseMirror img[src="/demo/photo-1.svg"]')
+        ->assertNoJavaScriptErrors();
 });
 
 it('wraps all toolbar controls without More when collapsing is disabled', function () {

@@ -64,12 +64,13 @@ Bind `wire:model` (with any modifier) on the control itself, never on an inner i
 
 | Control | Value |
 |---|---|
-| Input, Textarea, Native Select, Password Input, Time Picker (`H:i`, `H:i:s` with `step="1"`) | string |
+| Input, Textarea, Native Select, Password Input | string |
+| Time Picker | `H:i` or `H:i:s` with `step="1"` |
 | Checkbox, Switch, Toggle | bool; a Checkbox with `value` adds to an array |
 | Select, Radio Group, Combobox, single Toggle Group | the item's `value` |
 | Combobox `multiple`, Toggle Group `multiple`, Tags Input, Transfer, checkable Tree | list of values |
 | Combobox `autocomplete` | the typed text |
-| Calendar, Date Picker | `Y-m-d`; with `time`, `Y-m-d H:i`; `mode="range"` gives `['from' => …, 'to' => …]` |
+| Calendar, Date Picker | `Y-m-d`, or `Y-m-d H:i` with Date Picker's `time` prop. `step="1"` includes seconds. `mode="range"` gives `['from' => …, 'to' => …]`. |
 | Slider | number, or a list for several thumbs (`:value="[25, 75]"`) |
 | Number Input, Rating | number |
 | Cascader | the path of values, `['asia', 'china', 'beijing']` |
@@ -207,7 +208,8 @@ Component events are listened to with `wire:` on the component: `wire:emoji-sele
 
 - `format` (`text`, `basic`, `full`, a format named in `config/ui.php`, or a list of features) decides what can be written, what pasted HTML keeps and which tools show.
 - Always clean what comes back before storing it, with the same format: `$post->body = Ui::sanitize($this->body, 'basic');`. Validate the length as the Editor counts it with `new \Esoboy\Ui\Rules\RichTextLength(max: 2000, format: 'basic')`; `Ui::plainText()` gives the text for search and summaries.
-- Uploads (media, pasted and external images) go to the app's class implementing `Esoboy\Ui\Contracts\EditorUploader`, set as `editor.uploader` in `config/ui.php` (`php artisan vendor:publish --tag=ui-config`); without one the Editor offers no media. Authorization and limits belong in that class.
+- Declare allowed media selection types with `:media-picker="['image', 'file']"`. The editor emits `ui-editor-media-request`; the application owns the picker, upload and authorization, then calls `Ui::editor($name)->resolveMedia($requestId, $attachments)`. An empty result cancels the request. To open the system picker, handle the event in Alpine before a Livewire round trip.
+- Dropped and pasted files and image imports go to the app's `Esoboy\Ui\Contracts\EditorUploader`, configured as `editor.uploader` in `config/ui.php`. Implement `authorize($source, $url, $context)` for permissions and rate limits before any remote fetch, and `upload()` to validate and store the file.
 - `Ui::editor('body')->insert([['url' => …, 'name' => …, 'mime' => …]])` inserts the app's own media at the cursor.
 
 ## Styling and Theme

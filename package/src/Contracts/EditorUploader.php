@@ -5,13 +5,19 @@ namespace Esoboy\Ui\Contracts;
 use Esoboy\Ui\Support\EditorUpload;
 
 /**
- * What stores the Editor's uploads, the app's (config ui.editor.uploader): media picked
- * or dropped, images pasted as data or from other sites, each as a file. Who may
- * upload, how often and how much is the app's to decide here: throw an
- * AuthorizationException, a ValidationException (its message shown in the Editor), ….
+ * What stores the Editor's uploads, the app's (config ui.editor.uploader): files dropped
+ * or pasted, images pasted as data or from other sites, each as a file. Who may
+ * upload and how often is the app's to decide before the editor retrieves any file.
  */
 interface EditorUploader
 {
+    /**
+     * Authorize this request before any remote fetch. Throw AuthorizationException to deny it.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    public function authorize(string $source, ?string $url, array $context): void;
+
     /**
      * Stores the file and says what the content shows of it: ['url' => …] with any of
      * name, mime, size (bytes), alt, width, height and poster; null when it won't.

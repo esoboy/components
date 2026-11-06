@@ -6,6 +6,7 @@
 @aware([
     'format' => 'full',
     'collapseToolbar' => true,
+    'mediaPicker' => [],
 ])
 
 @props([
@@ -16,7 +17,7 @@
 @php
 $rich = RichText::resolve($format);
 $collapse ??= $collapseToolbar;
-$groups = EditorControls::toolbar($rich);
+$groups = EditorControls::toolbar($rich, $mediaPicker);
 $groupCount = count($groups);
 if ($collapse && ! $slot->isEmpty()) {
     $markup = \Esoboy\Ui\Support\HtmlFragment::parse((string) $slot);
@@ -25,7 +26,7 @@ if ($collapse && ! $slot->isEmpty()) {
 $overflowGroups = array_keys(array_fill(0, $groupCount, true));
 @endphp
 
-<div {{ $attributes->merge(['data-slot' => 'editor-toolbar', 'role' => 'toolbar', 'aria-label' => __('ui::editor.toolbar')]) }} wire:ignore>
+<div {{ $attributes->merge(['data-slot' => 'editor-toolbar', 'role' => 'toolbar', 'aria-label' => __('ui::editor.toolbar')]) }}>
     @if ($slot->isEmpty())
     @foreach ($groups as $group)
     @if (! $loop->first)
@@ -40,7 +41,7 @@ $overflowGroups = array_keys(array_fill(0, $groupCount, true));
     @endif
     @if ($collapse)
     <x-ui::popover>
-        <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-more hidden :aria-label="__('ui::editor.more')"><x-ui::icon name="ellipsis" /></x-ui::button></x-ui::popover.trigger>
+        <x-ui::popover.trigger><x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-more hidden :aria-label="__('ui::editor.more')"><x-ui::icon name="ellipsis" /></x-ui::editor.tool></x-ui::popover.trigger>
         <x-ui::popover.content align="end" data-editor-more-content :aria-label="__('ui::editor.more')">
             @foreach ($overflowGroups as $group)
                 <div role="group" data-slot="editor-more-group" data-editor-overflow-group="{{ $group }}" hidden></div>

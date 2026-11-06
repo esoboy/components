@@ -5,6 +5,7 @@
 
 @aware([
     'format' => 'full',
+    'mediaPicker' => [],
 ])
 
 {{-- Any control by name, when the format has it: a button, a menu or a popover. In a toolbar, priority (1 to 3, by default the toolbar's) says how soon it goes into More. --}}
@@ -17,7 +18,7 @@
 $rich = RichText::resolve($format);
 @endphp
 
-@if (EditorControls::allowed($name, $rich))
+@if (EditorControls::allowed($name, $rich, $mediaPicker))
 <div data-slot="editor-control" data-priority="{{ $priority ?? EditorControls::priority($name) }}">
     @switch($name)
     @case('heading')

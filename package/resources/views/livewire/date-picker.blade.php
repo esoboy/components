@@ -1,4 +1,5 @@
-<eso-date-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name'])->merge(['data-slot' => 'date-picker', 'data-mode' => $settings['mode'], 'data-time' => (bool) ($settings['time'] ?? false), ...($settings['validation'] ?? [])]) }}>
+<eso-date-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name'])->merge(['data-slot' => 'date-picker', 'data-mode' => $settings['mode'], 'data-time' => (bool) ($settings['time'] ?? false), ...($settings['validation'] ?? [])]) }}
+    @if ($settings['time'] ?? false) x-data="uiTimePicker" x-on:toggle.capture="scrollToTime($event)" @endif>
     <x-ui::popover>
         <x-ui::popover.trigger><x-ui::button variant="outline" :disabled="$settings['disabled'] ?? false" data-date-picker-trigger :data-empty="$label === '' ? 'true' : 'false'" :attributes="$attributes->only(['class', 'style'])->merge($settings['validation'] ?? [])">
             @if ($settings['mode'] === 'range')<x-ui::icon name="calendar" data-icon="inline-start" />@endif
@@ -6,24 +7,21 @@
             @if ($settings['mode'] !== 'range')<x-ui::icon name="chevron-down" data-icon="inline-end" />@endif
         </x-ui::button></x-ui::popover.trigger>
         <x-ui::popover.content align="start" data-date-picker-content>
-            <eso-calendar data-slot="calendar" data-mode="{{ $settings['mode'] }}" data-month="{{ $month }}" data-week-starts-on="{{ $settings['weekStartsOn'] ?? ((int) \IntlCalendar::createInstance(null, app()->getLocale())->getFirstDayOfWeek() - 1) }}" x-data="uiCalendar" x-on:keydown="key($event)">
-                @include('ui::livewire.calendar-grid')
-            </eso-calendar>
-            @if (($settings['time'] ?? false))
-                <div data-slot="date-picker-time">
-                    <x-ui::field.group>
+            <div data-slot="date-picker-body" @if (($settings['time'] ?? false) && $settings['mode'] !== 'range' && count($months) === 1) data-time-side @endif>
+                <eso-calendar data-slot="calendar" data-mode="{{ $settings['mode'] }}" data-month="{{ $month }}" data-week-starts-on="{{ $settings['weekStartsOn'] ?? ((int) \IntlCalendar::createInstance(null, app()->getLocale())->getFirstDayOfWeek() - 1) }}" x-data="uiCalendar" x-on:keydown="key($event)">
+                    @include('ui::livewire.calendar-grid')
+                </eso-calendar>
+                @if ($settings['time'] ?? false)
+                    <div data-slot="date-picker-time">
                         @foreach ($settings['mode'] === 'range' ? ['from' => __('ui::date-picker.start-time'), 'to' => __('ui::date-picker.end-time')] : ['from' => __('ui::date-picker.time')] as $part => $timeLabel)
-                            <x-ui::field>
-                                <x-ui::field.label :for="$this->getId().'-'.$part">{{ $timeLabel }}</x-ui::field.label>
-                                <x-ui::input-group>
-                                    <x-ui::input-group.input :id="$this->getId().'-'.$part" type="time" :step="($settings['step'] ?? null)" :value="$times[$part]" :data-date-picker-time="$part" wire:change="setTime('{{ $part }}', $event.target.value)" />
-                                    <x-ui::input-group.addon><x-ui::icon name="clock-2" /></x-ui::input-group.addon>
-                                </x-ui::input-group>
-                            </x-ui::field>
+                            <fieldset data-date-picker-time="{{ $part }}">
+                                <legend>{{ $timeLabel }}</legend>
+                                @include('ui::livewire.time-options', ['time' => $times[$part], 'shownHour' => $shownHours[$part]])
+                            </fieldset>
                         @endforeach
-                    </x-ui::field.group>
-                </div>
-            @endif
+                    </div>
+                @endif
+            </div>
             @if (($settings['presets'] ?? []))
                 <div data-slot="date-picker-presets">
                     @foreach (($settings['presets'] ?? []) as $presetLabel => $presetValue)

@@ -3,9 +3,17 @@
 namespace Esoboy\Ui\Support;
 
 use finfo;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\Psr7\FnStream;
+use GuzzleHttp\Psr7\StreamWrapper;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
+use GuzzleHttp\Psr7\Utils;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use LengthException;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * An image on another site as a file, for the uploader: what the server does when the
@@ -20,28 +28,47 @@ final class RemoteImage
 
     public static function download(string $url): ?UploadedFile
     {
+        if (! extension_loaded('curl') || ($path = tempnam(sys_get_temp_dir(), 'ui-image-')) === false) {
+            return null;
+        }
+
         $max = (int) min(UploadedFile::getMaxFilesize(), 50 * 1024 * 1024);
+        $file = null;
 
-        for ($hop = 0; $hop <= self::REDIRECTS; $hop++) {
-            $target = self::target($url);
+        try {
+            for ($hop = 0; $hop <= self::REDIRECTS; $hop++) {
+                $target = self::target($url);
 
-            if ($target === null) {
-                return null;
+                if ($target === null) {
+                    return null;
+                }
+
+                $response = self::get($url, $path, $max, ...$target);
+
+                if ($response?->redirect()) {
+                    $location = $response->header('Location');
+                    if ($location === '' || ! self::validUrlCharacters($location)) {
+                        return null;
+                    }
+                    $next = rescue(fn () => (string) UriResolver::resolve(new Uri($url), new Uri($location)), report: false);
+                    if ($next === null) {
+                        return null;
+                    }
+                    $url = $next;
+
+                    continue;
+                }
+
+                if ($response?->successful() && (int) $response->header('Content-Length') <= $max) {
+                    $file = self::file($path, $url, $max);
+                }
+
+                return $file;
             }
-
-            $response = self::get($url, ...$target);
-
-            if ($response?->redirect()) {
-                $url = self::follow($url, $response->header('Location'));
-
-                continue;
+        } finally {
+            if ($file === null) {
+                @unlink($path);
             }
-
-            if (! $response?->successful() || (int) $response->header('Content-Length') > $max) {
-                return null;
-            }
-
-            return self::file($response, $url, $max);
         }
 
         return null;
@@ -55,17 +82,26 @@ final class RemoteImage
      */
     private static function target(string $url): ?array
     {
+        if (! self::validUrlCharacters($url)) {
+            return null;
+        }
+
         $parts = parse_url($url);
         $scheme = strtolower($parts['scheme'] ?? '');
         $host = trim($parts['host'] ?? '', '[]');
 
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || isset($parts['user'])) {
+        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || isset($parts['user']) || ($parts['port'] ?? 1) < 1) {
             return null;
         }
 
-        $ips = filter_var($host, FILTER_VALIDATE_IP) !== false ? [$host] : self::resolve($host);
-        // Global ones only: not private, reserved, shared (100.64/10, a cloud's metadata), ….
-        $public = array_filter($ips, fn (string $ip) => filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) === $ip);
+        $literal = filter_var($host, FILTER_VALIDATE_IP) !== false;
+        if (! $literal && (! preg_match('/^[a-z0-9.-]+$/iD', $host) || preg_match('/(?:^|\.)(?:\d+|0x[a-f\d]+)\.?$/iD', $host))) {
+            return null;
+        }
+
+        $ips = $literal ? [$host] : self::resolve($host);
+        $public = array_filter($ips, fn (string $ip) => filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE) !== false
+            && (! str_contains($ip, ':') || (preg_match('/^[23]/', $ip) && ! str_starts_with($ip, '2002:'))));
 
         if ($ips === [] || count($public) < count($ips)) {
             return null;
@@ -85,54 +121,61 @@ final class RemoteImage
         return $ips !== [] ? $ips : (gethostbynamel($host) ?: []);
     }
 
-    private static function get(string $url, string $host, int $port, string $ip): ?Response
+    private static function validUrlCharacters(string $url): bool
     {
-        $address = str_contains($ip, ':') ? "[{$ip}]" : $ip;
-
-        return rescue(fn () => Http::withOptions([
-            'allow_redirects' => false,
-            'stream' => true,
-            // The IP checked is the one connected to, not one the name resolves to next.
-            'curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$address}"]],
-        ])->connectTimeout(5)->timeout(15)->accept('image/*')->get($url), report: false);
+        return ! preg_match('~[\x00-\x20\x7f\\\\]~', $url);
     }
 
-    // A redirect's address, against the one redirecting.
-    private static function follow(string $from, ?string $location): string
+    private static function get(string $url, string $path, int $max, string $host, int $port, string $ip): ?Response
     {
-        $location = trim((string) $location);
-        $parts = parse_url($from);
-        $origin = ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? '').(isset($parts['port']) ? ":{$parts['port']}" : '');
+        $address = str_contains($ip, ':') ? "[{$ip}]" : $ip;
+        $curl = $host === $ip ? [] : [CURLOPT_RESOLVE => ["{$host}:{$port}:{$address}"]];
 
-        return match (true) {
-            preg_match('~^[a-z][a-z\d+.-]*:~i', $location) === 1 => $location,
-            str_starts_with($location, '//') => ($parts['scheme'] ?? 'https').':'.$location,
-            str_starts_with($location, '/') => $origin.$location,
-            default => $origin.preg_replace('~[^/]*$~', '', $parts['path'] ?? '/').$location,
-        };
+        return rescue(function () use ($url, $path, $max, $curl): ?Response {
+            $stream = Utils::streamFor(Utils::tryFopen($path, 'w+b'));
+            $limitExceeded = false;
+            $sink = StreamWrapper::getResource(FnStream::decorate($stream, [
+                'write' => static function (string $bytes) use ($stream, $max, &$limitExceeded): int {
+                    if ($stream->tell() + strlen($bytes) > $max) {
+                        $limitExceeded = true;
+
+                        return 0;
+                    }
+
+                    return $stream->write($bytes);
+                },
+            ]));
+
+            try {
+                $response = Http::withOptions([
+                    'allow_redirects' => false,
+                    'proxy' => '',
+                    'decode_content' => false,
+                    'sink' => $sink,
+                    'curl' => $curl,
+                    'on_headers' => static function (ResponseInterface $response) use ($max): void {
+                        if ((int) $response->getHeaderLine('Content-Length') > $max) {
+                            throw new LengthException('Remote image exceeds the download limit.');
+                        }
+                    },
+                ])->setHandler(new CurlHandler)->connectTimeout(5)->timeout(15)->accept('image/*')->get($url);
+
+                return $limitExceeded ? null : $response;
+            } finally {
+                fclose($sink);
+                $stream->close();
+            }
+        }, report: false);
     }
 
     // The body, up to the most it takes, as a file named after the address.
-    private static function file(Response $response, string $url, int $max): ?UploadedFile
+    private static function file(string $path, string $url, int $max): ?UploadedFile
     {
-        $body = $response->toPsrResponse()->getBody();
-        $path = (string) tempnam(sys_get_temp_dir(), 'ui-image-');
-        $handle = fopen($path, 'wb');
-        $size = 0;
-
-        while ($handle && ! $body->eof() && $size <= $max) {
-            $size += (int) fwrite($handle, $body->read(65536));
-        }
-
-        if ($handle) {
-            fclose($handle);
-        }
-
+        clearstatcache(true, $path);
+        $size = filesize($path);
         $mime = $size > 0 && $size <= $max ? (new finfo(FILEINFO_MIME_TYPE))->file($path) : null;
 
         if (! in_array($mime, EditorUploads::IMAGES, true)) {
-            @unlink($path);
-
             return null;
         }
 

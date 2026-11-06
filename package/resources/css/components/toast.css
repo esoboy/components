@@ -1,6 +1,6 @@
 /*
  * Toasts, as shadcn's Toast: a stack at the bottom right. toast.js sets --toast-index,
- * --toast-height, --toast-offset-y and the swipe movement; the stack and its motion are
+ * --toast-height, --toast-offset-y and the active swipe movement; the stack and its motion are
  * computed here from them.
  */
 @layer components {
@@ -17,6 +17,9 @@
         @apply focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50;
         z-index: calc(1000 - var(--toast-index));
         will-change: transform;
+        /* Keep transforms valid when Livewire morphs away inline swipe values. */
+        --toast-swipe-movement-x: 0px;
+        --toast-swipe-movement-y: 0px;
         --gap: 0.75rem;
         --height: var(--toast-frontmost-height, var(--toast-height));
         --offset-y: calc(var(--toast-offset-y) * -1 + var(--toast-index) * var(--gap) * -1 + var(--toast-swipe-movement-y));

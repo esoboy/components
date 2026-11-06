@@ -32,16 +32,7 @@ class EditorPanels extends Component
     public bool $find = false;
 
     #[Locked]
-    public bool $tools = false;
-
-    #[Locked]
     public bool $links = false;
-
-    #[Locked]
-    public string $tip = '';
-
-    #[Locked]
-    public string $shortcut = '';
 
     #[Locked]
     public string $query = '';
@@ -62,12 +53,6 @@ class EditorPanels extends Component
     {
         $this->menu = in_array($menu, ['slash', 'emoji'], true) ? $menu : '';
         $this->query = mb_strtolower(mb_substr($query, 0, 80));
-    }
-
-    public function showTip(string $label, string $shortcut): void
-    {
-        $this->tip = mb_substr($label, 0, 150);
-        $this->shortcut = mb_substr($shortcut, 0, 60);
     }
 
     /** @param array<string, mixed> $status */

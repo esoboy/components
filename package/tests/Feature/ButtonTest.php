@@ -19,6 +19,11 @@ it('resolves dynamic variant and size at runtime', function () {
         ->assertSee('data-size="lg"', false);
 });
 
+it('forwards the button size from the Nova button wrappers', function (string $component) {
+    $this->blade('<x-ui::'.$component.' size="icon-lg" />')
+        ->assertSeeMarkup('<button data-slot="button" data-size="icon-lg">');
+})->with(['attachment.action', 'carousel.next', 'carousel.previous', 'pagination.next', 'pagination.previous']);
+
 it('accepts a submit type', function () {
     $this->blade('<x-ui::button type="submit">Save</x-ui::button>')
         ->assertSee('type="submit"', false);

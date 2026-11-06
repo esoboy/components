@@ -6,7 +6,7 @@
 
 return [
     'Components' => [
-        'general' => ['General', 'Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Result, Item, Button Group, Input Group, QR Code, status colours'],
+        'general' => ['General', 'Heading, Text, Button, Badge, Avatar, Card, Alert, Kbd, Spinner, Skeleton, Empty, Result, Item, Button Group, Input Group, QR Code, status colours'],
         'forms' => ['Forms', 'Field, Input, Textarea, Input Group Count, Native Select, Radio Group, Checkbox, Switch, Editor, validation'],
         'editor' => ['Editor', 'Editor in the text, basic and full formats, a list of features, uploads, Rich Text'],
         'controls' => ['Controls', 'Calendar, Date Picker (with time), Time Picker, Select, Combobox (with autocomplete), Command, Toggle, Toggle Group, Slider, Input OTP'],

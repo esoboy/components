@@ -12,12 +12,14 @@
     'showError' => true,
 ])
 
-{{-- Not in shadcn: a Tiptap editor framed as its Textarea. format (text, basic, full, a named format or a list of features) decides all it does: what can be written and what pasted HTML keeps (its whitelist), and the tools it offers; the toolbar fits it unless the slot holds an <x-ui::editor.toolbar>. Ui::editor($name) reaches it by its name, else the property its wire:model binds; a name also keeps a hidden input for forms. The bound HTML is sanitized to the format as it comes in here; the app sanitizes what comes back before storing it, with Ui::sanitize($html, the same format). What it uploads goes to the app's uploader (config ui.editor.uploader), with upload-context, sealed: media picked or dropped, and images on other hosts than the app's (ui.editor.hosts) or pasted as data, when someone saves them or as they come in (ui.editor.auto_upload). --}}
+{{-- Format controls the document and toolbar. Media-picker enables application-owned selection.
+    Upload-context applies to dropped and pasted files and image imports through ui.editor.uploader. --}}
 @props([
     'format' => 'full',
     'collapseToolbar' => true,
     'maxLength' => null,
     'uploadContext' => [],
+    'mediaPicker' => [],
     'placeholder' => null,
     'label' => null,
     'value' => null,
@@ -34,10 +36,10 @@ $counts = $rich->has('character-count') || $maxLength;
 $uploads = EditorUploads::enabled() && $rich->has('image', 'audio', 'video', 'file');
 $images = $uploads && $rich->has('image');
 
-$slash = EditorControls::slash($rich);
+$mediaKinds = array_values(array_filter(['image', 'video', 'audio', 'file'], fn ($kind) => in_array($kind, $mediaPicker, true) && $rich->has($kind)));
+$slash = EditorControls::slash($rich, $mediaKinds);
 $emoji = $rich->has('emoji');
 $find = $rich->has('find-replace');
-$tools = $rich->has('toolbar', 'bubble-menu');
 $links = $rich->has('bubble-menu') && $rich->has('link');
 $characters = $counts ? RichText::characters($value, $format) : 0;
 $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? null);
@@ -58,6 +60,7 @@ $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? nu
     'data-label' => $label ?? __('ui::editor.label'),
     'data-name' => $name ?? false,
     'data-editor-name' => $name ?? Model::key($attributes) ?? false,
+    'data-media-picker' => $mediaKinds ? implode(' ', $mediaKinds) : false,
     'data-disabled' => (bool) $disabled,
     ...$state->attributes(),
 ]) }}>
@@ -66,14 +69,20 @@ $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? nu
     @elseif ($rich->has('toolbar'))
     <x-ui::editor.toolbar :collapse="$collapseToolbar" />
     @endif
-    @if ($find || $counts || $uploads || $slash || $emoji || $tools)
-    @livewire('ui.editor-panels', compact('slash', 'emoji', 'find', 'counts', 'uploads', 'images', 'maxLength', 'characters', 'tools', 'links'), key('ui-'.$key))
+    @if ($find || $counts || $uploads || $slash || $emoji || $links)
+    @livewire('ui.editor-panels', compact('slash', 'emoji', 'find', 'counts', 'uploads', 'images', 'maxLength', 'characters', 'links'), key('ui-'.$key))
     @endif
     <div data-slot="editor-content" wire:ignore>{!! $value !!}</div>
     @if ($rich->has('source'))
     <textarea data-slot="editor-source" aria-label="{{ __('ui::editor.source') }}" spellcheck="false" hidden wire:ignore></textarea>
     @endif
+    @if ($rich->has('bubble-menu'))
+    <div data-slot="editor-bubbles" class="contents" wire:ignore></div>
+    @endif
     <x-ui::editor.menus />
+    @if ($mediaKinds)
+    <p data-slot="editor-field-error" data-editor-media-error role="alert" hidden>{{ __('ui::editor.media-invalid') }}</p>
+    @endif
     <input type="hidden" data-editor-model @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes) }}>
 </eso-editor>
 <x-ui::field.error :state="$state" />

@@ -12,12 +12,8 @@
  * by default, or wraps when More is omitted, with one tab stop and arrow keys within it; one tooltip
  * names whichever control is pointed at.
  *
- * Media: what is picked with a media button, dropped or pasted goes to the app's
- * uploader (config ui.editor.uploader; data-upload, upload.js), and what it answers ({
- * url, name, mime, size, alt, width, height, poster }) in place; so do images it has no
- * copy of (external, data:), when saved (images.js). Without an uploader there are no
- * media buttons. Ui::editor(name)->insert() inserts attachments from the app's
- * media library; insertContent() inserts HTML through the same PHP facade.
+ * Media selection emits ui-editor-media-request and the app resolves it with attachments.
+ * Dropped and pasted files and imported images use the separate editor uploader.
  *
  * Built into dist/editor.js; Alpine loads it on demand.
  */
@@ -52,6 +48,7 @@ import { generic, passthrough, whitelist } from './editor/whitelist.js'
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform ?? '')
 const MATH = ['inlineMath', 'blockMath']
+const TOOLTIP_CONTROL = 'button:has(> [data-editor-tip])'
 
 // The nodes and marks that keep their whitelisted style (and other attributes), and the
 // marks that keep only other attributes.
@@ -78,7 +75,6 @@ const characters = text => {
 }
 
 // Mod-B: ⌘B on Apple systems, Ctrl+B elsewhere; and as aria-keyshortcuts.
-const keys = shortcut => shortcut.split('-').map(key => key === 'Mod' ? (MAC ? '⌘' : 'Ctrl') : key === 'Shift' ? (MAC ? '⇧' : 'Shift') : key === 'Alt' ? (MAC ? '⌥' : 'Alt') : key.toUpperCase()).join(MAC ? '' : '+')
 const ariaKeys = shortcut => shortcut.split('-').map(key => key === 'Mod' ? (MAC ? 'Meta' : 'Control') : key.length === 1 ? key.toUpperCase() : key).join('+')
 
 // The HTML a block to a line, for the source view.
@@ -92,6 +88,7 @@ const TOUCH = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)'
 const MEDIA = ['image', 'video', 'audio', 'file']
 
 let uploaded = 0
+let mediaRequests = 0
 
 import { listen, unlisten, emit, disconnected } from '../alpine/interaction.js'
 
@@ -114,8 +111,10 @@ export default (binding = {}) => ({
     _rtf: '',
     _painter: null,
     _toolbar: null,
+    _toolbarMorph: [],
     _requests: new Set(),
     _tracked: new Set(),
+    _mediaRequest: null,
     _selected: null,
     _anchor: null,
     _context: '',
@@ -126,6 +125,7 @@ export default (binding = {}) => ({
     _panelTimer: null,
     _panelRequest: null,
     _tipTimer: null,
+    _bubbleScrollTimer: null,
     _uploadErrors: new Map(),
     _uploadProgress: new Map(),
 
@@ -201,11 +201,13 @@ export default (binding = {}) => ({
                 if (event?.relatedTarget && this.$el.contains(event.relatedTarget)) return
                 this._changed()
             },
-            onTransaction: ({ transaction }) => {
+            onTransaction: ({ transaction, appendedTransactions }) => {
                 for (const request of [...this._requests, ...this._tracked]) {
                     request.from = transaction.mapping.map(request.from)
                     request.to = transaction.mapping.map(request.to)
                 }
+                this._mapMediaRequest(transaction)
+                for (const appended of appendedTransactions) this._mapMediaRequest(appended)
 
                 this._sync()
             },
@@ -219,6 +221,7 @@ export default (binding = {}) => ({
         this._reported = this.value
         this._loaded = new Set(this._unsavedImages())
         this._listen()
+        this.$el.toggleAttribute('data-editor-mac', MAC)
         const form = this.$el.closest('form')
         if (form) listen(this, form, 'submit', event => {
             if (!this.busy) return
@@ -226,9 +229,24 @@ export default (binding = {}) => ({
         }, { capture: true })
         this._prepareControls(this.$el)
 
-        const toolbar = this._part('editor-toolbar')
-
-        if (toolbar && typeof ResizeObserver === 'function') this._toolbar = overflow(toolbar, () => this._rovingStart())
+        this._layoutToolbar()
+        const hook = window.Livewire?.hook
+        if (hook) {
+            this._toolbarMorph = [
+                hook('morph', ({ el }) => {
+                    if (!el.contains(this.$el)) return
+                    this._tip(null)
+                    this._toolbar?.restore()
+                }),
+                hook('morphed', ({ el }) => {
+                    if (!el.contains(this.$el)) return
+                    this.$el.toggleAttribute('data-editor-mac', MAC)
+                    this._prepareControls(this.$el)
+                    this._layoutToolbar()
+                    this._sync(true)
+                }),
+            ]
+        }
 
         this._sync()
         if (binding.property) this.$watch('$wire.' + binding.property, value => this.restore(value))
@@ -246,13 +264,17 @@ export default (binding = {}) => ({
     },
 
     destroy() {
+        this._mediaRequest = null
         clearTimeout(this._panelTimer)
         clearTimeout(this._tipTimer)
+        clearTimeout(this._bubbleScrollTimer)
+        this._tip(null)
         disconnected(this)
         this._attributes?.disconnect()
         this._fullscreen(false)
         this._keyboard(false)
         this._toolbar?.disconnect()
+        this._toolbarMorph.forEach(dispose => dispose?.())
         this._editor?.destroy()
         this._editor = null
     },
@@ -260,7 +282,11 @@ export default (binding = {}) => ({
     attributeChangedCallback(name) {
         if (! this._editor) return
 
-        if (name === 'data-disabled') this._editor.setEditable(! this.$el.hasAttribute('data-disabled'))
+        if (name === 'data-disabled') {
+            const disabled = this.$el.hasAttribute('data-disabled')
+            if (disabled) this._mediaRequest = null
+            this._editor.setEditable(! disabled)
+        }
 
         // The text box carries the field's error state.
         this._editor.view.setProps({})
@@ -285,6 +311,7 @@ export default (binding = {}) => ({
         value ??= ''
 
         if (! this._editor || value === this.value || this._holds(value)) return
+        this._mediaRequest = null
 
         const { from, to } = this._editor.state.selection
         const near = (doc, position) => doc.resolve(Math.min(position, doc.content.size))
@@ -426,6 +453,7 @@ export default (binding = {}) => ({
     _bubbles(templates) {
         const node = state => state.selection.node?.type.name
         const linkFrame = this.panel?.querySelector('[data-editor-link-frame]')
+        const content = this._part('editor-content')
         const menus = {
             text: ({ editor, view, state, from, to, element }) => state.selection instanceof TextSelection && ! state.selection.empty && !! state.doc.textBetween(from, to).trim() && ! editor.isActive('codeBlock') && focused(view, element),
             table: ({ editor, view, state, element }) => editor.isActive('table') && (state.selection.empty || state.selection instanceof CellSelection) && focused(view, element),
@@ -435,13 +463,28 @@ export default (binding = {}) => ({
             link: ({ editor, view, state, element }) => state.selection.empty && editor.isActive('link') && focused(view, element),
         }
 
-        return Object.entries(menus).filter(([name]) => name === 'link' ? linkFrame : templates[`bubble-${name}`]).map(([name, shouldShow]) => {
+        const available = Object.entries(menus).filter(([name]) => name === 'link' ? linkFrame : templates[`bubble-${name}`])
+        if (available.length) {
+            listen(this, window, 'scroll', () => {
+                if (!this._menus.some(menu => menu.hasAttribute('data-editor-bubble-active'))) return
+                clearTimeout(this._bubbleScrollTimer)
+                this._bubbleScrollTimer = setTimeout(() => {
+                    const view = this._editor?.view
+                    if (!view) return
+                    const transaction = view.state.tr
+                    for (const [name] of available) transaction.setMeta(`bubble-${name}`, 'updatePosition')
+                    view.dispatch(transaction)
+                }, 60)
+            }, { passive: true })
+        }
+
+        return available.map(([name, shouldShow]) => {
             const frame = name === 'link' ? linkFrame : null
             const element = this._menu(frame ? frame.firstElementChild : clone(templates[`bubble-${name}`]))
             return BubbleMenu.extend({ name: `bubble-${name}` }).configure({
                 pluginKey: `bubble-${name}`,
                 element,
-                appendTo: frame ?? undefined,
+                appendTo: frame ?? this._part('editor-bubbles'),
                 updateDelay: 100,
                 shouldShow: props => props.editor.isEditable && shouldShow(props),
                 // The table's menu sits above the table, not the cursor; the others above the
@@ -449,8 +492,16 @@ export default (binding = {}) => ({
                 getReferencedVirtualElement: name === 'table' ? () => this._tableRect() : undefined,
                 options: {
                     placement: TOUCH && name !== 'table' ? 'bottom' : 'top', offset: 8, flip: {}, shift: { padding: 8 },
-                    onShow: () => queueMicrotask(() => this._sync(true)),
-                    onHide: frame ? () => frame.append(element) : undefined,
+                    scrollTarget: content,
+                    hide: { boundary: content },
+                    onShow: () => {
+                        element.setAttribute('data-editor-bubble-active', '')
+                        queueMicrotask(() => this._sync(true))
+                    },
+                    onHide: () => {
+                        element.removeAttribute('data-editor-bubble-active')
+                        frame?.append(element)
+                    },
                 },
             })
         })
@@ -470,13 +521,20 @@ export default (binding = {}) => ({
         return null
     },
 
-    // Tooltips and shortcuts for the controls in an element (a menu cloned later, too);
-    // menu items say what they are themselves.
+    _layoutToolbar() {
+        const toolbar = this._part('editor-toolbar')
+        if (this._toolbar && toolbar === this._toolbar.toolbar) {
+            this._toolbar.layout()
+            return
+        }
+        this._toolbar?.disconnect()
+        this._toolbar = toolbar && typeof ResizeObserver === 'function' ? overflow(toolbar, () => this._rovingStart()) : null
+    },
+
+    // Announce shortcuts using the modifier of this browser's platform.
     _prepareControls(root) {
-        for (const control of root?.querySelectorAll?.('button[aria-label]') ?? []) {
-            if (control.closest('[popover]')) continue
-            control.toggleAttribute('data-editor-tooltip', true)
-            if (control.dataset.editorKeys) control.setAttribute('aria-keyshortcuts', ariaKeys(control.dataset.editorKeys))
+        for (const control of root?.querySelectorAll?.('button[data-editor-keys]') ?? []) {
+            control.setAttribute('aria-keyshortcuts', ariaKeys(control.dataset.editorKeys))
         }
 
         return root
@@ -512,16 +570,16 @@ export default (binding = {}) => ({
         })
 
         // The tooltip follows the control pointed at or focused.
-        listen(this, this.$el, 'pointerover', event => this._tip(event.target.closest?.('[data-editor-tooltip]')))
-        listen(this, this.$el, 'pointerout', event => ! event.relatedTarget?.closest?.('[data-editor-tooltip]') && this._tip(null))
+        listen(this, this.$el, 'pointerover', event => this._tip(event.target.closest?.(TOOLTIP_CONTROL)))
+        listen(this, this.$el, 'pointerout', event => ! event.relatedTarget?.closest?.(TOOLTIP_CONTROL) && this._tip(null))
         listen(this, this.$el, 'focusin', event => {
             // A menu can restore focus while its popover is still changing state.
-            queueMicrotask(() => this.$el.contains(document.activeElement) && this._tip(document.activeElement.closest?.('[data-editor-tooltip]')))
+            queueMicrotask(() => this.$el.contains(document.activeElement) && this._tip(document.activeElement.closest?.(TOOLTIP_CONTROL)))
             if (! this._editor.view.dom.contains(event.target)) this._focused ??= this.value
             this._keyboard(this._editor.isEditable)
         })
         listen(this, this.$el, 'focusout', event => {
-            if (! event.relatedTarget?.closest?.('[data-editor-tooltip]')) this._tip(null)
+            if (! event.relatedTarget?.closest?.(TOOLTIP_CONTROL)) this._tip(null)
             if (! this.$el.contains(event.relatedTarget)) this._changed()
             if (! this.$el.contains(event.relatedTarget)) this._keyboard(false)
         })
@@ -569,13 +627,14 @@ export default (binding = {}) => ({
     },
 
     _server(event) {
-        const { name, owner, action, attachments, html } = event.detail ?? {}
+        const { name, owner, action, attachments, html, requestId } = event.detail ?? {}
 
         // Ui::editor(name): this one's name, from the component it is in.
         if (! this._editor || ! name || name !== this.$el.dataset.editorName) return
         if (owner && owner !== this.$el.closest('[wire\\:id]')?.getAttribute('wire:id')) return
 
         if (action === 'insert') this.insert(attachments)
+        if (action === 'resolve-media') this._resolveMedia(requestId, attachments)
         if (action === 'insert-content' && html) this.insertContent(html)
         if (action === 'focus') this._editor.commands.focus()
     },
@@ -859,58 +918,93 @@ export default (binding = {}) => ({
         if (this._editor.state.selection.node?.type.name === 'image') this._editor.commands.updateAttributes('image', { alt })
     },
 
-    // A media button: files of its kind to insert; without one, of the selected media's
-    // kind, one to replace it.
-    _media(kind) {
+    _media(kind, placeholder = null) {
         const { selection } = this._editor.state
-        const selected = MEDIA.includes(selection.node?.type.name) ? selection.node.type.name : null
+        const operation = kind ? 'insert' : 'replace'
+        kind ||= selection.node?.type.name
+        const name = this.$el.dataset.editorName
+        const { from, to } = selection
+        if (! name || ! this._canPickMedia(kind)) return
 
-        if (kind) this._choose([kind])
-        else if (selected) this._choose([selected], { from: selection.from, to: selection.to })
+        const requestId = String(++mediaRequests)
+        const multiple = operation === 'insert' && !placeholder
+        this._mediaRequest = { requestId, kind, operation, multiple, from, to, placeholder }
+        this._mediaError(false)
+        this.$dispatch('ui-editor-media-request', { name, requestId, kind, operation, multiple })
     },
 
-    /**
-     * Picks files to upload: of these kinds, many (to insert at the selection) or one (to
-     * replace the range, or for the placeholder of a picture that couldn't be pasted).
-     * They go where that place has moved to by the time they are chosen.
-     */
-    _choose(kinds, range = null, placeholder = null) {
-        const accept = kinds.filter(kind => accepted(this._format.features).includes(kind))
+    _canPickMedia(kind) {
+        return this._editor?.isEditable && ! this.$el.hasAttribute('data-disabled') && ! this.$el.hasAttribute('data-source')
+            && MEDIA.includes(kind) && this._has(kind) && (this.$el.dataset.mediaPicker ?? '').split(' ').includes(kind)
+    },
 
-        if (! this.$el.dataset.upload || ! accept.length) return
+    _mapMediaRequest(transaction) {
+        const request = this._mediaRequest
+        if (! request || request.placeholder || ! transaction.docChanged) return
 
-        const { from, to } = range ?? this._editor.state.selection
-        const place = { from, to }
-        const input = document.createElement('input')
+        const from = transaction.mapping.mapResult(request.from, 1)
+        if (request.from === request.to) {
+            request.from = request.to = from.pos
+            return
+        }
 
-        input.type = 'file'
-        input.multiple = ! range
-        input.accept = accept.includes('file') ? '' : accept.map(kind => `${kind}/*`).join(',')
+        const to = transaction.mapping.mapResult(request.to, -1)
+        if (request.operation === 'replace' && (from.deleted || to.deleted || transaction.doc.nodeAt(from.pos)?.type.name !== request.kind)) {
+            this._mediaRequest = null
+            return
+        }
+        request.from = from.pos
+        request.to = Math.max(from.pos, to.pos)
+    },
 
-        this._tracked.add(place)
-        listen(this, input, 'cancel', () => this._tracked.delete(place))
-        listen(this, input, 'change', () => {
-            this._tracked.delete(place)
-            this._uploadFiles(input.files, place, 'pick', accept, placeholder)
+    _resolveMedia(requestId, attachments) {
+        const request = this._mediaRequest
+        if (! request || request.requestId !== requestId) return
+        this._mediaRequest = null
+        if (! this._canPickMedia(request.kind) || (Array.isArray(attachments) && !attachments.length)) return
+
+        const { kind, operation, multiple, placeholder } = request
+        const nodes = Array.isArray(attachments) && attachments.map(attachment => {
+            if (! attachment || (kind !== 'file' && (typeof attachment.mime !== 'string' || kindOf(attachment) !== kind))) return null
+            return attachmentNode(attachment, this._format.features, this._format.styles.card, operation === 'replace' && kind === 'file')
         })
-        input.click()
+        if (! nodes || (! multiple && nodes.length !== 1) || nodes.some(node => ! node)) {
+            this._mediaError(true)
+            return
+        }
+
+        let range = request
+        if (placeholder) {
+            const position = this._missingImage(placeholder)?.from
+            if (position === undefined) return
+            range = { from: position, to: position }
+        }
+        if (this._insertNodes(nodes, range)) {
+            if (placeholder) this._placeholder(placeholder)
+        } else {
+            this._mediaError(true)
+        }
+    },
+
+    _mediaError(show) {
+        const error = this.$el.querySelector(':scope > [data-editor-media-error]')
+        if (error) error.hidden = ! show
     },
 
     /**
-     * Uploads files to go at the range (the selection, or where they were dropped): of
-     * the kinds asked for, or any the format takes (a kind it leaves out as a file). A
+     * Uploads files to go at the selection or where they were dropped, as the format allows. A
      * placeholder stands there meanwhile; what uploads goes in its place, in order, any
-     * time later, wherever that place has moved to; what wouldn't leaves one saying why
-     * (the picture's placeholder, to try again). Dismissed, nothing goes there.
+     * time later, wherever that place has moved to; failures leave a message there.
+     * Dismissed, nothing goes there.
      */
-    async _uploadFiles(files, range, source, kinds = null, placeholder = null) {
-        const accept = kinds ?? accepted(this._format.features)
+    async _uploadFiles(files, range, source) {
+        const accept = accepted(this._format.features)
 
         files = [...files].filter(file => accept.includes(kindOf({ mime: file.type, url: file.name })) || accept.includes('file'))
 
         if (! this.$el.dataset.upload || ! files.length || ! this._editor) return
 
-        const request = { from: range.from, to: range.to, id: placeholder ?? `upload-${++uploaded}` }
+        const request = { from: range.from, to: range.to, id: `upload-${++uploaded}` }
 
         // How far the files have got, together, shows on the placeholder.
         const sent = files.map(() => 0)
@@ -936,7 +1030,7 @@ export default (binding = {}) => ({
         this._tracked.add(request)
         this._insert(attachments, request)
         this._tracked.delete(request)
-        if (attachments.length < files.length) this._placeholder(request.id, request.to, placeholder ? 'missing' : 'failed', reason)
+        if (attachments.length < files.length) this._placeholder(request.id, request.to, 'failed', reason)
     },
 
     // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
@@ -991,19 +1085,25 @@ export default (binding = {}) => ({
     _insert(attachments, range) {
         const nodes = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean).map(attachment => attachmentNode(attachment, this._format.features, this._format.styles.card)).filter(Boolean)
 
+        return this._insertNodes(nodes, range)
+    },
+
+    _insertNodes(nodes, range) {
         if (! this._editor || ! nodes.length) return
 
         const size = this._editor.state.doc.content.size
         const { from, to } = range ?? this._editor.state.selection
 
-        this._editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
+        return this._editor.chain().focus().insertContentAt({ from: Math.min(from, size), to: Math.min(to, size) }, nodes).run()
     },
 
     // A picture that couldn't be pasted, uploaded where its placeholder stands.
     _uploadMissing(id) {
-        const [placeholder] = uploadsKey.getState(this._editor.state)?.find(undefined, undefined, spec => spec.id === id) ?? []
+        if (this._missingImage(id)) this._media('image', id)
+    },
 
-        if (placeholder) this._choose(['image'], { from: placeholder.from, to: placeholder.from }, id)
+    _missingImage(id) {
+        return uploadsKey.getState(this._editor.state)?.find(undefined, undefined, spec => spec.id === id && spec.kind === 'missing')[0]
     },
 
     // The images the app has no copy of, by address, each once (for the footer, kept
@@ -1270,6 +1370,7 @@ export default (binding = {}) => ({
         const content = this._part('editor-content')
 
         if (! textarea) return
+        this._mediaRequest = null
 
         if (on) textarea.value = lines(this.value)
         else this._editor.commands.setContent(this._whitelist.restrict(textarea.value), { emitUpdate: true })
@@ -1293,22 +1394,18 @@ export default (binding = {}) => ({
 
     // The tooltip names the control and its shortcut, anchored to it; none, it hides.
     _tip(control) {
-        const tip = this.panel?.querySelector('[data-editor-tip]')
-        if (!tip || control === this._anchor) return
+        if (control === this._anchor) return
         clearTimeout(this._tipTimer)
-        if (tip.matches(':popover-open')) tip.hidePopover()
+        const open = this._anchor?.querySelector(':scope > [data-editor-tip]:popover-open')
+        open?.hidePopover()
         this._anchor = control
-        if (!control) return
+        const tip = control?.querySelector(':scope > [data-editor-tip]')
+        if (!tip) return
 
-        this._tipTimer = setTimeout(async () => {
-            try {
-                const wire = this.panelWire
-                if (!wire) return
-                await wire.showTip(control.getAttribute('aria-label') ?? '', control.dataset.editorKeys ? keys(control.dataset.editorKeys) : '')
-                if (this._anchor !== control || !control.isConnected) return
-                tip.dataset.side = this.$el.hasAttribute('data-fullscreen') && !this.$el.hasAttribute('data-keyboard') ? 'bottom' : 'top'
-                tip.showPopover({ source: control })
-            } catch {}
+        this._tipTimer = setTimeout(() => {
+            if (!tip.isConnected || control.disabled || control.checkVisibility?.() === false) return
+            tip.dataset.side = this.$el.hasAttribute('data-fullscreen') && !this.$el.hasAttribute('data-keyboard') ? 'bottom' : 'top'
+            tip.showPopover({ source: control })
         }, 150)
     },
 

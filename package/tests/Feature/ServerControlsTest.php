@@ -3,6 +3,7 @@
 use Esoboy\Ui\Livewire\Calendar;
 use Esoboy\Ui\Livewire\Cascader;
 use Esoboy\Ui\Livewire\Combobox;
+use Esoboy\Ui\Livewire\DatePicker;
 use Esoboy\Ui\Livewire\Questionnaire;
 use Esoboy\Ui\Livewire\TagsInput;
 use Esoboy\Ui\Livewire\Transfer;
@@ -126,15 +127,16 @@ it('searches transfer lists independently and checks only enabled matches', func
 });
 
 it('enforces calendar navigation bounds and validates preset dates and time values', function () {
-    Livewire::test(Calendar::class, [
-        'settings' => ['min' => '2026-11-01', 'max' => '2026-11-30', 'time' => true, 'presets' => ['invalid' => '2026-02-31']],
+    Livewire::test(DatePicker::class, [
+        'settings' => ['mode' => 'single', 'min' => '2026-11-01', 'max' => '2026-11-30', 'time' => true, 'presets' => ['invalid' => '2026-02-31']],
         'value' => '2026-11-05 09:30',
     ])->call('previous')->assertSet('month', '2026-11')
         ->call('next')->assertSet('month', '2026-11')
         ->call('goTo', 'not-a-month')->assertSet('month', '2026-11')
         ->call('preset', 'invalid')->assertSet('value', '2026-11-05 09:30')
-        ->call('setTime', 'from', '29:61')->assertSet('value', '2026-11-05 09:30')
-        ->call('setTime', 'from', '10:45')->assertSet('value', '2026-11-05 10:45');
+        ->call('pickTime', 'from', 'hour', 29)->assertSet('value', '2026-11-05 09:30')
+        ->call('pickTime', 'from', 'hour', 10)
+        ->call('pickTime', 'from', 'minute', 45)->assertSet('value', '2026-11-05 10:45');
 });
 
 it('recognizes native Livewire blur modifiers in interaction bindings', function () {

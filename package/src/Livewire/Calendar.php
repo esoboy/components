@@ -3,8 +3,10 @@
 namespace Esoboy\Ui\Livewire;
 
 use Carbon\CarbonImmutable;
+use Esoboy\Ui\Support\TimeOptions;
 use Illuminate\Contracts\View\View;
 use IntlDateFormatter;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
@@ -23,6 +25,7 @@ class Calendar extends Component
     public string $month = '';
 
     /** @var array{from: string, to: string} */
+    #[Locked]
     public array $times = ['from' => '00:00', 'to' => '00:00'];
 
     /**
@@ -43,10 +46,7 @@ class Calendar extends Component
         if ($maximum && $this->month > $maximum) {
             $this->month = $maximum;
         }
-        foreach (['from', 'to'] as $part) {
-            $at = is_array($value) ? ($value[$part] ?? null) : ($part === 'from' ? $value : null);
-            $this->times[$part] = $at && str_contains($at, ' ') ? explode(' ', $at, 2)[1] : ($settings['timeValue'] ?? '00:00');
-        }
+        $this->syncTimes();
     }
 
     public function goTo(string $month): void
@@ -62,10 +62,28 @@ class Calendar extends Component
         if (is_string($first)) {
             $this->goTo(substr($first, 0, 7));
         }
-        foreach (['from', 'to'] as $part) {
-            $at = is_array($this->value) ? ($this->value[$part] ?? null) : ($part === 'from' ? $this->value : null);
-            $this->times[$part] = is_string($at) && str_contains($at, ' ') ? explode(' ', $at, 2)[1] : ($this->settings['timeValue'] ?? '00:00');
+        $this->syncTimes();
+    }
+
+    private function syncTimes(): void
+    {
+        if (! ($this->settings['time'] ?? false)) {
+            return;
         }
+
+        $options = $this->timeOptions();
+        $value = is_array($this->value) ? $this->value : ['from' => $this->value];
+        foreach (['from' => $value['from'] ?? $value[0] ?? null, 'to' => $value['to'] ?? null] as $part => $at) {
+            $time = is_string($at) ? substr($at, 11) : '';
+            $this->times[$part] = TimeOptions::parse($time) === null
+                ? $options->initial($this->settings['timeValue'] ?? null)
+                : $time;
+        }
+    }
+
+    protected function timeOptions(): TimeOptions
+    {
+        return new TimeOptions($this->settings['step'] ?? null, combined: ($this->settings['timeMode'] ?? null) === 'combined');
     }
 
     public function previous(): void
@@ -94,7 +112,10 @@ class Calendar extends Component
             $this->value = ['from' => $this->at($range['from'], 'from'), 'to' => $this->at($range['to'], 'to')];
         } elseif ($mode === 'multiple') {
             $values = (array) $this->value;
-            $this->value = in_array($date, $values, true) ? array_values(array_diff($values, [$date])) : [...$values, $date];
+            $dates = array_map(fn ($value) => substr($value, 0, 10), $values);
+            $this->value = in_array($date, $dates, true)
+                ? array_values(array_filter($values, fn ($value) => substr($value, 0, 10) !== $date))
+                : [...$values, $this->at($date, 'from')];
             sort($this->value);
         } else {
             $this->value = $this->at($date, 'from');
@@ -119,11 +140,11 @@ class Calendar extends Component
             }
         }
         if ($this->settings['time'] ?? false) {
-            if (($this->settings['mode'] ?? 'single') === 'range') {
-                $value = ['from' => $this->at($value['from'] ?? null, 'from'), 'to' => $this->at($value['to'] ?? null, 'to')];
-            } else {
-                $value = $this->at($value, 'from');
-            }
+            $value = match ($this->settings['mode'] ?? 'single') {
+                'range' => ['from' => $this->at($value['from'] ?? null, 'from'), 'to' => $this->at($value['to'] ?? null, 'to')],
+                'multiple' => array_map(fn ($date) => $this->at($date, 'from'), $value),
+                default => $this->at($value, 'from'),
+            };
         }
         $this->value = $value;
         $first = is_array($value) ? ($value['from'] ?? $value[0] ?? null) : $value;
@@ -131,21 +152,6 @@ class Calendar extends Component
             $this->goTo(substr($first, 0, 7));
         }
         $this->dispatch('ui-calendar-picked', close: true);
-    }
-
-    public function setTime(string $part, string $time): void
-    {
-        if (($this->settings['disabled'] ?? false) || ! ($this->settings['time'] ?? false) || ! in_array($part, ['from', 'to'], true) || ! preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $time)) {
-            return;
-        }
-        $this->times[$part] = $time;
-        if (($this->settings['mode'] ?? 'single') === 'range') {
-            $value = is_array($this->value) ? $this->value : ['from' => null, 'to' => null];
-            $value[$part] = $this->at(! empty($value[$part]) ? substr($value[$part], 0, 10) : null, $part);
-            $this->value = $value;
-        } else {
-            $this->value = $this->at($this->value ? substr($this->value, 0, 10) : null, 'from');
-        }
     }
 
     protected function at(?string $date, string $part): ?string

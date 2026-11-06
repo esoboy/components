@@ -6,7 +6,7 @@
  */
 @layer components {
     :where([data-slot="editor"]) {
-        @apply flex w-full min-w-0 flex-col rounded-lg border border-input transition-colors;
+        @apply relative flex w-full min-w-0 flex-col rounded-lg border border-input transition-colors;
         background-color: light-dark(transparent, color-mix(in oklab, var(--color-input) 30%, transparent));
 
         &:focus-within {
@@ -29,6 +29,17 @@
                 @apply top-0;
             }
         }
+    }
+
+    :where([data-editor-tip]) {
+        pointer-events: none;
+
+        [data-editor-tip-mac] { display: none; }
+    }
+
+    :where([data-editor-mac] [data-editor-tip]) {
+        [data-editor-tip-mac] { display: inline-flex; }
+        [data-editor-tip-other] { display: none; }
     }
 
     /* Outside the scrolling content. With an unbounded content height, it also sticks
@@ -171,7 +182,7 @@
         @apply hidden w-full px-1 text-xs text-destructive;
     }
 
-    :where([aria-invalid="true"] ~ [data-slot="editor-field-error"], [data-slot="editor-field-error"]:is([data-editor-math-error], [data-editor-image-error]):not([hidden])) {
+    :where([aria-invalid="true"] ~ [data-slot="editor-field-error"], [data-slot="editor-field-error"]:is([data-editor-math-error], [data-editor-image-error], [data-editor-media-error]):not([hidden])) {
         @apply block;
     }
 

@@ -4,6 +4,7 @@ namespace App\Editor;
 
 use Esoboy\Ui\Contracts\EditorUploader;
 use Esoboy\Ui\Support\EditorUpload;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 
@@ -13,9 +14,20 @@ use Illuminate\Validation\ValidationException;
  */
 final class DemoUploader implements EditorUploader
 {
+    public function authorize(string $source, ?string $url, array $context): void
+    {
+        // The public editor demo allows uploads.
+    }
+
     public function upload(EditorUpload $upload): ?array
     {
-        $file = $upload->file;
+        $name = $upload->source === 'external' ? basename((string) parse_url((string) $upload->url, PHP_URL_PATH)) : null;
+
+        return $this->store($upload->file, $name);
+    }
+
+    public function store(UploadedFile $file, ?string $originalName = null): array
+    {
 
         if ($file->getSize() > 20 * 1024 * 1024) {
             throw ValidationException::withMessages(['file' => 'Files up to 20 MB only.']);
@@ -31,7 +43,7 @@ final class DemoUploader implements EditorUploader
 
         return [
             'url' => "/demo/uploads/{$name}",
-            'name' => $upload->source === 'external' ? basename((string) parse_url((string) $upload->url, PHP_URL_PATH)) : $file->getClientOriginalName(),
+            'name' => $originalName ?? $file->getClientOriginalName(),
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
             'width' => $width,

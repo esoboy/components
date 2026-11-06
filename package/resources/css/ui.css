@@ -75,6 +75,7 @@
 @import './components/toggle.css';
 @import './components/tooltip.css';
 @import './components/trace.css';
+@import './components/typography.css';
 
 @source '../views';
 

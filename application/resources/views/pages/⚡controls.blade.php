@@ -39,6 +39,8 @@ new class extends Component
 
     public ?string $time = '10:30:00';
 
+    public ?string $timeSlot = '10:30';
+
     public ?string $startsAt = '2026-10-29 10:30';
 
     public array $shift = ['from' => null, 'to' => null];
@@ -113,19 +115,23 @@ new class extends Component
             ]" />
         </div>
         <p class="text-sm text-muted-foreground">period: <span id="period">{{ ($period['from'] ?? '').' → '.($period['to'] ?? '') }}</span></p>
-        <div class="flex items-start gap-4">
+        <div class="flex flex-wrap items-start gap-4">
             <x-ui::field class="w-fit">
                 <x-ui::label for="demo-date-time">Date</x-ui::label>
                 <x-ui::date-picker id="demo-date-time" wire:model.live="date" placeholder="Select date" class="w-44" />
             </x-ui::field>
-            <x-ui::field class="w-32">
+            <x-ui::field class="w-36">
                 <x-ui::label for="demo-time">Time</x-ui::label>
                 <x-ui::time-picker id="demo-time" step="1" wire:model.live="time" />
             </x-ui::field>
+            <x-ui::field class="w-36">
+                <x-ui::label for="demo-time-slot">Time · 5 min</x-ui::label>
+                <x-ui::time-picker id="demo-time-slot" mode="combined" step="300" wire:model.live="timeSlot" />
+            </x-ui::field>
         </div>
-        <p class="text-sm text-muted-foreground">time: <span id="time">{{ $time ?? 'none' }}</span></p>
+        <p class="text-sm text-muted-foreground">time: <span id="time">{{ $time ?? 'none' }}</span>, interval: <span id="time-slot">{{ $timeSlot ?? 'none' }}</span></p>
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::date-picker id="demo-datetime" time wire:model.live="startsAt" placeholder="Pick a date and time" />
+            <x-ui::date-picker id="demo-datetime" time time-mode="combined" step="600" wire:model.live="startsAt" placeholder="Pick a date and time" />
             <x-ui::date-picker id="demo-shift" mode="range" time time-value="09:00" wire:model.live="shift" placeholder="Pick a shift" />
         </div>
         <p class="text-sm text-muted-foreground">startsAt: <span id="starts-at">{{ $startsAt ?? 'none' }}</span>, shift: <span id="shift">{{ ($shift['from'] ?? '').' → '.($shift['to'] ?? '') }}</span></p>

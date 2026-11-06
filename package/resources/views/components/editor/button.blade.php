@@ -47,10 +47,10 @@ $buttons = [
 [$icon, $label, $toggles, $keys, $action] = [...$buttons[$command] ?? throw new InvalidArgumentException("[{$command}] is not an Editor button; use one of: ".implode(', ', array_keys($buttons)).'.'), false];
 @endphp
 
-<x-ui::button variant="ghost" size="icon-sm" :attributes="$attributes->merge([
+<x-ui::editor.tool variant="ghost" size="icon-sm" :attributes="$attributes->merge([
     $action ? 'data-editor-action' : 'data-editor-command' => is_string($action) ? $action : $command,
     'data-editor-value' => is_string($action) ? $command : false,
     'aria-label' => $label,
     'aria-pressed' => $toggles ? 'false' : false,
     'data-editor-keys' => $keys ?? false,
-])">@foreach ((array) $icon as $index => $name)<x-ui::icon :name="$name" :data-editor-pressed="is_array($icon) ? ($index ? 'true' : 'false') : false" />@endforeach</x-ui::button>
+])">@foreach ((array) $icon as $index => $name)<x-ui::icon :name="$name" :data-editor-pressed="is_array($icon) ? ($index ? 'true' : 'false') : false" />@endforeach</x-ui::editor.tool>

@@ -25,6 +25,7 @@ import scrollArea from './alpine/scroll-area.js'
 import select from './alpine/select.js'
 import sidebar from './alpine/sidebar.js'
 import tabs from './alpine/tabs.js'
+import timePicker, { timeHourChooser } from './alpine/time-picker.js'
 import toggleGroup from './alpine/toggle-group.js'
 import { register as registerTheme } from './alpine/theme.js'
 import toast from './alpine/toast.js'
@@ -53,6 +54,8 @@ window.Alpine.data('uiResizable', resizable)
 window.Alpine.data('uiScrollArea', scrollArea)
 
 window.Alpine.data('uiCalendar', calendar)
+window.Alpine.data('uiTimePicker', timePicker)
+window.Alpine.data('uiTimeHourChooser', timeHourChooser)
 window.Alpine.data('uiCommand', command)
 window.Alpine.data('uiCombobox', combobox)
 window.Alpine.data('uiQuestionnaire', questionnaire)

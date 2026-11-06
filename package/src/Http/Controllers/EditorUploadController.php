@@ -40,8 +40,10 @@ final class EditorUploadController
 
         $source = (string) $request->input('source');
         $url = $request->input('url');
+        $uploader->authorize($source, $url, $context);
+
         $file = $request->file('file');
-        $downloaded = ! $file instanceof UploadedFile && is_string($url) ? RemoteImage::download($url) : null;
+        $downloaded = $source === 'external' && ! $file instanceof UploadedFile && $url !== null ? RemoteImage::download($url) : null;
         $file = $file instanceof UploadedFile ? $file : $downloaded;
 
         try {
@@ -50,7 +52,7 @@ final class EditorUploadController
                 throw ValidationException::withMessages(['file' => __('ui::editor.image-unreadable')]);
             }
 
-            $attachment = $uploader->upload(new EditorUpload($file, $source, is_string($url) ? $url : null, $context));
+            $attachment = $uploader->upload(new EditorUpload($file, $source, $url, $context));
         } finally {
             if ($downloaded && is_file($downloaded->getPathname())) {
                 @unlink($downloaded->getPathname());

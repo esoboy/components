@@ -31,7 +31,8 @@ final class EditorControls
     /** The formatting that clearing takes off. */
     private const FORMATTING = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript', 'link', 'color', 'highlight', 'font-family', 'font-size', 'text-align', 'indent', 'text-indent', 'line-height', 'spacing'];
 
-    public static function allowed(string $control, RichTextFormat $format): bool
+    /** @param list<string> $mediaPicker */
+    public static function allowed(string $control, RichTextFormat $format, array $mediaPicker = []): bool
     {
         return match ($control) {
             'undo', 'redo' => true,
@@ -40,9 +41,7 @@ final class EditorControls
             'color' => $format->has('color', 'highlight'),
             'clear-formatting' => $format->has(...self::FORMATTING),
             'indent', 'outdent' => $format->has('indent', 'bullet-list', 'ordered-list', 'task-list'),
-            // Uploaded with the app's uploader; a video from a link (a file's address, a
-            // platform's) needs none.
-            'image', 'audio', 'file' => $format->has($control) && EditorUploads::enabled(),
+            'image', 'audio', 'file' => $format->has($control) && in_array($control, $mediaPicker, true),
             'video' => $format->has('video', 'embed'),
             'find' => $format->has('find-replace'),
             'format-painter' => $format->has('format-painter') && $format->has(...self::FORMATTING),
@@ -67,24 +66,28 @@ final class EditorControls
     /**
      * The toolbar's groups with only the controls the Editor can use, empty ones gone.
      *
+     * @param  list<string>  $mediaPicker
      * @return list<array<string, int>>
      */
-    public static function toolbar(RichTextFormat $format): array
+    public static function toolbar(RichTextFormat $format, array $mediaPicker): array
     {
-        $groups = array_map(fn (array $group) => array_filter($group, fn (string $control) => self::allowed($control, $format), ARRAY_FILTER_USE_KEY), self::TOOLBAR);
+        $groups = array_map(fn (array $group) => array_filter($group, fn (string $control) => self::allowed($control, $format, $mediaPicker), ARRAY_FILTER_USE_KEY), self::TOOLBAR);
 
         return array_values(array_filter($groups));
     }
 
-    /** @return array<string, array{string, string, array<string, string>}> */
-    public static function slash(RichTextFormat $format): array
+    /**
+     * @param  list<string>  $mediaPicker
+     * @return array<string, array{string, string, array<string, string>}>
+     */
+    public static function slash(RichTextFormat $format, array $mediaPicker): array
     {
         if (! $format->has('slash-menu')) {
             return [];
         }
 
         $toolbar = $format->has('toolbar');
-        $uploads = EditorUploads::enabled();
+        $selectVideo = $format->has('video') && in_array('video', $mediaPicker, true);
         // / items: control => [icon, label, attributes]
         $slash = [
             'paragraph' => ['pilcrow', __('ui::editor.paragraph'), ['data-editor-command' => 'paragraph']],
@@ -102,8 +105,7 @@ final class EditorControls
             'code-block' => ['square-code', __('ui::editor.code-block'), ['data-editor-command' => 'code-block']],
             'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), ['data-editor-command' => 'horizontal-rule']],
             'image' => ['image', __('ui::editor.image'), ['data-editor-action' => 'media', 'data-editor-value' => 'image']],
-            // The toolbar's popover, for a link too; without it, an upload.
-            'video' => ['video', __('ui::editor.video'), $toolbar ? ['data-editor-action' => 'open', 'data-editor-value' => 'video'] : ['data-editor-action' => 'media', 'data-editor-value' => 'video']],
+            'video' => ['video', __('ui::editor.video'), ['data-editor-action' => $selectVideo ? 'media' : 'open', 'data-editor-value' => 'video']],
             'audio' => ['eighth-notes', __('ui::editor.audio'), ['data-editor-action' => 'media', 'data-editor-value' => 'audio']],
             'file' => ['paperclip', __('ui::editor.file'), ['data-editor-action' => 'media', 'data-editor-value' => 'file']],
             'table' => ['table', __('ui::editor.table'), ['data-editor-command' => 'table']],
@@ -111,10 +113,9 @@ final class EditorControls
             'math' => ['radical', __('ui::editor.math'), ['data-editor-action' => 'open', 'data-editor-value' => 'math']],
         ];
 
-        // Formulas open the toolbar's popover; a video does without it when it can be uploaded.
-        return array_filter($slash, fn (string $control) => EditorControls::allowed($control, $format) && match ($control) {
+        return array_filter($slash, fn (string $control) => self::allowed($control, $format, $mediaPicker) && match ($control) {
             'math' => $toolbar,
-            'video' => $toolbar || ($format->has('video') && $uploads),
+            'video' => $toolbar || $selectVideo,
             default => true,
         }, ARRAY_FILTER_USE_KEY);
     }

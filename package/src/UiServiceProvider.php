@@ -23,6 +23,7 @@ use Esoboy\Ui\Livewire\Questionnaire;
 use Esoboy\Ui\Livewire\Rating;
 use Esoboy\Ui\Livewire\Select;
 use Esoboy\Ui\Livewire\TagsInput;
+use Esoboy\Ui\Livewire\TimePicker;
 use Esoboy\Ui\Livewire\Toaster;
 use Esoboy\Ui\Livewire\Tour;
 use Esoboy\Ui\Livewire\Transfer;
@@ -60,6 +61,7 @@ class UiServiceProvider extends ServiceProvider
         Livewire::listen('render', fn ($component) => Sequence::resetPrefix('scope:'.$component->getId().':'));
         Livewire::component('ui.calendar', Calendar::class);
         Livewire::component('ui.date-picker', DatePicker::class);
+        Livewire::component('ui.time-picker', TimePicker::class);
         Livewire::component('ui.tree', Tree::class);
         Livewire::component('ui.tree-select', TreeSelect::class);
         Livewire::component('ui.transfer', Transfer::class);

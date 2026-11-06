@@ -35,7 +35,7 @@ it('renders the combobox empty-state and supplementary Blade slots', function ()
 it('renders supplementary Blade content in the internal Livewire control', function (string $component) {
     $this->blade("<x-ui::{$component}><em>Caller content</em></x-ui::{$component}>")
         ->assertSeeMarkup('<em>Caller content</em>');
-})->with(['calendar', 'date-picker', 'cascader', 'tree', 'tree-select', 'transfer', 'tags-input', 'emoji-picker', 'questionnaire']);
+})->with(['calendar', 'date-picker', 'time-picker', 'cascader', 'tree', 'tree-select', 'transfer', 'tags-input', 'emoji-picker', 'questionnaire']);
 
 it('renders a simple select and its selected label without client initialization', function () {
     $html = (string) $this->blade('<x-ui::select name="status" value="published" :options="[\'draft\' => \'Draft\', \'published\' => \'Published\']" placeholder="Choose" />');
@@ -93,7 +93,8 @@ it('renders a picker label before JavaScript and joins dates and times on the se
         'settings' => ['mode' => 'single', 'time' => true, 'step' => null, 'presets' => [], 'placeholder' => 'Choose'],
         'value' => '2026-10-29 10:30',
     ])->assertSee('October 29, 2026')->assertSee('10:30 AM')
-        ->call('setTime', 'from', '14:45')->assertSet('value', '2026-10-29 14:45')
+        ->call('pickTime', 'from', 'hour', 14)
+        ->call('pickTime', 'from', 'minute', 45)->assertSet('value', '2026-10-29 14:45')
         ->call('select', '2026-10-30')->assertSet('value', '2026-10-30 14:45');
 });
 

@@ -45,7 +45,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
         <form>
             <eso-editor id="body" data-slot="editor" data-editor-name="body" data-labels='{"keyboard":"Alt+F10","failed":"Upload failed"}' data-format='${JSON.stringify({ ...format(features), ...whitelist }).replaceAll("'", '&#39;')}' data-placeholder="Write" data-label="Notes" data-name="body" ${attributes}>
                 <div data-slot="editor-toolbar" role="toolbar">
-                    ${COMMANDS.map(command => `<button type="button" data-editor-command="${command}" aria-label="${command}" ${TOGGLES.includes(command) ? 'aria-pressed="false"' : ''}></button>`).join('')}
+                    ${COMMANDS.map(command => `<button type="button" data-editor-command="${command}" aria-label="${command}" ${TOGGLES.includes(command) ? 'aria-pressed="false"' : ''} ${command === 'bold' ? 'data-editor-keys="Mod-b"' : ''}>${command === 'bold' ? '<span popover="manual" data-slot="tooltip-content" data-editor-tip><span>Bold</span><kbd>Ctrl+B</kbd></span>' : ''}</button>`).join('')}
                     <button type="button" data-editor-action="media" aria-label="Media"></button>
                     <button type="button" data-editor-action="find" aria-label="Find" aria-pressed="false"></button>
                     <button type="button" data-editor-action="source" aria-label="Source" aria-pressed="false"></button>
@@ -85,7 +85,6 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                     <button type="button" data-editor-action="find-close"></button>
                 </div>
                 <div data-slot="editor-footer"><span data-editor-busy data-editor-label=":count uploading" data-editor-refused=":count still uploading" role="status" hidden></span><span data-editor-unsaved data-editor-label=":count unsaved" hidden><span data-editor-unsaved-label></span><button type="button" data-editor-action="save-images"></button></span><span data-editor-count></span></div>
-                <div popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label>Bold</span><kbd data-editor-tip-keys>Ctrl+B</kbd></div>
                 </div>
                 <template data-template="uploading"><span data-slot="editor-uploading"><span>Uploading…</span><span data-editor-upload-progress></span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
                 <template data-template="upload-failed"><span data-slot="editor-uploading" data-editor-failed role="alert"><span data-editor-upload-message>Upload failed</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
@@ -95,7 +94,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
             </eso-editor>
         </form>`
 
-    const wire = { syncStatus: vi.fn().mockResolvedValue(undefined), showTip: vi.fn().mockResolvedValue(undefined) }
+    const wire = { syncStatus: vi.fn().mockResolvedValue(undefined) }
     window.Livewire = { find: () => wire }
     const element = engineDriver(createEditor, document.querySelector('eso-editor'))
     const events = []
@@ -167,20 +166,15 @@ function uploader({ readable = [] } = {}) {
     return posts
 }
 
-// The file inputs media buttons open, to choose files in with choose().
-function chooser() {
-    const inputs = []
-
-    vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function () {
-        if (this.type === 'file') inputs.push(this)
-    })
-
-    return inputs
+function mediaRequests(element) {
+    const requests = []
+    element.addEventListener('ui-editor-media-request', event => requests.push(event.detail))
+    return requests
 }
 
-function choose(input, files) {
-    Object.defineProperty(input, 'files', { value: files })
-    input.dispatchEvent(new Event('change'))
+function resolveMedia(request, attachments = []) {
+    const { name, requestId } = request
+    window.dispatchEvent(new CustomEvent('ui-editor', { detail: { name, requestId, action: 'resolve-media', attachments } }))
 }
 
 // Uploads and their answers take a few turns of the event loop.
@@ -227,20 +221,20 @@ describe('mounting', () => {
         expect(element.querySelector('p.is-editor-empty').dataset.placeholder).toBe('Write')
     })
 
-    it('makes its toolbar one tab stop and requests tooltips with shortcuts', async () => {
+    it('makes its toolbar one tab stop and shows a pre-rendered shortcut tooltip', async () => {
         const [element] = mount()
         const undo = button(element, 'undo')
         const bold = button(element, 'bold')
 
         expect([...element.querySelectorAll('[data-slot="editor-toolbar"] > button')].filter(control => control.tabIndex === 0)).toEqual([bold])
-        expect(bold.hasAttribute('data-editor-tooltip')).toBe(true)
+        expect(bold.getAttribute('aria-keyshortcuts')).toBe('Control+B')
         expect(undo.disabled).toBe(true)
 
-        bold.dataset.editorKeys = 'Mod-b'
         bold.dispatchEvent(new Event('pointerover', { bubbles: true }))
 
-        await vi.waitFor(() => expect(element.panelWire.showTip).toHaveBeenCalledWith('bold', 'Ctrl+B'))
-        expect(element.querySelector('[data-editor-tip]').matches(':popover-open')).toBe(true)
+        const tip = bold.querySelector('[data-editor-tip]')
+        await vi.waitFor(() => expect(tip.matches(':popover-open')).toBe(true))
+        expect(tip.querySelector('kbd').textContent).toBe('Ctrl+B')
 
         bold.focus()
         bold.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
@@ -516,25 +510,35 @@ describe('blocks', () => {
 })
 
 describe('media', () => {
-    it('uploads what a media button picks, three at a time, and inserts the answers where the selection was', async () => {
+    it('returns a typed selection to its original range after the document and caret move', () => {
+        const [element] = mount('<p>First target</p><p>Last</p>', { attributes: 'data-media-picker="image"' })
+        const requests = mediaRequests(element)
+        select(element, 'target')
+        mediaButton(element, 'image').click()
+        expect(requests).toEqual([expect.objectContaining({ name: 'body', kind: 'image', operation: 'insert', multiple: true })])
+
+        element.editor.commands.insertContentAt(1, 'New ')
+        element.editor.commands.setTextSelection('end')
+        resolveMedia(requests[0], [{ url: '/chosen.png', mime: 'image/png' }])
+        resolveMedia(requests[0], [{ url: '/duplicate.png', mime: 'image/png' }])
+        expect(element.value).toMatch(/New First .*<img [^>]*src="\/chosen.png"[^>]*>.*Last/)
+        expect(element.value).not.toContain('target')
+        expect(element.value).not.toContain('/duplicate.png')
+    })
+
+    it('uploads pasted files three at a time and inserts the answers where the selection was', async () => {
         const [element] = mount('<p>Hello world</p>', { attributes: UPLOADS })
         const posts = uploader()
-        const inputs = chooser()
-
         select(element, 'Hello')
-        mediaButton(element, 'file').click()
+        paste(element, { files: ['a.png', 'b.mp3', 'c.zip', 'x.png'].map(name => new File(['x'], name)) })
         element.editor.chain().setTextSelection(12).insertContent('!').run()
-
-        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['', true]])
-
-        choose(inputs[0], ['a.png', 'b.mp3', 'c.zip', 'x.png'].map(name => new File(['x'], name)))
         await settle()
 
         expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(1)
         expect(posts.map(post => [post.url, post.form.source, post.form.file.name, post.form.context, post.headers['X-CSRF-TOKEN']])).toEqual([
-            ['/upload', 'pick', 'a.png', 'sealed', 'token'],
-            ['/upload', 'pick', 'b.mp3', 'sealed', 'token'],
-            ['/upload', 'pick', 'c.zip', 'sealed', 'token'],
+            ['/upload', 'paste', 'a.png', 'sealed', 'token'],
+            ['/upload', 'paste', 'b.mp3', 'sealed', 'token'],
+            ['/upload', 'paste', 'c.zip', 'sealed', 'token'],
         ])
 
         posts[0].answer({ url: '/a.png', name: 'a.png', mime: 'image/png', alt: 'A', width: 10, height: 20 })
@@ -596,6 +600,25 @@ describe('media', () => {
         expect(element.value).toContain('<p>Hi</p>')
     })
 
+    it('blocks invalid attachment URLs and strips unsafe video posters before rendering', () => {
+        const [element] = mount('<p>Hello</p>', { attributes: 'data-media-picker="file"' })
+        const requests = mediaRequests(element)
+        const unsafe = 'java\tscript:alert(1)'
+        element.editor.commands.setTextSelection(6)
+        element.insert([{ url: unsafe, mime: 'application/pdf' }, { url: 'https://[' }])
+        expect(element.value).toBe('<p>Hello</p>')
+
+        mediaButton(element, 'file').click()
+        resolveMedia(requests[0], [{ url: '/valid.pdf' }, { url: unsafe }])
+        expect(element.value).toBe('<p>Hello</p>')
+
+        mediaButton(element, 'file').click()
+        resolveMedia(requests[1], [{ url: '/movie.mp4', mime: 'video/mp4', poster: unsafe }])
+        const video = element.querySelector('[data-slot="editor-content"] video')
+        expect(video.getAttribute('src')).toBe('/movie.mp4')
+        expect(video.hasAttribute('poster')).toBe(false)
+    })
+
     it('uploads pasted files, and turns pasted links into what they are', async () => {
         const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
         const posts = uploader()
@@ -645,17 +668,39 @@ describe('media', () => {
         expect(placeholders()).toHaveLength(1)
     })
 
-    it('picks media of the kind its button says, or of the selected one to replace it; none without an uploader', async () => {
-        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video>', { attributes: UPLOADS })
-        const inputs = chooser()
+    it('cancels a selection and invalidates replacement when its target is removed', () => {
+        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video><video src="/neighbour.mp4"></video>', { attributes: 'data-media-picker="image video"' })
+        const requests = mediaRequests(element)
 
         mediaButton(element, 'image').click()
+        resolveMedia(requests[0])
+        resolveMedia(requests[0], [{ url: '/cancelled.png', mime: 'image/png' }])
+        expect(element.value).not.toContain('/cancelled.png')
+
         element.editor.commands.setNodeSelection(7)
         control(element, '[data-editor-action="media"]').click()
+        expect(requests[1]).toMatchObject({ kind: 'video', operation: 'replace', multiple: false })
+        run(element, 'delete-node')
+        resolveMedia(requests[1], [{ url: '/late.mp4', mime: 'video/mp4' }])
+        expect(element.value).toContain('/neighbour.mp4')
+        expect(element.value).not.toContain('/late.mp4')
+        expect(element.value).not.toContain('/v.mp4')
+    })
 
-        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['image/*', true], ['video/*', false]])
+    it('replaces a mapped media node while retaining a neighbouring media node', () => {
+        const [element] = mount('<p>Hello</p><video src="/v.mp4"></video><video src="/neighbour.mp4"></video>', { attributes: 'data-media-picker="video"' })
+        const requests = mediaRequests(element)
+        element.editor.commands.setNodeSelection(7)
+        control(element, '[data-editor-action="media"]').click()
+        element.editor.commands.insertContentAt(1, 'New ')
+        resolveMedia(requests[0], [{ url: '/replacement.mp4', mime: 'video/mp4' }])
+        expect(element.value).toMatch(/New Hello.*\/replacement\.mp4.*\/neighbour\.mp4/)
+        expect(element.value).not.toContain('/v.mp4')
+    })
 
+    it('leaves pasted files to the uploader and only requests declared media types', async () => {
         const [plain] = mount('<p>Hello</p>')
+        const requests = mediaRequests(plain)
         const posts = uploader()
 
         mediaButton(plain, 'image').click()
@@ -663,7 +708,7 @@ describe('media', () => {
         paste(plain, { files: [new File(['x'], 'a.png', { type: 'image/png' })] })
         await settle()
 
-        expect(inputs).toHaveLength(2)
+        expect(requests).toEqual([])
         expect(posts).toEqual([])
         expect(plain.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
     })
@@ -795,10 +840,9 @@ describe('media', () => {
         expect(element.value).toContain(`<img src="data:image/jpeg;base64,${base64(jpeg)}">`)
     })
 
-    it('leaves a placeholder, never content, where a pasted picture could not be read, to upload it there', async () => {
-        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
-        const posts = uploader()
-        const inputs = chooser()
+    it('recovers a missing pasted image through a single selection at the placeholder', () => {
+        const [element] = mount('<p>Hello</p>', { attributes: 'data-media-picker="image"' })
+        const requests = mediaRequests(element)
 
         element.editor.commands.setTextSelection(6)
         paste(element, { 'text/html': '<p>A<img src="file:///C:/x/chart.png">B</p><p><img src="file:///C:/x/two.png"></p>' })
@@ -809,28 +853,13 @@ describe('media', () => {
         expect(element.value).not.toContain('\uFFFC')
         expect(placeholders()).toHaveLength(2)
 
-        // Uploaded where it stands, one picture; while it uploads it says so.
         placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
-        expect(inputs.map(input => [input.accept, input.multiple])).toEqual([['image/*', false]])
-
-        choose(inputs[0], [new File(['x'], 'chart.png', { type: 'image/png' })])
-        await settle()
-
-        expect(placeholders()).toHaveLength(1)
-        expect(posts.map(post => post.form.source)).toEqual(['pick'])
-
-        // Failed, it stands there again, saying why.
-        posts[0].answer(null, 422, { file: ['Not a picture.'] })
-        await settle()
-
+        expect(requests[0]).toMatchObject({ kind: 'image', multiple: false })
+        resolveMedia(requests[0])
         expect(placeholders()).toHaveLength(2)
-        await expectPanel(element, { uploadErrors: ['Not a picture.'] })
 
         placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
-        choose(inputs[1], [new File(['x'], 'chart.png', { type: 'image/png' })])
-        await settle()
-        posts[1].answer({ url: '/chart.png', mime: 'image/png' })
-        await settle()
+        resolveMedia(requests[1], [{ url: '/chart.png', mime: 'image/png' }])
 
         expect(placeholders()).toHaveLength(1)
         expect(element.value).toContain('<p>HelloA</p><img style="display: block; max-width: 100%; height: auto; margin-left: auto; margin-right: auto;" src="/chart.png" alt=""><p>B</p>')

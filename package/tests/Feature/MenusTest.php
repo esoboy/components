@@ -93,7 +93,8 @@ it('renders a drawer as a dialog swiped towards its edge', function () {
 
     $view->assertSeeMarkupInOrder([
         'commandfor="goal" command="show-modal"',
-        '<dialog id="goal" data-slot="drawer-popup" data-swipe-direction="right" data-swipe-axis="x" aria-labelledby="goal-title" aria-describedby="goal-description" wire:ignore.self>',
+        '<dialog id="goal" data-slot="drawer-popup" data-swipe-direction="right" data-swipe-axis="x" aria-labelledby="goal-title" aria-describedby="goal-description"',
+        'x-on:pointerup="end($event)"',
         '<div data-slot="drawer-swipe-handle" aria-hidden="true"></div>',
         '<div data-slot="drawer-content" class="gap-2">',
         '<div data-slot="drawer-header">',

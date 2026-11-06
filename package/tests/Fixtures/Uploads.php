@@ -4,6 +4,7 @@ namespace Esoboy\Ui\Tests\Fixtures;
 
 use Esoboy\Ui\Contracts\EditorUploader;
 use Esoboy\Ui\Support\EditorUpload;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -14,6 +15,13 @@ final class Uploads implements EditorUploader
 {
     /** @var list<EditorUpload> */
     public static array $uploads = [];
+
+    public function authorize(string $source, ?string $url, array $context): void
+    {
+        if ($context['denied'] ?? false) {
+            throw new AuthorizationException;
+        }
+    }
 
     public function upload(EditorUpload $upload): ?array
     {

@@ -117,8 +117,6 @@ export default () => ({
             if (closing) markClosing(toast, closing)
             if (revisions.has(toast)) continue
             revisions.add(toast)
-            toast.style.setProperty('--toast-swipe-movement-x', '0px')
-            toast.style.setProperty('--toast-swipe-movement-y', '0px')
             schedule(toast, Number(toast.dataset.toastDuration))
         }
         layout()
@@ -222,8 +220,8 @@ export default () => ({
 
             if (direction) return close(toast, { swipe: direction })
 
-            toast.style.setProperty('--toast-swipe-movement-x', '0px')
-            toast.style.setProperty('--toast-swipe-movement-y', '0px')
+            toast.style.removeProperty('--toast-swipe-movement-x')
+            toast.style.removeProperty('--toast-swipe-movement-y')
         }
 
         const stopMove = listen(this, window, 'pointermove', move)

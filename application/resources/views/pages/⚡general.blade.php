@@ -50,6 +50,16 @@ PHP;
 
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
+        <x-ui::heading size="xs">Typography</x-ui::heading>
+        <div class="space-y-2">
+            <x-ui::heading level="3" size="xl" color="primary">Order summary</x-ui::heading>
+            <p><x-ui::text>Your payment has been received.</x-ui::text></p>
+            <x-ui::heading level="3" size="2xl">Payment history</x-ui::heading>
+            <p><x-ui::text size="sm" color="muted">Last updated just now</x-ui::text></p>
+        </div>
+    </section>
+
+    <section class="space-y-4">
         <h2 class="text-lg font-semibold">Theme</h2>
         <p class="text-sm text-muted-foreground">The theme prop on these controls switches this app's theme. The header uses a Toggle Group.</p>
         <div class="flex flex-wrap items-center gap-4">
@@ -115,7 +125,7 @@ PHP;
         <h2 class="text-lg font-semibold">Livewire loading</h2>
         <div class="flex items-center gap-3">
             <x-ui::button wire:click="increment">Increment</x-ui::button>
-            <span class="text-muted-foreground">{{ $count }}</span>
+            <x-ui::text size="sm" color="muted" data-demo-count>{{ $count }}</x-ui::text>
         </div>
     </section>
 

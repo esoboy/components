@@ -167,10 +167,48 @@ $post->body = Ui::sanitize($this->body, 'basic');
 Ui::editor('body')->insert([['url' => $file->url, 'name' => $file->name, 'mime' => $file->mime]]);
 ```
 
+Declare the media types the application can select for this editor:
+
+```blade
+<x-ui::editor wire:model="body" :media-picker="['image', 'file']"
+    x-on:ui-editor-media-request="$wire.openMedia($event.detail)" />
+```
+
+The editor emits `ui-editor-media-request` synchronously from its root with
+`name`, `requestId`, `kind` (`image`, `video`, `audio` or `file`),
+`operation` (`insert` or `replace`) and `multiple`. Use `name` or `wire:model`
+to identify the editor. To open the system picker, call the application's file input
+from the Alpine listener during the same user interaction, then upload through the app.
+A library picker can open through a Livewire action. Return the authorized attachments
+through the Livewire component that owns the editor:
+
+```php
+Ui::editor($request['name'])->resolveMedia($request['requestId'], $attachments);
+Ui::editor($request['name'])->resolveMedia($request['requestId']); // cancel
+```
+
+Each attachment has a web or relative `url` and may include `name`, `mime`, `size`
+in bytes, `alt`, `width`, `height`, and `poster`. Supply the MIME type for image,
+video and audio requests. `file` accepts any attachment, and replacing a file card
+preserves its presentation. The result goes to the original editor and mapped position.
+Each request can be completed once. A newer request, a disabled or unmounted editor,
+a replaced document, entering source mode, or removing the replacement target
+invalidates it. The optional `ui.editor.uploader` handles dropped or pasted files
+and image imports independently.
+
+An `EditorUploader` implements `authorize($source, $url, $context)` to apply the
+app's permissions and rate limits before a remote fetch. It can throw
+`AuthorizationException` to deny the request. Its `upload()` receives the validated
+file for storage and checks that need file content. Remote imports require PHP cURL.
+
 The editor's toolbar collapses controls that do not fit into More by default. To show
 all tools, wrapping onto new rows, turn off `collapse-toolbar`. For a custom toolbar,
 use `<x-ui::editor.toolbar :collapse="false">…</x-ui::editor.toolbar>`; it also inherits
 the editor's `collapse-toolbar` setting.
+
+Use `<x-ui::editor.tool>` with an `aria-label` when a custom toolbar button
+needs the editor's static tooltip. It forwards button attributes and the caller's
+slot, including Livewire actions.
 
 ```blade
 <x-ui::editor wire:model="body" :collapse-toolbar="false" />
@@ -186,6 +224,25 @@ The content area's maximum height is `24rem`; customize it with `--editor-max-he
 
 The toaster is kept across `wire:navigate`, so a toast shown before
 `$this->redirect('/orders', navigate: true)` stays on the next page.
+
+## Typography
+
+```blade
+<x-ui::heading level="1" size="xl">Order summary</x-ui::heading>
+<p><x-ui::text size="sm" color="muted">Last updated just now</x-ui::text></p>
+```
+
+Heading renders a native `h1` through `h6` with `level="1"` through `level="6"`.
+Omitted or invalid levels render `h2`. Text renders an inline `span`.
+
+The Blade components map sizes to the original shadcn Typography examples.
+Heading sizes are `xs` (H4), `sm` (H3), `default` (H2), and `lg` (H1).
+The library also provides `xl` and `2xl` for larger headings, using the theme's
+`text-5xl` and `text-6xl` sizes.
+Text sizes are `sm` (Small), `default` (body), and `lg` (Large).
+Both accept
+`color="default|foreground|muted|primary|destructive|success|warning|info"`.
+The default inherits the surrounding text color. Named colors follow the active theme.
 
 ## Light and dark
 

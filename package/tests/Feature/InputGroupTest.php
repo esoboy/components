@@ -13,7 +13,17 @@ it('renders an input group with addons', function () {
         ->assertSeeMarkup('<input type="text" data-slot="input-group-control" placeholder="Search" wire:model.live="q">')
         ->assertSeeMarkup('<div role="group" data-slot="input-group-addon" data-align="inline-start"><span data-slot="input-group-text">https://</span></div>')
         ->assertSeeMarkup('<div role="group" data-slot="input-group-addon" data-align="inline-end">')
-        ->assertSeeMarkup('<button type="button" data-slot="button" data-variant="ghost" data-size="icon-xs">x</button>');
+        ->assertSeeMarkup('<button type="button" data-slot="button" data-variant="ghost" data-size="default" data-input-group-size="icon-xs">x</button>');
+});
+
+it('uses the four Nova input group button sizes', function (string $size) {
+    $this->blade('<x-ui::input-group.button :size="$size">Action</x-ui::input-group.button>', ['size' => $size])
+        ->assertSeeMarkup('<button data-slot="button" data-size="default" data-input-group-size="'.$size.'">Action</button>');
+})->with(['xs', 'sm', 'icon-xs', 'icon-sm']);
+
+it('defaults the input group button to xs', function () {
+    $this->blade('<x-ui::input-group.button>Action</x-ui::input-group.button>')
+        ->assertSeeMarkup('<button data-slot="button" data-size="default" data-input-group-size="xs">Action</button>');
 });
 
 it('renders a textarea control', function () {

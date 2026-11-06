@@ -5,12 +5,14 @@
 
 @aware([
     'format' => 'full',
+    'mediaPicker' => [],
 ])
 
 {{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a link, a formula), the upload placeholder, the drag handle. --}}
 @php
 $rich = RichText::resolve($format);
 $uploads = EditorUploads::enabled();
+$replaceKinds = array_filter(['image', 'video', 'audio', 'file'], fn ($kind) => in_array($kind, $mediaPicker, true) && $rich->has($kind));
 $names = [
     'gray' => __('ui::editor.color-gray'),
     'red' => __('ui::editor.color-red'),
@@ -42,7 +44,7 @@ $names = [
         <x-ui::editor.button command="split-cell" />
         <x-ui::editor.separator />
         <x-ui::popover>
-            <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="cell-background" :aria-label="__('ui::editor.cell-background')"><x-ui::icon name="paint-bucket" /></x-ui::button></x-ui::popover.trigger>
+            <x-ui::popover.trigger><x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-opens="cell-background" :aria-label="__('ui::editor.cell-background')"><x-ui::icon name="paint-bucket" /></x-ui::editor.tool></x-ui::popover.trigger>
             <x-ui::popover.content align="start" data-editor-color-content>
                 <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.cell-background') }}">
                     <p data-slot="editor-swatches-label">{{ __('ui::editor.cell-background') }}</p>
@@ -59,7 +61,7 @@ $names = [
     </div>
 </template>
 @endif
-{{-- A selected block (media, a divider, a block picked by its drag handle): what fits it, and delete. With an uploader, the media can be replaced, and an image the app has no copy of (from another site, pasted as data) saved to it. --}}
+{{-- A selected block can be replaced through the picker or saved through the image uploader. --}}
 <template data-template="bubble-node">
     <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.selection') }}">
         @if ($rich->has('image'))
@@ -68,9 +70,9 @@ $names = [
         @if ($rich->has('image', 'video', 'embed'))
         <div data-slot="editor-bubble-group" data-editor-for="image video embed">
             <x-ui::editor.menu name="media-size" />
-            <x-ui::button variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="left" aria-pressed="false" :aria-label="__('ui::editor.align-left')"><x-ui::icon name="text-align-start" /></x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="center" aria-pressed="false" :aria-label="__('ui::editor.align-center')"><x-ui::icon name="text-align-center" /></x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="right" aria-pressed="false" :aria-label="__('ui::editor.align-right')"><x-ui::icon name="text-align-end" /></x-ui::button>
+            <x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="left" aria-pressed="false" :aria-label="__('ui::editor.align-left')"><x-ui::icon name="text-align-start" /></x-ui::editor.tool>
+            <x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="center" aria-pressed="false" :aria-label="__('ui::editor.align-center')"><x-ui::icon name="text-align-center" /></x-ui::editor.tool>
+            <x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-command="media-align" data-editor-value="right" aria-pressed="false" :aria-label="__('ui::editor.align-right')"><x-ui::icon name="text-align-end" /></x-ui::editor.tool>
         </div>
         @endif
         @if ($rich->has('embed'))
@@ -81,7 +83,7 @@ $names = [
             <x-ui::editor.button command="caption" />
             <x-ui::editor.button command="image-row" />
             <x-ui::popover>
-                <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::button></x-ui::popover.trigger>
+                <x-ui::popover.trigger><x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::editor.tool></x-ui::popover.trigger>
                 <x-ui::popover.content align="start" data-editor-field-content>
                     <x-ui::input type="url" data-editor-image-link-input :placeholder="__('ui::editor.link-placeholder')" :aria-label="__('ui::editor.image-link')" />
                     <x-ui::button size="icon-sm" data-editor-action="image-link-apply" :aria-label="__('ui::editor.link-apply')"><x-ui::icon name="corner-down-left" /></x-ui::button>
@@ -93,8 +95,8 @@ $names = [
             @endif
         </div>
         @endif
-        @if ($uploads && $rich->has('image', 'audio', 'video', 'file'))
-        <x-ui::button variant="ghost" size="icon-sm" data-editor-action="media" data-editor-for="image video audio file" :aria-label="__('ui::editor.replace-media')"><x-ui::icon name="replace" /></x-ui::button>
+        @if ($replaceKinds)
+        <x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-action="media" :data-editor-for="implode(' ', $replaceKinds)" :aria-label="__('ui::editor.replace-media')"><x-ui::icon name="replace" /></x-ui::editor.tool>
         @endif
         <x-ui::editor.button command="delete-node" />
         @if ($uploads && $rich->has('image'))
@@ -123,9 +125,9 @@ $names = [
 @endif
 
 @if ($rich->has('image'))
-{{-- Where a pasted picture couldn't be read (Word's chart, WPS's picture): upload it there (with an uploader), or dismiss. --}}
+{{-- Choose a picture for an unreadable pasted image, or dismiss it. --}}
 <template data-template="missing-image">
-    <span data-slot="editor-uploading" data-editor-missing contenteditable="false" role="group" aria-label="{{ __('ui::editor.image-missing') }}"><x-ui::icon name="image-off" /><span>{{ __('ui::editor.image-missing') }}</span><span data-editor-upload-message role="alert" hidden>{{ __('ui::editor.upload-failed') }}</span>@if ($uploads)<button type="button" data-editor-action="upload-missing">{{ __('ui::editor.upload') }}</button>@endif<button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
+    <span data-slot="editor-uploading" data-editor-missing contenteditable="false" role="group" aria-label="{{ __('ui::editor.image-missing') }}"><x-ui::icon name="image-off" /><span>{{ __('ui::editor.image-missing') }}</span>@if (in_array('image', $mediaPicker, true))<button type="button" data-editor-action="upload-missing">{{ __('ui::editor.image-select') }}</button>@endif<button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
 </template>
 @endif
 

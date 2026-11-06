@@ -1,9 +1,9 @@
 /*
- * Placeholders, never part of the content: while what was picked, dropped or pasted
+ * Placeholders, never part of the content: while what was dropped or pasted
  * uploads, one (the view's uploading template) stands where it will go, until it is
  * there or dismissed; where it wouldn't upload, one (failed) says why, to dismiss;
  * where a pasted picture couldn't be read (images.js MISSING), one (missing) says so,
- * to upload it there (saying why, if that fails) or dismiss.
+ * to choose a replacement there or dismiss.
  */
 
 import { Extension } from '@tiptap/core'

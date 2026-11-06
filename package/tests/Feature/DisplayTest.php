@@ -3,8 +3,35 @@
 use Esoboy\Ui\Support\Icons;
 
 /*
- * Badge, Avatar, Card, Kbd, Spinner, Skeleton, Empty, Result, Statistic, Item, Alert, Button Group.
+ * Heading, Text, Badge, Avatar, Card, Kbd, Spinner, Skeleton, Empty, Result, Statistic, Item, Alert, Button Group.
  */
+
+it('renders native heading levels independently of typography and preserves the slot', function (int $level) {
+    $this->blade(
+        '<x-ui::heading :level="$level" size="xs" color="primary" id="title"><em>Title</em></x-ui::heading>',
+        ['level' => $level],
+    )->assertSeeMarkup('<h'.$level.' id="title" data-slot="heading" data-size="xs" data-color="primary"><em>Title</em></h'.$level.'>');
+})->with([1, 2, 3, 4, 5, 6]);
+
+it('handles literal, omitted and invalid heading levels', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::heading level="3">Literal</x-ui::heading>
+        <x-ui::heading>Default</x-ui::heading>
+        <x-ui::heading level="7">Fallback</x-ui::heading>
+        BLADE)
+        ->assertSeeMarkup('<h3 data-slot="heading" data-size="default" data-color="default">Literal</h3>')
+        ->assertSeeMarkup('<h2 data-slot="heading" data-size="default" data-color="default">Default</h2>')
+        ->assertSeeMarkup('<h2 data-slot="heading" data-size="default" data-color="default">Fallback</h2>');
+});
+
+it('renders inline text with its typography and Blade slot', function () {
+    $this->blade('<p><x-ui::text size="lg" color="muted" class="italic"><em>Note</em></x-ui::text></p>')
+        ->assertSeeMarkupInOrder([
+            '<p>',
+            '<span class="italic" data-slot="text" data-size="lg" data-color="muted"><em>Note</em></span>',
+            '</p>',
+        ]);
+});
 
 it('renders badges as spans or links', function () {
     $this->blade('<x-ui::badge>New</x-ui::badge>')

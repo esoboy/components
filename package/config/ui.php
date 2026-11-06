@@ -40,8 +40,8 @@ return [
         'hosts' => [],
 
         // The app's class that stores what the Editor uploads, implementing
-        // Esoboy\Ui\Contracts\EditorUploader. Without one, the Editor uploads nothing:
-        // no media buttons, and images pasted as data or from other sites stay so.
+        // Esoboy\Ui\Contracts\EditorUploader. Handles dropped or pasted files and
+        // importing images. Media selection is enabled per editor with media-picker.
         'uploader' => null,
 
         // Images uploaded as they come in (pasted, dropped, from the source view), without

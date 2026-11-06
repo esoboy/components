@@ -25,6 +25,7 @@
     'disabledDates' => [],
     'presets' => [],
     'time' => false,
+    'timeMode' => 'segmented',
     'step' => null,
     'timeValue' => '00:00',
 ])
@@ -35,7 +36,7 @@ $value = Model::value($attributes, $value);
 $numberOfMonths ??= $mode === 'range' ? 2 : 1;
 $presets = DatePresets::normalize($presets, $mode);
 $validation = $state->attributes();
-$settings = compact('dayView', 'selectedView', 'mode', 'disabled', 'placeholder', 'month', 'captionLayout', 'numberOfMonths', 'weekStartsOn', 'min', 'max', 'disabledDates', 'presets', 'time', 'step', 'timeValue', 'validation');
+$settings = compact('dayView', 'selectedView', 'mode', 'disabled', 'placeholder', 'month', 'captionLayout', 'numberOfMonths', 'weekStartsOn', 'min', 'max', 'disabledDates', 'presets', 'time', 'timeMode', 'step', 'timeValue', 'validation');
 $key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('date-picker'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 

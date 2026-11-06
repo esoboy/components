@@ -12,10 +12,10 @@ use Illuminate\Http\UploadedFile;
 final readonly class EditorUpload
 {
     /**
-     * Picked with a media button, dropped, pasted as a file, an image pasted as data
+     * Dropped, pasted as a file, an image pasted as data
      * (a screenshot, Word's picture), an image on another site.
      */
-    public const SOURCES = ['pick', 'drop', 'paste', 'data', 'external'];
+    public const SOURCES = ['drop', 'paste', 'data', 'external'];
 
     /**
      * @param  string  $source  one of SOURCES

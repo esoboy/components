@@ -104,7 +104,7 @@ describe('the view', function () {
     beforeEach(fn () => config()->set('ui.editor.uploader', Uploads::class));
 
     it('renders the editor with its format and sanitized content', function () {
-        $html = (string) $this->blade('<x-ui::editor wire:model="body" placeholder="Write" :max-length="500" value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
+        $html = (string) $this->blade('<x-ui::editor wire:model="body" :media-picker="[\'image\', \'video\', \'audio\', \'file\']" placeholder="Write" :max-length="500" value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
 
         expect($html)
             ->toContain('data-format="{&quot;features&quot;:[&quot;heading&quot;,')
@@ -113,7 +113,7 @@ describe('the view', function () {
             ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
             ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
             ->toContain('data-placeholder="Write" data-label="Rich text editor" data-editor-name="body"')
-            ->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" wire:ignore>')
+            ->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting">')
             ->toContainMarkup('<div data-slot="editor-control" data-priority="1">')
             ->toContainMarkup('data-editor-command="bold" aria-label="Bold" aria-pressed="false" data-editor-keys="Mod-b"><svg')
             ->toContainMarkup('data-editor-action="media" data-editor-value="image" aria-label="Image"><svg')
@@ -126,14 +126,15 @@ describe('the view', function () {
             ->toContainMarkup('<span data-editor-unsaved hidden>')
             ->toContainMarkup('<button data-editor-action="save-images">')
             ->toContainMarkup('<span data-editor-characters><span data-editor-count>7 / 500</span> characters</span>')
-            ->toMatch('/data-slot="tooltip-content" data-side="top" data-align="center"[^>]*data-editor-tip/')
+            ->toContainMarkup('data-slot="tooltip-content" data-editor-tip data-side="top" data-align="center"')
+            ->toContain('⌘B', 'Ctrl+B')
             ->not->toContain('onclick')
             ->not->toContain('alert(1)')
             ->and(controls($html))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'color', 'code', 'superscript', 'subscript', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'callout', 'code-block', 'horizontal-rule', 'image', 'video', 'audio', 'file', 'table', 'emoji', 'math', 'details', 'find', 'source', 'fullscreen']);
     });
 
     it('ranks its controls, the least used going into More first', function () {
-        $toolbar = strstr((string) $this->blade('<x-ui::editor />'), 'data-slot="editor-content"', true);
+        $toolbar = strstr((string) $this->blade('<x-ui::editor name="body" :media-picker="[\'image\']" />'), 'data-slot="editor-content"', true);
 
         preg_match_all('~data-priority="(\d)">\s*<button[^>]*?data-editor-(?:command|action|opens|menu)="([\w-]+)"(?: data-editor-value="([\w-]+)")?~', $toolbar, $controls, PREG_SET_ORDER);
 
@@ -163,7 +164,7 @@ describe('the view', function () {
 
     it('fits its toolbar and menus to the format', function () {
         $text = (string) $this->blade('<x-ui::editor format="text" />');
-        $basic = (string) $this->blade('<x-ui::editor format="basic" />');
+        $basic = (string) $this->blade('<x-ui::editor format="basic" name="body" :media-picker="[\'image\', \'video\', \'audio\', \'file\']" />');
         $comment = (string) $this->blade('<x-ui::editor :format="[\'bold\', \'link\', \'toolbar\', \'bubble-menu\']" />');
 
         expect(controls($text))->toBe(['undo', 'redo', 'heading', 'font-family', 'font-size', 'bold', 'italic', 'underline', 'strike', 'color', 'code', 'superscript', 'subscript', 'clear-formatting', 'format-painter', 'link', 'text-align', 'line-height', 'spacing', 'outdent', 'indent', 'text-indent', 'bullet-list', 'ordered-list', 'task-list', 'blockquote', 'horizontal-rule', 'find', 'fullscreen'])
@@ -182,10 +183,10 @@ describe('the view', function () {
 
         expect($html)->toContain('data-editor-suggestion="slash"');
         $format = RichText::resolve(['heading', 'bullet-list', 'image', 'video', 'math', 'toolbar', 'slash-menu']);
-        $items = EditorControls::slash($format);
+        $items = EditorControls::slash($format, ['image', 'video']);
         expect(array_keys($items))->toBe(['paragraph', 'heading-1', 'heading-2', 'heading-3', 'heading-4', 'heading-5', 'heading-6', 'bullet-list', 'image', 'video', 'math'])
             ->and($items['image'][2])->toBe(['data-editor-action' => 'media', 'data-editor-value' => 'image'])
-            ->and($items['video'][2])->toBe(['data-editor-action' => 'open', 'data-editor-value' => 'video'])
+            ->and($items['video'][2])->toBe(['data-editor-action' => 'media', 'data-editor-value' => 'video'])
             ->and($items['math'][2])->toBe(['data-editor-action' => 'open', 'data-editor-value' => 'math']);
     });
 
@@ -232,10 +233,10 @@ describe('the view', function () {
             ->toContain('data-editor-action="format-painter" aria-label="Format painter" aria-pressed="false"');
     });
 
-    it('saves and shapes media from their menu, and takes videos uploaded or from a link', function () {
+    it('saves and shapes media and lets the app choose a video alongside the link action', function () {
         config()->set('ui.editor.uploader', Uploads::class);
 
-        $html = (string) $this->blade('<x-ui::editor />');
+        $html = (string) $this->blade('<x-ui::editor name="body" :media-picker="[\'video\']" />');
 
         preg_match('~<template data-template="bubble-node">(.*?)</template>~s', $html, $node);
 
@@ -245,7 +246,7 @@ describe('the view', function () {
             ->toContain('data-editor-command="embed-ratio" data-editor-value="9 / 16" data-editor-label="9:16"')
             ->toContainMarkup('<p data-slot="editor-field-error" data-editor-image-error role="alert" hidden>The upload failed.</p>')
             ->and($html)->toContain('data-editor-opens="video" aria-label="Video"')
-            ->toContain('data-editor-action="media" data-editor-value="video" data-editor-upload="data-editor-upload">')
+            ->toContain('data-editor-action="media" data-editor-value="video">')
             ->toContain('data-editor-video-input')
             ->toContain('placeholder="A video file’s address, a share link or embed code"');
     });
@@ -262,7 +263,7 @@ describe('the view', function () {
             </x-ui::editor>
             BLADE);
 
-        expect($html)->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" class="justify-end" wire:ignore>')
+        expect($html)->toContainMarkup('<div data-slot="editor-toolbar" role="toolbar" aria-label="Formatting" class="justify-end">')
             ->toContain('data-editor-more="data-editor-more" hidden="hidden"')
             ->and(controls($html))->toBe(['undo', 'bold', 'fullscreen']);
     });
@@ -294,6 +295,7 @@ describe('the view', function () {
             ->assertSee('data-label="富文本编辑器"', false)
             ->assertSee('aria-label="格式"', false)
             ->assertSee('aria-label="粗体"', false)
+            ->assertSeeMarkup('<span>粗体</span>')
             ->assertSee('placeholder="粘贴链接…"', false)
             ->assertSee('&quot;expand&quot;:&quot;展开&quot;', false)
             ->assertSeeMarkup('>宋体</span>');
@@ -575,23 +577,23 @@ describe('uploads', function () {
         config()->set('ui.editor.uploader', Uploads::class);
     });
 
-    it('offers no media buttons, saving or placeholders to upload with, without an uploader', function () {
+    it('renders declared media selection without an uploader', function () {
         config()->set('ui.editor.uploader', null);
 
-        $html = (string) $this->blade('<x-ui::editor :upload-context="[\'post\' => 7]" />');
+        $html = (string) $this->blade('<x-ui::editor name="body" :media-picker="[\'image\', \'audio\']" />');
 
         preg_match('~<template data-template="missing-image">(.*?)</template>~s', $html, $missing);
 
         expect($html)->not->toContain('data-upload')
             ->not->toContain('data-image-hosts')
-            ->not->toContain('data-editor-action="media"')
+            ->toContain('data-media-picker="image audio"', 'data-editor-for="image audio"')
             ->not->toContain('data-editor-action="save-image"')
             ->not->toContain('data-editor-unsaved')
             ->not->toContainMarkup('<template data-template="uploading">')
             ->toContain('data-editor-opens="video"')
             ->toContain('data-editor-video-input')
-            ->and($missing[1])->toContain('This picture couldn’t be pasted')->not->toContain('upload-missing')
-            ->and(controls($html))->not->toContain('image', 'audio', 'file');
+            ->and($missing[1])->toContain('This picture couldn’t be pasted')->toContain('upload-missing')
+            ->and(controls($html))->toContain('image', 'audio')->not->toContain('file');
     });
 
     it('tells the editor where to upload, the app’s hosts, its sealed context and what goes up by itself', function () {
@@ -609,30 +611,43 @@ describe('uploads', function () {
             ->toContain('data-auto-upload="external"')
             ->toContainMarkup('<template data-template="upload-failed">')
             ->and(EditorUploads::open(html_entity_decode($context[1])))->toBe(['post' => 7])
-            ->and(controls($html))->toContain('image', 'audio', 'file');
+            ->and(controls($html))->not->toContain('image', 'audio', 'file');
     });
 
     it('hands each file to the uploader, with where it came from and the page’s context, and answers with its attachment', function () use ($post) {
-        $post(['source' => 'pick', 'file' => UploadedFile::fake()->create('a.pdf', 3, 'application/pdf'), 'context' => EditorUploads::seal(['post' => 7])])
+        $post(['source' => 'drop', 'file' => UploadedFile::fake()->create('a.pdf', 3, 'application/pdf'), 'context' => EditorUploads::seal(['post' => 7])])
             ->assertOk()
             ->assertExactJson(['attachment' => ['url' => '/uploads/a.pdf', 'name' => 'a.pdf', 'mime' => 'application/pdf', 'size' => 3072]]);
 
         $post(['source' => 'paste', 'file' => UploadedFile::fake()->create('empty.png', 1, 'image/png')])->assertExactJson(['attachment' => null]);
 
-        expect(array_map(fn ($upload) => [$upload->source, $upload->url, $upload->context], Uploads::$uploads))->toBe([['pick', null, ['post' => 7]], ['paste', null, []]]);
+        expect(array_map(fn ($upload) => [$upload->source, $upload->url, $upload->context], Uploads::$uploads))->toBe([['drop', null, ['post' => 7]], ['paste', null, []]]);
     });
 
     it('says why it won’t: the request, a changed context, an image that isn’t a picture, the uploader’s reason; nothing without an uploader', function () use ($post) {
         $post(['source' => 'stolen', 'file' => UploadedFile::fake()->create('a.png')])->assertUnprocessable()->assertJsonValidationErrors('source');
-        $post(['source' => 'pick'])->assertUnprocessable()->assertJsonValidationErrors('file');
-        $post(['source' => 'pick', 'file' => UploadedFile::fake()->create('a.png'), 'context' => 'forged'])->assertForbidden();
+        $post(['source' => 'drop'])->assertUnprocessable()->assertJsonValidationErrors('file');
+        $post(['source' => 'drop', 'file' => UploadedFile::fake()->create('a.png'), 'context' => 'forged'])->assertForbidden();
         $post(['source' => 'data', 'file' => UploadedFile::fake()->createWithContent('a.png', '<svg onload="x()"/>')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'This image couldn’t be read.']);
         $post(['source' => 'drop', 'file' => UploadedFile::fake()->image('refuse.png')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'Not this one.']);
 
         config()->set('ui.editor.uploader', null);
 
-        $post(['source' => 'pick', 'file' => UploadedFile::fake()->image('a.png')])->assertNotFound();
+        $post(['source' => 'drop', 'file' => UploadedFile::fake()->image('a.png')])->assertNotFound();
         expect(array_map(fn ($upload) => $upload->file->getClientOriginalName(), Uploads::$uploads))->toBe(['refuse.png']);
+    });
+
+    it('checks the application policy before requesting a remote image', function () use ($post, $png) {
+        Http::fake(['*' => Http::response($png())]);
+
+        $post([
+            'source' => 'external',
+            'url' => 'http://93.184.216.34/a.png',
+            'context' => EditorUploads::seal(['denied' => true]),
+        ])->assertForbidden();
+
+        Http::assertNothingSent();
+        expect(Uploads::$uploads)->toBe([]);
     });
 
     it('fetches an image on another site the browser couldn’t read, as a file for the uploader', function () use ($post, $png) {

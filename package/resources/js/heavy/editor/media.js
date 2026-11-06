@@ -59,12 +59,11 @@ export const EMBED_STYLE = 'display: block; width: 100%; max-width: 100%; height
  * The node for an attachment, as the format allows: a kind it leaves out goes in as a
  * file, or not at all without files. Addresses must be http(s) or relative.
  */
-export function attachmentNode(attachment, features, card) {
-    const url = String(attachment?.url ?? '').trim()
+export function attachmentNode(attachment, features, card, asFile = false) {
+    if (! safeUrl(attachment?.url)) return null
+    const url = attachment.url.trim()
 
-    if (! url || ! safeUrl(url)) return null
-
-    let kind = kindOf(attachment)
+    let kind = asFile ? 'file' : kindOf(attachment)
 
     if (! features.includes(kind)) kind = 'file'
     if (! features.includes(kind)) return null
@@ -72,7 +71,7 @@ export function attachmentNode(attachment, features, card) {
     const name = attachment.name ? String(attachment.name) : null
 
     if (kind === 'image') return { type: 'image', attrs: { src: url, alt: attachment.alt ?? name ?? '', width: number(attachment.width), height: number(attachment.height), style: MEDIA_STYLE } }
-    if (kind === 'video') return { type: 'video', attrs: { src: url, poster: attachment.poster && safeUrl(attachment.poster) ? attachment.poster : null, width: number(attachment.width), height: number(attachment.height), title: name, style: MEDIA_STYLE } }
+    if (kind === 'video') return { type: 'video', attrs: { src: url, poster: safeUrl(attachment.poster) ? attachment.poster.trim() : null, width: number(attachment.width), height: number(attachment.height), title: name, style: MEDIA_STYLE } }
     if (kind === 'audio') return { type: 'audio', attrs: { src: url, title: name, style: 'display: block; width: 100%' } }
 
     return { type: 'file', attrs: { href: url, name: name ?? basename(url), mime: attachment.mime ?? attachment.type ?? null, size: attachment.size == null ? null : formatSize(attachment.size), style: card } }
@@ -80,9 +79,12 @@ export function attachmentNode(attachment, features, card) {
 
 // http(s) or relative; never data:, javascript:, … (data: images are images.js's).
 export function safeUrl(url) {
-    const scheme = String(url).trim().match(/^([a-z][a-z\d+.-]*):/i)?.[1]
-
-    return ! scheme || ['http', 'https'].includes(scheme.toLowerCase())
+    if (typeof url !== 'string' || ! url.trim() || /[\x00-\x1f\x7f]/.test(url)) return false
+    try {
+        return ['http:', 'https:'].includes(new URL(url, document.baseURI).protocol)
+    } catch {
+        return false
+    }
 }
 
 /**

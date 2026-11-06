@@ -12,7 +12,7 @@ $rows = [
 @endphp
 
 <x-ui::popover>
-    <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="spacing" :aria-label="__('ui::editor.spacing')" :attributes="$attributes"><x-ui::icon name="unfold-vertical" /></x-ui::button></x-ui::popover.trigger>
+    <x-ui::popover.trigger><x-ui::editor.tool variant="ghost" size="icon-sm" data-editor-opens="spacing" :aria-label="__('ui::editor.spacing')" :attributes="$attributes"><x-ui::icon name="unfold-vertical" /></x-ui::editor.tool></x-ui::popover.trigger>
     <x-ui::popover.content align="start" data-editor-spacing-content>
         @foreach ($rows as $property => [$rowLabel, $values])
         <div data-slot="editor-spacing" role="group" aria-label="{{ $rowLabel }}">
