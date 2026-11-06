@@ -4,9 +4,14 @@
  * Library-wide rules every component has to follow.
  */
 
-it('enables blaze in every component', function (string $path) {
+it('enables blaze in components that do not consume native table slots', function (string $path) {
     expect(file_get_contents($path))->toStartWith('@blaze');
-})->with(fn () => componentViews());
+})->with(fn () => array_diff_key(componentViews(), array_fill_keys([
+    // The class-backed table and its slot children use Laravel's component scope.
+    'data-table/table.blade.php',
+    'data-table/row.blade.php',
+    'data-table/summary-row.blade.php',
+], true)));
 
 it('does not fold components that translate, which would freeze the compile-time locale', function (string $path) {
     $source = file_get_contents($path);

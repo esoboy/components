@@ -3,14 +3,13 @@
 namespace Esoboy\Ui\Livewire;
 
 use Illuminate\Contracts\Database\Query\Builder;
-use Livewire\Attributes\Session;
 use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 
 /**
  * Server state for a Data Table, the Livewire counterpart of shadcn's TanStack table
  * features: sorting, filtering, page size, row selection, and the columns' visibility
- * and order (kept in the session, so they are there when the user comes back). The
+ * and order for the current page. The
  * Data Table parts read and change it; the query stays yours.
  */
 trait WithDataTable
@@ -41,19 +40,47 @@ trait WithDataTable
     public array $selected = [];
 
     /**
+     * Registered selection arrays, keyed by property name. The value marks whether
+     * the selection belongs to the result set controlled by search and filters.
+     *
+     * @return array<string, bool>
+     */
+    protected function dataTableSelectionProperties(): array
+    {
+        return ['selected' => true];
+    }
+
+    /**
      * Select the visible rows in one request.
      *
      * @param  array<int|string, mixed>  $values
      */
-    public function selectRows(array $values, bool $checked): void
+    public function selectRows(string $selection, array $values, bool $checked): void
     {
+        if (! array_key_exists($selection, $this->dataTableSelectionProperties())) {
+            return;
+        }
+
         $values = array_values(array_map('strval', array_filter($values, fn ($value) => is_string($value) || is_int($value))));
-        $selected = array_map('strval', $this->selected);
-        $this->selected = $checked ? array_values(array_unique([...$selected, ...$values])) : array_values(array_diff($selected, $values));
+        /** @var list<int|string> $current */
+        $current = $this->{$selection};
+        $selected = array_map('strval', $current);
+        $this->{$selection} = $checked ? array_values(array_unique([...$selected, ...$values])) : array_values(array_diff($selected, $values));
+    }
+
+    protected function dataTablePageName(): string
+    {
+        return 'page';
+    }
+
+    public function clearSelection(string $selection): void
+    {
+        if (array_key_exists($selection, $this->dataTableSelectionProperties())) {
+            $this->{$selection} = [];
+        }
     }
 
     /** @var list<string> */
-    #[Session]
     public array $hiddenColumns = [];
 
     /**
@@ -61,17 +88,17 @@ trait WithDataTable
      *
      * @var list<string>
      */
-    #[Session]
     public array $columnOrder = [];
 
-    /**
-     * Sorts by a column: in the given direction, or ascending then descending.
-     */
-    public function sort(string $column, ?string $direction = null): void
+    public function sort(string $column, string $direction): void
     {
-        $this->sortDirection = $direction ?? ($this->sortBy === $column && $this->sortDirection === 'asc' ? 'desc' : 'asc');
-        $this->sortBy = $column;
-        $this->resetPage();
+        if (! in_array($direction, ['default', 'asc', 'desc'], true)) {
+            return;
+        }
+
+        $this->sortBy = $direction === 'default' ? null : $column;
+        $this->sortDirection = $direction === 'default' ? 'asc' : $direction;
+        $this->resetPage($this->dataTablePageName());
     }
 
     public function toggleColumn(string $column): void
@@ -95,6 +122,10 @@ trait WithDataTable
     public function moveColumn(string $column, int $position, array|string $columns): void
     {
         $columns = is_string($columns) ? explode(',', $columns) : $columns;
+        if (! in_array($column, $columns, true)) {
+            return;
+        }
+
         $order = array_values(array_diff(array_keys($this->orderedColumns(array_fill_keys($columns, ''))), [$column]));
 
         array_splice($order, max(0, min($position, count($order))), 0, [$column]);
@@ -154,7 +185,7 @@ trait WithDataTable
             unset($this->filters[$column]);
         }
 
-        $this->resetPage();
+        $this->resetDataTableResults();
     }
 
     /**
@@ -162,13 +193,15 @@ trait WithDataTable
      */
     public function clearFilters(?string $column = null): void
     {
+        $changed = $column === null ? $this->filters !== [] : isset($this->filters[$column]);
+
         if ($column === null) {
             $this->filters = [];
         } else {
             unset($this->filters[$column]);
         }
 
-        $this->resetPage();
+        $this->resetDataTableResults($changed);
     }
 
     /**
@@ -178,7 +211,20 @@ trait WithDataTable
     {
         $this->filters = [];
         $this->search = '';
-        $this->resetPage();
+        $this->resetDataTableResults();
+    }
+
+    private function resetDataTableResults(bool $criteriaChanged = true): void
+    {
+        if ($criteriaChanged) {
+            foreach ($this->dataTableSelectionProperties() as $selection => $belongsToResults) {
+                if ($belongsToResults) {
+                    $this->{$selection} = [];
+                }
+            }
+        }
+
+        $this->resetPage($this->dataTablePageName());
     }
 
     public function filtered(): bool
@@ -187,8 +233,8 @@ trait WithDataTable
     }
 
     /**
-     * The page sizes Pagination offers. $perPage is always one of them: another (from
-     * the URL, say) becomes the first.
+     * Allowed page sizes. Pass this list to the page-size component. An invalid
+     * size from the URL or the browser falls back to the first option.
      *
      * @return non-empty-list<int>
      */
@@ -208,9 +254,11 @@ trait WithDataTable
      */
     public function updatedWithDataTable(string $property): void
     {
-        if (in_array(strtok($property, '.'), ['perPage', 'filters', 'search'], true)) {
+        $property = strtok($property, '.');
+
+        if (in_array($property, ['perPage', 'filters', 'search'], true)) {
             $this->keepDataTableInBounds();
-            $this->resetPage();
+            $this->resetDataTableResults($property !== 'perPage');
         }
     }
 

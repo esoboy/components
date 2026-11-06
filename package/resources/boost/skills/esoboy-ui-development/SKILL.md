@@ -158,58 +158,44 @@ Component events are listened to with `wire:` on the component: `wire:emoji-sele
 
 ## Data Table
 
-`WithDataTable` holds the table's state (sorting, filters, search, page size, selection, hidden and reordered columns); the query stays yours.
-
-```php
-use Esoboy\Ui\Livewire\WithDataTable;
-
-new class extends Component
-{
-    use WithDataTable;
-
-    #[Computed]
-    public function users()
-    {
-        $query = User::query()->when($this->search, fn ($query) => $query->where('email', 'like', "%{$this->search}%"));
-
-        return $this->sortQuery($this->filterQuery($query, ['role']), ['name', 'email', 'created_at'])->paginate($this->perPage);
-    }
-};
-```
+`WithDataTable` keeps search, filters, sort, pagination, selection, and column layout on the calling Livewire page. The page queries the records and runs its own business actions. `data-table` is the container. Compose its parts in the order the page needs.
 
 ```blade
-<x-ui::data-table>
-    <x-ui::data-table.toolbar>
-        <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." class="h-8 w-64" />
-        <x-ui::data-table.faceted-filter column="role" title="Role" :options="['admin' => 'Admin', 'member' => 'Member']" />
-        <x-ui::data-table.reset />
-        <x-ui::data-table.view-options :columns="['name' => 'Name', 'email' => 'Email']" />
+@php($users = $this->users)
+
+<x-ui::data-table selectable>
+    <x-ui::data-table.toolbar collapsible clear-filters clear-action="resetFilters">
+        <x-slot:primary>
+            <x-ui::input type="search" wire:model.live.debounce.300ms="search" aria-label="Search users" />
+        </x-slot:primary>
+        <x-slot:secondary>
+            <x-ui::data-table.faceted-filter column="role" title="Role" :options="$roles" />
+        </x-slot:secondary>
     </x-ui::data-table.toolbar>
-    <x-ui::data-table.content>
-        <x-ui::table.header>
-            <x-ui::table.row>
-                <x-ui::table.head><x-ui::data-table.select-all /></x-ui::table.head>
-                <x-ui::table.head><x-ui::data-table.column-header column="name" title="Name" /></x-ui::table.head>
-            </x-ui::table.row>
-        </x-ui::table.header>
-        <x-ui::table.body>
-            @forelse ($this->users as $user)
-                <x-ui::data-table.row :id="$user->id">
-                    <x-ui::table.cell><x-ui::data-table.select-row :value="$user->id" /></x-ui::table.cell>
-                    <x-ui::table.cell>{{ $user->name }}</x-ui::table.cell>
-                </x-ui::data-table.row>
-            @empty
-                <x-ui::data-table.empty :colspan="2" />
-            @endforelse
-        </x-ui::table.body>
-    </x-ui::data-table.content>
-    <x-ui::data-table.pagination :paginator="$this->users" />
+    <x-ui::data-table.view-options :columns="$columns" />
+    <x-ui::data-table.table :rows="$users" :columns="$columns" actions actions-title="Actions">
+        @foreach ($component->entries() as $entry)
+            <x-ui::data-table.row :entry="$entry">
+                <x-slot:actions>
+                    <x-ui::button wire:click="editUser({{ $entry->row->id }})">Edit</x-ui::button>
+                </x-slot:actions>
+            </x-ui::data-table.row>
+        @endforeach
+    </x-ui::data-table.table>
+    <x-ui::data-table.total :total="$users->total()" />
+    <x-ui::data-table.page-size :options="$this->perPageOptions()" />
+    <x-ui::data-table.pagination :paginator="$users" />
+    <x-ui::data-table.selection-toolbar>
+        <x-ui::button wire:click="exportSelected">Export</x-ui::button>
+    </x-ui::data-table.selection-toolbar>
 </x-ui::data-table>
 ```
 
-- `$this->visibleColumns($columns)` and `$this->orderedColumns($columns)` give the columns the user shows, in their order; `$this->selected` holds the selected rows' values.
-- `facetCounts($query, 'role', ['role'])` gives the counts a Faceted Filter shows (`:counts`).
-- Expandable rows: `<x-ui::data-table.row-toggle />` in a row and `<x-ui::data-table.row-detail :for="$id" :colspan="…">` after it; tree rows: `:parent` and `:level` on `data-table.row`; fixed columns: `sticky="start"` or `sticky="end"` on `table.head` and `table.cell`; `sticky-header` on `data-table.content`.
+- Define columns by key with `title`, optional `sortable`, and optional `fixed` (`start` or `end`). A named slot matching a column key overrides its cell. The `actions` and `detail` names belong to the row's structural slots. Use `sticky-header` on `data-table.table`.
+- The header Native Select sets one sort direction or restores the page query's default. Use `sortQuery()` with allowed fields in the page query. Match the Laravel paginator's name to `dataTablePageName()`. Supply the page's `perPageOptions()` to `page-size` so the displayed and accepted options come from the same list.
+- Select-all changes the current page's visible, enabled rows. Use `selection` on the container for another registered page property. The selection toolbar provides count and clear. Its slot runs on the page.
+- Use `details` on the table and `detail` on the row for expandable content. Use `tree` and `children-field` on the table for nested rows. Tree and detail toggles work independently.
+- Put `data-table.summary-row` inside the table's `summary` slot. Pass page-calculated `values` by column key. Column layout is local to the page and resets on refresh.
 
 ## Rich Text
 

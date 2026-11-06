@@ -15,6 +15,28 @@ class Payments extends Component
 
     public string $searchedFor = '';
 
+    public string $pageName = 'page';
+
+    /** @var list<int|string> */
+    public array $independentSelection = [];
+
+    /** @return array<string, bool> */
+    protected function dataTableSelectionProperties(): array
+    {
+        return ['selected' => true, 'independentSelection' => false];
+    }
+
+    protected function dataTablePageName(): string
+    {
+        return $this->pageName;
+    }
+
+    /** @return non-empty-list<int> */
+    public function perPageOptions(): array
+    {
+        return [10, 15, 20, 25, 30, 50];
+    }
+
     // The app's own hook for a property the trait resets the page on.
     public function updatedSearch(string $search): void
     {
@@ -43,11 +65,16 @@ class Payments extends Component
     }
 
     /**
-     * @return LengthAwarePaginator<int, array{id: int}>
+     * @return LengthAwarePaginator<int, array{id: int, email: string, amount: int}>
      */
     public function rows(): LengthAwarePaginator
     {
-        return new LengthAwarePaginator([['id' => 1], ['id' => 2]], 42, $this->perPage, $this->getPage());
+        $name = $this->dataTablePageName();
+
+        return new LengthAwarePaginator([
+            ['id' => 1, 'email' => 'ada@example.test', 'amount' => 12],
+            ['id' => 2, 'email' => 'bea@example.test', 'amount' => 23],
+        ], 42, $this->perPage, $this->getPage($name), ['pageName' => $name]);
     }
 
     public function render(): string
@@ -55,29 +82,26 @@ class Payments extends Component
         return <<<'BLADE'
             <div>
                 @php($paginator = $this->rows())
-                <x-ui::data-table>
-                    <x-ui::data-table.toolbar>
-                        <x-ui::data-table.faceted-filter column="status" title="Status" :options="['paid' => 'Paid', 'failed' => ['label' => 'Failed', 'icon' => 'x']]" :counts="['paid' => 3]" />
-                        <x-ui::data-table.reset />
-                        <x-ui::data-table.view-options :columns="['email' => 'Email', 'amount' => 'Amount']" reorderable />
+                @php($columns = ['email' => ['title' => 'Email', 'sortable' => true], 'amount' => ['title' => 'Amount'], 'status' => ['title' => 'Status', 'fixed' => 'end']])
+                <x-ui::data-table selectable>
+                    <x-ui::data-table.toolbar :clear-filters="$this->filtered()">
+                        <x-slot:primary>
+                            <x-ui::data-table.faceted-filter column="status" title="Status" :options="['paid' => 'Paid', 'failed' => ['label' => 'Failed', 'icon' => 'x']]" :counts="['paid' => 3]" />
+                        </x-slot:primary>
                     </x-ui::data-table.toolbar>
-                    <x-ui::data-table.content>
-                        <x-ui::table.header>
-                            <x-ui::table.row>
-                                <x-ui::table.head><x-ui::data-table.select-all /></x-ui::table.head>
-                                <x-ui::table.head><x-ui::data-table.column-header column="email" title="Email" /></x-ui::table.head>
-                                <x-ui::table.head><x-ui::data-table.column-header column="status" title="Status" :sortable="false" /></x-ui::table.head>
-                                <x-ui::table.head><x-ui::data-table.column-header column="method" title="Method" :sortable="false" :hideable="false" :options="['card' => 'Card', 'bank' => 'Bank']" /></x-ui::table.head>
-                            </x-ui::table.row>
-                        </x-ui::table.header>
-                        <x-ui::table.body>
-                            @foreach ($paginator as $row)
-                            <x-ui::table.row><x-ui::table.cell><x-ui::data-table.select-row :value="$row['id']" /></x-ui::table.cell></x-ui::table.row>
-                            @endforeach
-                            <x-ui::data-table.empty colspan="3" />
-                        </x-ui::table.body>
-                    </x-ui::data-table.content>
+                    <x-ui::data-table.view-options :columns="$columns" />
+                    <x-ui::data-table.table :rows="$paginator" :columns="$columns">
+                        @foreach ($component->entries() as $entry)
+                            <x-ui::data-table.row :entry="$entry" />
+                        @endforeach
+                        <x-slot:summary>
+                            <x-ui::data-table.summary-row :values="['email' => 'Page subtotal', 'amount' => 35]" />
+                        </x-slot:summary>
+                    </x-ui::data-table.table>
+                    <x-ui::data-table.total :total="$paginator->total()" />
+                    <x-ui::data-table.page-size :options="$this->perPageOptions()" />
                     <x-ui::data-table.pagination :paginator="$paginator" />
+                    <x-ui::data-table.selection-toolbar>Payment actions</x-ui::data-table.selection-toolbar>
                 </x-ui::data-table>
             </div>
             BLADE;

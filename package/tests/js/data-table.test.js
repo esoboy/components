@@ -1,7 +1,17 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import dataTable from '../../resources/js/alpine/data-table.js'
-import { engineDriver, cleanupControllers } from './alpine-harness.js'
+import { engineDriver, cleanupControllers, provider } from './alpine-harness.js'
 
+beforeAll(() => {
+    // jsdom does not implement layout or checkVisibility.
+    Element.prototype.checkVisibility = function () {
+        return getComputedStyle(this.closest('tr')).display !== 'none'
+    }
+})
+
+afterAll(() => {
+    delete Element.prototype.checkVisibility
+})
 
 afterEach(() => {
     cleanupControllers()
@@ -9,34 +19,37 @@ afterEach(() => {
 })
 
 function mount() {
-    document.body.innerHTML = `
-        <eso-data-table>
+    const wire = { teams: [], selectRows: vi.fn() }
+    const data = provider(dataTable, `
+        <eso-data-table data-selection="teams">
             <table>
                 <thead><tr><th><input type="checkbox" data-data-table-select-all></th></tr></thead>
                 <tbody>
                     <tr><td><input type="checkbox" value="1" data-data-table-select-row></td></tr>
                     <tr><td><input type="checkbox" value="2" data-data-table-select-row></td></tr>
                     <tr><td><input type="checkbox" value="3" data-data-table-select-row disabled></td></tr>
+                    <tr hidden><td><input type="checkbox" value="4" data-data-table-select-row></td></tr>
+                    <tr style="display: none"><td><input type="checkbox" value="5" data-data-table-select-row></td></tr>
                 </tbody>
             </table>
-        </eso-data-table>`
+        </eso-data-table>`, { wire })
 
-    return engineDriver(dataTable, document.querySelector('eso-data-table'))
+    for (const box of rows()) box.addEventListener('change', () => {
+        wire.teams = box.checked ? [...wire.teams, box.value] : wire.teams.filter(value => value !== box.value)
+    })
+
+    return { data, wire }
 }
 
 const all = () => document.querySelector('[data-data-table-select-all]')
 const rows = () => [...document.querySelectorAll('[data-data-table-select-row]')]
 
 it('sends one server action with enabled visible row ids', () => {
-    const table = mount()
-    const selectRows = vi.fn()
-    // The Alpine provider reads the owning Livewire component, not per-row change events.
-    const data = dataTable()
-    data.$el = table; data.$wire = { selectRows }
+    const { data, wire } = mount()
     data._selectAll(true)
-    expect(selectRows).toHaveBeenCalledWith(['1', '2'], true)
+    expect(wire.selectRows).toHaveBeenCalledWith('teams', ['1', '2'], true)
     data._selectAll(false)
-    expect(selectRows).toHaveBeenLastCalledWith(['1', '2'], false)
+    expect(wire.selectRows).toHaveBeenLastCalledWith('teams', ['1', '2'], false)
 })
 
 it('shows mixed while only some rows are checked', () => {
@@ -54,13 +67,12 @@ it('shows mixed while only some rows are checked', () => {
 })
 
 it('follows rows checked by a morph', async () => {
-    mount()
+    const { wire } = mount()
 
+    wire.teams = [1]
     rows()[0].setAttribute('checked', '')
-    rows()[0].checked = true
 
-    await vi.waitFor(() => expect(rows()[0].closest('tr').getAttribute('data-state')).toBe('selected'))
-    expect(all().indeterminate).toBe(true)
+    await vi.waitFor(() => expect(all().indeterminate).toBe(true))
 })
 
 describe('expanding', () => {
@@ -68,10 +80,10 @@ describe('expanding', () => {
         document.body.innerHTML = `
             <eso-data-table>
                 <table><tbody>
-                    <tr data-row-id="eng" data-expanded><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
-                    <tr data-row-id="eng/platform" data-parent="eng" hidden><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
-                    <tr data-row-id="eng/platform/api" data-parent="eng/platform" hidden><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
-                    <tr data-row-id="ops"><td><button data-data-table-row-toggle aria-expanded="false"></button></td></tr>
+                    <tr data-row-id="eng" data-expanded><td><button data-data-table-row-toggle="tree" aria-expanded="false"></button></td></tr>
+                    <tr data-row-id="eng/platform" data-parent="eng" hidden><td><button data-data-table-row-toggle="tree" aria-expanded="false"></button></td></tr>
+                    <tr data-row-id="eng/platform/api" data-parent="eng/platform" hidden><td></td></tr>
+                    <tr data-row-id="ops"><td><button data-data-table-row-toggle="detail" aria-expanded="false"></button></td></tr>
                     <tr data-slot="data-table-row-detail" data-detail-for="ops" hidden><td>Ops details</td></tr>
                 </tbody></table>
             </eso-data-table>`
@@ -82,13 +94,13 @@ describe('expanding', () => {
     const visible = () => [...document.querySelectorAll('tr[data-row-id]')].filter(row => ! row.hidden).map(row => row.dataset.rowId)
     const toggle = id => document.querySelector(`tr[data-row-id="${id}"] [data-data-table-row-toggle]`)
 
-    it('opens rows expanded by default, and marks leaves', () => {
+    it('opens rows expanded by default, and leaves terminal rows without a tree toggle', () => {
         tree()
 
         expect(visible()).toEqual(['eng', 'eng/platform', 'ops'])
         expect(toggle('eng').getAttribute('aria-expanded')).toBe('true')
-        expect(toggle('eng/platform/api').hasAttribute('data-leaf')).toBe(true)
-        expect(toggle('ops').hasAttribute('data-leaf')).toBe(false)
+        expect(toggle('eng/platform/api')).toBeNull()
+        expect(toggle('ops').dataset.dataTableRowToggle).toBe('detail')
     })
 
     it('shows a row only while all its ancestors are expanded, remembering inner ones', () => {

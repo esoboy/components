@@ -203,3 +203,19 @@ Tests exercise the public Blade/Livewire interfaces,
 form submission, state changes, keyboard interaction, navigation and multiple
 instances. Architecture checks cover Alpine event registration, Blade content,
 and the rendering boundary of the migrated providers.
+
+## Data Table
+
+Keep queries and actions on the calling Livewire page. Put records and keyed
+column definitions on `data-table.table`, then render `data-table.row` for each
+entry from `$component->entries()`. Use row slots for custom cells, actions,
+and details. Enable selection on the container with `selectable`.
+
+Place `total`, `page-size`, and `pagination` independently. Pass the page's
+paginator directly to `pagination`. Put page-owned filters in the toolbar's
+`primary` and `secondary` slots. The table generates sort selects, and direct
+calls to `sort` supply `asc`, `desc`, or `default`.
+
+For nested rows, set `tree` and optionally `children-field` on the table.
+Pass page-calculated totals by column key to `summary-row` in the `summary`
+slot. Column layout resets on page reload.

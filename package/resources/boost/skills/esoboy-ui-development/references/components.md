@@ -109,7 +109,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 ## Data
 
 - **table** — Parts: body, caption, cell, footer, head, header, row.
-- **data-table** — Table driven by the `WithDataTable` trait. Parts: column-header, content, empty, faceted-filter, pagination, reset, row, row-detail, row-toggle, select-all, select-row, toolbar, view-options.
+- **data-table** — Page-owned state through `WithDataTable`. Compose the table, rows, toolbars, summary and pagination controls from the page. Parts: content, empty, faceted-filter, page-size, pagination, row, row-detail, row-toggle, select-all, select-row, selection-toolbar, summary-row, table, toolbar, total, view-options.
 - **description-list** — *(not in shadcn)* terms and details; `orientation`, `columns`. Parts: details, item, term.
 - **steps** — *(not in shadcn)* `current`, `orientation`; item `title`, `description`, `status`. Parts: item.
 - **timeline** — *(not in shadcn)* Parts: description, header, item, time, title.

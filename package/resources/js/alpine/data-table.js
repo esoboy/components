@@ -1,13 +1,11 @@
 /*
  * <eso-data-table>
  *
- * The select-all checkbox checks or clears every row checkbox (each announces its own
- * change, so wire:model sees them all) and shows mixed while only some are checked.
- * Rows of checked boxes get data-state="selected", as TanStack rows do in shadcn.
+ * The select-all checkbox updates the visible, enabled rows in one Livewire action
+ * and shows mixed while only some of those rows are checked.
+ * Selected rows are rendered by Blade.
  *
- * Row Toggles expand a row: its Row Detail, or the rows whose data-parent is its
- * data-row-id (shown only while every ancestor is expanded). Expanded rows are kept
- * by id, so they stay expanded through morphs and pages.
+ * Tree and detail toggles keep independent expansion state by row ID.
  *
  * Sticky cells (data-sticky="start" / "end") get --sticky-offset, the width of the
  * sticky cells before them, and a scrolled table container says which edges have
@@ -28,8 +26,9 @@ const set = (element, name, value) => {
 
 import { listen, disconnected } from './interaction.js'
 
-export default (binding = {}) => ({
+export default () => ({
     _expanded: new Set(),
+    _details: new Set(),
     _serverExpanded: new Map(),
     _hovered: null,
     _observer: null,
@@ -50,7 +49,8 @@ export default (binding = {}) => ({
 
             if (id === undefined) return
 
-            this._expanded.has(id) ? this._expanded.delete(id) : this._expanded.add(id)
+            const expanded = toggle.dataset.dataTableRowToggle === 'detail' ? this._details : this._expanded
+            expanded.has(id) ? expanded.delete(id) : expanded.add(id)
             this._expand()
         })
 
@@ -61,7 +61,7 @@ export default (binding = {}) => ({
         this._refresh()
 
         // Livewire morphs bring new rows, the server's checked state, and reset what is set here.
-        this._observer.observe(this.$el, { childList: true, subtree: true, attributes: true, attributeFilter: ['checked', 'data-state', 'hidden', 'aria-expanded', 'data-expanded', 'data-leaf', 'style', 'data-scroll-start', 'data-scroll-end'] })
+        this._observer.observe(this.$el, { childList: true, subtree: true, attributes: true, attributeFilter: ['checked', 'disabled', 'class', 'data-state', 'hidden', 'aria-expanded', 'data-expanded', 'style', 'data-scroll-start', 'data-scroll-end'] })
     },
 
     destroy() {
@@ -71,7 +71,11 @@ export default (binding = {}) => ({
     },
 
     get rows() {
-        return [...this.$el.querySelectorAll(ROW)].filter(box => this._owns(box) && ! box.disabled)
+        return [...this.$el.querySelectorAll(ROW)].filter(box => this._owns(box))
+    },
+
+    _selectable(rows) {
+        return rows.filter(box => ! box.matches(':disabled') && box.checkVisibility({ visibilityProperty: true }))
     },
 
     _owns(element) {
@@ -79,8 +83,8 @@ export default (binding = {}) => ({
     },
 
     _refresh() {
-        this._sync()
         this._expand()
+        this._sync()
         this._stick()
 
         for (const container of this.$el.querySelectorAll('[data-slot="table-container"]')) {
@@ -89,30 +93,35 @@ export default (binding = {}) => ({
     },
 
     _selectAll(checked) {
-        this.$wire.selectRows(this.rows.map(box => box.value), checked)
+        const values = this._selectable(this.rows).map(box => box.value)
+        if (values.length === 0) {
+            this._sync()
+            return
+        }
+
+        this.$wire.selectRows(this.$el.dataset.selection, values, checked)
     },
 
     _sync() {
         const rows = this.rows
-        const checked = rows.filter(box => box.checked).length
+        const headers = [...this.$el.querySelectorAll(ALL)].filter(box => this._owns(box))
+        if (! rows.length && ! headers.length) return
 
-        for (const all of [...this.$el.querySelectorAll(ALL)].filter(box => this._owns(box))) {
-            all.checked = rows.length > 0 && checked === rows.length
-            all.indeterminate = checked > 0 && checked < rows.length
+        const selectable = this._selectable(rows)
+        const selected = new Set((this.$wire[this.$el.dataset.selection] ?? []).map(String))
+        const checked = selectable.filter(box => selected.has(box.value)).length
+
+        for (const all of headers) {
+            all.checked = selectable.length > 0 && checked === selectable.length
+            all.indeterminate = checked > 0 && checked < selectable.length
         }
 
-        for (const box of rows) {
-            const row = box.closest('tr')
-
-            if (row) set(row, 'data-state', box.checked ? 'selected' : null)
-        }
     },
 
     _expand() {
         const rows = [...this.$el.querySelectorAll('tr[data-row-id]')].filter(row => this._owns(row))
-        const byId = new Map(rows.map(row => [row.dataset.rowId, row]))
-        const parents = new Set(rows.map(row => row.dataset.parent).filter(Boolean))
         const details = new Map([...this.$el.querySelectorAll('tr[data-detail-for]')].filter(detail => this._owns(detail)).map(detail => [detail.dataset.detailFor, detail]))
+        const visibleRows = new Set()
 
         for (const row of rows) {
             const id = row.dataset.rowId
@@ -124,29 +133,21 @@ export default (binding = {}) => ({
             expanded === 'false' ? this._expanded.delete(id) : this._expanded.add(id)
         }
 
-        const shown = (row, depth = 0) => {
-            const parent = row.dataset.parent
-
-            if (! parent || depth > 50) return true
-
-            return this._expanded.has(parent) && (! byId.has(parent) || shown(byId.get(parent), depth + 1))
-        }
-
         for (const row of rows) {
-            const id = row.dataset.rowId
-            const visible = shown(row)
+            const { rowId: id, parent } = row.dataset
+            // The Blade iterator renders each parent before its children.
+            const visible = parent === undefined || (visibleRows.has(parent) && this._expanded.has(parent))
+            if (visible) visibleRows.add(id)
+
             const detail = details.get(id)
-            const expandable = parents.has(id) || Boolean(detail)
-            const open = expandable && this._expanded.has(id)
-            const toggle = row.querySelector(TOGGLE)
+            const treeToggle = row.querySelector('[data-data-table-row-toggle="tree"]')
+            const detailToggle = row.querySelector('[data-data-table-row-toggle="detail"]')
 
             set(row, 'hidden', visible ? null : '')
-            if (detail) set(detail, 'hidden', visible && open ? null : '')
+            if (detail) set(detail, 'hidden', visible && this._details.has(id) ? null : '')
 
-            if (toggle) {
-                set(toggle, 'aria-expanded', String(open))
-                set(toggle, 'data-leaf', expandable ? null : '')
-            }
+            if (treeToggle) set(treeToggle, 'aria-expanded', String(this._expanded.has(id)))
+            if (detailToggle) set(detailToggle, 'aria-expanded', String(this._details.has(id)))
         }
     },
 
