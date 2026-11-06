@@ -51,7 +51,7 @@ PHP;
 <div class="mx-auto max-w-3xl space-y-12 p-10">
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Theme</h2>
-        <p class="text-sm text-muted-foreground">Any control with data-theme-value switches this app's theme; the header uses a Toggle Group.</p>
+        <p class="text-sm text-muted-foreground">The theme prop on these controls switches this app's theme. The header uses a Toggle Group.</p>
         <div class="flex flex-wrap items-center gap-4">
             <x-ui::button variant="outline" size="icon" theme="toggle" aria-label="Toggle theme"><x-ui::icon name="sun-moon" /></x-ui::button>
             <label class="flex items-center gap-2 text-sm"><x-ui::switch theme="toggle" /> Dark mode</label>

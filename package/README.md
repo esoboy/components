@@ -143,8 +143,8 @@ Icons are Lucide's, built in (the version is in `resources/icons/lucide.php`):
 <x-ui::icon name="chevron-down" class="size-4" />
 ```
 
-Only the shipped names exist; an unknown name fails the render and names the new name of
-an old one. A newer Lucide comes with a newer package (`npm run icons` regenerates the set).
+Use the canonical names shipped with the package. An unknown name fails the render.
+A newer Lucide comes with a newer package (`npm run icons` regenerates the set).
 
 From Livewire components, form objects and actions:
 

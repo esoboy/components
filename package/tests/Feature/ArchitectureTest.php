@@ -24,7 +24,9 @@ it('keeps initialization and internal event wiring out of demo call sites', func
 
 it('does not expose removed frontend default properties or obsolete parts', function () {
     foreach (componentViews() as $path) {
-        expect(file_get_contents($path))->not->toMatch('/[\'"](?:default[A-Z]\w*|isActive|shouldFilter)[\'"]\s*=>/');
+        expect(file_get_contents($path))
+            ->not->toMatch('/[\'"](?:default[A-Z]\w*|isActive|shouldFilter)[\'"]\s*=>/')
+            ->not->toMatch('/@props\s*\(\s*\[[^\]]*[\'"](?:as|asChild|as-child)[\'"]\s*(?:=>|,|\])/s', $path);
     }
     expect(view()->exists('ui::components.combobox.chips'))->toBeFalse()
         ->and(view()->exists('ui::components.questionnaire.item'))->toBeFalse()

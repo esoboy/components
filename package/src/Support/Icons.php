@@ -10,7 +10,7 @@ use InvalidArgumentException;
  */
 final class Icons
 {
-    /** @var array{version: string, icons: array<string, string>, aliases: array<string, string>}|null */
+    /** @var array{version: string, icons: array<string, string>}|null */
     private static ?array $lucide = null;
 
     /**
@@ -24,8 +24,6 @@ final class Icons
             return $lucide['icons'][$name];
         }
 
-        $renamed = isset($lucide['aliases'][$name]) ? " Lucide renamed it to [{$lucide['aliases'][$name]}]." : '';
-
-        throw new InvalidArgumentException("Lucide {$lucide['version']} has no icon [{$name}].{$renamed}");
+        throw new InvalidArgumentException("Lucide {$lucide['version']} has no icon [{$name}].");
     }
 }

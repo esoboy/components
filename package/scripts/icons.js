@@ -1,14 +1,13 @@
 /*
  * Generates resources/icons/lucide.php from the pinned lucide-static devDependency:
- * every Lucide icon's inner markup by name, and the old names Lucide still accepts,
- * so <x-ui::icon> can say what an old name is called now.
+ * every Lucide icon's inner markup by its canonical name.
  *
  *   npm run icons
  *
  * Updating Lucide is a package release: bump lucide-static, run this, commit.
  */
 
-import { copyFile, readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -22,24 +21,6 @@ const markup = elements => elements.map(([tag, attributes]) => `<${tag} ${Object
 
 const icons = Object.fromEntries(Object.keys(nodes).sort().map(name => [name, markup(nodes[name])]))
 
-// lucide-static ships an old name as a copy of its icon's file.
-const inner = svg => svg.replace(/<!--[\s\S]*?-->/, '').replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>[\s\S]*$/, '').replace(/\s+/g, ' ').trim()
-const files = (await readdir(join(lucide, 'icons'))).filter(file => file.endsWith('.svg')).sort()
-const byContent = new Map()
-const aliases = {}
-
-for (const name of Object.keys(icons)) byContent.set(inner(await readFile(join(lucide, 'icons', `${name}.svg`), 'utf8')), name)
-
-for (const file of files) {
-    const name = file.slice(0, -4)
-
-    if (icons[name]) continue
-
-    const target = byContent.get(inner(await readFile(join(lucide, 'icons', file), 'utf8')))
-
-    if (target) aliases[name] = target
-}
-
 const php = value => `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
 const entries = object => Object.entries(object).map(([name, value]) => `        ${php(name)} => ${php(value)},\n`).join('')
 
@@ -51,11 +32,9 @@ return [
     'version' => ${php(version)},
     'icons' => [
 ${entries(icons)}    ],
-    'aliases' => [
-${entries(aliases)}    ],
 ];
 `)
 
 await copyFile(join(lucide, 'LICENSE'), join(root, 'resources/icons/LICENSE'))
 
-console.log(`Lucide ${version}: ${Object.keys(icons).length} icons, ${Object.keys(aliases).length} old names`)
+console.log(`Lucide ${version}: ${Object.keys(icons).length} icons`)

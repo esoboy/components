@@ -39,10 +39,9 @@ it('is an image with a label', function () {
         ->not->toContain('aria-hidden');
 });
 
-it('only knows the icons it ships, and names the new name of an old one', function () {
-    expect(fn () => Icons::markup('no-such-icon'))->toThrow(InvalidArgumentException::class, 'Lucide 1.62.0 has no icon [no-such-icon].')
-        ->and(fn () => Icons::markup('more-horizontal'))->toThrow(InvalidArgumentException::class, 'Lucide renamed it to [ellipsis].');
-});
+it('rejects names outside the shipped Lucide catalogue', function (string $name) {
+    expect(fn () => Icons::markup($name))->toThrow(new InvalidArgumentException("Lucide 1.62.0 has no icon [{$name}]."));
+})->with(['no-such-icon', 'more-horizontal']);
 
 it('fails the render for an unknown icon instead of showing nothing', function () {
     $this->blade('<x-ui::icon :name="$name" />', ['name' => 'no-such-icon']);
