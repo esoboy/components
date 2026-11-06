@@ -7,7 +7,7 @@
         @foreach ((array) $value as $chosen)
         <div data-slot="combobox-chip" data-value="{{ $chosen }}" wire:key="chip-{{ $chosen }}">
             @php($selectedLabel = $labels[(string) $chosen] ?? (string) $chosen)
-            <span data-combobox-chip-label>@if ($settings['selectedView'] ?? null)@include($settings['selectedView'], ['value' => $chosen, 'label' => $selectedLabel])@else{{ $selectedLabel }}@endif</span>
+            <span data-combobox-chip-label>{{ isset($settings['selectedView']) ? view($settings['selectedView'], ['value' => $chosen, 'label' => $selectedLabel]) : $selectedLabel }}</span>
             <x-ui::button variant="ghost" size="icon-xs" data-combobox-chip-remove :aria-label="__('ui::common.remove')" :wire:click="'remove('.\Illuminate\Support\Js::from($chosen).')'"><x-ui::icon name="x" /></x-ui::button>
         </div>
         @endforeach
@@ -15,9 +15,7 @@
     </div>
     @elseif ($settings['button'])
         <x-ui::combobox.trigger variant="outline" :disabled="$settings['disabled']" :attributes="$attributes->only(['class', 'style'])">
-            <x-ui::combobox.value :placeholder="$label ?: $settings['placeholder']">
-                @if ($value !== null && ($settings['selectedView'] ?? null))@include($settings['selectedView'], ['value' => $value, 'label' => $label])@endif
-            </x-ui::combobox.value>
+            <x-ui::combobox.value :placeholder="$label ?: $settings['placeholder']" :label="$value !== null && isset($settings['selectedView']) ? view($settings['selectedView'], ['value' => $value, 'label' => $label]) : null" />
         </x-ui::combobox.trigger>
     @else
         <x-ui::combobox.input wire:model.live.debounce.150ms="query" :value="$query" :placeholder="$settings['placeholder']" :show-trigger="$settings['trigger']" :show-clear="$settings['clearable']" :disabled="$settings['disabled']" :attributes="$attributes->only(['class', 'style'])->merge($settings['validation'] ?? [])" />
@@ -31,7 +29,7 @@
             @foreach ($choices as $option)
             @php($selected = in_array($option['value'], (array) $value, true))
             <x-ui::combobox.item :value="$option['value']" :aria-selected="$selected ? 'true' : 'false'" :disabled="! empty($option['disabled'])" :wire:click="'choose('.\Illuminate\Support\Js::from($option['value']).')'">
-                @if ($settings['optionView'] ?? null)@include($settings['optionView'], ['option' => $option, 'selected' => $selected])@else{{ $option['label'] }}@endif
+                {{ isset($settings['optionView']) ? view($settings['optionView'], ['option' => $option, 'selected' => $selected]) : $option['label'] }}
             </x-ui::combobox.item>
             @endforeach
         </x-ui::combobox.list>

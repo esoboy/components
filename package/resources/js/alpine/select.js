@@ -1,46 +1,22 @@
-import boundValue from './value.js'
-
 const ITEM = '[data-slot="select-item"]'
 
-export default binding => Object.defineProperties(boundValue(binding), Object.getOwnPropertyDescriptors({
+export default () => ({
     typed: '',
     typedAt: 0,
     positioning: null,
-
-    init() {
-        this.$nextTick(() => this.render())
-    },
 
     get trigger() { return this.$el.querySelector('[data-slot="select-trigger"]') },
     get content() { return this.$el.querySelector('[data-slot="select-content"]') },
     get items() { return [...this.$el.querySelectorAll(ITEM)] },
     get enabled() { return this.items.filter(item => item.getAttribute('aria-disabled') !== 'true') },
-    get selected() { return this.items.find(item => item.dataset.value === String(this.value)) },
-
-    render() {
-        const selected = this.selected
-
-        if (! this.trigger || ! this.content) return
-
-        this.trigger.commandForElement = this.content
-        for (const item of this.items) item.setAttribute('aria-selected', String(item === selected))
-
-        const display = this.$el.querySelector('[data-slot="select-value"]')
-        const html = selected?.querySelector('[data-slot="select-item-text"]')?.innerHTML ?? display?.dataset.placeholder ?? ''
-
-        if (display && display.innerHTML !== html) display.innerHTML = html
-        this.trigger.toggleAttribute('data-placeholder', ! selected)
-    },
+    get selected() { return this.items.find(item => item.getAttribute('aria-selected') === 'true') },
 
     choose(item) {
         if (! item || item.getAttribute('aria-disabled') === 'true') return
-
-        const changed = item.dataset.value !== this.value
-        this.value = item.dataset.value
-        this.render()
+        if (this.trigger.disabled) return
         if (this.content.matches(':popover-open')) this.content.hidePopover()
         this.trigger.focus()
-        if (changed) this.changed()
+        if (item !== this.selected) this.$wire.choose(item.dataset.value)
     },
 
     click(event) {
@@ -123,4 +99,4 @@ export default binding => Object.defineProperties(boundValue(binding), Object.ge
     },
 
     destroy() { this.positioning?.disconnect() },
-}))
+})

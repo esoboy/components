@@ -1,5 +1,23 @@
 <?php
 
+it('renders multiple pending files and clears them after cancellation', function () {
+    $page = visit('/uploads');
+    $list = '[data-slot="file-upload"] >> nth=0 >> [data-file-upload-list]';
+    $page->script(<<<'JS'
+        (() => {
+            const input = document.querySelector('[data-slot="file-upload"] input[type="file"]');
+            const files = new DataTransfer();
+            files.items.add(new File(['notes'], 'notes.txt', { type: 'text/plain' }));
+            files.items.add(new File(['report'], 'report.txt', { type: 'text/plain' }));
+            input.files = files.files;
+            input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }));
+        })()
+        JS);
+    $page->assertSeeIn($list, 'notes.txt')->assertSeeIn($list, 'report.txt');
+    $page->script("document.querySelector('[data-slot=file-upload] input').dispatchEvent(new CustomEvent('livewire-upload-cancel', { bubbles: true }))");
+    $page->assertDontSee('notes.txt')->assertDontSee('report.txt')->assertNoJavaScriptErrors();
+});
+
 it('updates the shared progress bar and resets it for the next upload', function () {
     $page = visit('/uploads');
     $progress = '[data-slot="file-upload"] >> nth=0 >> [data-file-upload-progress]';

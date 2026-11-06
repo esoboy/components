@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import commandProvider, { matches } from '../../resources/js/alpine/command.js'
+import commandProvider from '../../resources/js/alpine/command.js'
 import { engineDriver, cleanupControllers } from './alpine-harness.js'
 
 
@@ -27,69 +27,20 @@ function mount(attributes = '') {
         </eso-command>`
 
     const root = engineDriver(commandProvider, document.querySelector('eso-command'))
-    window.Alpine.bind(root, { 'x-on:input': () => root.refresh(), 'x-on:keydown': event => root.key(event), 'x-on:pointermove': event => root.hover(event) })
+    window.Alpine.bind(root, { 'x-on:keydown': event => root.key(event), 'x-on:pointermove': event => root.hover(event) })
     return root
 }
 
-const type = (command, text) => {
-    command.input.value = text
-    command.input.dispatchEvent(new Event('input', { bubbles: true }))
-}
-const visible = command => command.items.filter(item => ! item.hidden).map(item => item.textContent)
 const selected = command => command.querySelector('[data-selected="true"]')?.textContent
 const key = (command, name) => command.input.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))
 
-describe('matching', () => {
-    it('matches letters in order', () => {
-        expect(matches('cln', 'calendar')).toBe(true)
-        expect(matches('pfl', 'profile')).toBe(true)
-        expect(matches('nlc', 'calendar')).toBe(false)
-        expect(matches('se em', 'search emoji')).toBe(true)
-    })
-})
-
-describe('filtering', () => {
-    it('highlights the first item to start with', () => {
-        const command = mount()
-
-        expect(selected(command)).toBe('Calendar')
-        expect(command.input.getAttribute('aria-activedescendant')).toBe(command.items[0].id)
-    })
-
-    it('hides what does not match, empty groups and separators', () => {
-        const command = mount()
-
-        type(command, 'pro')
-
-        expect(visible(command)).toEqual(['Profile'])
-        expect(command.querySelector('[data-slot="command-group"]').hidden).toBe(true)
-        expect(command.querySelector('[data-slot="command-separator"]').hidden).toBe(true)
-        expect(selected(command)).toBe('Profile')
-    })
-
-    it('matches keywords', () => {
-        const command = mount()
-
-        type(command, 'smiley')
-
-        expect(visible(command)).toEqual(['Search Emoji'])
-    })
-
-    it('shows the empty state when nothing matches', () => {
-        const command = mount()
-
-        type(command, 'zzz')
-
-        expect(command.hasAttribute('data-empty')).toBe(true)
-    })
-
-    it('can leave filtering to the server', () => {
-        const command = mount('data-filter="false"')
-
-        type(command, 'zzz')
-
-        expect(visible(command)).toHaveLength(4)
-    })
+it('highlights a visible server result after a refresh', () => {
+    const command = mount()
+    expect(selected(command)).toBe('Calendar')
+    command.items[0].hidden = true
+    command.refresh()
+    expect(selected(command)).toBe('Search Emoji')
+    expect(command.input.getAttribute('aria-activedescendant')).toBe(command.items[2].id)
 })
 
 describe('keyboard', () => {

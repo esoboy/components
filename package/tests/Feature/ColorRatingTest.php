@@ -1,5 +1,14 @@
 <?php
 
+use Livewire\Livewire;
+
+it('selects and clears a valid rating on the server', function () {
+    Livewire::test('ui.rating', ['settings' => ['max' => 3]])
+        ->call('choose', 2)->assertSet('value', 2)
+        ->call('choose', 4)->assertSet('value', 2)
+        ->call('choose', 2)->assertSet('value', null);
+});
+
 /*
  * Color Picker and Rating.
  */
@@ -42,7 +51,7 @@ it('renders a rating as a radio group of stars', function () {
 
     expect($html)
         ->toContainMarkup('<eso-rating role="radiogroup" data-slot="rating" data-size="default" data-value="3" data-name="score">')
-        ->toMatch('/<button type="button" role="radio" data-slot="rating-item" data-value="3" aria-checked="true" aria-label="3 of 4 stars" tabindex="0" style="--rating-fill: 100%"\s*>/')
+        ->toContainMarkup('<button type="button" role="radio" data-slot="rating-item" data-value="3" aria-checked="true" aria-label="3 of 4 stars" tabindex="0" style="--rating-fill: 100%">')
         ->toContain('data-value="4" aria-checked="false" aria-label="4 of 4 stars" tabindex="-1" style="--rating-fill: 0%"')
         ->toContainMarkup('<input type="hidden" name="score" value="3">')
         ->and(substr_count($html, 'role="radio"'))->toBe(4);

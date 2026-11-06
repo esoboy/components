@@ -4,7 +4,7 @@ import value from '../../resources/js/alpine/value.js'
 import select from '../../resources/js/alpine/select.js'
 import tabs from '../../resources/js/alpine/tabs.js'
 import { accordion, collapsible } from '../../resources/js/alpine/disclosure.js'
-import { numberInput, rating, slider, otp, inputCount, copyCode } from '../../resources/js/alpine/inputs.js'
+import { numberInput, slider, otp, copyCode } from '../../resources/js/alpine/inputs.js'
 import toggleGroup from '../../resources/js/alpine/toggle-group.js'
 
 afterEach(() => { cleanupControllers(); document.body.innerHTML = ''; vi.useRealTimers() })
@@ -15,12 +15,11 @@ const bound = initial => {
 }
 const choices = '<button data-slot="select-trigger"><span data-slot="select-value" data-placeholder="Pick">Pick</span></button><div data-slot="select-content" popover="auto"><button data-slot="select-item" data-value="a"><span data-slot="select-item-text"><b>Apple</b></span></button><button data-slot="select-item" data-value="b" aria-disabled="true"><span data-slot="select-item-text">Banana</span></button><button data-slot="select-item" data-value="c"><span data-slot="select-item-text">Cherry</span></button></div><select x-ref="input"><option value=""></option><option value="a">Apple</option><option value="c">Cherry</option></select>'
 
-it('projects a server choice into a rich label and commits through wire:model', () => {
-    const wire = bound('a'); const data = provider(select, '<div>'+choices+'</div>', { binding: { property: 'fruit', live: true }, wire })
-    expect(data.$el.querySelector('[data-slot="select-value"]').innerHTML).toBe('<b>Apple</b>')
-    data.choose(data.items[1]); expect(wire.$set).not.toHaveBeenCalled()
+it('closes and returns focus after sending an enabled choice to Livewire', () => {
+    const wire = { choose: vi.fn() }; const data = provider(select, '<div>'+choices+'</div>', { wire })
+    data.choose(data.items[1]); expect(wire.choose).not.toHaveBeenCalled()
     data.content.showPopover(); data.choose(data.items[2])
-    expect(wire.$set).toHaveBeenCalledWith('fruit', 'c', true)
+    expect(wire.choose).toHaveBeenCalledWith('c')
     expect(data.content.matches(':popover-open')).toBe(false)
     expect(document.activeElement).toBe(data.trigger)
 })
@@ -30,10 +29,6 @@ it('navigates select options while skipping disabled items and supports typeahea
     data.key(event(data.items[0], 'ArrowDown')); expect(document.activeElement).toBe(data.items[2])
     data.key(event(data.items[2], 'a')); expect(document.activeElement).toBe(data.items[0])
     data.key(event(data.items[0], 'Tab')); expect(data.content.matches(':popover-open')).toBe(false)
-})
-it('uses native form controls without a Livewire owner', () => {
-    const data = provider(select, '<div>'+choices+'</div>')
-    data.choose(data.items[0]); expect(data.$refs.input.value).toBe('a'); expect(data.value).toBe('a')
 })
 it('defers a blur binding until blur and reads the existing bound property', () => {
     const wire = bound('old'); const data = provider(value, '<div><input x-ref="input"></div>', { binding: { property: 'title', live: true, blur: true }, wire })
@@ -77,21 +72,16 @@ it('clears a selected single toggle through the owning Livewire property', () =>
     data.clear(click); expect(click.preventDefault).toHaveBeenCalled(); expect(wire.$set).toHaveBeenCalledWith('align', null, true)
     expect(input.checked).toBe(false)
 })
-it('steps numbers with decimal precision, bounds and disabled state', () => {
-    const data = provider(numberInput, '<div data-min="0" data-max="1" data-step="0.1"><input x-ref="input" value="0.9"><button data-number-input="decrement"></button><button data-number-input="increment"></button></div>')
-    data.step(1); data.step(1); expect(Number(data.value)).toBe(1); expect(data.$el.querySelector('[data-number-input="increment"]').disabled).toBe(true)
-    data.step(-1); expect(Number(data.value)).toBe(0.9)
-    data.input.disabled = true; data.step(-1); expect(Number(data.value)).toBe(0.9)
-})
-it('stops number input repetition on destroy', () => {
-    vi.useFakeTimers(); const data = provider(numberInput, '<div data-step="1"><input x-ref="input" value="1"><button data-number-input="increment"></button></div>')
-    data.press({ target: data.$el.querySelector('button'), button: 0, preventDefault() {} }); vi.advanceTimersByTime(500)
-    const last = data.value; data.destroy(); vi.advanceTimersByTime(1000); expect(data.value).toBe(last)
-})
-it('paints rating, supports clearing and moves keyboard focus', () => {
-    const data = provider(rating, '<div><input x-ref="input" value="2"><button data-slot="rating-item" data-value="1"></button><button data-slot="rating-item" data-value="2"></button><button data-slot="rating-item" data-value="3"></button></div>')
-    data.render(); const buttons = data.$el.querySelectorAll('button'); expect(buttons[1].getAttribute('aria-checked')).toBe('true')
-    data.choose(buttons[1]); expect(data.value).toBeNull(); data.key(event(buttons[0], 'End')); expect(Number(data.value)).toBe(3); expect(document.activeElement).toBe(buttons[2])
+it('stops number input repetition on destroy', async () => {
+    vi.useFakeTimers()
+    const step = vi.fn().mockResolvedValue(undefined)
+    const data = provider(numberInput, '<div><input x-ref="input"><button data-number-input="increment"></button></div>', { wire: { step } })
+    data.press({ target: data.$el.querySelector('button'), button: 0, preventDefault() {} })
+    await vi.advanceTimersByTimeAsync(450)
+    expect(step).toHaveBeenCalledWith(1)
+    data.destroy()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(step).toHaveBeenCalledTimes(1)
 })
 it('paints a range from native thumbs and prevents crossing', () => {
     const data = provider(slider, '<div><div data-slot="slider-control"><div data-slot="slider-range"></div><input type="range" data-slot="slider-thumb" min="0" max="100" value="20"><input type="range" data-slot="slider-thumb" min="0" max="100" value="80"></div></div>')
@@ -105,16 +95,11 @@ it('drags the nearest slider thumb using the native input event value', () => {
     data.press({ target: control, currentTarget: control, button: 0, clientX: 70, preventDefault() {} }); data.end()
     expect(data.thumbs[1].value).toBe('70'); expect(changed.mock.calls[0][0].detail).toBe('70')
 })
-it('mirrors OTP characters and caret without owning the value', () => {
-    const data = provider(otp, '<div><input data-slot="input-otp-input" maxlength="4" value="12"><div data-slot="input-otp-slot" data-index="0"></div><div data-slot="input-otp-slot" data-index="2"></div></div>')
+it('marks the active OTP caret without changing rendered characters', () => {
+    const data = provider(otp, '<div><input data-slot="input-otp-input" maxlength="4" value="12"><div data-slot="input-otp-slot" data-index="0">1</div><div data-slot="input-otp-slot" data-index="2"></div></div>')
     const input = data.$el.querySelector('input'); input.focus(); input.setSelectionRange(2,2); data.render()
     const slots = data.$el.querySelectorAll('div'); expect(slots[0].textContent).toBe('1'); expect(slots[1].dataset.caret).toBe('true')
     input.blur(); data.render(); expect(slots[1].dataset.active).toBe('false')
-})
-it('counts Unicode characters and preserves validation descriptions', () => {
-    const data = provider(inputCount, '<div data-slot="input-group"><textarea data-slot="input-group-control" maxlength="2" aria-describedby="error">😀ab</textarea><span x-ref="count" data-label=":count characters" data-label-max=":count/:max characters"></span></div>')
-    data.$el = data.$refs.count; data.render(); expect(data.$el.textContent).toBe('3/2 characters'); expect(data.$el.hasAttribute('data-over')).toBe(true)
-    expect(document.querySelector('textarea').getAttribute('aria-describedby')).toContain('error ')
 })
 it('copies code lines, announces success and clears the status', async () => {
     vi.useFakeTimers(); const writeText = vi.fn().mockResolvedValue(); Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })

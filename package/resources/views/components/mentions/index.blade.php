@@ -11,18 +11,21 @@
 @props([
     'prefix' => '@',
     'split' => ' ',
+    'filter' => null,
 ])
 
 @php
 // Validated here, as the textarea inside this view can't see the field around the mentions.
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$prefixes = array_values((array) $prefix);
+$filter ??= $attributes->whereStartsWith('wire:mentions-search')->isEmpty();
+$key = $attributes->get('id') ?? \Esoboy\Ui\Support\Model::key($attributes) ?? 'mentions-'.\Esoboy\Ui\Support\Sequence::next('mentions');
 @endphp
 
-<eso-mentions x-data="uiMentions" data-slot="mentions" data-prefix="{{ json_encode(array_values((array) $prefix)) }}" data-split="{{ $split }}">
+<eso-mentions x-data="uiMentions" data-slot="mentions" data-prefix="{{ json_encode($prefixes) }}" data-split="{{ $split }}" @if ($filter) data-local-catalogue @endif>
     <x-ui::textarea :attributes="$attributes->merge(['role' => 'combobox', 'aria-autocomplete' => 'list', 'aria-expanded' => 'false', 'data-mentions-input' => true, ...$state->attributes()])" />
     <div popover="manual" role="listbox" data-slot="mentions-content" wire:ignore.self>
-        <div data-slot="mentions-list">{{ $slot }}</div>
-        <div data-slot="mentions-empty">{{ __('ui::mentions.empty') }}</div>
+        @livewire('ui.mentions-results', ['markup' => (string) $slot, 'filter' => $filter, 'defaultPrefix' => $prefixes[0] ?? '@'], key('ui-mentions-results-'.$key))
     </div>
     {{-- Where the caret is: the script copies the textarea's box and the text before the caret into it. --}}
     <div data-slot="mentions-mirror" aria-hidden="true"><span></span><span data-mentions-caret></span></div>

@@ -124,6 +124,22 @@ Required answers and explicit skipping are validated in PHP, including when
 
 ## Browser interaction
 
+Select, Number Input, interactive Rating and Input OTP maintain their values in
+internal Livewire components. Their Blade views render selected labels, numeric
+limits, rating state and OTP characters. Input Group Count renders Unicode
+counts and soft limits in Blade even when its input has a deferred binding.
+
+Command filters in Livewire and preserves the caller's item actions. Use
+`:filter="false"` when the caller supplies the result list. Mentions filters its
+catalogue in Livewire. A `wire:mentions-search` handler opts into caller supplied
+results without a second filter. Upload progress and pending attachment rows are
+rendered by Livewire and Blade. Drag-and-drop and the local image preview remain
+browser interactions.
+
+Data Table rows use local expansion when `expanded` is omitted. A change to an
+explicit `:expanded` value takes effect on the next render, including when the
+row keeps the same ID.
+
 Keep the existing component CSS and tokens. Native details, inputs, dialog,
 popover and CSS positioning remain responsible for their supported behavior.
 Alpine providers handle focus, hover timing, caret positioning, dragging,

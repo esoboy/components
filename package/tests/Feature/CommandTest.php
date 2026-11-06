@@ -1,5 +1,18 @@
 <?php
 
+use Livewire\Livewire;
+
+it('filters a command query and renders its groups on the server', function () {
+    $markup = '<div data-slot="command-group"><div data-slot="command-item" data-keywords="偏好">设置</div></div>'
+        .'<div data-slot="command-group"><div data-slot="command-item">账单</div></div>';
+
+    $component = Livewire::test('ui.command', ['markup' => $markup])->set('query', '偏好');
+
+    expect($component->html())
+        ->toContainMarkup('<div data-slot="command-item" data-keywords="偏好">设置</div>')
+        ->toContainMarkup('<div data-slot="command-item" hidden>账单</div>');
+});
+
 /*
  * Command and Combobox.
  */

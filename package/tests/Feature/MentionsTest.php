@@ -1,5 +1,18 @@
 <?php
 
+use Livewire\Livewire;
+
+it('accepts the application supplied results when local catalogue matching is disabled', function () {
+    $component = Livewire::test('ui.mentions-results', [
+        'markup' => '<div data-slot="mentions-item" data-value="paris">Paris</div>',
+        'filter' => false,
+    ])->call('search', '@', '法国');
+
+    expect($component->html())
+        ->toContainMarkup('<div data-slot="mentions-item" data-value="paris">Paris</div>')
+        ->not->toContain('hidden=""');
+});
+
 /*
  * Mentions: a Textarea that suggests its items after a prefix.
  */

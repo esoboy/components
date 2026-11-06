@@ -18,7 +18,7 @@ final class ChoiceMarkup
 
     public function __construct(string $html, private readonly string $kind = 'select')
     {
-        $this->document = HTMLDocument::createFromString('<!doctype html><html><body>'.$html.'</body></html>', LIBXML_NOERROR);
+        $this->document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$html.'</body></html>', LIBXML_NOERROR);
 
         foreach ($this->document->getElementsByTagName('*') as $element) {
             if ($element instanceof HTMLElement && $element->getAttribute('data-slot') === $kind.'-item') {
@@ -38,7 +38,7 @@ final class ChoiceMarkup
     }
 
     /** @param array<string, string> $attributes */
-    public function render(mixed $value, array $attributes = [], bool $disabled = false): string
+    public function render(mixed $value, array $attributes, bool $disabled, string $popup): string
     {
         $values = array_map('strval', is_array($value) ? $value : ($value === null ? [] : [$value]));
         $selected = [];
@@ -72,6 +72,8 @@ final class ChoiceMarkup
             }
 
             if ($element->getAttribute('data-slot') === $this->kind.'-trigger') {
+                $element->setAttribute('commandfor', $popup);
+                $element->setAttribute('aria-controls', $popup);
                 if ($selected !== []) {
                     $element->removeAttribute('data-placeholder');
                 }
@@ -81,6 +83,10 @@ final class ChoiceMarkup
                 if ($disabled) {
                     $element->setAttribute('disabled', '');
                 }
+            }
+
+            if ($element->getAttribute('data-slot') === $this->kind.'-content') {
+                $element->setAttribute('id', $popup);
             }
         }
 

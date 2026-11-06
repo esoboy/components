@@ -23,6 +23,7 @@ $invalid = $state->invalid();
 $model = collect($attributes->getAttributes())->first(fn ($value, $name) => str_starts_with($name, 'wire:model'));
 $upload = UploadedFiles::of(Model::value($attributes))[0] ?? null;
 $image = $upload['url'] ?? $src;
+$status = Model::scope('image-upload-status', $loop ?? null);
 @endphp
 
 {{-- One image: the new upload, else src. Click or drop to replace; the new image shows before the upload ends. --}}
@@ -43,6 +44,7 @@ $image = $upload['url'] ?? $src;
         <x-ui::icon name="x" />
     </x-ui::button>
     @endif
+    @livewire('ui.pending-upload', [], key($status))
     <x-ui::field.error :state="$state" />
 </eso-file-upload>
 <x-ui::extras />

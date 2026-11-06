@@ -23,7 +23,7 @@
         scrollbar-width: none;
     }
 
-    :where([data-slot="mentions-content"][data-empty] [data-slot="mentions-list"]) {
+    :where([data-slot="mentions-results"][data-empty] [data-slot="mentions-list"]) {
         @apply hidden;
     }
 
@@ -48,7 +48,7 @@
         @apply hidden w-full justify-center py-2 text-center text-sm text-muted-foreground;
     }
 
-    :where([data-slot="mentions-content"][data-empty] [data-slot="mentions-empty"]) {
+    :where([data-slot="mentions-results"][data-empty] [data-slot="mentions-empty"]) {
         @apply flex;
     }
 

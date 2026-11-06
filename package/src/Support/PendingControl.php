@@ -25,12 +25,12 @@ final class PendingControl
         $pending->maxlength = is_numeric($maxlength) && $maxlength > 0 ? (int) $maxlength : null;
     }
 
-    /** @return array{count: int, max: ?int} */
+    /** @return array{count: int, max: ?int, value: string} */
     public static function characters(?int $max = null): array
     {
         $pending = app(self::class);
 
-        return ['count' => mb_strlen($pending->text), 'max' => $max ?? $pending->maxlength];
+        return ['count' => mb_strlen($pending->text), 'max' => $max ?? $pending->maxlength, 'value' => $pending->text];
     }
 
     public static function take(): ?ControlState

@@ -1,6 +1,6 @@
 import { engineDriver, cleanupControllers } from './alpine-harness.js'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import createFileUpload, { accepts, formatSize } from '../../resources/js/alpine/file-upload.js'
+import createFileUpload, { accepts } from '../../resources/js/alpine/file-upload.js'
 
 beforeAll(() => {
     URL.createObjectURL ||= () => 'blob:preview'
@@ -20,12 +20,6 @@ afterEach(() => {
 })
 
 describe('helpers', () => {
-    it('formats sizes like the server', () => {
-        expect(formatSize(0)).toBe('0 B')
-        expect(formatSize(2048)).toBe('2 KB')
-        expect(formatSize(1258291)).toBe('1.2 MB')
-    })
-
     it('matches accept rules by extension, wildcard and type', () => {
         const png = new File([''], 'a.PNG', { type: 'image/png' })
         const pdf = new File([''], 'b.pdf', { type: 'application/pdf' })
@@ -43,21 +37,9 @@ describe('file upload', () => {
     function mount(input = 'multiple') {
         document.body.innerHTML = `
             <eso-file-upload data-uploading-label="Uploading :progress%">
-                <template data-template="pending">
-                    <div data-slot="attachment" data-state="uploading">
-                        <div data-slot="attachment-media" data-variant="icon"><svg data-icon-name="file"></svg></div>
-                        <div data-slot="attachment-content"><span data-slot="attachment-title"></span><span data-slot="attachment-description"></span></div>
-                    </div>
-                </template>
-                <template data-template="pending-image">
-                    <div data-slot="attachment" data-state="uploading">
-                        <div data-slot="attachment-media" data-variant="image"><img alt=""></div>
-                        <div data-slot="attachment-content"><span data-slot="attachment-title"></span><span data-slot="attachment-description"></span></div>
-                    </div>
-                </template>
                 <div data-slot="file-upload-dropzone">
                     <label><input type="file" data-slot="file-upload-input" ${input}></label>
-                    <div data-slot="progress" data-file-upload-progress aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div data-slot="progress-track"><div data-slot="progress-indicator"></div></div></div>
+                    <div data-upload-state="idle"></div>
                 </div>
                 <div data-file-upload-list hidden><div data-file-upload-pending></div></div>
             </eso-file-upload>`
@@ -121,42 +103,28 @@ describe('file upload', () => {
         expect(open).toHaveBeenCalledTimes(1)
     })
 
-    it('shows a chip per file with the progress while uploading', () => {
+    it('hands file metadata to the pending upload component and reports cancellation', () => {
         const element = mount()
+        const state = element.querySelector('[data-upload-state]')
+        const start = vi.fn()
+        const end = vi.fn()
+        state.addEventListener('ui-upload-start', event => start(event.detail))
+        state.addEventListener('ui-upload-end', event => end(event.detail))
 
         element.input.files = files()
         element.input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }))
-
-        const chips = [...element.querySelectorAll('[data-file-upload-pending] [data-slot="attachment"]')]
-
+        expect(start).toHaveBeenCalledWith({
+            operation: 1,
+            files: [
+                { name: 'cover.png', size: 1, preview: expect.stringMatching(/^blob:/) },
+                { name: 'notes.txt', size: 2, preview: null },
+            ],
+        })
         expect(element.hasAttribute('data-uploading')).toBe(true)
-        expect(element.querySelector('[data-file-upload-list]').hidden).toBe(false)
-        expect(chips.map(chip => chip.dataset.state)).toEqual(['uploading', 'uploading'])
-        expect(chips[0].querySelector('img').getAttribute('src')).toMatch(/^blob:/)
-        expect(chips.map(chip => chip.querySelector('[data-slot="attachment-title"]').textContent)).toEqual(['cover.png', 'notes.txt'])
-        expect(chips[1].querySelector('[data-slot="attachment-media"]').dataset.variant).toBe('icon')
-        expect(chips[1].querySelector('[data-slot="attachment-media"] svg').dataset.iconName).toBe('file')
 
-        element.input.dispatchEvent(new CustomEvent('livewire-upload-progress', { bubbles: true, detail: { progress: 42 } }))
-
-        expect(element.querySelector('[data-slot="progress-indicator"]').style.width).toBe('42%')
-        const progress = element.querySelector('[data-file-upload-progress]')
-
-        expect(progress.hidden).toBe(false)
-        expect(progress.getAttribute('aria-valuenow')).toBe('42')
-        expect(progress.getAttribute('aria-valuetext')).toBe('42%')
-        expect(progress.getAttribute('aria-label')).toBe('Uploading 42%')
-        expect(progress.hasAttribute('data-complete')).toBe(false)
-        expect(chips[1].querySelector('[data-slot="attachment-description"]').textContent).toBe('Uploading 42%')
-
-        element.input.dispatchEvent(new CustomEvent('livewire-upload-progress', { bubbles: true, detail: { progress: 100 } }))
-        expect(progress.hasAttribute('data-complete')).toBe(true)
-
-        element.input.dispatchEvent(new CustomEvent('livewire-upload-finish', { bubbles: true }))
-        expect(progress.hidden).toBe(true)
-        element.input.dispatchEvent(new CustomEvent('livewire-upload-start', { bubbles: true }))
-        expect(progress.getAttribute('aria-valuenow')).toBe('0')
-        expect(progress.hasAttribute('data-complete')).toBe(false)
+        element.input.dispatchEvent(new CustomEvent('livewire-upload-cancel', { bubbles: true }))
+        expect(end).toHaveBeenCalledWith({ operation: 1, phase: 'cancel' })
+        expect(element.hasAttribute('data-uploading')).toBe(false)
     })
 
     it('clears the stand-ins once the upload is done', async () => {

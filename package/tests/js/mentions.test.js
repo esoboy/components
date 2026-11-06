@@ -17,7 +17,7 @@ function mount(prefix = ['@']) {
                     <div role="option" data-slot="mentions-item" data-value="zhangsan">张三 Zhang San</div>
                     <div role="option" data-slot="mentions-item" data-value="lisi">李四 Li Si</div>
                     <div role="option" data-slot="mentions-item" data-value="wangwu" aria-disabled="true">王五 Wang Wu</div>
-                    <div role="option" data-slot="mentions-item" data-value="design" data-prefix="#">Design</div>
+                    <div role="option" data-slot="mentions-item" data-value="design" data-prefix="#" hidden>Design</div>
                 </div>
                 <div data-slot="mentions-empty">No results found.</div>
             </div>
@@ -57,7 +57,7 @@ const shown = element => element.items.filter(item => ! item.hidden).map(item =>
 const highlighted = element => element.querySelector('[data-highlighted="true"]')?.dataset.value
 
 describe('suggesting', () => {
-    it('opens after the prefix with the items of that prefix, the first highlighted', () => {
+    it('opens after the prefix and highlights the first rendered candidate', () => {
         const [element, seen] = mount()
 
         type(element, 'Thanks @')
@@ -70,17 +70,11 @@ describe('suggesting', () => {
         expect(seen).toEqual([['search', { prefix: '@', query: '' }]])
     })
 
-    it('filters by what follows the prefix, on text or value', () => {
+    it('reports the text after a mention prefix', () => {
         const [element, seen] = mount()
-
         type(element, '@li')
-        expect(shown(element)).toEqual(['lisi'])
-
         type(element, '@张')
-        expect(shown(element)).toEqual(['zhangsan'])
-
         type(element, '@nobody')
-        expect(element.content.hasAttribute('data-empty')).toBe(true)
         expect(seen.map(([, detail]) => detail.query)).toEqual(['li', '张', 'nobody'])
     })
 
@@ -95,20 +89,20 @@ describe('suggesting', () => {
     })
 
     it('follows the caret back into a mention', () => {
-        const [element] = mount()
+        const [element, seen] = mount()
 
         type(element, '@li and more', 3)
 
         expect(element.isOpen).toBe(true)
-        expect(shown(element)).toEqual(['lisi'])
+        expect(seen.at(-1)).toEqual(['search', { prefix: '@', query: 'li' }])
     })
 
-    it('keeps items to their prefix when there are several', () => {
-        const [element] = mount(['@', '#'])
+    it('reports the matching prefix when there are several', () => {
+        const [element, seen] = mount(['@', '#'])
 
         type(element, 'Tag #')
 
-        expect(shown(element)).toEqual(['design'])
+        expect(seen.at(-1)).toEqual(['search', { prefix: '#', query: '' }])
     })
 })
 
@@ -167,13 +161,13 @@ describe('choosing', () => {
     })
 })
 
-it('filters the items Livewire renders for a search', async () => {
+it('accepts server candidates without applying another client filter', async () => {
     const [element] = mount()
 
     type(element, '@w')
     element.list.insertAdjacentHTML('beforeend', '<div role="option" data-slot="mentions-item" data-value="wendy">Wendy</div>')
     await Promise.resolve()
 
-    expect(shown(element)).toEqual(['wangwu', 'wendy'])
-    expect(highlighted(element)).toBe('wendy')
+    expect(shown(element)).toEqual(['zhangsan', 'lisi', 'wangwu', 'wendy'])
+    expect(highlighted(element)).toBe('zhangsan')
 })

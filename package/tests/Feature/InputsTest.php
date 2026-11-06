@@ -4,6 +4,16 @@ use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Support\Countdown;
 use Illuminate\Support\Facades\Date;
 use Livewire\Component;
+use Livewire\Livewire;
+
+it('steps decimal numbers on the server without exceeding the configured bounds', function () {
+    Livewire::test('ui.number-input', [
+        'value' => 0.9, 'settings' => ['min' => 0, 'max' => 1, 'step' => 0.1],
+    ])
+        ->call('step', 1)->assertSet('value', 1.0)
+        ->call('step', 1)->assertSet('value', 1.0)
+        ->call('step', -1)->assertSet('value', 0.9);
+});
 
 /*
  * Tags Input, Number Input, Password Input, Verification Code Button, Countdown.
@@ -26,7 +36,7 @@ it('puts its id and name on the input, where a label points', function () {
 
     expect($html)
         ->toContainMarkup('<eso-number-input data-slot="number-input" data-step="1" aria-describedby="hint">')
-        ->toContainMarkup('<input autocomplete="off" id="qty" wire:model.number="qty">');
+        ->toContainMarkup('<input autocomplete="off" id="qty" wire:model.live.debounce.250ms.number="value">');
 });
 
 it('renders a number input as an input group with steppers', function () {
@@ -39,7 +49,7 @@ it('renders a number input as an input group with steppers', function () {
         ->toContainMarkup('<input type="text" data-slot="input-group-control" inputmode="decimal" role="spinbutton" value="1">')
         ->toContain('name="qty"')
         ->toMatch('/aria-valuemin="1"\s+aria-valuemax="10"\s+aria-valuenow="1"/')
-        ->toMatch('/data-number-input="increment" aria-label="Increase" tabindex="-1"\s*>/');
+        ->toContainMarkup('<button data-number-input="increment" aria-label="Increase" tabindex="-1" wire:click="step(1)">');
 });
 
 it('treats a non-numeric value as empty', function () {
@@ -123,7 +133,7 @@ it('rounds a countdown up to the second it is in', function () {
 });
 
 it('starts countdowns from Livewire', function () {
-    Livewire\Livewire::test(new class extends Component
+    Livewire::test(new class extends Component
     {
         public function send(): void
         {

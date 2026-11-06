@@ -30,7 +30,7 @@ import { listen, disconnected } from './interaction.js'
 
 export default (binding = {}) => ({
     _expanded: new Set(),
-    _seen: new Set(),
+    _serverExpanded: new Map(),
     _hovered: null,
     _observer: null,
     _resizes: null,
@@ -61,7 +61,7 @@ export default (binding = {}) => ({
         this._refresh()
 
         // Livewire morphs bring new rows, the server's checked state, and reset what is set here.
-        this._observer.observe(this.$el, { childList: true, subtree: true, attributes: true, attributeFilter: ['checked', 'data-state', 'hidden', 'aria-expanded', 'data-leaf', 'style', 'data-scroll-start', 'data-scroll-end'] })
+        this._observer.observe(this.$el, { childList: true, subtree: true, attributes: true, attributeFilter: ['checked', 'data-state', 'hidden', 'aria-expanded', 'data-expanded', 'data-leaf', 'style', 'data-scroll-start', 'data-scroll-end'] })
     },
 
     destroy() {
@@ -115,10 +115,13 @@ export default (binding = {}) => ({
         const details = new Map([...this.$el.querySelectorAll('tr[data-detail-for]')].filter(detail => this._owns(detail)).map(detail => [detail.dataset.detailFor, detail]))
 
         for (const row of rows) {
-            if (this._seen.has(row.dataset.rowId)) continue
+            const id = row.dataset.rowId
+            const expanded = row.getAttribute('data-expanded')
+            if (this._serverExpanded.get(id) === expanded) continue
 
-            this._seen.add(row.dataset.rowId)
-            if (row.hasAttribute('data-expanded')) this._expanded.add(row.dataset.rowId)
+            this._serverExpanded.set(id, expanded)
+            if (expanded === null) continue
+            expanded === 'false' ? this._expanded.delete(id) : this._expanded.add(id)
         }
 
         const shown = (row, depth = 0) => {

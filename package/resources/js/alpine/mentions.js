@@ -9,8 +9,6 @@
  * items itself, and mentions-select { prefix, value } a chosen item.
  */
 
-import { matches } from './command.js'
-
 const ITEM = '[data-slot="mentions-item"]'
 
 let ids = 0
@@ -31,7 +29,7 @@ export default (binding = {}) => ({
     _observer: null,
 
     init() {
-        this._observer = new MutationObserver(() => this._mention && this._filter())
+        this._observer = new MutationObserver(() => this._mention && this._refresh())
 
         const fromInput = event => event.target === this.input
 
@@ -58,7 +56,7 @@ export default (binding = {}) => ({
         })
 
         // Livewire may render other items (a server search): filter them too.
-        if (this.list) this._observer.observe(this.list, { childList: true, subtree: true })
+        if (this.list) this._observer.observe(this.list, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] })
     },
 
     destroy() {
@@ -133,32 +131,22 @@ export default (binding = {}) => ({
         const query = `${mention.prefix}${mention.query}`
 
         this._mention = mention
-        this._filter()
+        this._refresh()
         this._open()
 
         if (query !== this._query) {
             this._query = query
+            if (this.$el.hasAttribute('data-local-catalogue')) {
+                emit(this.list, 'ui-mentions-query', { prefix: mention.prefix, query: mention.query })
+            }
             emit(this.input, 'mentions-search', { prefix: mention.prefix, query: mention.query })
         }
     },
 
-    _filter() {
-        const { prefix, query } = this._mention
-        const items = this.items
-
-        for (const item of items) {
-            // An item without a prefix belongs to the first one.
-            const ours = (item.dataset.prefix ?? this.prefixes[0]) === prefix
-            const hidden = ! ours || (query !== '' && ! matches(query, `${item.textContent} ${item.dataset.value}`.toLowerCase()))
-
-            if (item.hidden !== hidden) item.hidden = hidden
-        }
-
-        const available = items.filter(item => this._available(item))
-        const current = items.find(item => item.dataset.highlighted === 'true')
-
-        this.content?.toggleAttribute('data-empty', items.every(item => item.hidden))
-        this._highlight(current && available.includes(current) ? current : available[0] ?? null)
+    _refresh() {
+        const available = this.items.filter(item => this._available(item))
+        const current = available.find(item => item.dataset.highlighted === 'true')
+        this._highlight(current ?? available[0] ?? null)
     },
 
     _open() {

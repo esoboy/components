@@ -1,6 +1,7 @@
 @blaze
 
 @use('Esoboy\Ui\Support\ControlState')
+@use('Esoboy\Ui\Support\Model')
 
 @aware([
     'uiField' => false,
@@ -9,22 +10,15 @@
 
 @props([
     'maxlength' => 6,
+    'value' => null,
 ])
 
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
+$value = Model::value($attributes, $value) ?? '';
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'input-otp-'.\Esoboy\Ui\Support\Sequence::next('input-otp');
+$settings = ['maxlength' => max(1, (int) $maxlength), 'validation' => $state->attributes()];
 @endphp
 
-{{-- One real input laid over the slots; ui.js mirrors its characters into them. class styles the container. --}}
-<eso-input-otp {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'input-otp', 'x-data' => 'uiOtp('.json_encode(\Esoboy\Ui\Support\Model::binding($attributes)).')', 'x-effect' => 'render()', 'x-on:input' => 'render()', 'x-on:focusin' => 'render()', 'x-on:focusout' => 'render()', 'x-on:select' => 'render()', 'x-on:keyup' => 'render()', 'x-on:click' => 'render()', 'x-on:selectionchange.document' => 'render()']) }}>
-    {{ $slot }}
-    <input {{ $attributes->except(['class', 'style'])->merge([
-        'type' => 'text',
-        'data-slot' => 'input-otp-input',
-        'maxlength' => $maxlength,
-        'autocomplete' => 'one-time-code',
-        'spellcheck' => 'false',
-        ...$state->attributes(),
-    ]) }}>
-</eso-input-otp>
+@livewire('ui.input-otp', ['value' => $value, 'layout' => (string) $slot, 'settings' => $settings, ...$attributes->except('wire:key')->getAttributes()], key('ui-input-otp-'.$key))
 <x-ui::field.error :state="$state" />

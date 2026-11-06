@@ -1,34 +1,22 @@
-// Command owns no application data. Filtering and roving highlight affect only
-// the rendered menu; wire:click on each item remains the application's action.
-export const matches = (query, text) => {
-    let position = 0
-    for (const character of query.toLocaleLowerCase().replace(/\s+/g, '')) {
-        position = text.indexOf(character, position)
-        if (position < 0) return false
-        position++
-    }
-    return true
-}
-
 export default () => ({
+    stopMorph: null,
     get input() { return this.$el.querySelector('[data-command-input]') },
     get items() { return [...this.$el.querySelectorAll('[data-slot="command-item"]')] },
     get available() { return this.items.filter(item => !item.hidden && item.getAttribute('aria-disabled') !== 'true') },
     init() {
-        const list = this.$el.querySelector('[data-slot="command-list"]')
-        if (list && this.input) { list.id ||= this.$id('command-list'); this.input.setAttribute('aria-controls', list.id) }
         this.refresh()
+        this.stopMorph = window.Livewire?.hook?.('morphed', ({ el }) => {
+            if (el === this.$el || el.contains(this.$el)) this.refresh()
+        })
     },
+    destroy() { this.stopMorph?.() },
     refresh() {
-        const query = this.input?.value.trim() ?? ''
-        const filtering = this.$el.dataset.filter !== 'false' && query !== ''
-        for (const item of this.items) {
-            item.id ||= this.$id('command-item', this.items.indexOf(item))
-            item.hidden = filtering && !matches(query, `${item.dataset.value ?? ''} ${item.textContent} ${item.dataset.keywords ?? ''}`.toLocaleLowerCase())
+        const list = this.$el.querySelector('[data-slot="command-list"]')
+        if (list && this.input) {
+            list.id ||= this.$id('command-list')
+            this.input.setAttribute('aria-controls', list.id)
         }
-        for (const group of this.$el.querySelectorAll('[data-slot="command-group"]')) group.hidden = ![...group.querySelectorAll('[data-slot="command-item"]')].some(item => !item.hidden)
-        for (const separator of this.$el.querySelectorAll('[data-slot="command-separator"]')) separator.hidden = filtering
-        this.$el.toggleAttribute('data-empty', !this.items.some(item => !item.hidden))
+        for (const [index, item] of this.items.entries()) item.id ||= this.$id('command-item', index)
         this.highlight(this.available.find(item => item.dataset.selected === 'true') ?? this.available[0], false)
     },
     highlight(target, scroll = true) {
@@ -40,7 +28,13 @@ export default () => ({
         const item = event.target.closest('[data-slot="command-item"]')
         if (this.available.includes(item)) this.highlight(item)
     },
-    key(event) {
+    async key(event) {
+        if (event.isComposing) return
+        if (event.key === 'Enter' && this.$el.hasAttribute('data-query') && this.input.value !== this.$el.dataset.query) {
+            event.preventDefault()
+            await this.$wire.$commit()
+            this.refresh()
+        }
         const items = this.available
         const index = items.findIndex(item => item.dataset.selected === 'true')
         let next

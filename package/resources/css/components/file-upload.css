@@ -38,11 +38,15 @@
     }
 
     :where([data-file-upload-progress]) {
-        @apply mt-3 w-full max-w-48;
+        @apply w-full max-w-48;
     }
 
     :where([data-file-upload-pending]) {
         @apply contents;
+    }
+
+    :where([data-file-upload-list]:not(:has([data-slot="attachment"], [data-file-upload-progress]:not([hidden])))) {
+        display: none;
     }
 
     :where([data-slot="file-upload"][data-orientation="vertical"] [data-slot="attachment-group"]) {

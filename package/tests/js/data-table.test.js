@@ -117,6 +117,17 @@ describe('expanding', () => {
 
         expect(detail.hidden).toBe(false)
     })
+
+    it('applies a changed server expansion value to an already rendered row', async () => {
+        tree()
+        const row = document.querySelector('tr[data-row-id="eng"]')
+
+        row.setAttribute('data-expanded', 'false')
+        await vi.waitFor(() => expect(visible()).toEqual(['eng', 'ops']))
+
+        row.setAttribute('data-expanded', 'true')
+        await vi.waitFor(() => expect(visible()).toEqual(['eng', 'eng/platform', 'ops']))
+    })
 })
 
 describe('sticky columns', () => {

@@ -21,8 +21,10 @@
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value);
 $value = is_numeric($value) ? $value + 0 : null;
-$name = $attributes->get('name');
-$focusable = min($max, max(1, (int) round($value ?? 1)));
+$max = max(1, (int) $max);
+$settings = compact('max', 'size', 'disabled');
+$settings['validation'] = $state->attributes();
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'rating-'.\Esoboy\Ui\Support\Sequence::next('rating');
 @endphp
 
 @if ($readonly)
@@ -32,12 +34,7 @@ $focusable = min($max, max(1, (int) round($value ?? 1)));
     @endforeach
 </span>
 @else
-<eso-rating {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge(['role' => 'radiogroup', 'data-slot' => 'rating', 'data-size' => $size, 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-disabled' => (bool) $disabled, 'x-data' => 'uiRating('.json_encode(Model::binding($attributes)).')', 'x-init' => '$nextTick(() => render())', 'x-effect' => 'render()', 'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()', 'x-on:click' => 'choose($event.target.closest(\'[data-slot="rating-item"]\'))', 'x-on:keydown' => 'key($event)', ...$state->attributes()]) }}>
-    @foreach (range(1, $max) as $i)
-    <button type="button" role="radio" data-slot="rating-item" data-value="{{ $i }}" aria-checked="{{ $value !== null && (int) round($value) === $i ? 'true' : 'false' }}" aria-label="{{ __('ui::rating.label', ['value' => $i, 'max' => $max]) }}" tabindex="{{ $i === $focusable ? 0 : -1 }}" style="--rating-fill: {{ $value !== null && $i <= $value ? 100 : 0 }}%" @disabled($disabled)><x-ui::icon name="star" fill="currentColor" stroke="none" /><x-ui::icon name="star" fill="currentColor" stroke="none" /></button>
-    @endforeach
-    <input type="hidden" x-ref="input" @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes, number: true) }}>
-</eso-rating>
+@livewire('ui.rating', ['settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-rating-'.$key))
 @endif
 <x-ui::field.error :state="$state" />
 <x-ui::extras />

@@ -10,6 +10,17 @@ use Esoboy\Ui\Support\SidebarState;
 use Illuminate\Http\Request;
 use Livewire\Livewire;
 
+it('renders supplied OTP characters in custom Blade slots on the first response', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::input-otp value="07" name="otp">
+            <x-ui::input-otp.slot :index="0" />
+            <x-ui::input-otp.slot :index="1" />
+        </x-ui::input-otp>
+        BLADE)
+        ->assertSeeMarkup('<div data-slot="input-otp-slot" data-index="0">0</div>')
+        ->assertSeeMarkup('<div data-slot="input-otp-slot" data-index="1">7</div>');
+});
+
 it('renders the combobox empty-state and supplementary Blade slots', function () {
     $this->blade(<<<'BLADE'
         <x-ui::combobox :options="[]">
@@ -33,7 +44,7 @@ it('renders a simple select and its selected label without client initialization
         ->toContain('data-slot="select-value" data-placeholder="Choose">Published</span>')
         ->toContain('name="status"')
         ->toContain('value="published" selected')
-        ->toContain('x-data="uiSelect(');
+        ->toContain('x-data="uiSelect"');
 });
 
 it('renders custom select parts with the selected rich label on the server', function () {

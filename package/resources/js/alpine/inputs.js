@@ -1,85 +1,68 @@
-import boundValue from './value.js'
 import { emit } from './interaction.js'
 
-export function numberInput(binding) {
-    return Object.defineProperties(boundValue(binding), Object.getOwnPropertyDescriptors({
-        repeat: 0,
-        get input() { return this.$el.querySelector('[x-ref="input"]') },
-        step(direction) {
-            if (this.input.disabled) return
-            const step = Number(this.$el.dataset.step) || 1
-            const min = this.$el.dataset.min === undefined ? -Infinity : Number(this.$el.dataset.min)
-            const max = this.$el.dataset.max === undefined ? Infinity : Number(this.$el.dataset.max)
-            const current = this.value === null || this.value === '' ? null : Number(this.value)
-            const number = current === null ? (Number.isFinite(min) ? min : 0) : current + direction * step
-            this.value = Number(Math.min(max, Math.max(min, number)).toFixed((String(step).split('.')[1] ?? '').length))
-            this.render()
-            this.changed()
-        },
+export function numberInput() {
+    return {
+        timer: null,
+        holding: false,
+        repeated: false,
+
         press(event) {
             const button = event.target.closest?.('[data-number-input]')
-            if (! button || button.disabled || event.button !== 0) return
+            if (!button || button.disabled || event.button !== 0) return
             event.preventDefault()
-            const direction = button.dataset.numberInput === 'increment' ? 1 : -1
-            this.input.focus()
-            this.step(direction)
+            this.$refs.input?.focus()
             this.stop()
-            const again = () => { this.step(direction); this.repeat = setTimeout(again, 100) }
-            this.repeat = setTimeout(again, 400)
-        },
-        key(event) {
-            if (event.target !== this.input || ! ['ArrowUp', 'ArrowDown'].includes(event.key)) return
-            event.preventDefault()
-            this.step(event.key === 'ArrowUp' ? 1 : -1)
-        },
-        render() {
-            const value = this.value
-            if (! this.input) return
-            if (value !== null) this.input.setAttribute('aria-valuenow', String(value))
-            else this.input.removeAttribute('aria-valuenow')
-            for (const button of this.$el.querySelectorAll('[data-number-input]')) {
-                const limit = button.dataset.numberInput === 'increment' ? this.$el.dataset.max : this.$el.dataset.min
-                button.disabled = this.input.disabled || (limit !== undefined && value !== null && (button.dataset.numberInput === 'increment' ? Number(value) >= Number(limit) : Number(value) <= Number(limit)))
+            this.holding = true
+            this.repeated = false
+            const direction = button.dataset.numberInput === 'increment' ? 1 : -1
+            const repeat = async () => {
+                if (!this.holding || button.disabled) return
+                this.repeated = true
+                await this.$wire.step(direction)
+                if (this.holding) this.timer = setTimeout(repeat, 100)
             }
+            this.timer = setTimeout(repeat, 400)
         },
-        stop() { clearTimeout(this.repeat) },
+
+        afterRepeat(event) {
+            if (!this.repeated || !event.target.closest?.('[data-number-input]')) return
+            this.repeated = false
+            event.preventDefault()
+            event.stopImmediatePropagation()
+        },
+
+        stop() {
+            this.holding = false
+            clearTimeout(this.timer)
+        },
+
         destroy() { this.stop() },
-    }))
+    }
 }
 
-export function rating(binding) {
-    return Object.defineProperties(boundValue(binding), Object.getOwnPropertyDescriptors({
-        choose(button) {
-            if (! button || button.disabled) return
-            const value = Number(button.dataset.value)
-            this.value = Number(this.value) === value ? null : value
-            this.render()
-            this.changed()
-        },
+export function rating() {
+    return {
         key(event) {
-            const buttons = [...this.$el.querySelectorAll('[data-slot="rating-item"]')].filter(button => ! button.disabled)
+            const buttons = [...this.$el.querySelectorAll('[data-slot="rating-item"]:not(:disabled)')]
             const index = buttons.indexOf(event.target)
-            const position = { ArrowRight: Math.min(index + 1, buttons.length - 1), ArrowUp: Math.min(index + 1, buttons.length - 1), ArrowLeft: Math.max(0, index - 1), ArrowDown: Math.max(0, index - 1), Home: 0, End: buttons.length - 1 }[event.key]
-            if (position === undefined || index < 0) return
-            event.preventDefault()
-            const button = buttons[position]
-            this.value = Number(button.dataset.value)
-            this.render()
-            button.focus()
-            this.changed()
-        },
-        render() {
-            const value = this.value
-            const buttons = [...this.$el.querySelectorAll('[data-slot="rating-item"]')]
-            const active = Math.max(1, Math.round(Number(value) || 1))
-            for (const button of buttons) {
-                const number = Number(button.dataset.value)
-                button.setAttribute('aria-checked', String(value !== null && number === Math.round(Number(value))))
-                button.tabIndex = number === active ? 0 : -1
-                button.style.setProperty('--rating-fill', `${value !== null && number <= Number(value) ? 100 : 0}%`)
+            if (index < 0) return
+            const positions = {
+                ArrowRight: index + 1,
+                ArrowUp: index + 1,
+                ArrowLeft: index - 1,
+                ArrowDown: index - 1,
+                Home: 0,
+                End: buttons.length - 1,
             }
+            const position = positions[event.key]
+            if (position === undefined) return
+
+            event.preventDefault()
+            const button = buttons[Math.max(0, Math.min(position, buttons.length - 1))]
+            button.focus()
+            this.$wire.choose(Number(button.dataset.value), false)
         },
-    }))
+    }
 }
 
 export function slider(binding) {
@@ -142,10 +125,19 @@ export function slider(binding) {
     }
 }
 
-export function otp(binding) {
+export function otp() {
     return {
+        stopMorph: null,
+
+        init() {
+            this.stopMorph = window.Livewire?.hook('morphed', ({ el }) => {
+                if (el === this.$el || el.contains(this.$el)) this.render()
+            })
+        },
+
+        destroy() { this.stopMorph?.() },
+
         render() {
-            if (binding.property) this.$wire.$get(binding.property)
             this.$nextTick(() => {
                 const input = this.$el.querySelector('[data-slot="input-otp-input"]')
                 if (! input) return
@@ -153,7 +145,6 @@ export function otp(binding) {
                 const position = Math.min(input.selectionStart ?? input.value.length, input.maxLength - 1)
                 for (const slot of this.$el.querySelectorAll('[data-slot="input-otp-slot"]')) {
                     const index = Number(slot.dataset.index)
-                    slot.textContent = input.value[index] ?? ''
                     slot.dataset.active = String(focused && index === position)
                     slot.dataset.caret = String(focused && index === position && input.value[index] === undefined)
                 }
@@ -164,19 +155,29 @@ export function otp(binding) {
 
 export function inputCount() {
     return {
-        render() {
-            const input = this.$el.closest('[data-slot="input-group"]')?.querySelector('[data-slot="input-group-control"]')
-            if (! input) return
-            const property = input.getAttributeNames().find(name => name.startsWith('wire:model'))
-            const value = property ? this.$wire.$get(input.getAttribute(property)) : input.value
-            const count = [...String(value ?? '')].length
-            const max = Number(this.$el.dataset.max || input.maxLength) > 0 ? Number(this.$el.dataset.max || input.maxLength) : null
-            this.$el.textContent = (max ? this.$el.dataset.labelMax : this.$el.dataset.label).replace(':count', count).replace(':max', max)
-            this.$el.toggleAttribute('data-over', max !== null && count > max)
-            this.$el.id ||= this.$id('input-count')
-            const described = (input.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
-            if (! described.includes(this.$el.id)) input.setAttribute('aria-describedby', [...described, this.$el.id].join(' '))
+        timer: null,
+
+        get input() {
+            return this.$el.closest('[data-slot="input-group"]')?.querySelector('[data-slot="input-group-control"]')
         },
+
+        init() {
+            const input = this.input
+            if (!input) return
+            const descriptions = (input.getAttribute('aria-describedby') ?? '').split(' ').filter(Boolean)
+            if (!descriptions.includes(this.$el.id)) {
+                input.setAttribute('aria-describedby', [...descriptions, this.$el.id].join(' '))
+            }
+        },
+
+        queue(event) {
+            if (event.target !== this.input || event.isComposing) return
+            clearTimeout(this.timer)
+            const value = event.target.value
+            this.timer = setTimeout(() => this.$wire.countText(value), 150)
+        },
+
+        destroy() { clearTimeout(this.timer) },
     }
 }
 

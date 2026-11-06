@@ -12,18 +12,49 @@ use Livewire\Livewire;
 
 beforeEach(fn () => Storage::fake('tmp-for-tests'));
 
+it('renders pending upload progress and resets after cancellation', function () {
+    $component = Livewire::test('ui.pending-upload', ['list' => 'pending-list'])
+        ->call('begin', 1, [['name' => 'notes.txt', 'size' => 2048]])
+        ->call('advance', 1, 42);
+
+    expect($component->html())
+        ->toContainMarkup('<div role="progressbar" aria-valuenow="42">')
+        ->toContainMarkup('<span data-slot="attachment-title">notes.txt</span>')
+        ->toContain('2 KB', 'Uploading… 42%');
+
+    $component->call('finish', 1, 'cancel');
+    expect($component->html())->not->toContainMarkup('<span data-slot="attachment-title">notes.txt</span>');
+});
+
+it('clears failed uploads and accepts a new operation without stale progress', function () {
+    $component = Livewire::test('ui.pending-upload', ['list' => 'pending-list'])
+        ->call('begin', 1, [['name' => 'first.txt'], ['name' => 'second.txt']])
+        ->call('finish', 1, 'error')
+        ->assertSet('phase', 'error')
+        ->assertSet('files', [])
+        ->call('begin', 2, [['name' => 'retry.txt']])
+        ->call('advance', 1, 100)
+        ->call('finish', 1, 'cancel')
+        ->assertSet('phase', 'uploading')
+        ->assertSet('progress', 0);
+
+    expect($component->html())->toContain('retry.txt')->not->toContain('first.txt', 'second.txt');
+
+    $component->call('finish', 2, 'finish')->assertSet('files', []);
+});
+
 it('renders a drop area around the file input', function () {
     $view = $this->blade('<x-ui::file-upload wire:model="files" multiple accept="image/*" description="PNG up to 2 MB" class="max-w-md" />');
 
     $view->assertSeeMarkupInOrder([
-        '<eso-file-upload data-slot="file-upload" data-orientation="horizontal" data-uploading-label="Uploading… :progress%" class="max-w-md">',
+        '<eso-file-upload data-slot="file-upload" data-orientation="horizontal" class="max-w-md">',
         '<div data-slot="file-upload-dropzone" >',
         '<input type="file" data-slot="file-upload-input" multiple="multiple" accept="image/*" wire:model="files">',
         '<span data-slot="file-upload-title">Drop files here or click to upload</span>',
         '<span data-slot="file-upload-description">PNG up to 2 MB</span>',
+        '<div data-slot="attachment-group" data-file-upload-list="data-file-upload-list">',
         '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%" data-slot="progress"',
-        '<div data-slot="attachment-group" data-file-upload-list="data-file-upload-list" hidden="hidden">',
-        '<div data-file-upload-pending wire:ignore></div>',
+        '<div data-file-upload-pending>',
     ]);
 });
 
