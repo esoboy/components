@@ -1,4 +1,4 @@
-import { emit } from './interaction.js'
+import { emit, notifyModel } from './interaction.js'
 
 export function numberInput() {
     return {
@@ -6,11 +6,14 @@ export function numberInput() {
         holding: false,
         repeated: false,
 
+        notifyModel() { notifyModel(this) },
+        blurModel() { emit(this.$el, 'blur') },
+
         press(event) {
             const button = event.target.closest?.('[data-number-input]')
             if (!button || button.disabled || event.button !== 0) return
             event.preventDefault()
-            this.$refs.input?.focus()
+            this.$el.querySelector('input[role="spinbutton"]')?.focus()
             this.stop()
             this.holding = true
             this.repeated = false
@@ -42,6 +45,9 @@ export function numberInput() {
 
 export function rating() {
     return {
+        notifyModel() { notifyModel(this) },
+        blurModel() { emit(this.$el, 'blur') },
+
         key(event) {
             const buttons = [...this.$el.querySelectorAll('[data-slot="rating-item"]:not(:disabled)')]
             const index = buttons.indexOf(event.target)

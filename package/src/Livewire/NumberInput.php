@@ -29,6 +29,7 @@ class NumberInput extends Component
             ? round((float) $this->value + $direction * $step, PHP_FLOAT_DIG - 1)
             : ($min ?? 0);
         $this->value = min($max ?? INF, max($min ?? -INF, $next));
+        $this->dispatch('ui-model-changed')->self();
     }
 
     public function render(): View

@@ -180,8 +180,9 @@ color locally. Releasing the pointer or committing the hue sends the value.
 Editor still loads Tiptap on demand through Alpine. The editor engine handles
 editable content, selection, the KaTeX preview, and upload decorations inside
 the document. Blade renders search results, toolbar overflow groups, form
-messages and status. Upload failures include a localized placeholder in the
-document and the uploader's detailed message in the editor footer. Keep using
+messages, the URL in the link toolbar, and status. The editor footer shows
+up to eight active upload percentages and detailed errors. The document keeps the upload bar and
+a localized placeholder for failures. Keep using
 `Ui::editor()`, `Ui::sanitize()` and the existing server upload contract.
 
 Code Block highlights snippets during rendering using the Composer highlighter.

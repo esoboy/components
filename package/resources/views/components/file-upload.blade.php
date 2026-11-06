@@ -30,7 +30,7 @@ $list = Model::scope('file-upload-list', $loop ?? null);
 
 {{-- <eso-file-upload> adds drag and drop and shows files while they upload; the bound files then render below. --}}
 <eso-file-upload x-data="uiFileUpload" {{ $attributes->only(['class', 'style'])->merge(['data-slot' => 'file-upload', 'data-orientation' => $orientation]) }}>
-    <div data-slot="file-upload-dropzone" @if ($invalid) aria-invalid="true" @endif>
+    <div data-slot="file-upload-dropzone" style="anchor-name: --{{ $list }}" @if ($invalid) aria-invalid="true" @endif>
         <label class="flex w-full cursor-pointer flex-col items-center gap-1">
             <input {{ $attributes->except(['class', 'style'])->merge(['type' => 'file', 'data-slot' => 'file-upload-input', 'multiple' => (bool) $multiple, 'accept' => $accept ?? false, 'disabled' => (bool) $disabled, ...$state->attributes()]) }}>
             @if ($slot->isEmpty())

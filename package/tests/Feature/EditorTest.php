@@ -26,13 +26,18 @@ it('renders editor suggestions and status from the Livewire panel', function () 
         'counts' => true,
         'maxLength' => 20,
         'uploads' => true,
+        'links' => true,
     ])
         ->call('search', 'slash', 'quo')
         ->assertSee('Quote')
         ->assertDontSee('Heading')
-        ->call('syncStatus', ['characters' => 12, 'uploads' => 2, 'refused' => true])
+        ->call('syncStatus', ['characters' => 12, 'uploads' => 2, 'refused' => true, 'uploadProgress' => [20, 45], 'link' => 'https://example.org/guide'])
         ->assertSee('12 / 20')
-        ->assertSee(__('ui::editor.submit-uploading', ['count' => 2]));
+        ->assertSee(__('ui::editor.submit-uploading', ['count' => 2]))
+        ->assertSee('20% · 45%')
+        ->assertSeeHtml('href="https://example.org/guide"')
+        ->call('syncStatus', ['link' => 'javascript:alert(1)'])
+        ->assertDontSee('javascript:alert(1)');
 });
 
 /*
@@ -216,8 +221,9 @@ describe('the view', function () {
             ->and(substr_count($html, 'data-editor-command="letter-spacing"'))->toBe(6)
             ->and(substr_count($html, 'data-editor-command="callout"'))->toBe(5)
             ->and($html)->toContain('data-editor-command="callout" data-editor-value="background-color:rgba(59,130,246,0.1);border-left:4px solid #3b82f6" data-editor-label="Note"')
-            ->toContainMarkup('<template data-template="bubble-link">')
-            ->toContainMarkup('<a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer">Open link</a>')
+            ->toContainMarkup('data-editor-link-frame')
+            ->toContainMarkup('data-editor-link-href')
+            ->toContainMarkup('Open link</a>')
             ->toContain('data-editor-command="caption" aria-label="Caption" aria-pressed="false"')
             ->toContain('data-editor-image-link-input')
             ->toContain('data-editor-command="cell-background" data-editor-value="#fef08a"')

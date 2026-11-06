@@ -32,6 +32,13 @@ it('updates the shared progress bar and resets it for the next upload', function
     $page->assertAttribute($progress, 'aria-valuenow', '42')
         ->assertAttribute($progress, 'aria-valuetext', '42%')
         ->assertScript("document.querySelector('[data-file-upload-progress] [data-slot=\"progress-indicator\"]').style.width", '42%');
+    $page->assertScript(<<<'JS'
+        (() => {
+            const bar = document.querySelector('[data-file-upload-progress]').getBoundingClientRect();
+            const zone = document.querySelector('[data-slot="file-upload-dropzone"]').getBoundingClientRect();
+            return bar.height > 0 && bar.top >= zone.top && bar.bottom <= zone.bottom;
+        })()
+        JS);
 
     $page->script(<<<'JS'
         (() => {

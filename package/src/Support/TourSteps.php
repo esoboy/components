@@ -2,7 +2,6 @@
 
 namespace Esoboy\Ui\Support;
 
-use Dom\HTMLDocument;
 use Dom\HTMLElement;
 
 final class TourSteps
@@ -10,7 +9,7 @@ final class TourSteps
     /** @return list<array{target: string, title: string, description: string, side: string, align: string}> */
     public static function read(string $slot): array
     {
-        $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$slot.'</body></html>', LIBXML_NOERROR);
+        $document = HtmlFragment::parse($slot);
         $steps = [];
         foreach ($document->querySelectorAll('body > [data-tour-step]') as $element) {
             if ($element instanceof HTMLElement) {

@@ -14,6 +14,9 @@
             @if ($uploads)
                 <span data-editor-busy role="{{ $refused ? 'alert' : 'status' }}" @if (! $pending) hidden @endif>
                     {{ __($refused ? 'ui::editor.submit-uploading' : 'ui::editor.uploading-count', ['count' => $pending]) }}
+                    @if ($status['uploadProgress'] ?? [])
+                        <span data-editor-upload-percent>{{ implode(' · ', array_map(fn (int $percent) => $percent.'%', $status['uploadProgress'])) }}</span>
+                    @endif
                 </span>
             @endif
             @if ($images)
@@ -55,5 +58,15 @@
                 <x-ui::kbd data-editor-tip-keys>{{ $shortcut }}</x-ui::kbd>
             @endif
         </x-ui::tooltip.content>
+    @endif
+    @if ($links)
+        <div class="contents" data-editor-link-frame wire:key="editor-link-frame">
+            <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.link') }}" style="visibility: hidden" wire:key="editor-link-bubble" wire:ignore.self>
+                <a data-slot="editor-link-href" data-editor-link-href href="{{ ($status['link'] ?? '') ?: null }}" title="{{ $status['link'] ?? '' }}" target="_blank" rel="noopener noreferrer">{{ ($status['link'] ?? '') ?: __('ui::editor.open-link') }}</a>
+                <x-ui::editor.separator />
+                <x-ui::editor.link />
+                <x-ui::button variant="ghost" size="icon-sm" data-editor-action="link-remove" :aria-label="__('ui::editor.link-remove')"><x-ui::icon name="unlink" /></x-ui::button>
+            </div>
+        </div>
     @endif
 </div>

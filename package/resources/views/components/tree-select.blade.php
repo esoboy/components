@@ -29,7 +29,7 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value);
 $validation = $state->attributes();
 $settings = compact('nodeView', 'checkable', 'placeholder', 'size', 'disabled', 'expanded', 'expandAll', 'searchable', 'load', 'validation');
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'tree-picker-'.\Esoboy\Ui\Support\Sequence::next('tree-select');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('tree-select'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 {!! \Esoboy\Ui\Support\ViewSlots::mount('ui.tree-select', ['items' => $items, 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], 'ui-tree-select-'.$key, ['default' => $slot]) !!}

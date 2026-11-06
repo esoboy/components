@@ -24,7 +24,7 @@ $value = is_numeric($value) ? $value + 0 : null;
 $max = max(1, (int) $max);
 $settings = compact('max', 'size', 'disabled');
 $settings['validation'] = $state->attributes();
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'rating-'.\Esoboy\Ui\Support\Sequence::next('rating');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('rating'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 @if ($readonly)

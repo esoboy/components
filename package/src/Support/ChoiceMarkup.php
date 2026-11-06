@@ -18,7 +18,7 @@ final class ChoiceMarkup
 
     public function __construct(string $html, private readonly string $kind = 'select')
     {
-        $this->document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$html.'</body></html>', LIBXML_NOERROR);
+        $this->document = HtmlFragment::parse($html);
 
         foreach ($this->document->getElementsByTagName('*') as $element) {
             if ($element instanceof HTMLElement && $element->getAttribute('data-slot') === $kind.'-item') {

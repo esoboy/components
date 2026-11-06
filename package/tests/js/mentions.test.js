@@ -57,6 +57,32 @@ const shown = element => element.items.filter(item => ! item.hidden).map(item =>
 const highlighted = element => element.querySelector('[data-highlighted="true"]')?.dataset.value
 
 describe('suggesting', () => {
+    it('cannot choose an old prefix while the next Blade results are in flight', async () => {
+        const [element] = mount(['@', '#'])
+        const list = element.querySelector('[data-slot="mentions-list"]')
+        const results = document.createElement('div')
+        results.dataset.slot = 'mentions-results'
+        results.dataset.resultsPrefix = '@'
+        results.dataset.resultsQuery = ''
+        list.before(results)
+        results.append(list)
+        element.setAttribute('data-local-catalogue', '')
+
+        type(element, '@')
+        expect(highlighted(element)).toBe('zhangsan')
+
+        type(element, '#')
+        expect(key(element, 'Enter').defaultPrevented).toBe(false)
+        expect(element.input.value).toBe('#')
+
+        results.dataset.resultsPrefix = '#'
+        for (const item of element.items) item.hidden = item.dataset.prefix !== '#'
+        await Promise.resolve()
+        expect(highlighted(element)).toBe('design')
+        key(element, 'Enter')
+        expect(element.input.value).toBe('#design ')
+    })
+
     it('opens after the prefix and highlights the first rendered candidate', () => {
         const [element, seen] = mount()
 

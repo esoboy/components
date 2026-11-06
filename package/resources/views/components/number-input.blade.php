@@ -24,7 +24,7 @@ $value = Model::value($attributes, $value);
 $value = is_numeric($value) ? $value + 0 : null;
 $settings = compact('min', 'max', 'step', 'placeholder', 'disabled');
 $settings['validation'] = $state->attributes();
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'number-input-'.\Esoboy\Ui\Support\Sequence::next('number-input');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('number-input'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 @livewire('ui.number-input', ['settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-number-input-'.$key))

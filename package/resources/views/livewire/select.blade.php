@@ -9,6 +9,8 @@
     'data-value' => is_scalar($value) ? (string) $value : false,
     'data-name' => $name,
     'x-data' => 'uiSelect',
+    'x-on:ui-model-changed.self' => 'notifyModel()',
+    'x-on:focusout' => '!$el.contains($event.relatedTarget) && blurModel()',
     'x-on:click' => 'click($event)',
     'x-on:keydown' => 'key($event)',
     'x-on:toggle.capture' => 'toggle($event)',

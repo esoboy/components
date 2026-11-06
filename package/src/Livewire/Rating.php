@@ -22,7 +22,11 @@ class Rating extends Component
             return;
         }
 
-        $this->value = $toggle && is_numeric($this->value) && (float) $this->value === (float) $score ? null : $score;
+        $next = $toggle && is_numeric($this->value) && (float) $this->value === (float) $score ? null : $score;
+        if ($next !== $this->value) {
+            $this->value = $next;
+            $this->dispatch('ui-model-changed')->self();
+        }
     }
 
     public function render(): View

@@ -14,6 +14,8 @@
     'data-name' => $name,
     'data-disabled' => $disabled,
     'x-data' => 'uiRating',
+    'x-on:ui-model-changed.self' => 'notifyModel()',
+    'x-on:focusout' => '!$el.contains($event.relatedTarget) && blurModel()',
     'x-on:keydown' => 'key($event)',
     ...($settings['validation'] ?? []),
 ]) }}>

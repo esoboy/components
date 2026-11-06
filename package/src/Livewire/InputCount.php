@@ -16,17 +16,19 @@ class InputCount extends Component
 
     public ?string $draft = null;
 
-    public ?string $draftSource = null;
-
     public function countText(string $text): void
     {
         $this->draft = $text;
-        $this->draftSource = $this->initial;
+    }
+
+    public function updatedInitial(): void
+    {
+        $this->draft = null;
     }
 
     public function render(): View
     {
-        $text = $this->draftSource === $this->initial ? ($this->draft ?? $this->initial) : $this->initial;
+        $text = $this->draft ?? $this->initial;
 
         return view('ui::livewire.input-count', ['count' => mb_strlen($text)]);
     }

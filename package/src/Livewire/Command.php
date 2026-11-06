@@ -2,7 +2,7 @@
 
 namespace Esoboy\Ui\Livewire;
 
-use Dom\HTMLDocument;
+use Esoboy\Ui\Support\HtmlFragment;
 use Esoboy\Ui\Support\SearchText;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
@@ -17,11 +17,29 @@ class Command extends Component
     #[Locked]
     public bool $hasParent = false;
 
+    #[Reactive]
+    public ?string $boundQuery = null;
+
     public string $query = '';
+
+    public function mount(): void
+    {
+        $this->updatedBoundQuery();
+    }
+
+    public function updatedBoundQuery(): void
+    {
+        $this->query = $this->boundQuery ?? '';
+    }
+
+    public function search(string $query): void
+    {
+        $this->query = $query;
+    }
 
     public function render(): View
     {
-        $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$this->markup.'</body></html>', LIBXML_NOERROR);
+        $document = HtmlFragment::parse($this->markup);
         $query = trim($this->query);
         $matches = 0;
         foreach ($document->querySelectorAll('[data-slot="command-item"]') as $item) {
@@ -32,9 +50,18 @@ class Command extends Component
                 $matches++;
             }
 
-            $action = $item->getAttribute('wire:click');
-            if ($this->hasParent && $action && ! str_starts_with($action, '$parent.')) {
-                $item->setAttribute('wire:click', '$parent.'.$action);
+        }
+        if ($this->hasParent) {
+            foreach ($document->querySelectorAll('[data-slot="command-item"], [data-slot="command-item"] *') as $control) {
+                if ($control->closest('[wire\\:id]')) {
+                    continue;
+                }
+                foreach ($control->attributes as $attribute) {
+                    if (explode('.', $attribute->name)[0] === 'wire:click'
+                        && preg_match('/^(?:[a-zA-Z_]|\$(?:set|toggle|refresh|commit|call)\b)/', $attribute->value)) {
+                        $attribute->value = '$parent.'.$attribute->value;
+                    }
+                }
             }
         }
         foreach ($document->querySelectorAll('[data-slot="command-group"]') as $group) {
@@ -48,7 +75,16 @@ class Command extends Component
             }
         }
         if ($input = $document->querySelector('[data-command-input]')) {
-            $input->setAttribute('wire:model.live.debounce.100ms', 'query');
+            if ($this->boundQuery === null) {
+                $input->setAttribute('wire:model.live.debounce.100ms', 'query');
+            } else {
+                foreach ($input->attributes as $attribute) {
+                    if (explode('.', $attribute->name)[0] === 'wire:model') {
+                        $attribute->value = '$parent.'.$attribute->value;
+                    }
+                }
+                $input->setAttribute('wire:input.debounce.100ms', 'search($event.target.value)');
+            }
             $input->setAttribute('value', $this->query);
         }
 

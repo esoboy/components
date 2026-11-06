@@ -1,9 +1,14 @@
+import { emit, notifyModel } from './interaction.js'
+
 const ITEM = '[data-slot="select-item"]'
 
 export default () => ({
     typed: '',
     typedAt: 0,
     positioning: null,
+
+    notifyModel() { notifyModel(this) },
+    blurModel() { emit(this.$el, 'blur') },
 
     get trigger() { return this.$el.querySelector('[data-slot="select-trigger"]') },
     get content() { return this.$el.querySelector('[data-slot="select-content"]') },

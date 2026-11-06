@@ -4,7 +4,11 @@
  */
 @layer components {
     :where([data-slot="file-upload"]) {
-        @apply flex w-full min-w-0 flex-col gap-3;
+        @apply relative flex w-full min-w-0 flex-col gap-3;
+    }
+
+    :where([data-slot="file-upload"]:has([data-file-upload-progress]:not([hidden])) > [data-slot="file-upload-dropzone"]) {
+        @apply pb-11;
     }
 
     :where([data-slot="file-upload-dropzone"]) {
@@ -38,7 +42,9 @@
     }
 
     :where([data-file-upload-progress]) {
-        @apply w-full max-w-48;
+        @apply pointer-events-none absolute w-[calc(100%-3rem)] max-w-48 -translate-x-1/2;
+        left: anchor(center);
+        top: calc(anchor(bottom) - 1.75rem);
     }
 
     :where([data-file-upload-pending]) {

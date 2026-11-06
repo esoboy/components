@@ -27,6 +27,10 @@
         @apply hidden;
     }
 
+    :where([data-slot="mentions-results"][inert]) {
+        @apply invisible;
+    }
+
     :where([data-slot="mentions-item"]) {
         @apply relative flex w-full cursor-default items-center gap-2 rounded-md px-1.5 py-1 text-sm outline-hidden select-none;
         @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;

@@ -102,17 +102,6 @@ $names = [
         @endif
     </div>
 </template>
-@if ($rich->has('link'))
-{{-- The cursor in a link: where it goes (opening there), and changing or taking it off. --}}
-<template data-template="bubble-link">
-    <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.link') }}">
-        <a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer">{{ __('ui::editor.open-link') }}</a>
-        <x-ui::editor.separator />
-        <x-ui::editor.link />
-        <x-ui::button variant="ghost" size="icon-sm" data-editor-action="link-remove" :aria-label="__('ui::editor.link-remove')"><x-ui::icon name="unlink" /></x-ui::button>
-    </div>
-</template>
-@endif
 @if ($rich->has('math'))
 <template data-template="bubble-math">
     <div data-slot="editor-bubble" data-editor-bubble-form>

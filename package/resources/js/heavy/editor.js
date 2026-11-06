@@ -127,6 +127,7 @@ export default (binding = {}) => ({
     _panelRequest: null,
     _tipTimer: null,
     _uploadErrors: new Map(),
+    _uploadProgress: new Map(),
 
 
     init() {
@@ -424,6 +425,7 @@ export default (binding = {}) => ({
     // The bubble menus: for selected text, in a table, on a selected block, on a formula.
     _bubbles(templates) {
         const node = state => state.selection.node?.type.name
+        const linkFrame = this.panel?.querySelector('[data-editor-link-frame]')
         const menus = {
             text: ({ editor, view, state, from, to, element }) => state.selection instanceof TextSelection && ! state.selection.empty && !! state.doc.textBetween(from, to).trim() && ! editor.isActive('codeBlock') && focused(view, element),
             table: ({ editor, view, state, element }) => editor.isActive('table') && (state.selection.empty || state.selection instanceof CellSelection) && focused(view, element),
@@ -433,16 +435,25 @@ export default (binding = {}) => ({
             link: ({ editor, view, state, element }) => state.selection.empty && editor.isActive('link') && focused(view, element),
         }
 
-        return Object.entries(menus).filter(([name]) => templates[`bubble-${name}`]).map(([name, shouldShow]) => BubbleMenu.extend({ name: `bubble-${name}` }).configure({
-            pluginKey: `bubble-${name}`,
-            element: this._menu(clone(templates[`bubble-${name}`])),
-            updateDelay: 100,
-            shouldShow: props => props.editor.isEditable && shouldShow(props),
-            // The table's menu sits above the table, not the cursor; the others above the
-            // selection, or under it on touch screens, clear of their own menu.
-            getReferencedVirtualElement: name === 'table' ? () => this._tableRect() : undefined,
-            options: { placement: TOUCH && name !== 'table' ? 'bottom' : 'top', offset: 8, flip: {}, shift: { padding: 8 }, onShow: () => queueMicrotask(() => this._sync(true)) },
-        }))
+        return Object.entries(menus).filter(([name]) => name === 'link' ? linkFrame : templates[`bubble-${name}`]).map(([name, shouldShow]) => {
+            const frame = name === 'link' ? linkFrame : null
+            const element = this._menu(frame ? frame.firstElementChild : clone(templates[`bubble-${name}`]))
+            return BubbleMenu.extend({ name: `bubble-${name}` }).configure({
+                pluginKey: `bubble-${name}`,
+                element,
+                appendTo: frame ?? undefined,
+                updateDelay: 100,
+                shouldShow: props => props.editor.isEditable && shouldShow(props),
+                // The table's menu sits above the table, not the cursor; the others above the
+                // selection, or under it on touch screens, clear of their own menu.
+                getReferencedVirtualElement: name === 'table' ? () => this._tableRect() : undefined,
+                options: {
+                    placement: TOUCH && name !== 'table' ? 'bottom' : 'top', offset: 8, flip: {}, shift: { padding: 8 },
+                    onShow: () => queueMicrotask(() => this._sync(true)),
+                    onHide: frame ? () => frame.append(element) : undefined,
+                },
+            })
+        })
     },
 
     _tableRect() {
@@ -931,10 +942,13 @@ export default (binding = {}) => ({
     // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
     // taken off for none.
     _placeholder(id, position, kind = null, message = null) {
+        if (kind === 'uploading') this._uploadProgress.set(id, 0)
+        else this._uploadProgress.delete(id)
         const previous = this._uploadErrors.get(id)
         if (message) this._uploadErrors.set(id, message)
         else this._uploadErrors.delete(id)
         if (previous !== (message ?? undefined)) this._updatePanel({ uploadErrors: [...this._uploadErrors.values()].slice(-8) })
+        this._updatePanel({ uploadProgress: [...this._uploadProgress.values()] })
         this._editor?.view.dispatch(this._editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, failed: !!message }] : [] }))
     },
 
@@ -943,6 +957,10 @@ export default (binding = {}) => ({
         const placeholder = this._editor?.view.dom.querySelector(`[data-editor-upload="${id}"]`)
         const percent = Math.min(100, Math.round(share * 100))
 
+        if (this._uploadProgress.has(id)) {
+            this._uploadProgress.set(id, percent)
+            this._updatePanel({ uploadProgress: [...this._uploadProgress.values()] })
+        }
         placeholder?.style.setProperty('--editor-upload-progress', `${percent}%`)
         placeholder?.querySelector('[data-editor-upload-progress]')?.setAttribute('aria-valuenow', String(percent))
     },
@@ -1467,12 +1485,7 @@ export default (binding = {}) => ({
         for (const error of this._all('[data-editor-image-error]')) error.hidden = !reason
         if (this.$el.dataset.upload) this._updatePanel({ imageError: reason })
 
-        for (const link of this._all('[data-editor-link-href]')) {
-            if (link.getAttribute('href') !== href) {
-                link.setAttribute('href', href)
-                link.title = href
-            }
-        }
+        if (this.panel?.querySelector('[data-editor-link-frame]')) this._updatePanel({ link: href })
 
         if (node === this._selected) return
 

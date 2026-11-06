@@ -19,7 +19,7 @@
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value);
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'select-'.\Esoboy\Ui\Support\Sequence::next('select');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('select'.(Model::key($attributes) ?? ''), $loop ?? null);
 $settings = [
     'disabled' => $disabled,
     'placeholder' => $placeholder,

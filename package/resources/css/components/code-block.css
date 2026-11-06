@@ -138,22 +138,22 @@
     }
 
     :where([data-slot="code-block-line-content"] [data-token]:is(.hl-keyword, .hl-operator, .hl-deletion)) {
-        color: light-dark(#cf222e, #ff7b72);
+        color: var(--color-code-keyword);
     }
 
     :where([data-slot="code-block-line-content"] [data-token]:is(.hl-type, .hl-generic)) {
-        color: light-dark(#8250df, #d2a8ff);
+        color: var(--color-code-type);
     }
 
     :where([data-slot="code-block-line-content"] [data-token]:is(.hl-number, .hl-value, .hl-attribute, .hl-property)) {
-        color: light-dark(#0550ae, #79c0ff);
+        color: var(--color-code-value);
     }
 
     :where([data-slot="code-block-line-content"] [data-token]:is(.hl-literal, .hl-addition)) {
-        color: light-dark(#0a3069, #a5d6ff);
+        color: var(--color-code-literal);
     }
 
     :where([data-slot="code-block-line-content"] [data-token].hl-comment) {
-        color: light-dark(#6e7781, #8b949e);
+        color: var(--color-code-comment);
     }
 }

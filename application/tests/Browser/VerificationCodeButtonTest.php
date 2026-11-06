@@ -16,14 +16,18 @@ it('stays usable when the server refuses to send', function () {
 });
 
 it('counts down after the server sends the code, then offers to resend', function () {
-    visit('/inputs')
+    $page = visit('/inputs')
         ->fill('#phone', '13800138000')
         ->click('#send-code')
         ->assertSeeIn('#sent', '1')
         ->assertSee('Code sent')
         ->assertDisabled('#send-code')
-        ->assertSeeIn('#send-code', 'Resend in')
+        ->assertSeeIn('#send-code', 'Resend in');
+
+    $page->script("document.getElementById('send-code').click()");
+    $page
         ->wait(6)
+        ->assertSeeIn('#sent', '1')
         ->assertEnabled('#send-code')
         ->assertSeeIn('#send-code', 'Resend code');
 });

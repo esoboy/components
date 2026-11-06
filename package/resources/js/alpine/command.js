@@ -30,9 +30,11 @@ export default () => ({
     },
     async key(event) {
         if (event.isComposing) return
-        if (event.key === 'Enter' && this.$el.hasAttribute('data-query') && this.input.value !== this.$el.dataset.query) {
+        const query = this.input?.value
+        if (event.key === 'Enter' && query !== undefined && this.$el.hasAttribute('data-query') && query !== this.$el.dataset.query) {
             event.preventDefault()
-            await this.$wire.$commit()
+            await this.$wire.search(query)
+            if (this.input?.value !== query || this.$el.dataset.query !== query) return
             this.refresh()
         }
         const items = this.available

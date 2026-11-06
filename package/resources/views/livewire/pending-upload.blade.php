@@ -7,7 +7,7 @@
     wire:ui-upload-progress="advance($event.detail.operation, $event.detail.progress)"
     wire:ui-upload-end="finish($event.detail.operation, $event.detail.phase)">
     @if ($list)
-        <x-ui::progress :value="$progress" data-file-upload-progress :aria-label="$label" :hidden="! $uploading" />
+        <x-ui::progress :value="$progress" data-file-upload-progress style="position-anchor: --{{ $list }}" :aria-label="$label" :hidden="! $uploading" />
         <div data-file-upload-pending>
             @foreach ($files as $index => $file)
                 <x-ui::attachment state="uploading" :orientation="$orientation" wire:key="pending-{{ $operation }}-{{ $index }}">

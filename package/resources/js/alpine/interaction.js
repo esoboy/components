@@ -43,3 +43,11 @@ export function emit(element, name, detail) {
     return window.Alpine.evaluate(element, '$dispatch(name, detail)', { scope: { name, detail } })
 }
 
+export function notifyModel(owner) {
+    owner.$nextTick(() => {
+        emit(owner.$el, 'input', owner.$wire.value)
+        emit(owner.$el, 'change', owner.$wire.value)
+        if (! owner.$el.contains(document.activeElement)) emit(owner.$el, 'blur')
+    })
+}
+

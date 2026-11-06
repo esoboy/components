@@ -2,7 +2,7 @@
 
 namespace Esoboy\Ui\Livewire;
 
-use Dom\HTMLDocument;
+use Esoboy\Ui\Support\HtmlFragment;
 use Esoboy\Ui\Support\SearchText;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Reactive;
@@ -31,7 +31,7 @@ class MentionsResults extends Component
 
     public function render(): View
     {
-        $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$this->markup.'</body></html>', LIBXML_NOERROR);
+        $document = HtmlFragment::parse($this->markup);
         $matches = 0;
         foreach ($document->querySelectorAll('[data-slot="mentions-item"]') as $item) {
             $prefix = $item->getAttribute('data-prefix') ?? $this->fallbackPrefix;

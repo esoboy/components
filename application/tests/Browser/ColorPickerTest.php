@@ -25,6 +25,22 @@ it('takes a typed hex color', function () {
         ->assertSeeIn('#color', '#123456');
 });
 
+it('renders a color supplied by the parent and clears it through the field', function () {
+    $page = visit('/inputs');
+    $page->script(<<<'JS'
+        (() => {
+            const root = document.querySelector('#brand-color').parentElement.closest('[wire\\:id]');
+            Livewire.find(root.getAttribute('wire:id')).$set('color', 'f80');
+        })()
+        JS);
+    $page->assertSeeIn(COLOR_PICKER.' [data-slot="color-picker-value"]', '#ff8800')
+        ->click(COLOR_PICKER.' [data-color-picker-trigger]')
+        ->fill(COLOR_PICKER.' [data-color-picker-input]', '')
+        ->keys(COLOR_PICKER.' [data-color-picker-input]', 'Enter')
+        ->assertSeeIn('#color', 'none')
+        ->assertSeeIn(COLOR_PICKER.' [data-slot="color-picker-value"]', 'Pick a color');
+});
+
 it('moves the color with the arrow keys on its area', function () {
     visit('/inputs')
         ->click(COLOR_PICKER.' [data-color-picker-trigger]')

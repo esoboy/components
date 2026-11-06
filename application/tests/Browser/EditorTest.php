@@ -11,6 +11,20 @@ use Illuminate\Support\Facades\Route;
 
 const ARTICLE = '[data-slot="editor"][data-editor-name="article"]';
 
+it('shows the selected link URL in the Blade rendered link toolbar', function () {
+    $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
+    $page->script(<<<'JS'
+        Livewire.first().$set('article', '<p>See <a href="https://example.org/guide">the guide</a>.</p>')
+        JS);
+    $page->assertSeeIn(ARTICLE.' .ProseMirror a', 'the guide');
+    $page->click(ARTICLE.' .ProseMirror a');
+    $link = ARTICLE.' [data-editor-link-href]';
+    $page->assertAttribute($link, 'href', 'https://example.org/guide')
+        ->assertSeeIn($link, 'https://example.org/guide')
+        ->assertScript("document.querySelector('[data-editor-name=article] [data-editor-link-href]').checkVisibility({visibilityProperty: true})")
+        ->assertNoJavaScriptErrors();
+});
+
 it('inserts a server-rendered slash command and emoji suggestion', function () {
     $input = ARTICLE.' .ProseMirror';
     $page = visit('/editor')->assertPresent($input);

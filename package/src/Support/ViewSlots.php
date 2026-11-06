@@ -18,7 +18,7 @@ final class ViewSlots
     {
         $fragments = [];
         foreach ($slots as $slotName => $slot) {
-            if ($slot?->isNotEmpty()) {
+            if ($slot !== null) {
                 $fragments[$slotName] = $slot->toHtml();
             }
         }

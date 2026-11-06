@@ -5,7 +5,7 @@
 @props(['controlsView' => null])
 
 @php
-    $document = \Dom\HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.(string) $slot.'</body></html>', LIBXML_NOERROR);
+    $document = \Esoboy\Ui\Support\HtmlFragment::parse((string) $slot);
     $images = [];
     foreach ($document->querySelectorAll('[data-slot="image-preview-trigger"]') as $trigger) {
         if ($trigger->closest('eso-image-preview') === null) {

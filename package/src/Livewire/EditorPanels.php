@@ -35,6 +35,9 @@ class EditorPanels extends Component
     public bool $tools = false;
 
     #[Locked]
+    public bool $links = false;
+
+    #[Locked]
     public string $tip = '';
 
     #[Locked]
@@ -81,6 +84,11 @@ class EditorPanels extends Component
             'searching' => ($status['searching'] ?? false) === true,
             'mathError' => $this->shortText($status['mathError'] ?? null),
             'imageError' => $this->shortText($status['imageError'] ?? null),
+            'link' => $this->linkUrl($status['link'] ?? null),
+            'uploadProgress' => array_map(
+                fn (mixed $percent): int => max(0, min(100, (int) $percent)),
+                is_array($status['uploadProgress'] ?? null) ? array_slice($status['uploadProgress'], 0, 8) : [],
+            ),
             'uploadErrors' => array_values(array_filter(array_map(
                 $this->shortText(...),
                 is_array($status['uploadErrors'] ?? null) ? array_slice($status['uploadErrors'], -8) : [],
@@ -91,6 +99,17 @@ class EditorPanels extends Component
     private function shortText(mixed $message): string
     {
         return is_string($message) ? mb_substr($message, 0, 400) : '';
+    }
+
+    private function linkUrl(mixed $value): string
+    {
+        $url = is_string($value) ? trim($value) : '';
+        if (preg_match('/[\x00-\x1f\x7f]/', $url)
+            || (preg_match('/^([a-z][a-z0-9+.-]*):/i', $url, $scheme) && ! in_array(strtolower($scheme[1]), ['http', 'https', 'mailto', 'tel'], true))) {
+            return '';
+        }
+
+        return $url;
     }
 
     public function render(): View

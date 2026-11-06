@@ -37,6 +37,7 @@ class Select extends Component
         }
 
         $this->value = ($this->settings['number'] ?? false) && is_numeric($value) ? $value + 0 : $value;
+        $this->dispatch('ui-model-changed')->self();
     }
 
     public function render(): View

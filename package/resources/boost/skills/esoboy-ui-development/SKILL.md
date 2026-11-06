@@ -14,7 +14,7 @@ esoboy/ui is shadcn/ui for Laravel and Livewire 4: the same components, markup a
 
 - Every component is listed with its parts in [references/components.md](references/components.md). Read it before writing markup, and never invent a component, part or prop that isn't there.
 - shadcn's `<DropdownMenuItem>` is `<x-ui::dropdown-menu.item>`; its camelCase props are kebab-case attributes (`sideOffset` → `side-offset`, `value` → `value`). Pass PHP values with a colon: `:value="['bold']"`.
-- Where shadcn passes `render` or `asChild` to a trigger, pass `as`, the component to render (it must render a button): `<x-ui::dropdown-menu.trigger as="sidebar.menu-button">`. Without `as`, triggers render a Button and take its `variant` and `size`.
+- Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Sidebar and the main Dropdown Menu trigger accept one rendered control in their behavior slots. For example, place an `<x-ui::sidebar.menu-button>` inside `<x-ui::dropdown-menu.trigger>`. Pass visual props to the inner control. Check the component reference for triggers that already render a button.
 - `class` on a component or part styles that element. Utility classes win over the defaults without `!`.
 
 ## Setup
@@ -41,7 +41,7 @@ Check these once in the app; the components need them.
 </html>
 ```
 
-`@uiScripts` loads the core script; heavier components (Editor, Code Block highlighting, Signature, …) load their own the first time they appear. Install and import nothing else.
+`@uiScripts` loads the core script. Editor and Signature load their browser engines the first time they appear. Blade renders Code Block highlighting with the installed Composer dependency.
 
 ## Binding Values
 
@@ -119,7 +119,7 @@ Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu
 
 ```blade
 <x-ui::dialog name="edit-profile" wire:model="editing">
-    <x-ui::dialog.trigger variant="outline">Edit profile</x-ui::dialog.trigger>
+    <x-ui::dialog.trigger><x-ui::button variant="outline">Edit profile</x-ui::button></x-ui::dialog.trigger>
     <x-ui::dialog.content>
         <x-ui::dialog.header>
             <x-ui::dialog.title>Edit profile</x-ui::dialog.title>
@@ -127,7 +127,7 @@ Dialog, Alert Dialog, Sheet, Drawer, Popover, Tooltip, Hover Card, Dropdown Menu
         </x-ui::dialog.header>
         …
         <x-ui::dialog.footer>
-            <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+            <x-ui::dialog.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::dialog.close>
             <x-ui::button wire:click="save">Save changes</x-ui::button>
         </x-ui::dialog.footer>
     </x-ui::dialog.content>

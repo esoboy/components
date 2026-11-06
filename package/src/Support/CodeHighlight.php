@@ -2,7 +2,6 @@
 
 namespace Esoboy\Ui\Support;
 
-use Dom\HTMLDocument;
 use Dom\HTMLElement;
 use Dom\Node;
 use Dom\Text;
@@ -22,7 +21,7 @@ final class CodeHighlight
         if ($language !== '' && strlen($code) <= self::MAX_HIGHLIGHT_BYTES) {
             $highlighter = new Highlighter;
             if (in_array($language, $highlighter->getSupportedLanguageNames(), true)) {
-                $document = self::document($highlighter->parse($code, $language));
+                $document = HtmlFragment::parse($highlighter->parse($code, $language));
                 // A grammar may transform its input. Copying must always reproduce the source.
                 if ($document->body?->textContent === $code) {
                     $lines = [[]];
@@ -38,7 +37,7 @@ final class CodeHighlight
 
     public static function compound(string $slot, string $language): string
     {
-        $document = self::document($slot);
+        $document = HtmlFragment::parse($slot);
         $rows = iterator_to_array($document->querySelectorAll('[data-slot="code-block-line-content"]'));
         $code = implode("\n", array_map(fn (Node $row) => $row->textContent === "\n" ? '' : $row->textContent, $rows));
         $lines = self::lines($code, $language);
@@ -78,10 +77,5 @@ final class CodeHighlight
         foreach ($node->childNodes as $child) {
             self::collect($child, $class, $lines);
         }
-    }
-
-    private static function document(string $html): HTMLDocument
-    {
-        return HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$html.'</body></html>', LIBXML_NOERROR);
     }
 }

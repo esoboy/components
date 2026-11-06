@@ -19,7 +19,7 @@ $collapse ??= $collapseToolbar;
 $groups = EditorControls::toolbar($rich);
 $groupCount = count($groups);
 if ($collapse && ! $slot->isEmpty()) {
-    $markup = \Dom\HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.(string) $slot.'</body></html>', LIBXML_NOERROR);
+    $markup = \Esoboy\Ui\Support\HtmlFragment::parse((string) $slot);
     $groupCount = 1 + $markup->querySelectorAll('body > [data-slot="separator"]')->length;
 }
 $overflowGroups = array_keys(array_fill(0, $groupCount, true));

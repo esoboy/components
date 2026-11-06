@@ -12,6 +12,8 @@
     'data-max' => $max,
     'data-step' => $step,
     'x-data' => 'uiNumberInput',
+    'x-on:ui-model-changed.self' => 'notifyModel()',
+    'x-on:focusout' => '!$el.contains($event.relatedTarget) && blurModel()',
     'x-on:pointerdown' => 'press($event)',
     'x-on:pointerup.window' => 'stop()',
     'x-on:pointercancel.window' => 'stop()',
@@ -23,7 +25,7 @@
                 <x-ui::icon name="minus" />
             </x-ui::button>
         </x-ui::input-group.addon>
-        <x-ui::input-group.input x-ref="input" inputmode="decimal" role="spinbutton" wire:model.live.debounce.250ms.number="value" wire:keydown.up.prevent="step(1)" wire:keydown.down.prevent="step(-1)" :value="$number ?? ''" :placeholder="$settings['placeholder'] ?? null" autocomplete="off" :name="$attributes->get('name')" :aria-valuemin="$min" :aria-valuemax="$max" :aria-valuenow="$number" :disabled="$disabled" :attributes="$attributes->only($labelling)->merge($settings['validation'] ?? [])" />
+        <x-ui::input-group.input inputmode="decimal" role="spinbutton" wire:model.live.debounce.250ms.number="value" wire:keydown.up.prevent="step(1)" wire:keydown.down.prevent="step(-1)" :value="$number ?? ''" :placeholder="$settings['placeholder'] ?? null" autocomplete="off" :name="$attributes->get('name')" :aria-valuemin="$min" :aria-valuemax="$max" :aria-valuenow="$number" :disabled="$disabled" :attributes="$attributes->only($labelling)->merge($settings['validation'] ?? [])" />
         <x-ui::input-group.addon align="inline-end">
             <x-ui::button variant="ghost" size="icon-xs" data-number-input="increment" :aria-label="__('ui::number-input.increment')" tabindex="-1" :disabled="$disabled || ($max !== null && $number !== null && $number >= $max)" wire:click="step(1)">
                 <x-ui::icon name="plus" />

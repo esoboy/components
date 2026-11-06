@@ -38,6 +38,7 @@ $slash = EditorControls::slash($rich);
 $emoji = $rich->has('emoji');
 $find = $rich->has('find-replace');
 $tools = $rich->has('toolbar', 'bubble-menu');
+$links = $rich->has('bubble-menu') && $rich->has('link');
 $characters = $counts ? RichText::characters($value, $format) : 0;
 $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? null);
 @endphp
@@ -66,7 +67,7 @@ $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? nu
     <x-ui::editor.toolbar :collapse="$collapseToolbar" />
     @endif
     @if ($find || $counts || $uploads || $slash || $emoji || $tools)
-    @livewire('ui.editor-panels', compact('slash', 'emoji', 'find', 'counts', 'uploads', 'images', 'maxLength', 'characters', 'tools'), key('ui-'.$key))
+    @livewire('ui.editor-panels', compact('slash', 'emoji', 'find', 'counts', 'uploads', 'images', 'maxLength', 'characters', 'tools', 'links'), key('ui-'.$key))
     @endif
     <div data-slot="editor-content" wire:ignore>{!! $value !!}</div>
     @if ($rich->has('source'))

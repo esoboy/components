@@ -26,6 +26,7 @@ import { listen, emit, disconnected } from './interaction.js'
 export default (binding = {}) => ({
     _mention: null,
     _query: null,
+    _remoteResult: null,
     _observer: null,
 
     init() {
@@ -56,7 +57,13 @@ export default (binding = {}) => ({
         })
 
         // Livewire may render other items (a server search): filter them too.
-        if (this.list) this._observer.observe(this.list, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] })
+        const results = this.results ?? this.list
+        if (results) this._observer.observe(results, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['hidden', 'data-results-prefix', 'data-results-query'],
+        })
     },
 
     destroy() {
@@ -74,6 +81,10 @@ export default (binding = {}) => ({
 
     get list() {
         return this.$el.querySelector('[data-slot="mentions-list"]')
+    },
+
+    get results() {
+        return this.$el.querySelector('[data-slot="mentions-results"]')
     },
 
     get items() {
@@ -95,6 +106,7 @@ export default (binding = {}) => ({
     close() {
         this._mention = null
         this._query = null
+        this._remoteResult = null
 
         if (this.isOpen) this.content.hidePopover()
 
@@ -128,22 +140,36 @@ export default (binding = {}) => ({
 
         if (! mention) return this.close()
 
-        const query = `${mention.prefix}${mention.query}`
+        const query = JSON.stringify([mention.prefix, mention.query])
 
         this._mention = mention
-        this._refresh()
-        this._open()
-
         if (query !== this._query) {
             this._query = query
+            const detail = { prefix: mention.prefix, query: mention.query }
             if (this.$el.hasAttribute('data-local-catalogue')) {
-                emit(this.list, 'ui-mentions-query', { prefix: mention.prefix, query: mention.query })
+                emit(this.list, 'ui-mentions-query', detail)
             }
-            emit(this.input, 'mentions-search', { prefix: mention.prefix, query: mention.query })
+            if (this.$el.hasAttribute('data-remote-catalogue')) {
+                Object.defineProperty(detail, 'livewire', { value: {
+                    // Livewire invokes this after morphing the caller's Blade results.
+                    interceptAction: ({ onSuccess }) => onSuccess(() => {
+                        if (this._query !== query) return
+                        this._remoteResult = query
+                        this._refresh()
+                        this._place()
+                    }),
+                } })
+            }
+            emit(this.input, 'mentions-search', detail)
         }
+        this._refresh()
+        this._open()
     },
 
     _refresh() {
+        if (this.results) {
+            this.results.toggleAttribute('inert', ! this._currentResults())
+        }
         const available = this.items.filter(item => this._available(item))
         const current = available.find(item => item.dataset.highlighted === 'true')
         this._highlight(current ?? available[0] ?? null)
@@ -229,6 +255,13 @@ export default (binding = {}) => ({
     },
 
     _available(item) {
-        return ! item.hidden && item.getAttribute('aria-disabled') !== 'true'
+        return this._currentResults() && ! item.hidden && item.getAttribute('aria-disabled') !== 'true'
+    },
+
+    _currentResults() {
+        if (this.$el.hasAttribute('data-remote-catalogue')) return this._query !== null && this._remoteResult === this._query
+        if (! this.$el.hasAttribute('data-local-catalogue')) return true
+        return this.results?.dataset.resultsPrefix === this._mention?.prefix
+            && this.results?.dataset.resultsQuery === this._mention?.query
     },
 })

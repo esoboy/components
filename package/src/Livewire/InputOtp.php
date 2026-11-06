@@ -2,7 +2,7 @@
 
 namespace Esoboy\Ui\Livewire;
 
-use Dom\HTMLDocument;
+use Esoboy\Ui\Support\HtmlFragment;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\Reactive;
@@ -28,7 +28,7 @@ class InputOtp extends Component
     public function render(): View
     {
         $code = $this->code();
-        $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$this->layout.'</body></html>', LIBXML_NOERROR);
+        $document = HtmlFragment::parse($this->layout);
         foreach ($document->querySelectorAll('[data-slot="input-otp-slot"][data-index]') as $cell) {
             $index = (int) $cell->getAttribute('data-index');
             $cell->textContent = $index < 0 ? '' : mb_substr($code, $index, 1);

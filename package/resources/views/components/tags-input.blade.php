@@ -22,7 +22,7 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value) ?? [];
 $validation = $state->attributes();
 $settings = compact('tagView', 'placeholder', 'max', 'disabled', 'validation');
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'factory-'.\Esoboy\Ui\Support\Sequence::next('tags-input');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('tags-input'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 {!! \Esoboy\Ui\Support\ViewSlots::mount('ui.tags-input', ['settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], 'ui-tags-input-'.$key, ['default' => $slot]) !!}

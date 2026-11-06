@@ -3,7 +3,6 @@
 namespace Esoboy\Ui\Support;
 
 use Closure;
-use Dom\HTMLDocument;
 use Dom\HTMLElement;
 use Illuminate\Support\Js;
 use Illuminate\View\ComponentAttributeBag;
@@ -66,7 +65,7 @@ final class ControlSlot
      */
     public static function bind(string $slot, ComponentAttributeBag $attributes, array|Closure $behavior): string
     {
-        $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$slot.'</body></html>', LIBXML_NOERROR);
+        $document = HtmlFragment::parse($slot);
         $body = $document->body;
         $control = $body?->firstElementChild;
 

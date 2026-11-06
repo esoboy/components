@@ -25,7 +25,7 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value) ?? [];
 $validation = $state->attributes();
 $settings = compact('optionView', 'actionsView', 'titles', 'searchable', 'disabled', 'validation');
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'factory-'.\Esoboy\Ui\Support\Sequence::next('transfer');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('transfer'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 {!! \Esoboy\Ui\Support\ViewSlots::mount('ui.transfer', ['options' => $options, 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], 'ui-transfer-'.$key, ['default' => $slot, 'actions' => $actions ?? null]) !!}

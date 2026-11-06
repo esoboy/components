@@ -26,7 +26,7 @@ $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value) ?? [];
 $validation = $state->attributes();
 $settings = compact('optionView', 'placeholder', 'separator', 'changeOnSelect', 'size', 'disabled', 'validation');
-$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'cascader-'.\Esoboy\Ui\Support\Sequence::next('cascader');
+$key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('cascader'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 
 {!! \Esoboy\Ui\Support\ViewSlots::mount('ui.cascader', ['options' => $options, 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], 'ui-cascader-'.$key, ['default' => $slot]) !!}

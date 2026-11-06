@@ -181,7 +181,7 @@ it('renders the faceted filter, the reset button and a header filter from the fi
 
     expect($html)
         ->toContainMarkup('<span data-data-table-filter-values>')
-        ->toContainMarkup('Paid</span>')
+        ->toMatch('/data-data-table-filter-values[^>]*>.*?data-slot="badge"[^>]*>\s*(?:<!--.*?-->\s*)*Paid/s')
         ->toMatch('/wire:click="resetFilters" data-data-table-reset="data-data-table-reset">\s*Reset/');
 });
 
