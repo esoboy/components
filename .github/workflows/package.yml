@@ -38,12 +38,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package/package-lock.json
 
+      # The JavaScript tests import the Alpine build shipped with Livewire.
+      - run: composer install --no-dev --no-interaction --prefer-dist
       - run: npm ci
 
       - run: npm test
