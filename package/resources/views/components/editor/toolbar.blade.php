@@ -33,7 +33,7 @@ $collapse ??= $collapseToolbar;
     @endif
     @if ($collapse)
     <x-ui::popover>
-        <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-more hidden :aria-label="__('ui::editor.more')"><x-ui::icon name="ellipsis" /></x-ui::popover.trigger>
+        <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-more hidden :aria-label="__('ui::editor.more')"><x-ui::icon name="ellipsis" /></x-ui::button></x-ui::popover.trigger>
         <x-ui::popover.content align="end" data-editor-more-content :aria-label="__('ui::editor.more')"></x-ui::popover.content>
     </x-ui::popover>
     @endif

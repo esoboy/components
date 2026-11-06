@@ -19,7 +19,9 @@ it('filters its items as you type and chooses one with the keyboard', function (
 it('shows its empty state when nothing matches', function () {
     visit('/controls')
         ->type('#demo-combobox [role="combobox"]', 'zzz')
-        ->assertSeeIn('#demo-combobox [data-slot="combobox-content"]', 'No items found.');
+        ->assertSeeIn('#demo-combobox [data-slot="combobox-content"]', 'No items found.')
+        ->click('Use Astro')
+        ->assertSeeIn('#framework', 'astro');
 });
 
 it('chooses an item on click and clears it', function () {

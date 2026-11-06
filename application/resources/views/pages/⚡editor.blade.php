@@ -111,7 +111,7 @@ new class extends Component
                 @endforeach
             </div>
             <x-ui::dialog.footer>
-                <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+                <x-ui::dialog.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::dialog.close>
                 <x-ui::button wire:click="insertPicked">Insert</x-ui::button>
             </x-ui::dialog.footer>
         </x-ui::dialog.content>

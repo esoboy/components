@@ -3,6 +3,7 @@
 @use('Esoboy\Ui\Support\Model')
 
 @props([
+    'dayView' => null,
     'mode' => 'single',
     'disabled' => false,
     'value' => null,
@@ -20,8 +21,8 @@
 
 @php
 $value = Model::value($attributes, $value);
-$settings = compact('mode', 'disabled', 'month', 'captionLayout', 'numberOfMonths', 'showOutsideDays', 'weekStartsOn', 'min', 'max', 'disabledDates', 'startMonth', 'endMonth');
+$settings = compact('dayView', 'mode', 'disabled', 'month', 'captionLayout', 'numberOfMonths', 'showOutsideDays', 'weekStartsOn', 'min', 'max', 'disabledDates', 'startMonth', 'endMonth');
 $key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::key($attributes) ?? 'calendar-'.\Esoboy\Ui\Support\Sequence::next('calendar');
 @endphp
 
-@livewire('ui.calendar', ['settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-calendar-'.$key))
+{!! \Esoboy\Ui\Support\ViewSlots::mount('ui.calendar', ['settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], 'ui-calendar-'.$key, ['default' => $slot, 'header' => $header ?? null]) !!}

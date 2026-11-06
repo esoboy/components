@@ -6,25 +6,36 @@
     <div data-slot="combobox-chips" data-combobox-anchor {{ $attributes->only(['class', 'style']) }}>
         @foreach ((array) $value as $chosen)
         <div data-slot="combobox-chip" data-value="{{ $chosen }}" wire:key="chip-{{ $chosen }}">
-            <span data-combobox-chip-label>{{ collect(\Esoboy\Ui\Support\Options::normalize($this->options))->firstWhere('value', $chosen)['label'] ?? $chosen }}</span>
+            @php($selectedLabel = $labels[(string) $chosen] ?? (string) $chosen)
+            <span data-combobox-chip-label>@if ($settings['selectedView'] ?? null)@include($settings['selectedView'], ['value' => $chosen, 'label' => $selectedLabel])@else{{ $selectedLabel }}@endif</span>
             <x-ui::button variant="ghost" size="icon-xs" data-combobox-chip-remove :aria-label="__('ui::common.remove')" :wire:click="'remove('.\Illuminate\Support\Js::from($chosen).')'"><x-ui::icon name="x" /></x-ui::button>
         </div>
         @endforeach
         <x-ui::combobox.chips-input wire:model.live.debounce.150ms="query" :placeholder="$settings['placeholder']" :disabled="$settings['disabled']" :attributes="new \Illuminate\View\ComponentAttributeBag($settings['validation'] ?? [])" />
     </div>
     @elseif ($settings['button'])
-        <x-ui::combobox.trigger variant="outline" :disabled="$settings['disabled']" :attributes="$attributes->only(['class', 'style'])"><x-ui::combobox.value :placeholder="$label ?: $settings['placeholder']" /></x-ui::combobox.trigger>
+        <x-ui::combobox.trigger variant="outline" :disabled="$settings['disabled']" :attributes="$attributes->only(['class', 'style'])">
+            <x-ui::combobox.value :placeholder="$label ?: $settings['placeholder']">
+                @if ($value !== null && ($settings['selectedView'] ?? null))@include($settings['selectedView'], ['value' => $value, 'label' => $label])@endif
+            </x-ui::combobox.value>
+        </x-ui::combobox.trigger>
     @else
         <x-ui::combobox.input wire:model.live.debounce.150ms="query" :value="$query" :placeholder="$settings['placeholder']" :show-trigger="$settings['trigger']" :show-clear="$settings['clearable']" :disabled="$settings['disabled']" :attributes="$attributes->only(['class', 'style'])->merge($settings['validation'] ?? [])" />
     @endif
     <x-ui::combobox.content :data-empty="$choices === []" wire:key="combobox-content">
         @if ($settings['button'])<x-ui::combobox.input wire:model.live.debounce.150ms="query" :show-trigger="false" :placeholder="$settings['placeholder']" />@endif
-        @if ($settings['empty'] !== null)<x-ui::combobox.empty>{{ $settings['empty'] }}</x-ui::combobox.empty>@endif
+        @if ($slots->has('empty') || $settings['empty'] !== null)
+            <x-ui::combobox.empty>{{ $slots->has('empty') ? $slots('empty') : $settings['empty'] }}</x-ui::combobox.empty>
+        @endif
         <x-ui::combobox.list>
             @foreach ($choices as $option)
-            <x-ui::combobox.item :value="$option['value']" :aria-selected="in_array($option['value'], (array) $value, true) ? 'true' : 'false'" :disabled="! empty($option['disabled'])" :wire:click="'choose('.\Illuminate\Support\Js::from($option['value']).')'">{{ $option['label'] }}</x-ui::combobox.item>
+            @php($selected = in_array($option['value'], (array) $value, true))
+            <x-ui::combobox.item :value="$option['value']" :aria-selected="$selected ? 'true' : 'false'" :disabled="! empty($option['disabled'])" :wire:click="'choose('.\Illuminate\Support\Js::from($option['value']).')'">
+                @if ($settings['optionView'] ?? null)@include($settings['optionView'], ['option' => $option, 'selected' => $selected])@else{{ $option['label'] }}@endif
+            </x-ui::combobox.item>
             @endforeach
         </x-ui::combobox.list>
+        @if ($slots->has('default'))<div data-slot="combobox-footer">{{ $slots }}</div>@endif
     </x-ui::combobox.content>
     @if ($attributes->has('name'))
         @foreach ((array) $value as $part)

@@ -1,16 +1,36 @@
 <?php
 
+it('attaches dialog behavior to the supplied controls without wrapping them in buttons', function () {
+    $html = (string) $this->blade(<<<'BLADE'
+        <x-ui::dialog name="edit-details">
+            <x-ui::dialog.trigger aria-label="Edit details">
+                <button id="my-edit" type="button"><strong>Edit</strong></button>
+            </x-ui::dialog.trigger>
+            <x-ui::dialog.content :show-close-button="false">
+                <x-ui::dialog.close>
+                    <x-ui::button id="my-cancel" variant="outline">Cancel</x-ui::button>
+                </x-ui::dialog.close>
+            </x-ui::dialog.content>
+        </x-ui::dialog>
+        BLADE);
+
+    expect(substr_count($html, '<button'))->toBe(2);
+    expect($html)
+        ->toContainMarkup('<button id="my-edit" aria-label="Edit details" commandfor="edit-details" command="show-modal"><strong>Edit</strong></button>')
+        ->toContainMarkup('<button id="my-cancel" data-variant="outline" commandfor="edit-details" command="close">Cancel</button>');
+});
+
 it('renders a dialog wired with invoker commands', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::dialog name="edit-profile">
-            <x-ui::dialog.trigger variant="outline">Edit</x-ui::dialog.trigger>
+            <x-ui::dialog.trigger><x-ui::button variant="outline">Edit</x-ui::button></x-ui::dialog.trigger>
             <x-ui::dialog.content class="sm:max-w-md">
                 <x-ui::dialog.header>
                     <x-ui::dialog.title>Edit profile</x-ui::dialog.title>
                     <x-ui::dialog.description>Make changes.</x-ui::dialog.description>
                 </x-ui::dialog.header>
                 <x-ui::dialog.footer>
-                    <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+                    <x-ui::dialog.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::dialog.close>
                 </x-ui::dialog.footer>
             </x-ui::dialog.content>
         </x-ui::dialog>
@@ -42,7 +62,7 @@ it('can hide the close button and add one to the footer', function () {
 it('renders an alert dialog without a close button', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::alert-dialog name="delete">
-            <x-ui::alert-dialog.trigger>Delete</x-ui::alert-dialog.trigger>
+            <x-ui::alert-dialog.trigger><x-ui::button>Delete</x-ui::button></x-ui::alert-dialog.trigger>
             <x-ui::alert-dialog.content size="sm">
                 <x-ui::alert-dialog.header>
                     <x-ui::alert-dialog.media>!</x-ui::alert-dialog.media>
@@ -50,8 +70,8 @@ it('renders an alert dialog without a close button', function () {
                     <x-ui::alert-dialog.description>Gone for good.</x-ui::alert-dialog.description>
                 </x-ui::alert-dialog.header>
                 <x-ui::alert-dialog.footer>
-                    <x-ui::alert-dialog.cancel>Cancel</x-ui::alert-dialog.cancel>
-                    <x-ui::alert-dialog.action variant="destructive" wire:click="delete">Delete</x-ui::alert-dialog.action>
+                    <x-ui::alert-dialog.cancel><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::alert-dialog.cancel>
+                    <x-ui::alert-dialog.action><x-ui::button variant="destructive" wire:click="delete">Delete</x-ui::button></x-ui::alert-dialog.action>
                 </x-ui::alert-dialog.footer>
             </x-ui::alert-dialog.content>
         </x-ui::alert-dialog>
@@ -62,7 +82,7 @@ it('renders an alert dialog without a close button', function () {
         ->assertSeeMarkup('<div data-slot="alert-dialog-media">!</div>')
         ->assertSeeMarkup('<h2 id="delete-title" data-slot="alert-dialog-title">Sure?</h2>')
         ->assertSeeMarkup('data-variant="outline" data-size="default" commandfor="delete" command="close">Cancel</button>')
-        ->assertSeeMarkup('data-variant="destructive" data-size="default" commandfor="delete" command="close" wire:click="delete">Delete</button>')
+        ->assertSeeMarkup('<button data-variant="destructive" data-size="default" commandfor="delete" command="close" wire:click="delete">Delete</button>')
         ->assertDontSee('alert-dialog-close', false);
 });
 

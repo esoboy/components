@@ -84,9 +84,26 @@ class receives the node value and returns its children. It runs on the server;
 the browser cannot choose another loader. Dragging emits `wire:move` with
 `value`, `target` and `position`; the parent applies `Options::move()`.
 
-Combobox renders chips from `multiple` and `:options`; the old `chips`, `chip`,
-`group`, `label` and `separator` public parts are removed. Emoji Picker renders
-its catalogue and search itself; use `footer` to show its footer.
+Combobox renders chips from `multiple` and `:options`. Supply a Blade
+`option-view` for option content or a `selected-view` for chips and button-mode
+labels. An `empty-state` slot replaces the empty message, and the default slot
+adds supplementary controls below the results.
+
+The internal Livewire controls support Blade slots for caller-owned regions.
+Actions in those slots belong to the caller. Provide a view name for content
+that needs data from the internal component. Those views render again with
+the current data on each internal update.
+
+| Component | Regions | Views and inputs |
+| --- | --- | --- |
+| Calendar | Header and default footer | `day-view` receives `$day` |
+| Date Picker | Default footer in the popup | `day-view` receives `$day`, `selected-view` receives `$value` and `$label` |
+| Cascader | Default supplementary region | `option-view` receives `$option` and `$depth` |
+| Tree and Tree Select | Default region below the tree | `node-view` receives `$node`, `$level` and `$checked` |
+| Transfer | Default region below the lists, optional `actions` slot | `option-view` receives `$option` and `$list`, `actions-view` can use internal move actions |
+| Tags Input | Default supplementary region | `tag-view` receives `$tag` |
+| Emoji Picker | Default supplementary region, optional `footer-content` slot | The `footer` prop still enables the default footer |
+| Questionnaire | Default region before the controls, optional `actions` slot | `question-view` receives `$item` and `$active` |
 
 Questionnaire takes `:items` rather than a client-side step registry:
 

@@ -26,10 +26,10 @@ $name = $attributes->get('name');
 
 <eso-color-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name'])->merge(['data-slot' => 'color-picker', 'x-data' => 'uiColorPicker('.json_encode(Model::binding($attributes)).')', 'x-effect' => 'paint()', 'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()', 'x-on:input' => 'input($event)', 'x-on:change' => 'change($event)', 'x-on:click' => 'click($event)', 'x-on:keydown' => 'key($event)', 'x-on:pointerdown' => 'start($event)', 'x-on:pointermove' => 'move($event)', 'x-on:pointerup' => 'dragging = false', 'x-on:pointercancel' => 'dragging = false', 'data-value' => $value ?? false, 'data-name' => $name ?? false, 'data-placeholder' => $placeholder, ...$state->attributes()]) }}>
     <x-ui::popover>
-        <x-ui::popover.trigger variant="outline" data-color-picker-trigger :data-empty="$value ? 'false' : 'true'" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($state->attributes())">
+        <x-ui::popover.trigger><x-ui::button variant="outline" data-color-picker-trigger :data-empty="$value ? 'false' : 'true'" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($state->attributes())">
             <span data-slot="color-picker-swatch" style="--color-picker-color: {{ $value ?? 'transparent' }}"></span>
             <span data-slot="color-picker-value">{{ $value ?? $placeholder }}</span>
-        </x-ui::popover.trigger>
+        </x-ui::button></x-ui::popover.trigger>
         <x-ui::popover.content align="start" data-color-picker-content>
             <div data-slot="color-picker-area" role="slider" tabindex="0" aria-label="{{ __('ui::color-picker.area') }}">
                 <span data-slot="color-picker-thumb"></span>

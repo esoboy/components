@@ -7,8 +7,8 @@
             <x-ui::alert-dialog.title>{{ __('ui::confirm.title') }}</x-ui::alert-dialog.title>
         </x-ui::alert-dialog.header>
         <x-ui::alert-dialog.footer>
-            <x-ui::alert-dialog.cancel>{{ __('ui::confirm.cancel') }}</x-ui::alert-dialog.cancel>
-            <x-ui::alert-dialog.action value="confirm">{{ __('ui::confirm.continue') }}</x-ui::alert-dialog.action>
+            <x-ui::alert-dialog.cancel><x-ui::button variant="outline">{{ __('ui::confirm.cancel') }}</x-ui::button></x-ui::alert-dialog.cancel>
+            <x-ui::alert-dialog.action><x-ui::button value="confirm">{{ __('ui::confirm.continue') }}</x-ui::button></x-ui::alert-dialog.action>
         </x-ui::alert-dialog.footer>
     </x-ui::alert-dialog.content>
 </x-ui::alert-dialog>
@@ -20,8 +20,8 @@
             <x-ui::alert-dialog.title>{{ __('ui::confirm.title') }}</x-ui::alert-dialog.title>
         </x-ui::alert-dialog.header>
         <x-ui::alert-dialog.footer>
-            <x-ui::alert-dialog.cancel>{{ __('ui::confirm.cancel') }}</x-ui::alert-dialog.cancel>
-            <x-ui::alert-dialog.action variant="destructive" value="confirm">{{ __('ui::confirm.delete') }}</x-ui::alert-dialog.action>
+            <x-ui::alert-dialog.cancel><x-ui::button variant="outline">{{ __('ui::confirm.cancel') }}</x-ui::button></x-ui::alert-dialog.cancel>
+            <x-ui::alert-dialog.action><x-ui::button variant="destructive" value="confirm">{{ __('ui::confirm.delete') }}</x-ui::button></x-ui::alert-dialog.action>
         </x-ui::alert-dialog.footer>
     </x-ui::alert-dialog.content>
 </x-ui::alert-dialog>

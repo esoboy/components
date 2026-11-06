@@ -97,6 +97,10 @@ class Combobox extends Component
             $options = array_values(array_filter($options, fn ($option) => mb_stripos($option['label'], $query) !== false));
         }
 
-        return view('ui::livewire.combobox', ['choices' => $options, 'label' => $this->label()]);
+        return view('ui::livewire.combobox', [
+            'choices' => $options,
+            'label' => $this->label(),
+            'labels' => array_column(Options::normalize($this->options), 'label', 'value'),
+        ]);
     }
 }

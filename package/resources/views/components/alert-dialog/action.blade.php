@@ -1,7 +1,5 @@
 @blaze
 
-@aware([
-    'name',
-])
+@aware(['name'])
 
-<x-ui::button :attributes="$attributes->merge(['commandfor' => $name, 'command' => 'close'])">{{ $slot }}</x-ui::button>
+{!! \Esoboy\Ui\Support\ControlSlot::dialog((string) $slot, $attributes, $name, 'close') !!}

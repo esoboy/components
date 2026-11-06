@@ -85,7 +85,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Dialog</h2>
         <div class="flex flex-wrap gap-3">
             <x-ui::dialog name="edit-profile">
-                <x-ui::dialog.trigger id="tour-dialog" variant="outline">Edit profile</x-ui::dialog.trigger>
+                <x-ui::dialog.trigger><x-ui::button id="tour-dialog" variant="outline">Edit profile</x-ui::button></x-ui::dialog.trigger>
                 <x-ui::dialog.content>
                     <form wire:submit="save" class="grid gap-4">
                         <x-ui::dialog.header>
@@ -103,7 +103,7 @@ new class extends Component
                             </x-ui::field>
                         </x-ui::field.group>
                         <x-ui::dialog.footer>
-                            <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+                            <x-ui::dialog.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::dialog.close>
                             <x-ui::button type="submit">Save changes</x-ui::button>
                         </x-ui::dialog.footer>
                     </form>
@@ -113,7 +113,7 @@ new class extends Component
             <x-ui::button variant="secondary" wire:click="openFromServer">Open from server</x-ui::button>
 
             <x-ui::dialog name="rename" wire:model.live="renaming">
-                <x-ui::dialog.trigger variant="outline">Rename (wire:model)</x-ui::dialog.trigger>
+                <x-ui::dialog.trigger><x-ui::button variant="outline">Rename (wire:model)</x-ui::button></x-ui::dialog.trigger>
                 <x-ui::dialog.content class="sm:max-w-sm">
                     <form wire:submit="rename" class="grid gap-4">
                         <x-ui::dialog.header>
@@ -124,7 +124,7 @@ new class extends Component
                             <x-ui::input wire:model="name" />
                         </x-ui::field>
                         <x-ui::dialog.footer>
-                            <x-ui::dialog.close variant="outline">Cancel</x-ui::dialog.close>
+                            <x-ui::dialog.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::dialog.close>
                             <x-ui::button type="submit">Save</x-ui::button>
                         </x-ui::dialog.footer>
                     </form>
@@ -138,21 +138,21 @@ new class extends Component
         <h2 class="text-lg font-semibold">Alert Dialog &amp; wire:confirm</h2>
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::alert-dialog name="delete-account">
-                <x-ui::alert-dialog.trigger variant="outline">Show alert dialog</x-ui::alert-dialog.trigger>
+                <x-ui::alert-dialog.trigger><x-ui::button variant="outline">Show alert dialog</x-ui::button></x-ui::alert-dialog.trigger>
                 <x-ui::alert-dialog.content>
                     <x-ui::alert-dialog.header>
                         <x-ui::alert-dialog.title>Are you absolutely sure?</x-ui::alert-dialog.title>
                         <x-ui::alert-dialog.description>This action cannot be undone. This will permanently delete your account and remove your data from our servers.</x-ui::alert-dialog.description>
                     </x-ui::alert-dialog.header>
                     <x-ui::alert-dialog.footer>
-                        <x-ui::alert-dialog.cancel>Cancel</x-ui::alert-dialog.cancel>
-                        <x-ui::alert-dialog.action wire:click="delete">Continue</x-ui::alert-dialog.action>
+                        <x-ui::alert-dialog.cancel><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::alert-dialog.cancel>
+                        <x-ui::alert-dialog.action><x-ui::button wire:click="delete">Continue</x-ui::button></x-ui::alert-dialog.action>
                     </x-ui::alert-dialog.footer>
                 </x-ui::alert-dialog.content>
             </x-ui::alert-dialog>
 
             <x-ui::alert-dialog name="delete-chat">
-                <x-ui::alert-dialog.trigger variant="destructive">Delete chat</x-ui::alert-dialog.trigger>
+                <x-ui::alert-dialog.trigger><x-ui::button variant="destructive">Delete chat</x-ui::button></x-ui::alert-dialog.trigger>
                 <x-ui::alert-dialog.content size="sm">
                     <x-ui::alert-dialog.header>
                         <x-ui::alert-dialog.media class="bg-destructive/10 text-destructive dark:bg-destructive/20"><x-ui::icon name="trash" /></x-ui::alert-dialog.media>
@@ -160,8 +160,8 @@ new class extends Component
                         <x-ui::alert-dialog.description>This will permanently delete this chat conversation.</x-ui::alert-dialog.description>
                     </x-ui::alert-dialog.header>
                     <x-ui::alert-dialog.footer>
-                        <x-ui::alert-dialog.cancel>Cancel</x-ui::alert-dialog.cancel>
-                        <x-ui::alert-dialog.action variant="destructive" wire:click="delete">Delete</x-ui::alert-dialog.action>
+                        <x-ui::alert-dialog.cancel><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::alert-dialog.cancel>
+                        <x-ui::alert-dialog.action><x-ui::button variant="destructive" wire:click="delete">Delete</x-ui::button></x-ui::alert-dialog.action>
                     </x-ui::alert-dialog.footer>
                 </x-ui::alert-dialog.content>
             </x-ui::alert-dialog>
@@ -181,14 +181,14 @@ new class extends Component
         <div class="flex flex-wrap gap-3">
             @foreach (['top', 'right', 'bottom', 'left'] as $side)
                 <x-ui::sheet name="sheet-{{ $side }}">
-                    <x-ui::sheet.trigger variant="outline">{{ ucfirst($side) }}</x-ui::sheet.trigger>
+                    <x-ui::sheet.trigger><x-ui::button variant="outline">{{ ucfirst($side) }}</x-ui::button></x-ui::sheet.trigger>
                     <x-ui::sheet.content :side="$side">
                         <x-ui::sheet.header>
                             <x-ui::sheet.title>Edit profile</x-ui::sheet.title>
                             <x-ui::sheet.description>Make changes to your profile here.</x-ui::sheet.description>
                         </x-ui::sheet.header>
                         <x-ui::sheet.footer>
-                            <x-ui::sheet.close variant="outline">Close</x-ui::sheet.close>
+                            <x-ui::sheet.close><x-ui::button variant="outline">Close</x-ui::button></x-ui::sheet.close>
                         </x-ui::sheet.footer>
                     </x-ui::sheet.content>
                 </x-ui::sheet>
@@ -200,7 +200,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Drawer</h2>
         <div class="flex gap-2">
             <x-ui::drawer name="goal" show-swipe-handle>
-                <x-ui::drawer.trigger variant="outline">Open Drawer</x-ui::drawer.trigger>
+                <x-ui::drawer.trigger><x-ui::button variant="outline">Open Drawer</x-ui::button></x-ui::drawer.trigger>
                 <x-ui::drawer.content>
                     <div class="mx-auto w-full max-w-sm">
                         <x-ui::drawer.header>
@@ -210,20 +210,20 @@ new class extends Component
                         <div class="p-4 text-center text-6xl font-bold tracking-tighter">350</div>
                         <x-ui::drawer.footer>
                             <x-ui::button>Submit</x-ui::button>
-                            <x-ui::drawer.close variant="outline">Cancel</x-ui::drawer.close>
+                            <x-ui::drawer.close><x-ui::button variant="outline">Cancel</x-ui::button></x-ui::drawer.close>
                         </x-ui::drawer.footer>
                     </div>
                 </x-ui::drawer.content>
             </x-ui::drawer>
             <x-ui::drawer name="side" swipe-direction="right">
-                <x-ui::drawer.trigger variant="outline">Right Drawer</x-ui::drawer.trigger>
+                <x-ui::drawer.trigger><x-ui::button variant="outline">Right Drawer</x-ui::button></x-ui::drawer.trigger>
                 <x-ui::drawer.content>
                     <x-ui::drawer.header>
                         <x-ui::drawer.title>Settings</x-ui::drawer.title>
                         <x-ui::drawer.description>Swipe right to close.</x-ui::drawer.description>
                     </x-ui::drawer.header>
                     <x-ui::drawer.footer>
-                        <x-ui::drawer.close variant="outline">Close</x-ui::drawer.close>
+                        <x-ui::drawer.close><x-ui::button variant="outline">Close</x-ui::button></x-ui::drawer.close>
                     </x-ui::drawer.footer>
                 </x-ui::drawer.content>
             </x-ui::drawer>
@@ -234,7 +234,7 @@ new class extends Component
         <h2 class="text-lg font-semibold">Popover &amp; Tooltip</h2>
         <div class="flex flex-wrap items-center gap-3">
             <x-ui::popover>
-                <x-ui::popover.trigger variant="outline">Open popover</x-ui::popover.trigger>
+                <x-ui::popover.trigger><x-ui::button variant="outline">Open popover</x-ui::button></x-ui::popover.trigger>
                 <x-ui::popover.content align="start">
                     <x-ui::popover.header>
                         <x-ui::popover.title>Dimensions</x-ui::popover.title>
@@ -244,7 +244,7 @@ new class extends Component
             </x-ui::popover>
 
             <x-ui::tooltip>
-                <x-ui::tooltip.trigger variant="outline">Hover</x-ui::tooltip.trigger>
+                <x-ui::tooltip.trigger><x-ui::button variant="outline">Hover</x-ui::button></x-ui::tooltip.trigger>
                 <x-ui::tooltip.content>Add to library</x-ui::tooltip.content>
             </x-ui::tooltip>
         </div>
@@ -253,7 +253,7 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Hover Card</h2>
         <x-ui::hover-card>
-            <x-ui::hover-card.trigger variant="link" href="#" :delay="10" :close-delay="100">Hover Here</x-ui::hover-card.trigger>
+            <x-ui::hover-card.trigger :delay="10" :close-delay="100"><x-ui::button variant="link" href="#">Hover Here</x-ui::button></x-ui::hover-card.trigger>
             <x-ui::hover-card.content class="flex w-64 flex-col gap-0.5">
                 <div class="font-semibold">@nextjs</div>
                 <div>The React Framework – created and maintained by @vercel.</div>
@@ -265,7 +265,7 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Dropdown Menu</h2>
         <x-ui::dropdown-menu>
-            <x-ui::dropdown-menu.trigger id="tour-dropdown" variant="outline">Open</x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.trigger><x-ui::button id="tour-dropdown" variant="outline">Open</x-ui::button></x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content class="w-40">
                 <x-ui::dropdown-menu.label>My Account</x-ui::dropdown-menu.label>
                 <x-ui::dropdown-menu.group>

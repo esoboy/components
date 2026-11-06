@@ -177,7 +177,7 @@ describe('the view', function () {
             ->toContain('type="radio" role="menuitemradio" value="SimSun, &#039;Songti SC&#039;, serif" data-editor-command="font-family" data-editor-value="SimSun, &#039;Songti SC&#039;, serif" data-editor-label="SimSun" aria-checked="false"')
             ->toContain('data-editor-command="heading" data-editor-value="2" data-editor-label="Heading 2"')
             ->toContain('data-editor-command="heading" data-editor-value="6" data-editor-label="Heading 6"')
-            ->toContainMarkup('data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')
+            ->toContainMarkup('<button data-editor-menu="font-family" aria-label="Font"><span data-editor-current data-editor-default="Font">Font</span>')
             ->and(substr_count($html, 'data-editor-command="heading"'))->toBe(6);
     });
 

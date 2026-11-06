@@ -27,7 +27,7 @@ $chosen = $canFilter ? array_map('strval', $table->filters[$column] ?? []) : [];
 @else
 <div {{ $attributes->merge(['data-slot' => 'data-table-column-header']) }}>
     <x-ui::dropdown-menu>
-        <x-ui::dropdown-menu.trigger variant="ghost" size="sm">
+        <x-ui::dropdown-menu.trigger><x-ui::button variant="ghost" size="sm">
             <span>{{ $title }}</span>
             @if ($sorted === 'desc')
             <x-ui::icon name="arrow-down" />
@@ -38,7 +38,7 @@ $chosen = $canFilter ? array_map('strval', $table->filters[$column] ?? []) : [];
             @else
             <x-ui::icon name="chevron-down" />
             @endif
-        </x-ui::dropdown-menu.trigger>
+        </x-ui::button></x-ui::dropdown-menu.trigger>
         <x-ui::dropdown-menu.content align="start">
             @if ($canSort)
             <x-ui::dropdown-menu.item wire:click="sort('{{ $column }}', 'asc')"><x-ui::icon name="arrow-up" />{{ __('ui::data-table.asc') }}</x-ui::dropdown-menu.item>

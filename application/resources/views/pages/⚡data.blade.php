@@ -180,7 +180,7 @@ new class extends Component
                         @endforeach
                         <x-ui::table.cell>
                             <x-ui::dropdown-menu>
-                                <x-ui::dropdown-menu.trigger variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::dropdown-menu.trigger>
+                                <x-ui::dropdown-menu.trigger><x-ui::button variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::button></x-ui::dropdown-menu.trigger>
                                 <x-ui::dropdown-menu.content align="end" class="w-40">
                                     <x-ui::dropdown-menu.label>Actions</x-ui::dropdown-menu.label>
                                     <x-ui::dropdown-menu.item>Copy user ID</x-ui::dropdown-menu.item>
@@ -213,13 +213,13 @@ new class extends Component
                 <x-ui::button-group>
                     <x-ui::button-group.text class="tabular-nums">{{ count($selected) }} selected</x-ui::button-group.text>
                     <x-ui::tooltip>
-                        <x-ui::tooltip.trigger variant="outline" size="icon-sm" wire:click="$set('selected', [])" aria-label="Clear selection"><x-ui::icon name="x" /></x-ui::tooltip.trigger>
+                        <x-ui::tooltip.trigger><x-ui::button variant="outline" size="icon-sm" wire:click="$set('selected', [])" aria-label="Clear selection"><x-ui::icon name="x" /></x-ui::button></x-ui::tooltip.trigger>
                         <x-ui::tooltip.content>Clear selection</x-ui::tooltip.content>
                     </x-ui::tooltip>
                 </x-ui::button-group>
                 <x-ui::separator orientation="vertical" class="my-1" />
                 <x-ui::dropdown-menu>
-                    <x-ui::dropdown-menu.trigger variant="secondary" size="sm"><x-ui::icon name="circle-check" data-icon="inline-start" />Status</x-ui::dropdown-menu.trigger>
+                    <x-ui::dropdown-menu.trigger><x-ui::button variant="secondary" size="sm"><x-ui::icon name="circle-check" data-icon="inline-start" />Status</x-ui::button></x-ui::dropdown-menu.trigger>
                     <x-ui::dropdown-menu.content side="top" class="w-36">
                         <x-ui::dropdown-menu.item wire:click="markSelected('verified')"><x-ui::icon name="badge-check" />Verified</x-ui::dropdown-menu.item>
                         <x-ui::dropdown-menu.item wire:click="markSelected('pending')"><x-ui::icon name="clock" />Pending</x-ui::dropdown-menu.item>
@@ -265,7 +265,7 @@ new class extends Component
                         <x-ui::table.cell class="text-right font-medium tabular-nums">{{ $money(array_sum($row['quarters'])) }}</x-ui::table.cell>
                         <x-ui::table.cell sticky="end">
                             <x-ui::dropdown-menu>
-                                <x-ui::dropdown-menu.trigger variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::dropdown-menu.trigger>
+                                <x-ui::dropdown-menu.trigger><x-ui::button variant="ghost" size="icon" class="size-8"><x-ui::icon name="ellipsis" /><span class="sr-only">Open menu</span></x-ui::button></x-ui::dropdown-menu.trigger>
                                 <x-ui::dropdown-menu.content align="end" class="w-40">
                                     <x-ui::dropdown-menu.item>Edit budget</x-ui::dropdown-menu.item>
                                     <x-ui::dropdown-menu.item>View report</x-ui::dropdown-menu.item>

@@ -7,7 +7,7 @@
 it('pairs a hover card trigger with its content', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::hover-card>
-            <x-ui::hover-card.trigger variant="link" href="/u/nextjs" :delay="10">@nextjs</x-ui::hover-card.trigger>
+            <x-ui::hover-card.trigger :delay="10"><x-ui::button variant="link" href="/u/nextjs">@nextjs</x-ui::button></x-ui::hover-card.trigger>
             <x-ui::hover-card.content>Card</x-ui::hover-card.content>
         </x-ui::hover-card>
         BLADE);
@@ -80,13 +80,13 @@ it('renders a navigation menu with trigger-styled links and aligned content', fu
 it('renders a drawer as a dialog swiped towards its edge', function () {
     $view = $this->blade(<<<'BLADE'
         <x-ui::drawer name="goal" swipe-direction="right" show-swipe-handle>
-            <x-ui::drawer.trigger>Open</x-ui::drawer.trigger>
+            <x-ui::drawer.trigger><x-ui::button>Open</x-ui::button></x-ui::drawer.trigger>
             <x-ui::drawer.content class="gap-2">
                 <x-ui::drawer.header>
                     <x-ui::drawer.title>Move Goal</x-ui::drawer.title>
                     <x-ui::drawer.description>Daily goal.</x-ui::drawer.description>
                 </x-ui::drawer.header>
-                <x-ui::drawer.footer><x-ui::drawer.close>Cancel</x-ui::drawer.close></x-ui::drawer.footer>
+                <x-ui::drawer.footer><x-ui::drawer.close><x-ui::button>Cancel</x-ui::button></x-ui::drawer.close></x-ui::drawer.footer>
             </x-ui::drawer.content>
         </x-ui::drawer>
         BLADE);

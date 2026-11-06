@@ -22,7 +22,7 @@ $names = [
 @endphp
 
 <x-ui::popover>
-    <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="color" :aria-label="__('ui::editor.color')" :attributes="$attributes"><x-ui::icon name="baseline" /></x-ui::popover.trigger>
+    <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="color" :aria-label="__('ui::editor.color')" :attributes="$attributes"><x-ui::icon name="baseline" /></x-ui::button></x-ui::popover.trigger>
     <x-ui::popover.content align="start" data-editor-color-content>
         @if ($rich->has('color'))
         <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.text-color') }}">

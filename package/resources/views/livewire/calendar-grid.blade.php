@@ -46,7 +46,7 @@
                                     <td data-slot="calendar-day" data-hidden="true"></td>
                                 @else
                                     <td data-slot="calendar-day" role="gridcell" {{ new \Illuminate\View\ComponentAttributeBag($day['flags']) }}>
-                                        <x-ui::button variant="ghost" size="icon" :data-day="$day['key']" :aria-label="$day['label']" :aria-pressed="$day['selected'] ? 'true' : null" :aria-disabled="$day['disabled'] ? 'true' : null" :tabindex="$day['focus'] ? 0 : -1" wire:click="select('{{ $day['key'] }}')" wire:key="day-{{ $display['key'] }}-{{ $day['key'] }}" :attributes="new \Illuminate\View\ComponentAttributeBag($day['flags'])">{{ $day['number'] }}</x-ui::button>
+                                        <x-ui::button variant="ghost" size="icon" :data-day="$day['key']" :aria-label="$day['label']" :aria-pressed="$day['selected'] ? 'true' : null" :aria-disabled="$day['disabled'] ? 'true' : null" :tabindex="$day['focus'] ? 0 : -1" wire:click="select('{{ $day['key'] }}')" wire:key="day-{{ $display['key'] }}-{{ $day['key'] }}" :attributes="new \Illuminate\View\ComponentAttributeBag($day['flags'])">{{ isset($settings['dayView']) ? view($settings['dayView'], ['day' => $day]) : $day['number'] }}</x-ui::button>
                                     </td>
                                 @endif
                             @endforeach

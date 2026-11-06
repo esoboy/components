@@ -10,7 +10,7 @@
         $prefix = $this->getId().'-'.$item['name'];
     @endphp
     <fieldset data-slot="questionnaire-item" data-name="{{ $item['name'] }}" @if ($item['required'] ?? false) data-required @endif @if ($multiple) data-multiple @endif @if ($active) data-active @else hidden inert @endif @disabled($item['disabled'] ?? false) tabindex="-1" @if ($invalid) aria-invalid="true" @endif aria-labelledby="{{ $prefix }}-title" aria-describedby="{{ $prefix }}-description{{ $invalid ? ' '.$prefix.'-error' : '' }}" wire:key="question-{{ $item['name'] }}">
-        <x-ui::questionnaire.title :id="$prefix.'-title'">{{ $item['title'] }}</x-ui::questionnaire.title>
+        <x-ui::questionnaire.title :id="$prefix.'-title'">{{ $questionView ? view($questionView, ['item' => $item, 'active' => $active]) : $item['title'] }}</x-ui::questionnaire.title>
         @if (isset($item['description']))<p data-slot="questionnaire-description" id="{{ $prefix }}-description">{{ $item['description'] }}</p>@endif
         <div role="{{ $multiple ? 'group' : 'radiogroup' }}" data-slot="questionnaire-choices">
             @foreach ($options as $option)
@@ -27,10 +27,15 @@
         <p data-slot="questionnaire-error" id="{{ $prefix }}-error" @if (! $invalid) hidden @else role="alert" @endif>{{ ($item['required'] ?? false) ? __('ui::questionnaire.required') : __('ui::questionnaire.optional') }}</p>
     </fieldset>
     @endforeach
+    @if ($slots->has('default')){{ $slots }}@endif
     <x-ui::questionnaire.actions>
+        @if ($slots->has('actions'))
+            {{ $slots('actions') }}
+        @else
         <x-ui::button variant="outline" wire:click="previous" data-questionnaire="previous" :hidden="$index < 1">{{ __('ui::questionnaire.previous') }}</x-ui::button>
         <x-ui::button variant="outline" wire:click="skip" data-questionnaire="skip" :hidden="! count($steps) || ($steps[$index]['required'] ?? false)">{{ __('ui::questionnaire.skip') }}</x-ui::button>
         <x-ui::button wire:click="next" data-questionnaire="next" :hidden="$index >= count($steps) - 1">{{ __('ui::questionnaire.next') }}</x-ui::button>
         <x-ui::button type="submit" data-questionnaire="submit" :hidden="$index !== count($steps) - 1">{{ __('ui::questionnaire.submit') }}</x-ui::button>
+        @endif
     </x-ui::questionnaire.actions>
 </form>

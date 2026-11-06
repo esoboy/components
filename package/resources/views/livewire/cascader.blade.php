@@ -8,13 +8,14 @@
             @foreach ($options as $option)
             @php($parent = ! empty($option['children']))
             <x-ui::select.item :value="$option['value']" data-cascader-item :data-depth="$depth" :disabled="! empty($option['disabled'])" :aria-selected="($value[$depth] ?? null) === $option['value'] && count($value) === $depth + 1 ? 'true' : 'false'" :data-expanded="$parent && ($path[$depth] ?? null) === $option['value']" :aria-haspopup="$parent ? 'listbox' : null" :wire:click="'choose('.$depth.', '.\Illuminate\Support\Js::from($option['value']).')'" wire:key="item-{{ $depth }}-{{ $option['value'] }}">
-                {{ $option['label'] }}
+                {{ isset($settings['optionView']) ? view($settings['optionView'], ['option' => $option, 'depth' => $depth]) : $option['label'] }}
                 @if ($parent)<x-slot:indicator data-parent><x-ui::icon name="chevron-right" /></x-slot:indicator>@endif
             </x-ui::select.item>
             @endforeach
         </div>
         @endforeach
     </div>
+    @if ($slots->has('default')){{ $slots }}@endif
     @if ($attributes->has('name'))
         @foreach ($labels ? $value : [] as $part)
         <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $part }}">

@@ -34,11 +34,11 @@ it('binds the open state on the content, not on the root', function () {
             return <<<'BLADE'
                 <div>
                     <x-ui::dialog name="edit" wire:model.live="editing">
-                        <x-ui::dialog.trigger>Edit</x-ui::dialog.trigger>
+                        <x-ui::dialog.trigger><x-ui::button>Edit</x-ui::button></x-ui::dialog.trigger>
                         <x-ui::dialog.content>Form</x-ui::dialog.content>
                     </x-ui::dialog>
                     <x-ui::popover wire:model="shown">
-                        <x-ui::popover.trigger>Open</x-ui::popover.trigger>
+                        <x-ui::popover.trigger><x-ui::button>Open</x-ui::button></x-ui::popover.trigger>
                         <x-ui::popover.content>Content</x-ui::popover.content>
                     </x-ui::popover>
                     <x-ui::sheet name="filters">

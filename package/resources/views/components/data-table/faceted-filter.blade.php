@@ -18,7 +18,7 @@ $options = collect($options)->mapWithKeys(fn ($option, $value) => [(string) $val
 @endphp
 
 <x-ui::popover>
-    <x-ui::popover.trigger variant="outline" size="sm" :attributes="$attributes->merge(['data-data-table-faceted-filter' => true])">
+    <x-ui::popover.trigger><x-ui::button variant="outline" size="sm" :attributes="$attributes->merge(['data-data-table-faceted-filter' => true])">
         <x-ui::icon name="circle-plus" />
         {{ $title }}
         @if ($chosen)
@@ -36,7 +36,7 @@ $options = collect($options)->mapWithKeys(fn ($option, $value) => [(string) $val
             @endif
         </span>
         @endif
-    </x-ui::popover.trigger>
+    </x-ui::button></x-ui::popover.trigger>
     <x-ui::popover.content align="start" data-data-table-filter-content>
         <x-ui::command>
             <x-ui::command.input :placeholder="$title" />

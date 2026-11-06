@@ -94,7 +94,7 @@ new class extends Component
     <section class="space-y-4">
         <h2 class="text-lg font-semibold">Calendar</h2>
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::calendar id="demo-calendar" wire:model.live="date" caption-layout="dropdown" class="rounded-lg border" />
+            <x-ui::calendar id="demo-calendar" wire:model.live="date" caption-layout="dropdown" class="rounded-lg border" day-view="examples.calendar-day" />
             <x-ui::calendar id="demo-range" mode="range" wire:model.live="range" :number-of-months="2" class="rounded-lg border" />
         </div>
         <p class="text-sm text-muted-foreground">date: <span id="date">{{ $date ?? 'none' }}</span>, range: <span id="range">{{ ($range['from'] ?? '').' → '.($range['to'] ?? '') }}</span></p>
@@ -188,8 +188,11 @@ new class extends Component
         <h2 class="text-lg font-semibold">Combobox</h2>
         @php $options = ['next' => 'Next.js', 'sveltekit' => 'SvelteKit', 'nuxt' => 'Nuxt.js', 'remix' => 'Remix', 'astro' => 'Astro']; @endphp
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::combobox id="demo-combobox" wire:model.live="framework" :options="$options" placeholder="Select a framework" clearable empty="No items found." />
-            <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks" :options="$options" placeholder="Add framework" class="w-full max-w-xs" empty="No items found." />
+            <x-ui::combobox id="demo-combobox" wire:model.live="framework" :options="$options" placeholder="Select a framework" clearable option-view="examples.framework-label">
+                <x-slot:empty-state>No items found.</x-slot:empty-state>
+                <x-ui::button variant="ghost" size="sm" wire:click="$set('framework', 'astro')">Use Astro</x-ui::button>
+            </x-ui::combobox>
+            <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks" :options="$options" placeholder="Add framework" class="w-full max-w-xs" empty="No items found." selected-view="examples.framework-label" />
         </div>
         <p class="text-sm text-muted-foreground">framework: <span id="framework">{{ $framework ?? 'none' }}</span>, frameworks: <span id="frameworks">{{ implode(',', $frameworks) }}</span></p>
         <p class="text-sm text-muted-foreground">With autocomplete the value is the typed text: suggestions from the server as you type, or filtered here.</p>

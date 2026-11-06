@@ -77,7 +77,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
         <x-ui::editor.button command="split-cell" />
         <x-ui::editor.separator />
         <x-ui::popover>
-            <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="cell-background" :aria-label="__('ui::editor.cell-background')"><x-ui::icon name="paint-bucket" /></x-ui::popover.trigger>
+            <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="cell-background" :aria-label="__('ui::editor.cell-background')"><x-ui::icon name="paint-bucket" /></x-ui::button></x-ui::popover.trigger>
             <x-ui::popover.content align="start" data-editor-color-content>
                 <div data-slot="editor-swatches" role="group" aria-label="{{ __('ui::editor.cell-background') }}">
                     <p data-slot="editor-swatches-label">{{ __('ui::editor.cell-background') }}</p>
@@ -116,7 +116,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
             <x-ui::editor.button command="caption" />
             <x-ui::editor.button command="image-row" />
             <x-ui::popover>
-                <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::popover.trigger>
+                <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="image-link" :aria-label="__('ui::editor.image-link')"><x-ui::icon name="link" /></x-ui::button></x-ui::popover.trigger>
                 <x-ui::popover.content align="start" data-editor-field-content>
                     <x-ui::input type="url" data-editor-image-link-input :placeholder="__('ui::editor.link-placeholder')" :aria-label="__('ui::editor.image-link')" />
                     <x-ui::button size="icon-sm" data-editor-action="image-link-apply" :aria-label="__('ui::editor.link-apply')"><x-ui::icon name="corner-down-left" /></x-ui::button>

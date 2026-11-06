@@ -173,7 +173,7 @@ describe('sidebar', function () {
                 <x-ui::sidebar collapsible="icon" class="border-0">
                     <x-ui::sidebar.content>Nav</x-ui::sidebar.content>
                 </x-ui::sidebar>
-                <x-ui::sidebar.inset><x-ui::sidebar.trigger /></x-ui::sidebar.inset>
+                <x-ui::sidebar.inset><x-ui::sidebar.trigger><x-ui::button variant="ghost" size="icon-sm"><x-ui::icon name="panel-left" class="rtl:rotate-180" /><span class="sr-only">{{ __('ui::sidebar.toggle') }}</span></x-ui::button></x-ui::sidebar.trigger></x-ui::sidebar.inset>
             </x-ui::sidebar.provider>
             BLADE);
 

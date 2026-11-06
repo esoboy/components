@@ -53,7 +53,7 @@ $page = collect(config('demo'))->collapse()->get($current);
 
             <x-ui::sidebar.inset>
                 <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-                    <x-ui::sidebar.trigger class="-ml-1" />
+                    <x-ui::sidebar.trigger><x-ui::button variant="ghost" size="icon-sm" class="-ml-1"><x-ui::icon name="panel-left" class="rtl:rotate-180" /><span class="sr-only">{{ __('ui::sidebar.toggle') }}</span></x-ui::button></x-ui::sidebar.trigger>
                     <x-ui::separator orientation="vertical" class="mr-2 h-4 self-center" />
                     <x-ui::breadcrumb>
                         <x-ui::breadcrumb.list>

@@ -10,6 +10,22 @@ use Esoboy\Ui\Support\SidebarState;
 use Illuminate\Http\Request;
 use Livewire\Livewire;
 
+it('renders the combobox empty-state and supplementary Blade slots', function () {
+    $this->blade(<<<'BLADE'
+        <x-ui::combobox :options="[]">
+            <x-slot:empty-state><strong>No eligible users</strong></x-slot:empty-state>
+            <button type="button" wire:click="requestAccess">Request access</button>
+        </x-ui::combobox>
+        BLADE)
+        ->assertSeeMarkup('<strong>No eligible users</strong>')
+        ->assertSeeMarkup('<button wire:click="requestAccess">Request access</button>');
+});
+
+it('renders supplementary Blade content in the internal Livewire control', function (string $component) {
+    $this->blade("<x-ui::{$component}><em>Caller content</em></x-ui::{$component}>")
+        ->assertSeeMarkup('<em>Caller content</em>');
+})->with(['calendar', 'date-picker', 'cascader', 'tree', 'tree-select', 'transfer', 'tags-input', 'emoji-picker', 'questionnaire']);
+
 it('renders a simple select and its selected label without client initialization', function () {
     $html = (string) $this->blade('<x-ui::select name="status" value="published" :options="[\'draft\' => \'Draft\', \'published\' => \'Published\']" placeholder="Choose" />');
 

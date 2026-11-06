@@ -16,7 +16,9 @@ export default (options = {}) => ({
     click(event) {
         const trigger = event.target.closest?.('[data-sidebar="trigger"], [data-sidebar="rail"]')
 
-        if (trigger?.closest('[data-slot="sidebar-wrapper"]') === this.$el) this.toggle()
+        if (trigger?.closest('[data-slot="sidebar-wrapper"]') !== this.$el) return
+        if (trigger.matches(':disabled, [aria-disabled="true"]')) return
+        this.toggle()
     },
 
     shortcut(event) {

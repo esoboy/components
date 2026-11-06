@@ -8,7 +8,7 @@
 it('renders a popover trigger before its content', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::popover>
-            <x-ui::popover.trigger variant="outline">Open</x-ui::popover.trigger>
+            <x-ui::popover.trigger><x-ui::button variant="outline">Open</x-ui::button></x-ui::popover.trigger>
             <x-ui::popover.content align="start" side-offset="8">
                 <x-ui::popover.header>
                     <x-ui::popover.title>Dimensions</x-ui::popover.title>
@@ -27,17 +27,18 @@ it('renders a popover trigger before its content', function () {
 it('gives nested popovers independent generated ids', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::popover>
-            <x-ui::popover.trigger>A</x-ui::popover.trigger>
+            <x-ui::popover.trigger><x-ui::button>A</x-ui::button></x-ui::popover.trigger>
             <x-ui::popover.content>
                 <x-ui::popover>
-                    <x-ui::popover.trigger>B</x-ui::popover.trigger>
+                    <x-ui::popover.trigger><x-ui::button>B</x-ui::button></x-ui::popover.trigger>
                     <x-ui::popover.content>b</x-ui::popover.content>
                 </x-ui::popover>
             </x-ui::popover.content>
         </x-ui::popover>
         BLADE);
 
-    expect(substr_count($html, 'data-popover-trigger="data-popover-trigger" command="toggle-popover"'))->toBe(2)
+    expect(substr_count($html, 'data-popover-trigger="data-popover-trigger"'))->toBe(2)
+        ->and(substr_count($html, 'command="toggle-popover"'))->toBe(2)
         ->and(substr_count($html, 'data-slot="popover-content"'))->toBe(2)
         ->and($html)->and(count(array_unique(idsOf($html, 'id'))))->toBe(2);
 });
@@ -45,7 +46,7 @@ it('gives nested popovers independent generated ids', function () {
 it('renders a tooltip shown on hover', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::tooltip>
-            <x-ui::tooltip.trigger variant="outline">Hover</x-ui::tooltip.trigger>
+            <x-ui::tooltip.trigger><x-ui::button variant="outline">Hover</x-ui::button></x-ui::tooltip.trigger>
             <x-ui::tooltip.content>Add to library</x-ui::tooltip.content>
         </x-ui::tooltip>
         BLADE);
@@ -57,7 +58,7 @@ it('renders a tooltip shown on hover', function () {
 it('renders a dropdown menu whose items close the root menu', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::dropdown-menu>
-            <x-ui::dropdown-menu.trigger>Open</x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.trigger><x-ui::button>Open</x-ui::button></x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content align="start">
                 <x-ui::dropdown-menu.label inset>Account</x-ui::dropdown-menu.label>
                 <x-ui::dropdown-menu.group>
@@ -105,7 +106,7 @@ it('binds checkbox and radio items with wire:model', function () {
 });
 
 it('keeps a style given to a component after its own', function () {
-    $this->blade('<x-ui::popover><x-ui::popover.trigger style="color: red">Open</x-ui::popover.trigger><x-ui::popover.content style="width: 10rem">x</x-ui::popover.content></x-ui::popover>')
+    $this->blade('<x-ui::popover><x-ui::popover.trigger><x-ui::button style="color: red">Open</x-ui::button></x-ui::popover.trigger><x-ui::popover.content style="width: 10rem">x</x-ui::popover.content></x-ui::popover>')
         ->assertSeeMarkupInOrder(['style="color: red;"', '--align-offset: 0px; width: 10rem;"']);
 
     $this->blade('<x-ui::sidebar.provider style="--sidebar-width: 20rem">x</x-ui::sidebar.provider>')
@@ -113,19 +114,19 @@ it('keeps a style given to a component after its own', function () {
 });
 
 it('shifts content along its edge by alignOffset', function () {
-    $this->blade('<x-ui::popover><x-ui::popover.trigger>Open</x-ui::popover.trigger><x-ui::popover.content align="end" :align-offset="-6">x</x-ui::popover.content></x-ui::popover>')
+    $this->blade('<x-ui::popover><x-ui::popover.trigger><x-ui::button>Open</x-ui::button></x-ui::popover.trigger><x-ui::popover.content align="end" :align-offset="-6">x</x-ui::popover.content></x-ui::popover>')
         ->assertSee('data-align="end" style="--side-offset: 4px; --align-offset: -6px;"', false);
 });
 
-it('renders another component as the trigger, like shadcn\'s render', function () {
+it('binds multiple overlay behaviors to the supplied trigger control', function () {
     $html = (string) $this->blade(<<<'BLADE'
         <x-ui::dropdown-menu>
-            <x-ui::dropdown-menu.trigger as="sidebar.menu-button" size="lg">Me</x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.trigger><x-ui::sidebar.menu-button size="lg">Me</x-ui::sidebar.menu-button></x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content>m</x-ui::dropdown-menu.content>
         </x-ui::dropdown-menu>
         <x-ui::dropdown-menu>
             <x-ui::tooltip>
-                <x-ui::tooltip.trigger as="dropdown-menu.trigger" variant="ghost" size="icon">More</x-ui::tooltip.trigger>
+                <x-ui::tooltip.trigger><x-ui::dropdown-menu.trigger><button type="button" id="my-menu-trigger">More</button></x-ui::dropdown-menu.trigger></x-ui::tooltip.trigger>
                 <x-ui::tooltip.content>More actions</x-ui::tooltip.content>
             </x-ui::tooltip>
             <x-ui::dropdown-menu.content>m</x-ui::dropdown-menu.content>
@@ -134,5 +135,5 @@ it('renders another component as the trigger, like shadcn\'s render', function (
 
     expect($html)
         ->toContainMarkup('<button type="button" data-slot="sidebar-menu-button" data-sidebar="menu-button" data-variant="default" data-size="lg" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu">Me</button>')
-        ->toContainMarkup('<button type="button" data-slot="button" data-variant="ghost" data-size="icon" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu" data-tooltip-trigger="data-tooltip-trigger">More</button>');
+        ->toContainMarkup('<button type="button" id="my-menu-trigger" data-dropdown-menu-trigger="data-dropdown-menu-trigger" command="toggle-popover" aria-haspopup="menu" data-tooltip-trigger="data-tooltip-trigger">More</button>');
 });

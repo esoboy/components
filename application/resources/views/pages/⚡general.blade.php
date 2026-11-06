@@ -56,7 +56,7 @@ PHP;
             <x-ui::button variant="outline" size="icon" theme="toggle" aria-label="Toggle theme"><x-ui::icon name="sun-moon" /></x-ui::button>
             <label class="flex items-center gap-2 text-sm"><x-ui::switch theme="toggle" /> Dark mode</label>
             <x-ui::dropdown-menu>
-                <x-ui::dropdown-menu.trigger variant="outline">Theme</x-ui::dropdown-menu.trigger>
+                <x-ui::dropdown-menu.trigger><x-ui::button variant="outline">Theme</x-ui::button></x-ui::dropdown-menu.trigger>
                 <x-ui::dropdown-menu.content>
                     <x-ui::dropdown-menu.radio-group>
                         <x-ui::dropdown-menu.radio-item value="light" theme="light">Light</x-ui::dropdown-menu.radio-item>

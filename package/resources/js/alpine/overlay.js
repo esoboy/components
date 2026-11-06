@@ -37,6 +37,22 @@ function hoverKinds(element) {
     return ['tooltip', 'hover-card', 'navigation-menu'].filter(kind => element.hasAttribute(`data-ui-${kind}`))
 }
 
+export function registerTrigger(Alpine) {
+    Alpine.directive('ui-overlay-trigger', (element, _, { cleanup }) => {
+        const control = Object.assign(trigger(), { $el: element, $nextTick: Alpine.nextTick })
+        const unbind = Alpine.bind(element, {
+            'x-on:pointerover': event => control.enter(event),
+            'x-on:pointerout': event => control.leave(event),
+            'x-on:focusin': event => control.enter(event),
+            'x-on:focusout': event => control.leave(event),
+            'x-on:click': event => control.click(event),
+            'x-on:keydown': event => control.key(event),
+        })
+        control.init()
+        cleanup(() => { unbind(); control.destroy() })
+    })
+}
+
 function moveBar(event, trigger) {
     if (! ['ArrowLeft', 'ArrowRight'].includes(event.key)) return false
     const bar = trigger?.closest('[data-slot="menubar"]')
@@ -65,6 +81,7 @@ export function trigger() {
             }
         },
         enter(event) {
+            if (this.$el.matches(':disabled, [aria-disabled="true"]')) return
             if (event.type.startsWith('pointer') && this.$el.contains(event.relatedTarget)) return
             for (const kind of hoverKinds(this.$el)) {
                 const panel = contentOf(this.$el, kind)
@@ -93,6 +110,17 @@ export function trigger() {
             }
         },
         click(event) {
+            if (this.$el.matches(':disabled, [aria-disabled="true"]')) {
+                event.preventDefault()
+                return
+            }
+            if (! this.$el.matches('button')) {
+                const panel = contentOf(this.$el, 'popover') ?? contentOf(this.$el, 'dropdown-menu')
+                if (panel) {
+                    event.preventDefault()
+                    panel.matches(':popover-open') ? hide(panel) : show(panel, this.$el)
+                }
+            }
             const nav = contentOf(this.$el, 'navigation-menu')
             if (nav) {
                 if (nav.matches(':popover-open') && openedBy.get(nav) === 'hover') openedBy.set(nav, 'click')
@@ -108,6 +136,10 @@ export function trigger() {
             }
         },
         key(event) {
+            if (event.key === ' ' && this.$el.matches('[role="button"]:not(button)')) {
+                event.preventDefault()
+                this.$el.click()
+            }
             if (this.$el.matches('[data-slot="menubar-trigger"]')) moveBar(event, this.$el)
         },
         context(event) {

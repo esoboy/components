@@ -18,7 +18,7 @@
             @foreach ($data['options'] as $index => $option)
             <label data-slot="transfer-item" data-value="{{ $option['value'] }}" data-index="{{ $index }}" wire:key="transfer-{{ $list }}-{{ $option['value'] }}" @if (! $this->matches($list, $option)) hidden @endif>
                 <x-ui::checkbox wire:model.live="checked" :value="$option['value']" :checked="in_array($option['value'], $checked, true)" :disabled="$disabled || ! empty($option['disabled'])" />
-                <span>{{ $option['label'] }}</span>
+                <span>{{ isset($settings['optionView']) ? view($settings['optionView'], ['option' => $option, 'list' => $list]) : $option['label'] }}</span>
             </label>
             @endforeach
         </div>
@@ -26,11 +26,18 @@
     </div>
     @if ($list === 'source')
     <div data-slot="transfer-actions">
+        @if ($slots->has('actions'))
+            {{ $slots('actions') }}
+        @elseif ($settings['actionsView'] ?? null)
+            @include($settings['actionsView'], ['lists' => $lists, 'disabled' => $disabled])
+        @else
         <x-ui::button variant="outline" size="icon-sm" data-transfer-move="target" :aria-label="__('ui::transfer.to_target')" wire:click="move('target')" :disabled="$disabled || ! $data['checked']"><x-ui::icon name="chevron-right" class="rtl:rotate-180" /></x-ui::button>
         <x-ui::button variant="outline" size="icon-sm" data-transfer-move="source" :aria-label="__('ui::transfer.to_source')" wire:click="move('source')" :disabled="$disabled || ! $lists['target']['checked']"><x-ui::icon name="chevron-left" class="rtl:rotate-180" /></x-ui::button>
+        @endif
     </div>
     @endif
     @endforeach
+    @if ($slots->has('default')){{ $slots }}@endif
     @if ($attributes->has('name'))
         @foreach ($value as $item)
         <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $item }}">

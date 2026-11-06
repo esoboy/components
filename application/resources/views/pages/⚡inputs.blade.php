@@ -202,7 +202,7 @@ new class extends Component
                 <p class="text-xs text-muted-foreground">Selected: <span id="file">{{ $file }}</span></p>
             </div>
             <div class="space-y-2">
-                <x-ui::tree id="org-tree" wire:model.live="staff" checkable :load="\App\Support\DemoTree::class" :items="$org" />
+                <x-ui::tree id="org-tree" wire:model.live="staff" checkable :load="\App\Support\DemoTree::class" :items="$org" node-view="examples.tree-node-label" />
                 <p class="text-xs text-muted-foreground">Lazy: teams and people load as you open them; checked Design checks them as they come. Checked: <span id="staff">{{ implode(', ', $staff) }}</span></p>
             </div>
             <div class="space-y-2">
@@ -231,7 +231,9 @@ new class extends Component
         <h2 class="text-lg font-semibold">Tags Input &amp; Number Input</h2>
         <x-ui::field>
             <x-ui::field.label>Tags</x-ui::field.label>
-            <x-ui::tags-input wire:model.live="tags" placeholder="Add a tag…" :max="5" />
+            <x-ui::tags-input wire:model.live="tags" placeholder="Add a tag…" :max="5">
+                <span class="sr-only">Press Enter to add a tag.</span>
+            </x-ui::tags-input>
             <x-ui::field.description>Tags: <span id="tags">{{ implode(', ', $tags) }}</span></x-ui::field.description>
         </x-ui::field>
         <div class="grid gap-4 sm:grid-cols-2">
@@ -317,7 +319,7 @@ new class extends Component
             <div class="space-y-3">
                 <p class="text-sm text-muted-foreground">Mood: <span id="mood">{{ $mood ?: '—' }}</span></p>
                 <x-ui::popover>
-                    <x-ui::popover.trigger id="reaction-trigger" variant="outline">{{ $reaction ?: 'Open emoji picker' }}</x-ui::popover.trigger>
+                    <x-ui::popover.trigger><x-ui::button id="reaction-trigger" variant="outline">{{ $reaction ?: 'Open emoji picker' }}</x-ui::button></x-ui::popover.trigger>
                     <x-ui::popover.content class="w-fit p-0">
                         <x-ui::emoji-picker class="h-[342px]" wire:emoji-select="$set('reaction', $event.detail.emoji)" footer />
                     </x-ui::popover.content>

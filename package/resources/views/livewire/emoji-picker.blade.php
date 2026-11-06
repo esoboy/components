@@ -16,5 +16,6 @@
             @endforeach
         </div>
     </div>
-    @if ($footer)<x-ui::emoji-picker.footer />@endif
+    @if ($slots->has('footer')){{ $slots('footer') }}@elseif ($footer)<x-ui::emoji-picker.footer />@endif
+    @if ($slots->has('default')){{ $slots }}@endif
 </eso-emoji-picker>

@@ -14,7 +14,7 @@
                 <x-ui::checkbox data-tree-check tabindex="-1" aria-hidden="true" :disabled="$disabled" :checked="$checked === 'true'" :x-effect="'$el.indeterminate = '.json_encode($checked === 'mixed')" />
             @endif
             @if (! empty($node['icon']))<span data-slot="tree-item-icon"><x-ui::icon :name="$node['icon']" /></span>@endif
-            <span data-slot="tree-item-label">{{ $node['label'] ?? $id }}</span>
+            <span data-slot="tree-item-label">{{ isset($settings['nodeView']) ? view($settings['nodeView'], ['node' => $node, 'level' => $level, 'checked' => $checked]) : ($node['label'] ?? $id) }}</span>
         </div>
         @if ($parent)
             <ul role="group" data-slot="tree-group" @if (! $open) hidden @endif>

@@ -98,7 +98,7 @@ $none = match ($name) {
 @endphp
 
 <x-ui::dropdown-menu>
-    <x-ui::dropdown-menu.trigger variant="ghost" :size="$trigger === 'label' ? 'sm' : 'icon-sm'" data-editor-menu="{{ $name }}" :aria-label="$label" :attributes="$attributes">
+    <x-ui::dropdown-menu.trigger><x-ui::button variant="ghost" :size="$trigger === 'label' ? 'sm' : 'icon-sm'" data-editor-menu="{{ $name }}" :aria-label="$label" :attributes="$attributes">
         @if ($trigger === 'icons')
         @foreach ($items as [, $value, , $icon])
         <x-ui::icon :name="$icon" data-editor-icon="{{ $value }}" :hidden="! $loop->first" />
@@ -109,7 +109,7 @@ $none = match ($name) {
         <x-ui::icon :name="$trigger" />
         @endif
         <x-ui::icon name="chevron-down" data-editor-chevron />
-    </x-ui::dropdown-menu.trigger>
+    </x-ui::button></x-ui::dropdown-menu.trigger>
     <x-ui::dropdown-menu.content data-editor-menu-content="{{ $name }}">
         <x-dynamic-component :component="$radio ? 'ui::dropdown-menu.radio-group' : 'ui::dropdown-menu.group'">
         @foreach ($items as [$command, $value, $itemLabel, $icon, $style])

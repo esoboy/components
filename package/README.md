@@ -93,17 +93,38 @@ shadcn/ui's:
 
 Controls inside `<x-ui::field>` show their validation errors; standalone controls don't.
 
-Where shadcn/ui passes `render` to a trigger, give it `as`, the component to render
-(it must render a button):
+Dialog, Sheet, Drawer and Alert Dialog attach their trigger and close behavior to
+the single rendered control in each slot. Put the appearance and any application
+action on that control.
+
+```blade
+<x-ui::dialog name="edit-profile">
+    <x-ui::dialog.trigger>
+        <x-ui::button variant="outline">Edit profile</x-ui::button>
+    </x-ui::dialog.trigger>
+    <x-ui::dialog.content>
+        <x-ui::dialog.close>
+            <x-ui::button variant="ghost">Cancel</x-ui::button>
+        </x-ui::dialog.close>
+    </x-ui::dialog.content>
+</x-ui::dialog>
+```
+
+Popover, Dropdown Menu, Tooltip, Hover Card and Sidebar triggers use the same
+slot interface. Supply a focusable control with the appropriate accessible name.
 
 ```blade
 <x-ui::dropdown-menu>
-    <x-ui::dropdown-menu.trigger as="sidebar.menu-button" size="lg">…</x-ui::dropdown-menu.trigger>
+    <x-ui::dropdown-menu.trigger>
+        <x-ui::sidebar.menu-button size="lg">…</x-ui::sidebar.menu-button>
+    </x-ui::dropdown-menu.trigger>
     <x-ui::dropdown-menu.content side="right" align="end">…</x-ui::dropdown-menu.content>
 </x-ui::dropdown-menu>
 
 <x-ui::tooltip>
-    <x-ui::tooltip.trigger as="input-group.button" size="icon-xs">…</x-ui::tooltip.trigger>
+    <x-ui::tooltip.trigger>
+        <x-ui::input-group.button size="icon-xs">…</x-ui::input-group.button>
+    </x-ui::tooltip.trigger>
     <x-ui::tooltip.content>…</x-ui::tooltip.content>
 </x-ui::tooltip>
 ```

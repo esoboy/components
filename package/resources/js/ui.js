@@ -16,7 +16,7 @@ import command from './alpine/command.js'
 import { register as registerConfirm } from './alpine/confirm.js'
 import dataTable from './alpine/data-table.js'
 import dialog from './alpine/dialog.js'
-import { trigger as overlayTrigger, content as overlayContent } from './alpine/overlay.js'
+import { trigger as overlayTrigger, content as overlayContent, registerTrigger } from './alpine/overlay.js'
 import { slider, otp, inputCount, copyCode } from './alpine/inputs.js'
 import messageScroller from './alpine/message-scroller.js'
 import questionnaire from './alpine/questionnaire.js'
@@ -41,6 +41,7 @@ window.Alpine.data('uiOtp', otp)
 window.Alpine.data('uiInputCount', inputCount)
 window.Alpine.data('uiCopyCode', copyCode)
 window.Alpine.data('uiOverlayTrigger', overlayTrigger)
+registerTrigger(window.Alpine)
 window.Alpine.data('uiOverlayContent', overlayContent)
 
 window.Alpine.data('uiCarousel', carousel)

@@ -209,7 +209,7 @@ new class extends Component
             <x-ui::badge variant="destructive" :count="3" />
         </x-ui::badge.wrapper>
         <x-ui::tooltip>
-            <x-ui::tooltip.trigger variant="outline" size="icon-lg" aria-label="Help"><x-ui::icon name="circle-question-mark" /></x-ui::tooltip.trigger>
+            <x-ui::tooltip.trigger><x-ui::button variant="outline" size="icon-lg" aria-label="Help"><x-ui::icon name="circle-question-mark" /></x-ui::button></x-ui::tooltip.trigger>
             <x-ui::tooltip.content side="left">Help center</x-ui::tooltip.content>
         </x-ui::tooltip>
         <x-ui::back-to-top />

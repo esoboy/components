@@ -21,6 +21,9 @@ class Questionnaire extends Component
     #[Reactive]
     public ?string $shortcuts = null;
 
+    #[Reactive]
+    public ?string $questionView = null;
+
     public ?string $current = null;
 
     /** @var list<string> */
@@ -33,11 +36,12 @@ class Questionnaire extends Component
      * @param  list<array<string, mixed>>  $items
      * @param  array<string, mixed>  $value
      */
-    public function mount(array $items = [], array $value = [], ?string $current = null, ?string $shortcuts = null): void
+    public function mount(array $items = [], array $value = [], ?string $current = null, ?string $shortcuts = null, ?string $questionView = null): void
     {
         $this->items = $items;
         $this->value = $value;
         $this->shortcuts = $shortcuts;
+        $this->questionView = $questionView;
         $this->current = collect($this->steps())->firstWhere('name', $current)['name'] ?? ($this->steps()[0]['name'] ?? null);
         foreach ($items as $item) {
             $this->value[$item['name']] ??= ($item['multiple'] ?? false) ? [] : null;

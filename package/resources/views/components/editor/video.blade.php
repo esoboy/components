@@ -18,7 +18,7 @@ $placeholder = match (true) {
 @endphp
 
 <x-ui::popover>
-    <x-ui::popover.trigger variant="ghost" size="icon-sm" data-editor-opens="video" :aria-label="__('ui::editor.video')" :attributes="$attributes"><x-ui::icon name="video" /></x-ui::popover.trigger>
+    <x-ui::popover.trigger><x-ui::button variant="ghost" size="icon-sm" data-editor-opens="video" :aria-label="__('ui::editor.video')" :attributes="$attributes"><x-ui::icon name="video" /></x-ui::button></x-ui::popover.trigger>
     <x-ui::popover.content align="start" data-editor-field-content>
         @if ($rich->has('video') && EditorUploads::enabled())
         <x-ui::button variant="outline" size="sm" data-editor-action="media" data-editor-value="video" data-editor-upload><x-ui::icon name="upload" />{{ __('ui::editor.video-upload') }}</x-ui::button>
