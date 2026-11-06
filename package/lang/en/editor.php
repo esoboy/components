@@ -108,6 +108,7 @@ return [
     'image-link' => 'Image link',
     'image-unreadable' => 'This image couldn’t be read.',
     'upload-failed' => 'The upload failed.',
+    'math-invalid' => 'The formula could not be read.',
     'save-image' => 'Save to this site',
     'images-unsaved' => 'Images not on this site: :count',
     'save-images' => 'Save all',

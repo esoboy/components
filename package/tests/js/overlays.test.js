@@ -60,19 +60,37 @@ it('dismisses only dialog backdrop clicks outside the actual box', () => {
     data.$el.setAttribute('role','alertdialog'); data.setOpen(true)
     data.backdrop({target:data.$el,clientX:0,clientY:0}); expect(data.$el.open).toBe(true)
 })
-it('resolves confirmation once, resets defaults and restores focus', () => {
-    const data = provider(()=>confirmation({}),'<dialog><h2 data-slot="alert-dialog-title">Default</h2><button value="confirm">Continue</button></dialog>')
-    const action = vi.fn(), cancel = vi.fn(), source = document.createElement('button'); document.body.append(source)
-    data.ask('Delete?','Delete',action,cancel,source); expect(data.$el.querySelector('h2').textContent).toBe('Delete?')
-    data.$el.close('confirm'); data.confirmClosed(); data.confirmClosed(); expect(action).toHaveBeenCalledOnce(); expect(document.activeElement).toBe(source)
-    data.ask('','',action,cancel,source); expect(data.$el.querySelector('h2').textContent).toBe('Default')
-    data.$el.close(); data.confirmClosed(); expect(cancel).toHaveBeenCalledOnce()
+it('resolves a rendered confirmation once and restores focus', () => {
+    const data = provider(() => confirmation({}), '<dialog><h2>Delete?</h2><button value="confirm">Delete</button></dialog>')
+    const action = vi.fn(), cancel = vi.fn(), source = document.createElement('button')
+    document.body.append(source)
+    data.ask(action, cancel, source)
+    expect(data.$el.querySelector('h2').textContent).toBe('Delete?')
+    data.$el.close('confirm')
+    data.confirmClosed()
+    data.confirmClosed()
+    expect(action).toHaveBeenCalledOnce()
+    expect(document.activeElement).toBe(source)
+    data.ask(action, cancel, source)
+    data.$el.close()
+    data.confirmClosed()
+    expect(cancel).toHaveBeenCalledOnce()
 })
-it('leaves prompt confirmations to Livewire and selects the destructive popup', () => {
-    let hook; const Livewire = {hook:(_,callback)=>hook=callback}; const Alpine = {evaluate:vi.fn()}; register(Livewire,Alpine)
-    const el = document.createElement('button')
-    hook({el,directive:{value:'confirm',modifiers:['prompt'],expression:'Type DELETE'}}); expect(el.__livewire_confirm).toBeUndefined()
-    document.body.innerHTML = '<div id="ui-confirm-popover-destructive"></div>'
-    hook({el,directive:{value:'confirm',modifiers:['popover','destructive'],expression:'Delete?|Delete'}})
-    el.__livewire_confirm(vi.fn(),vi.fn()); expect(Alpine.evaluate.mock.calls[0][0].id).toBe('ui-confirm-popover-destructive')
+
+it('leaves prompt confirmations to Livewire and prepares the destructive popup', async () => {
+    document.body.innerHTML = '<button></button><div data-ui-confirm-host wire:id="confirm"><div id="ui-confirm-popover-destructive"></div></div>'
+    let hook, prepared
+    const prepare = vi.fn(() => new Promise(resolve => { prepared = resolve }))
+    const Livewire = { hook: (_, callback) => { hook = callback }, find: () => ({ prepare }) }
+    const Alpine = { evaluate: vi.fn() }
+    register(Livewire, Alpine)
+    const el = document.querySelector('button')
+    hook({ el, directive: { value: 'confirm', modifiers: ['prompt'], expression: 'Type DELETE' } })
+    expect(el.__livewire_confirm).toBeUndefined()
+    hook({ el, directive: { value: 'confirm', modifiers: ['popover', 'destructive'], expression: 'Delete?|Delete|Details' } })
+    el.__livewire_confirm(vi.fn(), vi.fn())
+    await vi.waitFor(() => expect(prepare).toHaveBeenCalledExactlyOnceWith('ui-confirm-popover-destructive', 'Delete?', 'Delete', 'Details'))
+    expect(Alpine.evaluate).not.toHaveBeenCalled()
+    prepared()
+    await vi.waitFor(() => expect(Alpine.evaluate.mock.calls[0][0].id).toBe('ui-confirm-popover-destructive'))
 })

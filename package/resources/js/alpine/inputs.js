@@ -185,17 +185,15 @@ export function copyCode() {
     return {
         copied: false,
         timer: 0,
-        async copy() {
+        async copy(control = this.$el) {
             const block = this.$el.closest('[data-slot="code-block"]')
             const lines = block?.querySelectorAll('[data-slot="code-block-line-content"]') ?? []
             const code = lines.length ? [...lines].map(line => line.textContent === '\n' ? '' : line.textContent).join('\n') : block?.querySelector('[data-slot="code-block-code"]')?.textContent ?? ''
             try {
-                await navigator.clipboard.writeText(this.$el.dataset.value ?? code)
+                await navigator.clipboard.writeText(control.dataset.value ?? code)
                 this.copied = true
-                const status = this.$el.nextElementSibling
-                if (status?.matches('[data-code-block-status]')) status.textContent = this.$el.dataset.labelCopied
                 clearTimeout(this.timer)
-                this.timer = setTimeout(() => { this.copied = false; if (status?.matches('[data-code-block-status]')) status.textContent = '' }, 2000)
+                this.timer = setTimeout(() => { this.copied = false }, 2000)
             } catch {}
         },
         destroy() { clearTimeout(this.timer) },

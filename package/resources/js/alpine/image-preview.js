@@ -16,13 +16,13 @@ const FACTOR = 1.5
 export default () => ({
     _drag: null,
     _dragged: null,
-    _index: null,
+    _current: null,
+    _stopMorph: null,
     _rotate: null,
     _scale: null,
     _x: null,
     _y: null,
     init() {
-        this._index = 0
         this._scale = 1
         this._rotate = 0
         this._x = 0
@@ -33,11 +33,15 @@ export default () => ({
         listen(this, this.$el, 'click', event => {
             const trigger = event.target.closest?.('[data-slot="image-preview-trigger"]')
 
-            if (trigger) return this.open(this._triggers().indexOf(trigger))
+            if (trigger && trigger.closest('eso-image-preview') === this.$el) return this.open(this._triggers().indexOf(trigger))
 
             const action = event.target.closest?.('[data-image-preview]')
 
-            if (action && this.dialog.contains(action)) return this._act(action.dataset.imagePreview)
+            if (action && this.dialog.contains(action)) {
+                const name = action.dataset.imagePreview
+                if (name !== 'previous' && name !== 'next') this._act(name)
+                return
+            }
 
             // A click beside the image, but not the end of a drag.
             if (event.target === this.dialog && ! this._dragged) this.dialog.close()
@@ -96,54 +100,51 @@ export default () => ({
 
         listen(this, this.$el, 'load', loaded, { capture: true })
         listen(this, this.$el, 'error', loaded, { capture: true })
+        this._stopMorph = window.Livewire?.hook('morphed', ({ el }) => {
+            if (el === this.viewer) this.sync()
+        })
 
     },
     destroy() {
+        this._stopMorph?.()
         disconnected(this)
     },
-    get dialog() {
-        return this.$el.querySelector(':scope > [data-slot="image-preview-content"]')
-    },
+    get viewer() { return this.$el.querySelector(':scope > [data-image-preview-state]') },
+    get wire() { return window.Livewire?.find(this.viewer?.getAttribute('wire:id')) },
+    get dialog() { return this.viewer?.querySelector('[data-slot="image-preview-content"]') },
 
     get image() {
         return this.dialog?.querySelector('[data-slot="image-preview-image"]')
     },
 
-    get index() {
-        return this._index
+    async open(index) {
+        if (index < 0 || !this.wire) return
+        await this.wire.select(index)
+        if (!this.$el.isConnected || !this.image?.getAttribute('src')) return
+        this.sync()
+        this._reset()
+        if (!this.dialog.open) this.dialog.showModal()
     },
 
-    open(index = 0) {
-        const triggers = this._triggers()
-        const trigger = triggers[index]
-
-        if (! trigger || ! this.dialog) return
-
-        this._index = index
-        this._scale = 1
-        this._rotate = 0
-        this._x = this._y = 0
-
-        const image = this.image
-
-        if (image.getAttribute('src') !== trigger.dataset.src) {
-            this.dialog.toggleAttribute('data-loading', true)
-            image.src = trigger.dataset.src
+    sync() {
+        const source = this.image?.getAttribute('src')
+        if (!source) {
+            if (this.dialog?.open) this.dialog.close()
+            return
         }
 
-        image.alt = trigger.dataset.alt ?? ''
-
-        this.dialog.toggleAttribute('data-single', triggers.length < 2)
-        this.dialog.querySelector('[data-slot="image-preview-counter"]').textContent = `${index + 1} / ${triggers.length}`
-        this._button('previous').disabled = index === 0
-        this._button('next').disabled = index === triggers.length - 1
-        this._apply()
-
-        if (! this.dialog.open) this.dialog.showModal()
+        const key = `${this.viewer.dataset.selected}:${source}`
+        if (key !== this._current) {
+            this._current = key
+            this._reset()
+        } else {
+            this._apply()
+        }
+        this.dialog.toggleAttribute('data-loading', !this.image.complete)
     },
 
     _triggers() {
-        return [...this.$el.querySelectorAll('[data-slot="image-preview-trigger"]')]
+        return [...this.$el.querySelectorAll('[data-slot="image-preview-trigger"]')].filter(trigger => trigger.closest('eso-image-preview') === this.$el)
     },
 
     _button(action) {
@@ -152,8 +153,7 @@ export default () => ({
 
     _act(action) {
         if (action === 'close') this.dialog.close()
-        else if (action === 'previous' && this._index > 0) this.open(this._index - 1)
-        else if (action === 'next' && this._index < this._triggers().length - 1) this.open(this._index + 1)
+        else if (action === 'previous' || action === 'next') this.wire?.[action]()
         else if (action === 'zoom-in') this._zoom(this._scale * FACTOR)
         else if (action === 'zoom-out') this._zoom(this._scale / FACTOR)
         else if (action === 'rotate-left') this._turn(-90)
@@ -191,8 +191,8 @@ export default () => ({
         image.style.setProperty('--image-preview-y', `${this._y}px`)
         image.toggleAttribute('data-zoomed', this._scale > 1)
 
-        this._button('zoom-in').disabled = this._scale >= MAX
-        this._button('zoom-out').disabled = this._scale <= MIN
-        this._button('reset').disabled = this._scale === 1 && this._rotate === 0 && ! this._x && ! this._y
+        this._button('zoom-in')?.toggleAttribute('disabled', this._scale >= MAX)
+        this._button('zoom-out')?.toggleAttribute('disabled', this._scale <= MIN)
+        this._button('reset')?.toggleAttribute('disabled', this._scale === 1 && this._rotate === 0 && ! this._x && ! this._y)
     },
 })

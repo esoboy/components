@@ -97,7 +97,7 @@ it('renders a verification code button around a button', function () {
     $html = (string) $this->blade('<x-ui::verification-code-button name="sms" :seconds="30" wire:click="send">Send code</x-ui::verification-code-button>');
 
     expect($html)
-        ->toContainMarkup('<eso-verification-code-button data-slot="verification-code-button" data-name="sms" data-seconds="30" data-label-countdown="Resend in :secondss" data-label-resend="Resend code">')
+        ->toContainMarkup('<eso-verification-code-button data-slot="verification-code-button">')
         ->toContainMarkup('<button data-variant="outline" data-size="default" wire:click="send"><span data-verification-code-label>Send code</span>');
 });
 
@@ -105,16 +105,33 @@ it('renders a countdown with the time left, to a time or for seconds', function 
     Date::setTestNow('2026-10-29 10:00:00');
 
     $this->blade('<x-ui::countdown until="2026-10-29 11:02:03" wire:finish="refresh" />')
-        ->assertSeeMarkup('<eso-countdown role="timer" data-slot="countdown" data-remaining="3723000" data-format="HH:mm:ss" wire:finish="refresh">01:02:03</eso-countdown>');
+        ->assertSeeMarkup('<eso-countdown role="timer" data-slot="countdown" wire:finish="refresh">')
+        ->assertSee('01:02:03');
 
     $this->blade('<x-ui::countdown name="sale" :seconds="90" format="mm:ss" />')
-        ->assertSeeMarkup('data-remaining="90000" data-seconds="90" data-name="sale" data-format="mm:ss">01:30</eso-countdown>');
+        ->assertSee('01:30');
 
     $this->blade('<x-ui::countdown until="2026-10-29 09:00:00" />')
-        ->assertSee('data-remaining="0"', false)
-        ->assertSeeMarkup('>00:00:00</eso-countdown>');
+        ->assertSee('00:00:00');
 
     Date::setTestNow();
+});
+
+it('renders the countdown from a deadline and only dispatches finish once per start', function () {
+    Date::setTestNow('2026-10-29 10:00:00');
+
+    try {
+        $timer = Livewire::test('ui.countdown', ['verification' => true, 'seconds' => 5])
+            ->assertDontSee('Resend code')
+            ->call('start')
+            ->assertSee('Resend in 5s');
+        Date::setTestNow('2026-10-29 10:00:06');
+        $timer->call('tick')->assertSee('Resend code')->assertDispatched('finish')
+            ->call('tick')->assertNotDispatched('finish')
+            ->call('start', 3)->assertSee('Resend in 3s');
+    } finally {
+        Date::setTestNow();
+    }
 });
 
 it('formats countdowns, the largest unit taking all above it', function (int $seconds, string $format, string $text) {

@@ -527,7 +527,7 @@
 
     /* Uploads and images not saved yet on the left, the count on the right; gone with none. */
     :where([data-slot="editor-footer"]) {
-        @apply flex shrink-0 items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
+        @apply order-last flex shrink-0 items-center justify-end gap-2 border-t border-input px-3 py-1 text-xs text-muted-foreground tabular-nums;
 
         &:not(:has(> :not([hidden]))) {
             @apply hidden;

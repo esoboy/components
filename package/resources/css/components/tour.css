@@ -1,5 +1,5 @@
 /*
- * Tour: not in shadcn. The step's target carries the anchor --tour-target; the spotlight
+ * Tour: not in shadcn. The step's target carries the tour's anchor; the spotlight
  * and the panel follow it with CSS anchor positioning, through scrolling and resizing.
  */
 @layer components {
@@ -12,7 +12,6 @@
         --tour-padding: 6px;
         --tour-mask: color-mix(in oklab, black 45%, transparent);
         position: fixed;
-        position-anchor: --tour-target;
         top: calc(anchor(top, 50dvh) - var(--tour-padding));
         left: calc(anchor(left, 50dvw) - var(--tour-padding));
         width: calc(anchor-size(width, 0px) + var(--tour-padding) * 2);
@@ -43,7 +42,6 @@
 
     :where([data-slot="tour-content"]) {
         @apply w-80 max-w-[calc(100dvw-2rem)] flex-col gap-3 rounded-xl border-0 bg-popover p-4 text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/10 outline-hidden;
-        position-anchor: --tour-target;
         --side-offset: 12px;
 
         &:popover-open {

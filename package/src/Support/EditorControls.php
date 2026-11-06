@@ -75,4 +75,47 @@ final class EditorControls
 
         return array_values(array_filter($groups));
     }
+
+    /** @return array<string, array{string, string, array<string, string>}> */
+    public static function slash(RichTextFormat $format): array
+    {
+        if (! $format->has('slash-menu')) {
+            return [];
+        }
+
+        $toolbar = $format->has('toolbar');
+        $uploads = EditorUploads::enabled();
+        // / items: control => [icon, label, attributes]
+        $slash = [
+            'paragraph' => ['pilcrow', __('ui::editor.paragraph'), ['data-editor-command' => 'paragraph']],
+            'heading-1' => ['heading-1', __('ui::editor.heading-1'), ['data-editor-command' => 'heading', 'data-editor-value' => '1']],
+            'heading-2' => ['heading-2', __('ui::editor.heading-2'), ['data-editor-command' => 'heading', 'data-editor-value' => '2']],
+            'heading-3' => ['heading-3', __('ui::editor.heading-3'), ['data-editor-command' => 'heading', 'data-editor-value' => '3']],
+            'heading-4' => ['heading-4', __('ui::editor.heading-4'), ['data-editor-command' => 'heading', 'data-editor-value' => '4']],
+            'heading-5' => ['heading-5', __('ui::editor.heading-5'), ['data-editor-command' => 'heading', 'data-editor-value' => '5']],
+            'heading-6' => ['heading-6', __('ui::editor.heading-6'), ['data-editor-command' => 'heading', 'data-editor-value' => '6']],
+            'bullet-list' => ['list', __('ui::editor.bullet-list'), ['data-editor-command' => 'bullet-list']],
+            'ordered-list' => ['list-ordered', __('ui::editor.ordered-list'), ['data-editor-command' => 'ordered-list']],
+            'task-list' => ['list-todo', __('ui::editor.task-list'), ['data-editor-command' => 'task-list']],
+            'blockquote' => ['text-quote', __('ui::editor.blockquote'), ['data-editor-command' => 'blockquote']],
+            'callout' => ['message-square-warning', __('ui::editor.callout'), ['data-editor-command' => 'callout', 'data-editor-value' => RichText::CALLOUTS['info']]],
+            'code-block' => ['square-code', __('ui::editor.code-block'), ['data-editor-command' => 'code-block']],
+            'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), ['data-editor-command' => 'horizontal-rule']],
+            'image' => ['image', __('ui::editor.image'), ['data-editor-action' => 'media', 'data-editor-value' => 'image']],
+            // The toolbar's popover, for a link too; without it, an upload.
+            'video' => ['video', __('ui::editor.video'), $toolbar ? ['data-editor-action' => 'open', 'data-editor-value' => 'video'] : ['data-editor-action' => 'media', 'data-editor-value' => 'video']],
+            'audio' => ['eighth-notes', __('ui::editor.audio'), ['data-editor-action' => 'media', 'data-editor-value' => 'audio']],
+            'file' => ['paperclip', __('ui::editor.file'), ['data-editor-action' => 'media', 'data-editor-value' => 'file']],
+            'table' => ['table', __('ui::editor.table'), ['data-editor-command' => 'table']],
+            'details' => ['list-chevrons-down-up', __('ui::editor.details'), ['data-editor-command' => 'details']],
+            'math' => ['radical', __('ui::editor.math'), ['data-editor-action' => 'open', 'data-editor-value' => 'math']],
+        ];
+
+        // Formulas open the toolbar's popover; a video does without it when it can be uploaded.
+        return array_filter($slash, fn (string $control) => EditorControls::allowed($control, $format) && match ($control) {
+            'math' => $toolbar,
+            'video' => $toolbar || ($format->has('video') && $uploads),
+            default => true,
+        }, ARRAY_FILTER_USE_KEY);
+    }
 }

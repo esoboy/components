@@ -61,7 +61,7 @@ it('loads Livewires Alpine runtime for a plain Blade page using uiScripts', func
     expect($html)->toContain('/esoboy-ui/ui.js')->toContain('/livewire-')->toContain('data-csrf');
 });
 
-it('marks each heavy component for lazy loading through Alpine', function () {
+it('renders code tokens without loading a browser highlighting engine', function () {
     $this->app->instance(Assets::class, new Assets(__DIR__.'/../Fixtures/dist'));
 
     Route::get('/blocks', fn () => Blade::render(<<<'BLADE'
@@ -73,8 +73,8 @@ it('marks each heavy component for lazy loading through Alpine', function () {
 
     $html = $this->get('/blocks')->getContent();
 
-    expect(substr_count($html, 'data-engine="http://localhost/esoboy-ui/code-block.js?id=cdef01234567"'))->toBe(2)
-        ->and($html)->not->toContain('<script type="module"');
+    expect($html)->toContain('data-token')
+        ->not->toContain('code-block.js', 'data-engine=', '<script type="module"');
 });
 
 it('leaves heavy modules out of pages that do not need them', function () {

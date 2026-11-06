@@ -17,7 +17,7 @@ class MentionsResults extends Component
     public bool $filter = true;
 
     #[Reactive]
-    public string $defaultPrefix = '@';
+    public string $fallbackPrefix = '@';
 
     public ?string $prefix = null;
 
@@ -34,7 +34,7 @@ class MentionsResults extends Component
         $document = HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.$this->markup.'</body></html>', LIBXML_NOERROR);
         $matches = 0;
         foreach ($document->querySelectorAll('[data-slot="mentions-item"]') as $item) {
-            $prefix = $item->getAttribute('data-prefix') ?? $this->defaultPrefix;
+            $prefix = $item->getAttribute('data-prefix') ?? $this->fallbackPrefix;
             $text = $item->textContent.' '.$item->getAttribute('data-value');
             if ($this->filter && $this->prefix !== null && ($prefix !== $this->prefix || ! SearchText::matches($this->query, $text))) {
                 $item->setAttribute('hidden', '');

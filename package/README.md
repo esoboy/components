@@ -39,7 +39,7 @@ Load the scripts and place the toaster and the confirm dialog once in the layout
 ```
 
 `@uiScripts` loads one deferred script with the components shadcn/ui has. The others,
-and heavy ones (Editor, Code Block highlighting, …), load their script the first time
+and heavy browser engines (Editor, Signature, …), load their script the first time
 they appear on a page, also when they arrive in a Livewire update; the app installs and
 imports nothing else.
 

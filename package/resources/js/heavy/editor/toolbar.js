@@ -14,6 +14,7 @@ export function overflow(toolbar, laidOut) {
     const panel = more && contentOf(more, 'popover')
 
     if (! panel) return null
+    const rows = [...panel.querySelectorAll(':scope > [data-editor-overflow-group]')]
 
     // The controls in order, each with its group (the separators before it) and priority;
     // a bare popover's content stays where it is, its trigger going wherever.
@@ -56,7 +57,7 @@ export function overflow(toolbar, laidOut) {
             item.element.hidden = false
             toolbar.insertBefore(item.element, more)
         })
-        panel.replaceChildren()
+        for (const row of rows) row.hidden = true
         more.hidden = true
         tidy()
 
@@ -74,20 +75,12 @@ export function overflow(toolbar, laidOut) {
             }
         }
 
-        const rows = new Map()
-
         for (const item of items.filter(({ element }) => hidden.has(element))) {
-            if (! rows.has(item.group)) {
-                const row = document.createElement('div')
-
-                row.dataset.slot = 'editor-more-group'
-                row.setAttribute('role', 'group')
-                rows.set(item.group, row)
-                panel.append(row)
-            }
-
+            const row = rows[item.group]
+            if (!row) continue
+            row.hidden = false
             item.element.hidden = false
-            rows.get(item.group).append(item.element)
+            row.append(item.element)
         }
 
         laidOut?.()

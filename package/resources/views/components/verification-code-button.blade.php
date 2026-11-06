@@ -1,16 +1,17 @@
 @blaze
 
-{{-- A Button that counts down once the server sends the code and calls Ui::countdown($name). --}}
-@props([
-    'name' => 'verification-code',
-    'seconds' => 60,
-    'variant' => 'outline',
-    'size' => 'default',
-])
+@use('Esoboy\Ui\Support\Model')
 
-<eso-verification-code-button x-data="uiCountdown(true)" x-on:ui-countdown.window="start($event.detail)" x-on:click.capture="block($event)" data-slot="verification-code-button" data-name="{{ $name }}" data-seconds="{{ $seconds }}" data-label-countdown="{{ __('ui::verification-code-button.countdown') }}" data-label-resend="{{ __('ui::verification-code-button.resend') }}">
-    <x-ui::button :variant="$variant" :size="$size" :attributes="$attributes->merge(['x-bind:aria-disabled' => 'remaining > 0 ? true : null'])">
-        <span data-verification-code-label>{{ $slot }}</span>
+@props(['name' => 'verification-code', 'seconds' => 60, 'variant' => 'outline', 'size' => 'default'])
+
+<eso-verification-code-button data-slot="verification-code-button" x-data="{ running: false, started: false }"
+    x-on:ui-countdown-state="running = $event.detail.running; started = $event.detail.started"
+    x-on:click.capture="if (running) { $event.preventDefault(); $event.stopImmediatePropagation() }">
+    <x-ui::button :variant="$variant" :size="$size" :attributes="$attributes->merge(['x-bind:aria-disabled' => 'running || null'])">
+        <span data-verification-code-label x-show="!started">{{ $slot }}</span>
+        @livewire('ui.countdown', [
+            'verification' => true, 'name' => $name, 'seconds' => (int) $seconds,
+        ], key(Model::scope('verification-code', $loop ?? null)))
     </x-ui::button>
 </eso-verification-code-button>
 <x-ui::extras />

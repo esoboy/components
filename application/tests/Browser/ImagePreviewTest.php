@@ -31,5 +31,7 @@ it('shows no paging for a single image', function () {
     visit('/uploads')
         ->click('#single-preview [data-slot="image-preview-trigger"]')
         ->assertScript(opened('#single-preview [data-slot="image-preview-content"]'))
-        ->assertScript("document.querySelector('#single-preview [data-image-preview=\"next\"]').checkVisibility()", false);
+        ->assertNotPresent('#single-preview [data-image-preview="next"]')
+        ->click('#single-preview button:has-text("Done")')
+        ->assertScript(opened('#single-preview [data-slot="image-preview-content"]'), false);
 });

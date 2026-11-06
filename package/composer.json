@@ -12,7 +12,8 @@
         "illuminate/view": "^13.0",
         "livewire/blaze": "^1.0",
         "livewire/livewire": "^4.4",
-        "symfony/html-sanitizer": "^7.4|^8.0"
+        "symfony/html-sanitizer": "^7.4|^8.0",
+        "tempest/highlight": "^2.30"
     },
     "require-dev": {
         "larastan/larastan": "^3.13",

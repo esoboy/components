@@ -1,5 +1,23 @@
 <?php
 
+use Livewire\Livewire;
+
+it('renders the selected image, bounds navigation and handles an empty gallery', function () {
+    $images = [['src' => '/a.jpg', 'alt' => 'Photo A'], ['src' => '/b.jpg', 'alt' => 'Photo B']];
+    $viewer = Livewire::test('ui.image-preview', ['images' => $images])
+        ->call('select', 1)
+        ->assertSee(['src="/b.jpg"', 'alt="Photo B"'], false)
+        ->assertSee('2 / 2')
+        ->call('next')
+        ->assertSet('index', 1)
+        ->call('previous')
+        ->assertSee(['src="/a.jpg"', 'alt="Photo A"'], false)
+        ->assertSee('1 / 2');
+
+    $viewer->call('select', -1)->assertSet('index', 0);
+    Livewire::test('ui.image-preview')->call('select', 0)->assertSet('index', null);
+});
+
 /*
  * Image Preview: thumbnails and the viewer they open.
  */
@@ -17,7 +35,7 @@ it('renders thumbnails and one viewer for the group', function () {
         ->toContainMarkup('<button type="button" data-slot="image-preview-trigger" data-src="/a-large.jpg" data-alt="A" aria-haspopup="dialog" class="size-20">')
         ->toContainMarkup('<img src="/a.jpg" alt="A" loading="lazy">')
         ->toContain('data-src="/b.jpg" data-alt="" aria-haspopup="dialog" aria-label="Preview image"')
-        ->toContainMarkup('<dialog data-slot="image-preview-content" aria-label="Image preview" wire:ignore>')
+        ->toContainMarkup('<dialog data-slot="image-preview-content" aria-label="Image preview" wire:ignore.self>')
         ->toContainMarkup('<img data-slot="image-preview-image" alt="" draggable="false">')
         ->toContain('<div role="toolbar" data-slot="image-preview-toolbar"');
 

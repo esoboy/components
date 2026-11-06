@@ -10,6 +10,7 @@ it('asks in an alert dialog with the question and the confirm label', function (
         ->click('button[wire\\:confirm]')
         ->assertScript(opened('#ui-confirm'))
         ->assertSeeIn('#ui-confirm', 'Publish this post?')
+        ->assertSeeIn('#ui-confirm', 'Readers will be able to see it.')
         ->assertSeeIn('#ui-confirm button[value="confirm"]', 'Publish')
         ->assertSeeIn('#deleted', '0');
 });

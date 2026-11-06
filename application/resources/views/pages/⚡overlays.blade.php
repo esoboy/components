@@ -18,6 +18,7 @@ new class extends Component
     public string $person = 'pedro';
 
     public int $deleted = 0;
+    public bool $tourChecked = false;
 
     // Bound with wire:model on the Dialog: open while true.
     public bool $renaming = false;
@@ -169,7 +170,7 @@ new class extends Component
         </div>
         <p class="text-sm text-muted-foreground">wire:confirm asks with the layout's &lt;x-ui::confirm /&gt;: .destructive for a red confirm button, .popover at the button, "Question?|Label" to name it.</p>
         <div class="flex flex-wrap items-center gap-3">
-            <x-ui::button variant="outline" wire:click="delete" wire:confirm="Publish this post?|Publish">wire:confirm</x-ui::button>
+            <x-ui::button variant="outline" wire:click="delete" wire:confirm="Publish this post?|Publish|Readers will be able to see it.">wire:confirm</x-ui::button>
             <x-ui::button variant="destructive" wire:click="delete" wire:confirm.destructive="Delete this item?">wire:confirm.destructive</x-ui::button>
             <x-ui::button variant="outline" wire:click="delete" wire:confirm.popover="Archive this item?|Archive">wire:confirm.popover</x-ui::button>
             <x-ui::button variant="outline" wire:click="delete" wire:confirm.popover.destructive="Delete this row?">wire:confirm.popover.destructive</x-ui::button>
@@ -387,9 +388,12 @@ new class extends Component
             <x-ui::button variant="outline" wire:click="startTour">Start at step 2 from server</x-ui::button>
             <x-ui::button variant="outline" commandfor="overlays-tour-open" command="--start">Start without blocking</x-ui::button>
         </div>
-        <x-ui::tour name="overlays-tour" wire:tour-close="tourClosed($event.detail.finished)">
+        <x-ui::tour name="overlays-tour" actions-view="ui-demo.tour-actions" wire:tour-close="tourClosed($event.detail.finished)">
             <x-ui::tour.step target="#tour-dialog" title="Dialogs" align="start">Open a dialog from its trigger, or from the server with Ui::dialog('name')->open().</x-ui::tour.step>
-            <x-ui::tour.step target="#tour-dropdown" title="Menus" side="right" align="start">Menus keep their own anchor while the tour points at them.</x-ui::tour.step>
+            <x-ui::tour.step target="#tour-dropdown" title="Menus" side="right" align="start">
+                Menus keep their own anchor while the tour points at them.
+                <x-ui::button variant="link" size="sm" wire:click="$set('tourChecked', true)">{{ $tourChecked ? 'Checked' : 'Check step' }}</x-ui::button>
+            </x-ui::tour.step>
             <x-ui::tour.step target="#tour-toast" title="Toasts" side="top">Ui::toast() reaches the browser from any Livewire action.</x-ui::tour.step>
             <x-ui::tour.step title="That's all">Close the tour or press Escape at any step; the page hears tour-change and tour-close.</x-ui::tour.step>
         </x-ui::tour>

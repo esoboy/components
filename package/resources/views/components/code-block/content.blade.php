@@ -1,6 +1,6 @@
 @blaze
 
-@use('Esoboy\Ui\Assets')
+@use('Esoboy\Ui\Support\CodeHighlight')
 
 @props([
     'code' => null,
@@ -11,20 +11,16 @@
 ])
 
 @php
-// Given code, every line is a row (as numbers and highlighting need); otherwise the slot holds <x-ui::code-block.line> rows.
-// An empty line holds a newline so copying a selection keeps blank lines.
-$rows = $code === null ? null : implode('', array_map(
-    fn (string $line) => '<span data-slot="code-block-line" data-variant="default"><span data-slot="code-block-line-content">'.($line === '' ? "\n" : e($line)).'</span></span>',
-    explode("\n", preg_replace('/\n$/', '', str_replace("\r\n", "\n", $code))),
-));
+$rows = $code === null ? null : CodeHighlight::lines(preg_replace('/\r?\n$/', '', $code) ?? $code, $language);
+$compound = $rows === null && $language ? CodeHighlight::compound((string) $slot, $language) : $slot;
 @endphp
 
 <pre {{ $attributes->merge([
-    'data-slot' => 'code-block-content', ...($language ? ['x-data' => 'uiEngine({})', 'data-engine' => app(Assets::class)->url('code-block.js')] : []),
+    'data-slot' => 'code-block-content',
     'data-language' => $language ?? false,
     'data-wrap' => (bool) $wrap,
     'data-numbered' => (bool) $lineNumbers,
     'dir' => 'ltr',
     'tabindex' => '0',
     'style' => 'counter-reset: line '.($startLine - 1).';',
-]) }}><code data-slot="code-block-code">{!! $rows ?? $slot !!}</code></pre>
+]) }}><code data-slot="code-block-code">@if ($rows !== null)@foreach ($rows as $tokens)<x-ui::code-block.line :tokens="$tokens" />@endforeach@else{!! $compound !!}@endif</code></pre>

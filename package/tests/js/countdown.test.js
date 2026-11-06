@@ -1,18 +1,45 @@
-import { afterEach, expect, it, vi } from 'vitest'
-import { provider, cleanupControllers } from './alpine-harness.js'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import countdown from '../../resources/js/alpine/countdown.js'
-import { countdowns, format } from '../../resources/js/support/countdown.js'
-afterEach(()=>{cleanupControllers();vi.useRealTimers();countdowns.clear();document.body.innerHTML=''})
-it.each([[90061,'HH:mm:ss','25:01:01'],[90061,'D [days] HH:mm:ss','1 days 01:01:01'],[90061,'D天H时m分s秒','1天1时1分1秒'],[61,'ss','61'],[0,'mm:ss','00:00']])('formats %is with %s',(seconds,pattern,text)=>expect(format(seconds*1000,pattern)).toBe(text))
-it('counts down from PHP time and emits finish once',()=>{
-    vi.useFakeTimers();const data=provider(()=>countdown(false),'<div data-remaining="2000" data-format="ss"></div>');const finish=vi.fn();data.$el.addEventListener('finish',finish)
-    expect(data.$el.textContent).toBe('02');vi.advanceTimersByTime(2000);expect(data.$el.textContent).toBe('00');expect(finish).toHaveBeenCalledOnce();vi.advanceTimersByTime(5000);expect(finish).toHaveBeenCalledOnce()
+import { cleanupControllers, provider } from './alpine-harness.js'
+
+let visible, morph
+
+beforeEach(() => {
+    vi.useFakeTimers()
+    vi.stubGlobal('IntersectionObserver', class {
+        constructor(callback) { visible = value => callback([{ isIntersecting: value }]) }
+        observe() {}
+        disconnect() {}
+    })
+    window.Livewire = { hook: (_, callback) => { morph = callback; return () => {} } }
 })
-it('keeps a named timer through navigation and permits a server restart',()=>{
-    vi.useFakeTimers();const data=provider(()=>countdown(false),'<div data-name="sale" data-remaining="10000" data-format="ss"></div>');vi.advanceTimersByTime(3000);data.destroy()
-    const next=provider(()=>countdown(false),'<div data-name="sale" data-remaining="10000" data-format="ss"></div>');expect(next.$el.textContent).toBe('07');next.start({name:'sale',seconds:30});expect(next.$el.textContent).toBe('30')
+
+afterEach(() => {
+    cleanupControllers()
+    delete window.Livewire
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
 })
-it('blocks resending only after the server starts the verification timer',()=>{
-    vi.useFakeTimers();const data=provider(()=>countdown(true),'<div data-name="sms" data-seconds="2" data-label-countdown="Wait :seconds" data-label-resend="Resend"><span data-verification-code-label>Send</span></div>');const event={preventDefault:vi.fn(),stopImmediatePropagation:vi.fn()}
-    data.block(event);expect(event.preventDefault).not.toHaveBeenCalled();data.start({name:'sms'});data.block(event);expect(event.preventDefault).toHaveBeenCalledOnce();vi.advanceTimersByTime(2000);expect(data.$el.textContent).toBe('Resend')
+
+it('only requests the next visible clock update and leaves the rendered time intact', async () => {
+    const wire = { tick: vi.fn() }
+    const clock = provider(countdown, '<span data-delay="1000" data-running="true">05</span>', { wire })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(wire.tick).not.toHaveBeenCalled()
+    visible(true)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(wire.tick).toHaveBeenCalledOnce()
+    expect(clock.$el.textContent).toBe('05')
+})
+
+it('restores a named deadline on the next page and restarts only the requested name', async () => {
+    const wire = { restore: vi.fn(), start: vi.fn() }
+    const first = provider(countdown, '<span data-name="sale" data-deadline="10000" data-delay="5000"></span>')
+    morph({ el: first.$el })
+    const next = provider(countdown, '<span data-name="sale" data-deadline="20000"></span>', { wire })
+    next.start({ name: 'other', seconds: 5 })
+    next.start({ name: 'sale', seconds: 3 })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(wire.restore).toHaveBeenCalledExactlyOnceWith(10000)
+    expect(wire.start).toHaveBeenCalledExactlyOnceWith(3)
 })

@@ -42,7 +42,7 @@ class EmojiPicker extends Component
         $categories = [];
         foreach (Emoji::catalog() as $category => $emojis) {
             if ($query !== '') {
-                $score = fn ($emoji) => (str_contains(mb_strtolower($emoji[1]), $query) ? 10 : 0) + count(array_filter(explode('|', mb_strtolower($emoji[2])), fn ($keyword) => str_contains($keyword, $query)));
+                $score = fn ($emoji) => Emoji::score($emoji[1], $emoji[2], $query);
                 $emojis = array_values(array_filter($emojis, fn ($emoji) => $score($emoji) > 0));
                 usort($emojis, fn ($a, $b) => $score($b) <=> $score($a));
             }

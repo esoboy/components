@@ -6,8 +6,7 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
 
 /**
- * Countdown's first render: the time left, formatted as its script formats it
- * (resources/js/support/countdown.js), so the page shows the right time before any script runs.
+ * Server clock formatting for countdowns and verification code buttons.
  */
 final class Countdown
 {
@@ -49,5 +48,23 @@ final class Countdown
             isset($values[$token[0]]) => str_pad((string) $values[$token[0]], strlen($token), '0', STR_PAD_LEFT),
             default => $token,
         }, $tokens));
+    }
+
+    public static function nextUpdate(int $remaining, string $format): int
+    {
+        if ($remaining <= 0) {
+            return 1;
+        }
+
+        $format = preg_replace('/\[[^\]]*\]/u', '', $format) ?? '';
+        foreach (array_reverse(self::UNITS, preserve_keys: true) as $unit => $size) {
+            if (str_contains($format, $unit)) {
+                $nextSecond = intdiv((int) ceil($remaining / 1000), $size) * $size - 1;
+
+                return max(1, $remaining - max(0, $nextSecond) * 1000);
+            }
+        }
+
+        return $remaining;
     }
 }

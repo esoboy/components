@@ -96,7 +96,7 @@ new class extends Component
                 <x-ui::image-preview.item class="size-20" src="/demo/photo-{{ $number }}.svg" alt="Photo {{ $number }}" />
             @endforeach
         </x-ui::image-preview>
-        <x-ui::image-preview id="single-preview">
+        <x-ui::image-preview id="single-preview" controls-view="ui-demo.image-preview-controls">
             <x-ui::image-preview.item class="h-24 w-40" src="/demo/photo-4.svg" />
         </x-ui::image-preview>
     </section>

@@ -23,6 +23,7 @@ beforeAll(async () => {
 
 afterEach(() => {
     cleanupControllers()
+    delete window.Livewire
     document.body.innerHTML = ''
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
@@ -61,7 +62,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="paragraph" data-editor-value=""><span data-slot="dropdown-menu-item-indicator"></span></label>
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="2" aria-checked="false" data-editor-command="heading" data-editor-value="2"><span data-slot="dropdown-menu-item-indicator"></span></label>
                     </eso-radio-group></div>
-                    <button type="button" data-editor-menu="font-size" data-ui-dropdown-menu="sizes" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Size"><span data-editor-current data-editor-default="Default size"></span></button>
+                    <button type="button" data-editor-menu="font-size" data-ui-dropdown-menu="sizes" data-dropdown-menu-trigger command="toggle-popover" commandfor="" aria-label="Size"><span data-editor-current><span data-editor-current-value="">Default size</span><span data-editor-current-value="18px" hidden>18</span></span></button>
                     <div id="sizes" popover="auto" data-slot="dropdown-menu-content"><eso-radio-group role="group" data-slot="dropdown-menu-radio-group">
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="" aria-checked="false" data-editor-command="font-size" data-editor-value="" data-editor-label="Default size"><span data-slot="dropdown-menu-item-indicator"></span></label>
                         <label data-slot="dropdown-menu-radio-item"><input type="radio" role="menuitemradio" value="18px" aria-checked="false" data-editor-command="font-size" data-editor-value="18px" data-editor-label="18"><span data-slot="dropdown-menu-item-indicator"></span></label>
@@ -71,6 +72,7 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                         <button type="button" data-editor-command="highlight" data-editor-value="#bbf7d0" aria-pressed="false"></button>
                     </div>
                 </div>
+                <div data-editor-panels wire:id="panels">
                 <div data-slot="editor-find" hidden>
                     <input type="search" data-editor-find-input>
                     <span data-editor-find-count></span>
@@ -82,16 +84,19 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
                     <button type="button" data-editor-action="replace-all"></button>
                     <button type="button" data-editor-action="find-close"></button>
                 </div>
-                <div data-slot="editor-content">${html}</div>
-                <textarea data-slot="editor-source" hidden></textarea>
                 <div data-slot="editor-footer"><span data-editor-busy data-editor-label=":count uploading" data-editor-refused=":count still uploading" role="status" hidden></span><span data-editor-unsaved data-editor-label=":count unsaved" hidden><span data-editor-unsaved-label></span><button type="button" data-editor-action="save-images"></button></span><span data-editor-count></span></div>
+                <div popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label>Bold</span><kbd data-editor-tip-keys>Ctrl+B</kbd></div>
+                </div>
                 <template data-template="uploading"><span data-slot="editor-uploading"><span>Uploading…</span><span data-editor-upload-progress></span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
                 <template data-template="upload-failed"><span data-slot="editor-uploading" data-editor-failed role="alert"><span data-editor-upload-message>Upload failed</span><button type="button" data-editor-action="dismiss-upload"></button></span></template>
-                <template data-template="missing-image"><span data-slot="editor-uploading" data-editor-missing><span data-editor-upload-message hidden></span><button type="button" data-editor-action="upload-missing"></button><button type="button" data-editor-action="dismiss-upload"></button></span></template>
-                <div popover="manual" data-slot="tooltip-content" data-editor-tip><span data-editor-tip-label></span><kbd data-editor-tip-keys hidden></kbd></div>
+                <template data-template="missing-image"><span data-slot="editor-uploading" data-editor-missing><span data-editor-upload-message hidden>Upload failed</span><button type="button" data-editor-action="upload-missing"></button><button type="button" data-editor-action="dismiss-upload"></button></span></template>
+                <div data-slot="editor-content">${html}</div>
+                <textarea data-slot="editor-source" hidden></textarea>
             </eso-editor>
         </form>`
 
+    const wire = { syncStatus: vi.fn().mockResolvedValue(undefined), showTip: vi.fn().mockResolvedValue(undefined) }
+    window.Livewire = { find: () => wire }
     const element = engineDriver(createEditor, document.querySelector('eso-editor'))
     const events = []
 
@@ -100,6 +105,10 @@ function mount(html = '<h2>Notes</h2><p>Hello world</p>', { features = full.feat
 
     return [element, events]
 }
+
+const expectPanel = (element, state) => vi.waitFor(() => {
+    expect(element.panelWire.syncStatus).toHaveBeenLastCalledWith(expect.objectContaining(state))
+})
 
 const control = (element, selector) => element.querySelector(selector)
 
@@ -218,7 +227,7 @@ describe('mounting', () => {
         expect(element.querySelector('p.is-editor-empty').dataset.placeholder).toBe('Write')
     })
 
-    it('makes its toolbar one tab stop, with tooltips and shortcuts', () => {
+    it('makes its toolbar one tab stop and requests tooltips with shortcuts', async () => {
         const [element] = mount()
         const undo = button(element, 'undo')
         const bold = button(element, 'bold')
@@ -230,9 +239,7 @@ describe('mounting', () => {
         bold.dataset.editorKeys = 'Mod-b'
         bold.dispatchEvent(new Event('pointerover', { bubbles: true }))
 
-        expect(element.querySelector('[data-editor-tip-label]').textContent).toBe('bold')
-        expect(element.querySelector('[data-editor-tip-keys]').textContent).toBe('Ctrl+B')
-        expect(element.querySelector('[data-editor-tip-keys]').hidden).toBe(false)
+        await vi.waitFor(() => expect(element.panelWire.showTip).toHaveBeenCalledWith('bold', 'Ctrl+B'))
         expect(element.querySelector('[data-editor-tip]').matches(':popover-open')).toBe(true)
 
         bold.focus()
@@ -288,7 +295,7 @@ describe('commands', () => {
         control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').closest('label').click()
 
         expect(element.value).toBe('<h2>Notes</h2><p>Hello <span style="font-size: 18px;">world</span></p>')
-        expect(control(element, '[data-editor-current]').textContent).toBe('18')
+        expect(control(element, '[data-editor-current-value]:not([hidden])').textContent).toBe('18')
         expect(element.querySelector('#sizes').matches(':popover-open')).toBe(false)
         expect(control(element, '[data-editor-command="font-size"][data-editor-value="18px"]').checked).toBe(true)
 
@@ -628,7 +635,7 @@ describe('media', () => {
         await settle()
 
         expect(element.value).toContain('src="/a.png"')
-        expect(element.querySelector('[data-editor-failed]').textContent).toBe('Files up to 20 MB only.')
+        await expectPanel(element, { uploadErrors: ['Files up to 20 MB only.'] })
 
         element.querySelector('[data-slot="editor-uploading"]:not([data-editor-failed]) [data-editor-action="dismiss-upload"]').click()
         posts[2].answer({ url: '/c.png', mime: 'image/png' })
@@ -666,7 +673,6 @@ describe('media', () => {
         const posts = uploader({ readable: ['https://other.test/a.png'] })
         const save = Object.assign(document.createElement('button'), { type: 'button' })
         const error = Object.assign(document.createElement('p'), { hidden: true })
-        const notice = element.querySelector('[data-editor-unsaved]')
         const images = () => element.value.match(/src="[^"]+"/g)
         const at = src => {
             let found = null
@@ -687,8 +693,7 @@ describe('media', () => {
 
         // Nothing goes until someone asks: the footer says how many wait.
         expect(posts).toEqual([])
-        expect(notice.hidden).toBe(false)
-        expect(notice.textContent).toBe('3 unsaved')
+        await expectPanel(element, { unsaved: 3 })
 
         element.editor.commands.setNodeSelection(at('https://cdn.app.test/b.png'))
         expect(save.hidden).toBe(true)
@@ -710,7 +715,7 @@ describe('media', () => {
 
         expect(images()).toEqual(['src="https://files.app.test/a.png"', 'src="https://files.app.test/a.png"', 'src="https://cdn.app.test/b.png"', 'src="/c.png"', 'src="https://other.test/d.png"', 'src="data:image/png;base64,iVBORw0KGgo="', 'src="https://x.img.test/f.png"'])
         expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(0)
-        expect(notice.textContent).toBe('2 unsaved')
+        await expectPanel(element, { unsaved: 2 })
 
         // All at once: a data one as a file; one its site doesn't share by its address,
         // for the server to fetch.
@@ -718,18 +723,19 @@ describe('media', () => {
         await settle()
 
         expect(posts.slice(1).map(post => [post.form.source, post.form.url ?? null, post.form.file?.name ?? null, post.form.file?.type ?? null])).toEqual([['data', null, 'image-1.png', 'image/png'], ['external', 'https://other.test/d.png', null, null]])
-        expect(control(element, '[data-editor-action="save-images"]').disabled).toBe(true)
+        await expectPanel(element, { saving: true })
 
         posts[1].answer({ url: '/uploads/e.png' })
         posts[2].answer(null, 422, { file: ['This image couldn’t be read.'] })
         await settle()
 
         expect(images().slice(4, 6)).toEqual(['src="https://other.test/d.png"', 'src="/uploads/e.png"'])
-        expect(notice.textContent).toBe('1 unsaved')
+        await expectPanel(element, { unsaved: 1 })
 
         // The one that wouldn't save says why, in its menu.
         element.editor.commands.setNodeSelection(at('https://other.test/d.png'))
-        expect([error.hidden, error.textContent]).toEqual([false, 'This image couldn’t be read.'])
+        expect(error.hidden).toBe(false)
+        await expectPanel(element, { imageError: 'This image couldn’t be read.' })
 
         element.editor.commands.setNodeSelection(at('https://cdn.app.test/b.png'))
         expect(error.hidden).toBe(true)
@@ -818,7 +824,7 @@ describe('media', () => {
         await settle()
 
         expect(placeholders()).toHaveLength(2)
-        expect(placeholders()[0].querySelector('[data-editor-upload-message]').textContent).toBe('Not a picture.')
+        await expectPanel(element, { uploadErrors: ['Not a picture.'] })
 
         placeholders()[0].querySelector('[data-editor-action="upload-missing"]').click()
         choose(inputs[1], [new File(['x'], 'chart.png', { type: 'image/png' })])
@@ -839,7 +845,6 @@ describe('media', () => {
         const busy = []
         const form = element.closest('form')
         const submitted = vi.fn()
-        const notice = element.querySelector('[data-editor-busy]')
 
         form.addEventListener('submit', submitted)
         element.addEventListener('editor-busy', event => busy.push(event.detail.busy))
@@ -848,7 +853,7 @@ describe('media', () => {
         await settle()
 
         expect([element.busy, element.getAttribute('aria-busy'), busy]).toEqual([true, 'true', [true]])
-        expect([notice.hidden, notice.textContent, notice.getAttribute('role')]).toEqual([false, '2 uploading', 'status'])
+        await expectPanel(element, { uploads: 2, refused: false })
 
         // Together: a's 100 bytes all sent, b's 300 half.
         posts[0].progress(10, 10)
@@ -856,7 +861,7 @@ describe('media', () => {
 
         const placeholder = element.querySelector('[data-slot="editor-uploading"]')
 
-        expect(placeholder.querySelector('[data-editor-upload-progress]').textContent).toBe('63%')
+        expect(placeholder.querySelector('[data-editor-upload-progress]').getAttribute('aria-valuenow')).toBe('63')
         expect(placeholder.style.getPropertyValue('--editor-upload-progress')).toBe('63%')
 
         // Submitted meanwhile: it isn't, and the footer says why.
@@ -865,17 +870,18 @@ describe('media', () => {
         form.dispatchEvent(event)
 
         expect([event.defaultPrevented, submitted.mock.calls.length]).toEqual([true, 0])
-        expect([notice.textContent, notice.getAttribute('role')]).toEqual(['2 still uploading', 'alert'])
+        await expectPanel(element, { uploads: 2, refused: true })
 
         posts[0].answer({ url: '/a.png', mime: 'image/png' })
         await settle()
 
-        expect(notice.textContent).toBe('1 still uploading')
+        await expectPanel(element, { uploads: 1, refused: true })
 
         posts[1].answer({ url: '/b.png', mime: 'image/png' })
         await settle()
 
-        expect([element.busy, element.hasAttribute('aria-busy'), notice.hidden, busy]).toEqual([false, false, true, [true, false]])
+        expect([element.busy, element.hasAttribute('aria-busy'), busy]).toEqual([false, false, [true, false]])
+        await expectPanel(element, { uploads: 0, refused: false })
 
         form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
         expect(submitted).toHaveBeenCalledTimes(1)
@@ -952,13 +958,13 @@ describe('media', () => {
         const { overflow } = await import('../../resources/js/heavy/editor/toolbar.js')
         const control = (name, priority) => `<div data-slot="editor-control" data-priority="${priority}"><button type="button">${name}</button></div>`
 
-        document.body.innerHTML = `<div data-slot="editor-toolbar">${control('undo', 1)}<div data-slot="separator"></div>${control('bold', 1)}${control('code', 3)}${control('color', 2)}<div data-slot="separator"></div>${control('table', 2)}<button type="button" data-editor-more data-ui-popover="more" data-popover-trigger command="toggle-popover" commandfor="" hidden></button><div id="more" popover data-slot="popover-content"></div></div>`
+        document.body.innerHTML = `<div data-slot="editor-toolbar">${control('undo', 1)}<div data-slot="separator"></div>${control('bold', 1)}${control('code', 3)}${control('color', 2)}<div data-slot="separator"></div>${control('table', 2)}<button type="button" data-editor-more data-ui-popover="more" data-popover-trigger command="toggle-popover" commandfor="" hidden></button><div id="more" popover data-slot="popover-content"><div data-editor-overflow-group hidden></div><div data-editor-overflow-group hidden></div><div data-editor-overflow-group hidden></div></div></div>`
 
         const toolbar = document.querySelector('[data-slot="editor-toolbar"]')
         const more = toolbar.querySelector('[data-editor-more]')
         const panel = document.getElementById('more')
         const shown = () => [...toolbar.children].filter(child => ! child.hidden && ! child.matches('[popover]')).map(child => child.textContent || (child === more ? '…' : '|'))
-        const rows = () => [...panel.children].map(row => row.textContent)
+        const rows = () => [...panel.children].filter(row => !row.hidden).map(row => row.textContent)
         let width = 100
 
         // 20px a part.
@@ -1057,10 +1063,9 @@ describe('format painter', () => {
 })
 
 describe('find and replace', () => {
-    it('finds matches, moves between them and replaces them', () => {
+    it('finds matches, moves between them and replaces them', async () => {
         const [element] = mount('<p>Cat cat CAT dog</p>')
         const find = control(element, '[data-editor-find-input]')
-        const count = control(element, '[data-editor-find-count]')
 
         control(element, '[data-editor-action="find"]').click()
 
@@ -1070,22 +1075,22 @@ describe('find and replace', () => {
         find.value = 'cat'
         find.dispatchEvent(new Event('input', { bubbles: true }))
 
-        expect(count.textContent).toBe('1/3')
+        await expectPanel(element, { match: 1, matches: 3 })
         expect(element.querySelectorAll('[data-editor-match]')).toHaveLength(3)
 
         find.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
 
-        expect(count.textContent).toBe('2/3')
+        await expectPanel(element, { match: 2, matches: 3 })
 
         control(element, '[data-editor-action="find-case"]').click()
 
-        expect(count.textContent).toBe('1/1')
+        await expectPanel(element, { match: 1, matches: 1 })
 
         control(element, '[data-editor-replace-input]').value = 'bird'
         control(element, '[data-editor-action="replace-all"]').click()
 
         expect(element.value).toBe('<p>Cat bird CAT dog</p>')
-        expect(count.textContent).toBe('0/0')
+        await expectPanel(element, { match: 0, matches: 0 })
 
         find.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 
@@ -1134,34 +1139,22 @@ describe('views', () => {
         expect(document.documentElement.style.overflow).toBe('')
     })
 
-    it('puts fullscreen tooltips below the controls and restores their side on exit', () => {
+    it('positions tooltips below controls in fullscreen', async () => {
         const [element] = mount()
-        const bold = button(element, 'bold')
+        element.setAttribute('data-fullscreen', '')
+        button(element, 'bold').dispatchEvent(new Event('pointerover', { bubbles: true }))
         const tip = element.querySelector('[data-editor-tip]')
-        const toggle = control(element, '[data-editor-action="fullscreen"]')
-        const hover = () => bold.dispatchEvent(new Event('pointerover', { bubbles: true }))
-
-        hover()
-        expect(tip.dataset.side).toBe('top')
-
-        toggle.click()
-        hover()
-        expect(tip.dataset.side).toBe('bottom')
-
-        toggle.click()
-        hover()
-        expect(tip.dataset.side).toBe('top')
+        await vi.waitFor(() => expect(tip.dataset.side).toBe('bottom'))
     })
 
-    it('counts characters as graphemes, as the server does: no spaces, line breaks or media', () => {
+    it('counts characters as graphemes, as the server does: no spaces, line breaks or media', async () => {
         const [element] = mount('<p>汉字 👍🏽</p><p>a b<br>c</p><img src="/a.png"><a href="/f.pdf" download="f.pdf">f.pdf</a>')
 
-        expect(control(element, '[data-editor-count]').textContent).toBe('6')
+        await expectPanel(element, { characters: 6 })
 
         const [limited] = mount('<p>abc</p>', { attributes: 'data-max-length="3"' })
 
-        expect(control(limited, '[data-editor-count]').textContent).toBe('3 / 3')
-        expect(control(limited, '[data-editor-count]').hasAttribute('data-full')).toBe(true)
+        await expectPanel(limited, { characters: 3 })
     })
 })
 

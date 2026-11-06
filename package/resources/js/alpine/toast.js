@@ -9,23 +9,32 @@
  * A toast with the id of a shown one updates it in place (e.g. loading, then success).
  */
 
-import { clone, readTemplates } from '../support/templates.js'
 import { listen, disconnected } from './interaction.js'
 
 const SWIPE_THRESHOLD = 40
 const LEAVE_DURATION = 500
 
-let ids = 0
-
 export default () => ({
     stopTimers: null,
+    stopMorph: null,
     init() {
     const timers = new Map()
-    this.stopTimers = () => timers.forEach(timer => clearTimeout(timer.id))
+    const revisions = new Set()
+    const leaving = new Map()
+    let requests = Promise.resolve()
+    const request = (method, ...args) => {
+        requests = requests.catch(() => {}).then(() => this.$el.isConnected && this.$wire[method](...args))
+        return requests
+    }
+    this.stopTimers = () => {
+        timers.forEach(timer => clearTimeout(timer.id))
+        leaving.forEach(({ timer }) => clearTimeout(timer))
+    }
     let expanded = false
 
-    const viewport = () => this.$el
-    const live = () => [...(viewport()?.querySelectorAll(':scope > [data-slot="toast"]:not([data-ending-style])') ?? [])].reverse()
+    const viewport = () => this.$el.querySelector('[data-slot="toast-viewport"]')
+    const all = () => [...(viewport()?.querySelectorAll(':scope > [data-slot="toast"]') ?? [])]
+    const live = () => all().filter(toast => ! leaving.has(toast)).reverse()
 
     // --- timers: paused while spread out or while the page is in the background ---
 
@@ -34,7 +43,7 @@ export default () => ({
     const schedule = (toast, remaining) => {
         window.clearTimeout(timers.get(toast)?.id)
 
-        if (! remaining) return timers.delete(toast)
+        if (remaining <= 0) return timers.delete(toast)
 
         timers.set(toast, { remaining, started: Date.now(), id: paused() ? null : window.setTimeout(() => close(toast), remaining) })
     }
@@ -48,7 +57,7 @@ export default () => ({
     })
 
     const resume = () => {
-        if (! paused()) timers.forEach((timer, toast) => timer.id === null && schedule(toast, timer.remaining))
+        if (! paused()) timers.forEach((timer, toast) => timer.id === null && schedule(toast, Math.max(1, timer.remaining)))
     }
 
     // --- layout: the CSS stacks toasts from these variables ---
@@ -78,93 +87,72 @@ export default () => ({
         })
     }
 
-    // --- one toast, cloned from the toaster's template ---
-
-    const fill = (toast, templates, { message, description = null, type = 'default', action = null }) => {
-        const id = toast.dataset.id
-        const content = clone(templates.toast).querySelector('[data-slot="toast-content"]')
-        const icon = clone(templates[`icon-${type}`])
-        const title = content.querySelector('[data-slot="toast-title"]')
-        const text = content.querySelector('[data-slot="toast-description"]')
-        const run = content.querySelector('[data-toast-action]')
-
-        type === 'default' ? toast.removeAttribute('data-type') : toast.setAttribute('data-type', type)
-        toast.setAttribute('role', type === 'error' ? 'alertdialog' : 'dialog')
-
-        icon ? content.querySelector('[data-slot="toast-icon"]').append(icon) : content.querySelector('[data-slot="toast-icon"]').remove()
-        message ? Object.assign(title, { id: `${id}-title`, textContent: message }) : title.remove()
-        description ? Object.assign(text, { id: `${id}-description`, textContent: description }) : text.remove()
-
-        message ? toast.setAttribute('aria-labelledby', `${id}-title`) : toast.removeAttribute('aria-labelledby')
-        description ? toast.setAttribute('aria-describedby', `${id}-description`) : toast.removeAttribute('aria-describedby')
-
-        if (action?.label) {
-            run.textContent = action.label
-            listen(this, run, 'click', () => {
-                if (action.component && action.method) window.Livewire?.find(action.component)?.call(action.method, ...(action.params ?? []))
-                close(toast)
-            })
-        } else {
-            run.remove()
-        }
-
-        listen(this, content.querySelector('[data-toast-close]'), 'click', () => close(toast))
-        toast.replaceChildren(content)
-    }
-
-    const show = detail => {
+    // Livewire owns the list and its text. Measure and time the Blade rows after morph.
+    const sync = () => {
         const root = viewport()
-        const templates = root ? readTemplates(root) : {}
+        if (! root) return
 
-        if (! templates.toast || ! (detail.message || detail.description)) return
-
-        const existing = detail.id && live().find(toast => toast.dataset.id === String(detail.id))
-        const toast = existing || clone(templates.toast)
-
-        if (! existing) toast.dataset.id = detail.id || `ui-toast-${++ids}`
-
-        fill(toast, templates, detail)
-
-        if (! existing) {
-            for (const name of ['--toast-swipe-movement-x', '--toast-swipe-movement-y']) toast.style.setProperty(name, '0px')
-
-            root.append(toast)
+        for (const toast of revisions) {
+            if (root.contains(toast)) continue
+            clearTimeout(timers.get(toast)?.id)
+            clearTimeout(leaving.get(toast)?.timer)
+            timers.delete(toast)
+            leaving.delete(toast)
+            revisions.delete(toast)
         }
 
-        // Keep toasts above a modal dialog opened after the viewport.
-        if (root.matches(':popover-open') && document.querySelector('dialog:modal')) root.hidePopover()
+        const rows = all()
+        if (! rows.length) {
+            expanded = false
+            if (root.matches(':popover-open')) root.hidePopover()
+            return
+        }
+
+        const added = rows.filter(toast => ! revisions.has(toast))
+        if (added.length && root.matches(':popover-open') && document.querySelector('dialog:modal')) root.hidePopover()
         if (! root.matches(':popover-open')) root.showPopover()
 
-        const duration = detail.duration ?? (detail.type === 'loading' ? 0 : Number(root.dataset.timeout ?? 5000))
-
-        schedule(toast, duration)
+        for (const toast of rows) {
+            const closing = leaving.get(toast)
+            if (closing) markClosing(toast, closing)
+            if (revisions.has(toast)) continue
+            revisions.add(toast)
+            toast.style.setProperty('--toast-swipe-movement-x', '0px')
+            toast.style.setProperty('--toast-swipe-movement-y', '0px')
+            schedule(toast, Number(toast.dataset.toastDuration))
+        }
         layout()
     }
 
-    const close = (toast, { limited = false, swipe = null } = {}) => {
-        if (toast.hasAttribute('data-ending-style')) return
-
-        window.clearTimeout(timers.get(toast)?.id)
-        timers.delete(toast)
-
+    const markClosing = (toast, { limited, swipe }) => {
         if (limited) toast.setAttribute('data-limited', '')
         if (swipe) toast.setAttribute('data-swipe-direction', swipe)
         toast.setAttribute('data-ending-style', '')
-
-        layout()
-
-        window.setTimeout(() => {
-            const root = toast.parentElement
-
-            toast.remove()
-
-            // The viewport also holds the templates.
-            if (root && ! root.querySelector(':scope > [data-slot="toast"]')) {
-                expanded = false
-                if (root.matches(':popover-open')) root.hidePopover()
-            }
-        }, LEAVE_DURATION)
     }
+
+    const close = (toast, { limited = false, swipe = null } = {}) => {
+        if (leaving.has(toast)) return
+        window.clearTimeout(timers.get(toast)?.id)
+        timers.delete(toast)
+
+        const timer = window.setTimeout(() => request('dismiss', toast.dataset.id, Number(toast.dataset.toastRevision)), LEAVE_DURATION)
+        const closing = { limited, swipe, timer }
+        leaving.set(toast, closing)
+        markClosing(toast, closing)
+        layout()
+    }
+
+    listen(this, this.$el, 'click', ({ target }) => {
+        const control = target.closest?.('[data-toast-close], [data-toast-action]')
+        const toast = control?.closest('[data-slot="toast"]')
+        if (! toast || leaving.has(toast) || control.matches(':disabled,[aria-disabled="true"]')) return
+
+        if (control.hasAttribute('data-toast-action')) {
+            const action = JSON.parse(toast.dataset.toastCallback ?? 'null')
+            if (action?.component && action.method) window.Livewire?.find(action.component)?.call(action.method, ...action.params)
+        }
+        close(toast)
+    })
 
     // --- spreading out on hover and focus ---
 
@@ -243,17 +231,12 @@ export default () => ({
         const stopCancel = listen(this, window, 'pointercancel', end)
     })
 
-    listen(this, window, 'ui-toast', ({ detail }) => show(detail ?? {}))
-
-    // The toaster is persisted across wire:navigate; moving it into the new page closes its popover.
-    listen(this, document, 'livewire:navigated', () => {
-        const root = viewport()
-
-        if (! root || ! live().length) return
-
-        if (! root.matches(':popover-open')) root.showPopover()
-        layout()
+    listen(this, window, 'ui-toast', ({ detail }) => request('show', detail ?? {}))
+    listen(this, document, 'livewire:navigated', sync)
+    this.stopMorph = window.Livewire?.hook('morphed', ({ el }) => {
+        if (el === this.$el) sync()
     })
+    sync()
     },
-    destroy() { this.stopTimers?.(); disconnected(this) },
+    destroy() { this.stopTimers?.(); this.stopMorph?.(); disconnected(this) },
 })

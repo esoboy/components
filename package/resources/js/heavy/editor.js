@@ -44,7 +44,7 @@ import { accepted, attachmentNode, kindOf, safeUrl, videoNode } from './editor/m
 import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, imageRows, picture, tables, tasks, toMathML } from './editor/nodes.js'
 import { wordLists } from './editor/paste.js'
 import { blockStyle, styleExtensions } from './editor/styles.js'
-import { emojiMenu, slashMenu } from './editor/suggest.js'
+import { suggestionMenu } from './editor/suggest.js'
 import { overflow } from './editor/toolbar.js'
 import { upload } from './editor/upload.js'
 import { uploads, uploadsKey } from './editor/uploads.js'
@@ -121,6 +121,13 @@ export default (binding = {}) => ({
     _context: '',
     _menus: [],
     _mathPreview: 0,
+    _panelStatus: {},
+    _panelSnapshot: '',
+    _panelTimer: null,
+    _panelRequest: null,
+    _tipTimer: null,
+    _uploadErrors: new Map(),
+
 
     init() {
 
@@ -238,6 +245,8 @@ export default (binding = {}) => ({
     },
 
     destroy() {
+        clearTimeout(this._panelTimer)
+        clearTimeout(this._tipTimer)
         disconnected(this)
         this._attributes?.disconnect()
         this._fullscreen(false)
@@ -379,10 +388,37 @@ export default (binding = {}) => ({
             has('typography') && Typography,
             has('drag-handle') && templates['drag-handle'] && dragHandle(this._menu(clone(templates['drag-handle']))),
             has('drag-handle') && MoveBlocks,
-            has('slash-menu') && templates.slash && slashMenu(templates.slash, option => this._run(option)),
-            has('emoji') && this.$el.dataset.emoji && templates.emoji && emojiMenu(templates.emoji, this.$el.dataset.emoji),
+            this._suggestion('slash', (_, option) => this._run(option)),
+            this._suggestion('emoji', (editor, option) => editor.chain().focus().insertContent(option.dataset.emoji).run()),
             has('bubble-menu') && this._bubbles(templates),
         ].flat(Infinity).filter(Boolean)
+    },
+
+    get panel() { return this.$el.querySelector(':scope > [data-editor-panels]') },
+
+    get panelWire() { return this.panel && window.Livewire?.find(this.panel.getAttribute('wire:id')) },
+
+    _suggestion(kind, pick) {
+        const menuFor = () => this.panel?.querySelector(`[data-editor-suggestion="${kind}"]`)
+        return menuFor() && suggestionMenu(kind, menuFor, (menu, query) => this.panelWire?.search(menu, query), pick)
+    },
+
+    _updatePanel(status) {
+        if (!this.panel) return
+        Object.assign(this._panelStatus, status)
+        if (JSON.stringify(this._panelStatus) === this._panelSnapshot || this._panelRequest) return
+        clearTimeout(this._panelTimer)
+        this._panelTimer = setTimeout(() => {
+            if (!this.$el.isConnected) return
+            const wire = this.panelWire
+            if (!wire) return
+            this._panelSnapshot = JSON.stringify(this._panelStatus)
+            this._panelRequest = wire.syncStatus(this._panelStatus)
+            this._panelRequest.catch(() => {}).finally(() => {
+                this._panelRequest = null
+                if (this.$el.isConnected) this._updatePanel({})
+            })
+        }, 150)
     },
 
     // The bubble menus: for selected text, in a table, on a selected block, on a formula.
@@ -588,7 +624,8 @@ export default (binding = {}) => ({
     },
 
     _part(slot) {
-        return this.$el.querySelector(`:scope > [data-slot="${slot}"]`)
+        const owner = slot === 'editor-find' ? this.panel : this.$el
+        return owner?.querySelector(`:scope > [data-slot="${slot}"]`)
     },
 
     _field(name) {
@@ -777,10 +814,8 @@ export default (binding = {}) => ({
         if (token !== this._mathPreview) return
 
         if (preview) preview.innerHTML = mathml ?? ''
-        if (error) {
-            error.textContent = message
-            error.hidden = ! message
-        }
+        if (error) error.hidden = !message
+        this._updatePanel({ mathError: message })
         form.querySelector('[data-editor-math-input]').toggleAttribute('aria-invalid', !! message)
     },
 
@@ -896,16 +931,20 @@ export default (binding = {}) => ({
     // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
     // taken off for none.
     _placeholder(id, position, kind = null, message = null) {
-        this._editor?.view.dispatch(this._editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, message }] : [] }))
+        const previous = this._uploadErrors.get(id)
+        if (message) this._uploadErrors.set(id, message)
+        else this._uploadErrors.delete(id)
+        if (previous !== (message ?? undefined)) this._updatePanel({ uploadErrors: [...this._uploadErrors.values()].slice(-8) })
+        this._editor?.view.dispatch(this._editor.state.tr.setMeta(uploadsKey, { remove: id, add: kind ? [{ id, position, kind, failed: !!message }] : [] }))
     },
 
     // The share of an upload placeholder's files sent, as a percentage and a bar.
     _progress(id, share) {
         const placeholder = this._editor?.view.dom.querySelector(`[data-editor-upload="${id}"]`)
-        const percent = `${Math.min(100, Math.round(share * 100))}%`
+        const percent = Math.min(100, Math.round(share * 100))
 
-        placeholder?.style.setProperty('--editor-upload-progress', percent)
-        placeholder?.querySelector('[data-editor-upload-progress]')?.replaceChildren(percent)
+        placeholder?.style.setProperty('--editor-upload-progress', `${percent}%`)
+        placeholder?.querySelector('[data-editor-upload-progress]')?.setAttribute('aria-valuenow', String(percent))
     },
 
     // A placeholder dismissed: what it waited for goes nowhere.
@@ -1020,15 +1059,7 @@ export default (binding = {}) => ({
 
     // The footer's word on the uploads: how many, and why the form didn't submit.
     _syncBusy() {
-        const notice = this.$el.querySelector('[data-editor-busy]')
-
-        if (! notice) return
-
-        const text = ((this._refused ? notice.dataset.editorRefused : notice.dataset.editorLabel) ?? ':count').replace(':count', this._uploading)
-
-        notice.hidden = ! this.busy
-        notice.setAttribute('role', this._refused ? 'alert' : 'status')
-        if (notice.textContent !== text) notice.textContent = text
+        if (this.panel?.querySelector('[data-editor-busy]')) this._updatePanel({ uploads: this._uploading, refused: this._refused })
     },
 
     // A form submitted around it while it uploads doesn't; before Livewire's wire:submit
@@ -1244,29 +1275,23 @@ export default (binding = {}) => ({
 
     // The tooltip names the control and its shortcut, anchored to it; none, it hides.
     _tip(control) {
-        const tip = this.$el.querySelector(':scope > [data-editor-tip]')
-
-        if (! tip || (control && control === this._anchor && tip.matches(':popover-open'))) return
-
+        const tip = this.panel?.querySelector('[data-editor-tip]')
+        if (!tip || control === this._anchor) return
+        clearTimeout(this._tipTimer)
         if (tip.matches(':popover-open')) tip.hidePopover()
-
         this._anchor = control
+        if (!control) return
 
-        if (! control) return
-
-        // A fullscreen toolbar sits against the top edge. On touch screens it moves
-        // above the keyboard instead, where tips still need to open upward.
-        tip.dataset.side = this.$el.hasAttribute('data-fullscreen') && ! this.$el.hasAttribute('data-keyboard') ? 'bottom' : 'top'
-        tip.querySelector('[data-editor-tip-label]').textContent = control.getAttribute('aria-label') ?? ''
-
-        const shortcut = tip.querySelector('[data-editor-tip-keys]')
-
-        if (shortcut) {
-            shortcut.textContent = control.dataset.editorKeys ? keys(control.dataset.editorKeys) : ''
-            shortcut.hidden = ! control.dataset.editorKeys
-        }
-
-        tip.showPopover({ source: control })
+        this._tipTimer = setTimeout(async () => {
+            try {
+                const wire = this.panelWire
+                if (!wire) return
+                await wire.showTip(control.getAttribute('aria-label') ?? '', control.dataset.editorKeys ? keys(control.dataset.editorKeys) : '')
+                if (this._anchor !== control || !control.isConnected) return
+                tip.dataset.side = this.$el.hasAttribute('data-fullscreen') && !this.$el.hasAttribute('data-keyboard') ? 'bottom' : 'top'
+                tip.showPopover({ source: control })
+            } catch {}
+        }, 150)
     },
 
     // The bars of controls: the toolbar, and the bubble menus.
@@ -1395,12 +1420,12 @@ export default (binding = {}) => ({
         for (const trigger of this._all('[data-editor-menu]')) {
             const menu = contentOf(trigger, 'dropdown-menu')
             const checked = menu?.querySelector('[aria-checked="true"]')
-            const current = trigger.querySelector('[data-editor-current]')
+            const values = trigger.querySelectorAll('[data-editor-current-value]')
 
             const label = checked?.dataset.editorLabel ?? checked?.textContent.trim() ?? ''
 
             trigger.disabled = ! editable
-            if (current) current.textContent = (checked?.dataset.editorValue ? label : null) ?? current.dataset.editorDefault ?? ''
+            for (const value of values) value.hidden = value.dataset.editorCurrentValue !== (checked?.dataset.editorValue ?? '')
             // Its name says what it is; what it is set to, said after it.
             if (trigger.getAttribute('aria-description') !== label) label ? trigger.setAttribute('aria-description', label) : trigger.removeAttribute('aria-description')
             for (const icon of trigger.querySelectorAll('[data-editor-icon]')) icon.toggleAttribute('hidden', icon.dataset.editorIcon !== (checked?.dataset.editorValue ?? ''))
@@ -1438,16 +1463,15 @@ export default (binding = {}) => ({
             save.disabled = ! editor.isEditable || !! savingKey.getState(editor.state)?.pending.has(node?.attrs.src)
         }
 
-        for (const error of this._all('[data-editor-image-error]')) {
-            const reason = type === 'image' ? this._failed.get(node.attrs.src) ?? '' : ''
-
-            if (error.textContent !== reason) error.textContent = reason
-            error.hidden = ! reason
-        }
+        const reason = type === 'image' ? this._failed.get(node.attrs.src) ?? '' : ''
+        for (const error of this._all('[data-editor-image-error]')) error.hidden = !reason
+        if (this.$el.dataset.upload) this._updatePanel({ imageError: reason })
 
         for (const link of this._all('[data-editor-link-href]')) {
-            if (link.getAttribute('href') !== href) link.setAttribute('href', href)
-            link.textContent = href
+            if (link.getAttribute('href') !== href) {
+                link.setAttribute('href', href)
+                link.title = href
+            }
         }
 
         if (node === this._selected) return
@@ -1469,8 +1493,7 @@ export default (binding = {}) => ({
 
         const { matches, current, query } = state
 
-        count.textContent = query ? `${matches.length ? current + 1 : 0}/${matches.length}` : ''
-
+        this._updatePanel({ searching: !!query, matches: matches.length, match: matches.length ? current + 1 : 0 })
         for (const control of this.$el.querySelectorAll('[data-editor-action^="find-"]:not([data-editor-action="find-case"]):not([data-editor-action="find-close"]), [data-editor-action^="replace"]')) {
             control.disabled = ! matches.length || (control.dataset.editorAction.startsWith('replace') && ! editor.isEditable)
         }
@@ -1481,11 +1504,7 @@ export default (binding = {}) => ({
 
         if (! count || ! editor.storage.characterCount) return
 
-        const characters = editor.storage.characterCount.characters()
-        const max = Number(this.$el.dataset.maxLength) || null
-
-        count.textContent = max ? `${characters} / ${max}` : String(characters)
-        count.toggleAttribute('data-full', !! max && characters >= max)
+        this._updatePanel({ characters: editor.storage.characterCount.characters() })
     },
 
     // The footer says how many images the app has no copy of, to save them all.
@@ -1496,11 +1515,6 @@ export default (binding = {}) => ({
 
         const images = this._unsavedImages()
         const saving = savingKey.getState(editor.state)?.pending ?? new Set()
-        const label = notice.querySelector('[data-editor-unsaved-label]')
-        const text = (notice.dataset.editorLabel ?? ':count').replace(':count', images.length)
-
-        notice.hidden = ! images.length
-        if (label.textContent !== text) label.textContent = text
-        notice.querySelector('[data-editor-action="save-images"]').disabled = ! editable || images.every(src => saving.has(src))
+        this._updatePanel({ unsaved: images.length, saving: !editable || images.every(src => saving.has(src)) })
     },
 })

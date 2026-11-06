@@ -3,13 +3,8 @@
 export function confirmation(provider) {
     let pending = null, confirmed = false, source = null
     return Object.assign(provider, {
-        ask(question, label, action, instead, element) {
+        ask(action, instead, element) {
             if (pending) pending(false)
-            for (const [node, text] of [[this.$el.querySelector('[data-slot$="-title"]'), question], [this.$el.querySelector('[value="confirm"]'), label]]) {
-                if (!node) continue
-                node.dataset.default ??= node.textContent
-                node.textContent = text || node.dataset.default
-            }
             source = element; confirmed = false
             pending = result => (result ? action() : instead())
             if (this.$el.matches('dialog')) { this.$el.returnValue = ''; this.$el.showModal() }
@@ -26,14 +21,25 @@ export function confirmation(provider) {
 }
 
 export function register(Livewire, Alpine) {
+    let request = Promise.resolve()
+    let sequence = 0
+
     Livewire.hook('directive.init', ({ el, directive }) => {
         if (directive.value !== 'confirm' || directive.modifiers.includes('prompt')) return
         const id = 'ui-confirm' + (directive.modifiers.includes('popover') ? '-popover' : '') + (directive.modifiers.includes('destructive') ? '-destructive' : '')
-        const [question, label] = directive.expression.replaceAll('\\n', '\n').split('|')
+        const [question = '', label = '', description = ''] = directive.expression.replaceAll('\\n', '\n').split('|')
         el.__livewire_confirm = (action, instead) => {
             const dialog = document.getElementById(id)
-            if (!dialog) return window.confirm(question || 'Are you sure?') ? action() : instead()
-            Alpine.evaluate(dialog, 'ask(question, label, action, instead, element)', { scope: { question, label, action, instead, element: el } })
+            const host = dialog?.closest('[data-ui-confirm-host]')
+            if (!host) return window.confirm(question || 'Are you sure?') ? action() : instead()
+
+            const current = ++sequence
+            request = request.catch(() => {}).then(async () => {
+                if (current !== sequence || !el.isConnected) return instead()
+                await Livewire.find(host.getAttribute('wire:id')).prepare(id, question, label, description)
+                if (current !== sequence || !el.isConnected || !host.isConnected) return instead()
+                Alpine.evaluate(document.getElementById(id), 'ask(action, instead, element)', { scope: { action, instead, element: el } })
+            }).catch(() => instead())
         }
     })
 }

@@ -3,6 +3,7 @@
 @use('Esoboy\Ui\Assets')
 @use('Esoboy\Ui\Support\ControlState')
 @use('Esoboy\Ui\Support\EditorUploads')
+@use('Esoboy\Ui\Support\EditorControls')
 @use('Esoboy\Ui\Support\Model')
 @use('Esoboy\Ui\Support\RichText')
 
@@ -33,10 +34,12 @@ $counts = $rich->has('character-count') || $maxLength;
 $uploads = EditorUploads::enabled() && $rich->has('image', 'audio', 'video', 'file');
 $images = $uploads && $rich->has('image');
 
-// The Emoji Picker's data, for :shortcode: suggestions.
-$assets = app(Assets::class);
-$locale = strtolower(str_replace('_', '-', app()->getLocale()));
-$emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'emoji/'.strtok($locale, '-').'.json', 'emoji/en.json'])->first(fn (string $file) => $assets->path($file) !== null, 'emoji/en.json')) : null;
+$slash = EditorControls::slash($rich);
+$emoji = $rich->has('emoji');
+$find = $rich->has('find-replace');
+$tools = $rich->has('toolbar', 'bubble-menu');
+$characters = $counts ? RichText::characters($value, $format) : 0;
+$key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? null);
 @endphp
 
 
@@ -50,7 +53,6 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     'data-image-hosts' => $images ? implode(' ', EditorUploads::hosts()) : false,
     'data-auto-upload' => $images && EditorUploads::auto() ? implode(' ', EditorUploads::auto()) : false,
     'data-max-length' => $maxLength ?? false,
-    'data-emoji' => $emoji ?? false,
     'data-placeholder' => $placeholder ?? false,
     'data-label' => $label ?? __('ui::editor.label'),
     'data-name' => $name ?? false,
@@ -63,29 +65,14 @@ $emoji = $rich->has('emoji') ? $assets->url(collect(["emoji/{$locale}.json", 'em
     @elseif ($rich->has('toolbar'))
     <x-ui::editor.toolbar :collapse="$collapseToolbar" />
     @endif
-    @if ($rich->has('find-replace'))
-    <x-ui::editor.find />
+    @if ($find || $counts || $uploads || $slash || $emoji || $tools)
+    @livewire('ui.editor-panels', compact('slash', 'emoji', 'find', 'counts', 'uploads', 'images', 'maxLength', 'characters', 'tools'), key('ui-'.$key))
     @endif
     <div data-slot="editor-content" wire:ignore>{!! $value !!}</div>
     @if ($rich->has('source'))
     <textarea data-slot="editor-source" aria-label="{{ __('ui::editor.source') }}" spellcheck="false" hidden wire:ignore></textarea>
     @endif
-    @if ($counts || $uploads)
-    {{-- Files on their way (and why a form won't submit meanwhile); images the app has no copy of, to save them all; the count. --}}
-    <div data-slot="editor-footer" wire:ignore>
-        @if ($uploads)
-        <span data-editor-busy data-editor-label="{{ __('ui::editor.uploading-count') }}" data-editor-refused="{{ __('ui::editor.submit-uploading') }}" role="status" hidden></span>
-        @endif
-        @if ($images)
-        <span data-editor-unsaved data-editor-label="{{ __('ui::editor.images-unsaved') }}" hidden><span data-editor-unsaved-label></span><x-ui::button variant="link" size="xs" data-editor-action="save-images">{{ __('ui::editor.save-images') }}</x-ui::button></span>
-        @endif
-        @if ($counts)
-        <span data-editor-characters><span data-editor-count></span> {{ __('ui::editor.characters') }}</span>
-        @endif
-    </div>
-    @endif
     <x-ui::editor.menus />
-    <x-ui::tooltip.content data-editor-tip wire:ignore><span data-editor-tip-label></span><x-ui::kbd data-editor-tip-keys hidden /></x-ui::tooltip.content>
     <input type="hidden" data-editor-model @if ($name) name="{{ $name }}" @endif value="{{ $value }}" {{ Model::input($attributes) }}>
 </eso-editor>
 <x-ui::field.error :state="$state" />

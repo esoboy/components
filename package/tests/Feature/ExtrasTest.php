@@ -1,5 +1,9 @@
 <?php
 
+use Dom\HTMLDocument;
+use Livewire\Component;
+use Livewire\Livewire;
+
 /*
  * Status colours, Code Block, Trace, Questionnaire.
  */
@@ -42,19 +46,51 @@ describe('code block', function () {
             '<div data-slot="code-block-header">',
             '<div data-slot="code-block-title">app.php</div>',
             'data-code-block-copy="data-code-block-copy" aria-label="Copy" data-label-copy="Copy" data-label-copied="Copied"',
-            '<span aria-live="polite" class="sr-only" data-code-block-status></span>',
+            '<span aria-live="polite" class="sr-only" data-code-block-status>',
             '<pre data-slot="code-block-content" data-language="php" data-numbered="data-numbered" dir="ltr" tabindex="0" style="counter-reset: line 9;">',
-            '<code data-slot="code-block-code"><span data-slot="code-block-line" data-variant="default"><span data-slot="code-block-line-content">&lt;?php</span></span>'
-                ."<span data-slot=\"code-block-line\" data-variant=\"default\"><span data-slot=\"code-block-line-content\">\n</span></span>"
-                .'<span data-slot="code-block-line" data-variant="default"><span data-slot="code-block-line-content">echo &#039;a &lt; b&#039;;</span></span></code></pre>',
+            '<code data-slot="code-block-code">',
             '<div data-slot="code-block-footer">PHP</div>',
         ]);
     });
+
+    it('keeps source characters and blank lines when highlighting or falling back', function (string $language, string $code, bool $highlighted) {
+        $html = (string) $this->blade('<x-ui::code-block.content :language="$language" :code="$code" />', compact('language', 'code'));
+        $document = HTMLDocument::createFromString($html, LIBXML_NOERROR);
+        $rows = $document->querySelectorAll('[data-slot="code-block-line-content"]');
+        $text = implode("\n", array_map(fn ($row) => $row->textContent === "\n" ? '' : $row->textContent, iterator_to_array($rows)));
+
+        expect($text)->toBe($code)
+            ->and($document->querySelector('script'))->toBeNull()
+            ->and($document->querySelector('[data-token]') !== null)->toBe($highlighted);
+    })->with([
+        ['php', "echo '<script>';\n\n// Comment", true],
+        ['blade', '@if ($a) {{ $a }} @endif', true],
+        ['js', 'const item = "<p>";', true],
+        ['unknown-language', '<script>alert(1)</script>', false],
+        ['php', str_repeat("echo 1;\n", 17000).'echo 2;', false],
+    ]);
 
     it('takes hand-written rows for diffs', function () {
         $this->blade('<x-ui::code-block.content wrap><x-ui::code-block.line variant="removed">a</x-ui::code-block.line><x-ui::code-block.line variant="added" /></x-ui::code-block.content>')
             ->assertSeeMarkup('<pre data-slot="code-block-content" data-wrap="data-wrap" dir="ltr" tabindex="0" style="counter-reset: line 0;"><code data-slot="code-block-code"><span data-slot="code-block-line" data-variant="removed"><span data-slot="code-block-line-content">a</span></span>')
             ->assertSee("<span data-slot=\"code-block-line\" data-variant=\"added\"><span data-slot=\"code-block-line-content\">\n</span></span></code></pre>", false);
+    });
+
+    it('renders updated highlighting when a Livewire caller changes the code', function () {
+        Livewire::test(new class extends Component
+        {
+            public string $code = 'echo 11;';
+
+            public function render(): string
+            {
+                return '<div><x-ui::code-block.content language="php" :code="$code" /></div>';
+            }
+        })
+            ->assertSee('data-token', false)
+            ->assertSee(' 11;', false)
+            ->set('code', 'echo 22;')
+            ->assertSee(' 22;', false)
+            ->assertDontSee(' 11;', false);
     });
 
     it('copies a given value', function () {

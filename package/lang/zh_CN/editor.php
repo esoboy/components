@@ -108,6 +108,7 @@ return [
     'image-link' => '图片链接',
     'image-unreadable' => '无法读取这张图片。',
     'upload-failed' => '上传失败。',
+    'math-invalid' => '无法解析此公式。',
     'save-image' => '保存到本站',
     'images-unsaved' => ':count 张图片未保存到本站',
     'save-images' => '全部保存',

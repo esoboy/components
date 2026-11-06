@@ -66,7 +66,7 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 
 - **file-upload** — *(not in shadcn)* drag and drop with progress; `multiple`, `accept`, `title`, `description`, `orientation`. Bind to a `WithFileUploads` property.
 - **image-upload** — *(not in shadcn)* one image: the new upload, else `src`; `shape` (`square`, `circle`), `accept`.
-- **image-preview** — *(not in shadcn)* images that open in one viewer and page through each other. Parts: item.
+- **image-preview** — *(not in shadcn)* images that open in one viewer. Use `controls-view` to supply behavior controls with custom markup. Parts: action, item.
 - **cropper** — *(not in shadcn)* pan and zoom an `image`; value is the crop in the image's pixels; give it a height. Parts: crop-area, image.
 
 ## Overlays
@@ -81,9 +81,10 @@ Shared values: Button-like `variant` is `default`, `secondary`, `outline`, `ghos
 - **dropdown-menu** — item `variant="destructive"`, `inset`. Parts: checkbox-item, content, group, item, label, radio-group, radio-item, separator, shortcut, sub, sub-content, sub-trigger, trigger.
 - **context-menu** — opens on right click over its trigger. Parts: checkbox-item, content, group, item, label, radio-group, radio-item, separator, shortcut, sub, sub-content, sub-trigger, trigger.
 - **menubar** — Parts: checkbox-item, content, group, item, label, menu, radio-group, radio-item, separator, shortcut, sub, sub-content, sub-trigger, trigger.
-- **toaster** — place once in the layout; `limit`, `timeout`. Shows `Ui::toast()` and `$dispatch('ui-toast', {...})`.
+- **toast** — slot-only controls for the toaster's optional `action-view` and `close-view`. Parts: action, close.
+- **toaster** — place once in the layout; `limit`, `timeout`, `action-view`, `close-view`. Shows `Ui::toast()` and `$dispatch('ui-toast', {...})`.
 - **confirm** — place once in the layout; answers `wire:confirm`, `wire:confirm.destructive` and `wire:confirm.popover`.
-- **tour** — *(not in shadcn)* `name` (required), `:blocking`; started with `command="--start" commandfor="name"` or `Ui::tour('name')->start()`; dispatches `tour-change` and `tour-close`. Parts: step.
+- **tour** — *(not in shadcn)* `name` (required), `:blocking`, `actions-view`; started with `command="--start" commandfor="name"` or `Ui::tour('name')->start()`; dispatches `tour-change` and `tour-close`. Parts: action, step.
 
 ## Navigation
 

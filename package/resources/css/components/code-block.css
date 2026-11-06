@@ -137,8 +137,23 @@
         @apply min-w-0;
     }
 
-    /* Highlighted tokens (heavy/code-block.js) carry Shiki's light and dark colours. */
-    :where([data-slot="code-block-line-content"] [data-token]) {
-        color: light-dark(var(--shiki-light), var(--shiki-dark));
+    :where([data-slot="code-block-line-content"] [data-token]:is(.hl-keyword, .hl-operator, .hl-deletion)) {
+        color: light-dark(#cf222e, #ff7b72);
+    }
+
+    :where([data-slot="code-block-line-content"] [data-token]:is(.hl-type, .hl-generic)) {
+        color: light-dark(#8250df, #d2a8ff);
+    }
+
+    :where([data-slot="code-block-line-content"] [data-token]:is(.hl-number, .hl-value, .hl-attribute, .hl-property)) {
+        color: light-dark(#0550ae, #79c0ff);
+    }
+
+    :where([data-slot="code-block-line-content"] [data-token]:is(.hl-literal, .hl-addition)) {
+        color: light-dark(#0a3069, #a5d6ff);
+    }
+
+    :where([data-slot="code-block-line-content"] [data-token].hl-comment) {
+        color: light-dark(#6e7781, #8b949e);
     }
 }

@@ -1,42 +1,22 @@
 @blaze
 
-{{-- The images inside open in one viewer and page through each other. --}}
+@use('Esoboy\Ui\Support\Model')
+
+@props(['controlsView' => null])
+
+@php
+    $document = \Dom\HTMLDocument::createFromString('<!doctype html><html><head><meta charset="utf-8"></head><body>'.(string) $slot.'</body></html>', LIBXML_NOERROR);
+    $images = [];
+    foreach ($document->querySelectorAll('[data-slot="image-preview-trigger"]') as $trigger) {
+        if ($trigger->closest('eso-image-preview') === null) {
+            $images[] = ['src' => $trigger->getAttribute('data-src') ?? '', 'alt' => $trigger->getAttribute('data-alt') ?? ''];
+        }
+    }
+    $key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('image-preview', $loop ?? null);
+@endphp
+
 <eso-image-preview x-data="uiImagePreview" {{ $attributes->merge(['data-slot' => 'image-preview']) }}>
     {{ $slot }}
-    {{-- wire:ignore keeps Livewire morphs out of the open viewer. --}}
-    <dialog data-slot="image-preview-content" aria-label="{{ __('ui::image-preview.label') }}" wire:ignore>
-        <img data-slot="image-preview-image" alt="" draggable="false">
-        <x-ui::spinner data-image-preview-spinner />
-        <x-ui::button variant="outline" size="icon-sm" data-image-preview="close">
-            <x-ui::icon name="x" />
-            <span class="sr-only">{{ __('ui::common.close') }}</span>
-        </x-ui::button>
-        <x-ui::button variant="outline" size="icon-sm" data-image-preview="previous">
-            <x-ui::icon name="chevron-left" class="rtl:rotate-180" />
-            <span class="sr-only">{{ __('ui::image-preview.previous') }}</span>
-        </x-ui::button>
-        <x-ui::button variant="outline" size="icon-sm" data-image-preview="next">
-            <x-ui::icon name="chevron-right" class="rtl:rotate-180" />
-            <span class="sr-only">{{ __('ui::image-preview.next') }}</span>
-        </x-ui::button>
-        <div role="toolbar" data-slot="image-preview-toolbar" aria-label="{{ __('ui::image-preview.label') }}">
-            <span data-slot="image-preview-counter"></span>
-            <x-ui::button variant="ghost" size="icon-sm" data-image-preview="zoom-out" :aria-label="__('ui::image-preview.zoom_out')">
-                <x-ui::icon name="zoom-out" />
-            </x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-image-preview="zoom-in" :aria-label="__('ui::image-preview.zoom_in')">
-                <x-ui::icon name="zoom-in" />
-            </x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-image-preview="rotate-left" :aria-label="__('ui::image-preview.rotate_left')">
-                <x-ui::icon name="rotate-ccw" />
-            </x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-image-preview="rotate-right" :aria-label="__('ui::image-preview.rotate_right')">
-                <x-ui::icon name="rotate-cw" />
-            </x-ui::button>
-            <x-ui::button variant="ghost" size="icon-sm" data-image-preview="reset" :aria-label="__('ui::image-preview.reset')">
-                <x-ui::icon name="refresh-ccw" />
-            </x-ui::button>
-        </div>
-    </dialog>
+    @livewire('ui.image-preview', compact('images', 'controlsView'), key('ui-image-preview-'.$key))
 </eso-image-preview>
 <x-ui::extras />

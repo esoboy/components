@@ -83,7 +83,7 @@ $page = collect(config('demo'))->collapse()->get($current);
             </x-ui::sidebar.inset>
         </x-ui::sidebar.provider>
 
-        <x-ui::toaster />
+        <x-ui::toaster action-view="ui-demo.toast-action" />
         <x-ui::confirm />
 
         @uiScripts

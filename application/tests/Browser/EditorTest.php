@@ -11,6 +11,22 @@ use Illuminate\Support\Facades\Route;
 
 const ARTICLE = '[data-slot="editor"][data-editor-name="article"]';
 
+it('inserts a server-rendered slash command and emoji suggestion', function () {
+    $input = ARTICLE.' .ProseMirror';
+    $page = visit('/editor')->assertPresent($input);
+    $page->click($input)->keys($input, 'Control+a')->keys($input, 'Backspace');
+    $page->typeSlowly($input, '/head', 20);
+    $page->assertSeeIn(ARTICLE.' [data-editor-suggestion="slash"]', 'Heading 1')
+        ->keys($input, 'Enter')
+        ->assertPresent($input.' h1');
+
+    $page->typeSlowly($input, ':smile', 20);
+    $page->assertScript("document.querySelector('[data-editor-name=article] [data-editor-suggestion=emoji] [role=option]')?.checkVisibility() === true")
+        ->keys($input, 'Enter')
+        ->assertScript("/\p{Extended_Pictographic}/u.test(document.querySelector('[data-editor-name=article] .ProseMirror').textContent)")
+        ->assertNoJavaScriptErrors();
+});
+
 it('sends pasted files as multipart and inserts the uploader response', function () {
     // Pest's HTTP driver does not parse multipart files. Check the browser's
     // actual request body here; package feature tests exercise the PHP uploader.
@@ -184,4 +200,14 @@ it('wraps all toolbar controls without More when collapsing is disabled', functi
                 });
         })()
         JS)->assertNoJavaScriptErrors();
+});
+
+it('fits the collapsed toolbar and its Blade groups on a mobile viewport', function () {
+    $basic = '[data-slot="editor"][data-editor-name="intro"]';
+    $page = visit('/editor');
+    $page->page()->setViewportSize(390, 844);
+    $page->click($basic.' [data-editor-more]')
+        ->assertScript(opened($basic.' [data-editor-more-content]'))
+        ->assertPresent($basic.' [data-editor-overflow-group]:not([hidden]) button')
+        ->assertNoJavaScriptErrors();
 });

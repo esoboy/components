@@ -104,7 +104,14 @@ $none = match ($name) {
         <x-ui::icon :name="$icon" data-editor-icon="{{ $value }}" :hidden="! $loop->first" />
         @endforeach
         @elseif ($trigger === 'label')
-        <span data-editor-current data-editor-default="{{ $none }}">{{ $none }}</span>
+        <span data-editor-current="">
+            <span data-editor-current-value="">{{ $none }}</span>
+            @foreach ($items as [, $value, $itemLabel])
+                @if ($value !== '')
+                    <span data-editor-current-value="{{ $value }}" hidden>{{ $itemLabel }}</span>
+                @endif
+            @endforeach
+        </span>
         @else
         <x-ui::icon :name="$trigger" />
         @endif

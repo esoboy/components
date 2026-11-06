@@ -22,11 +22,10 @@ const bundles = [
     { entryPoints: { ui: 'resources/js/ui.js' }, format: 'iife' },
 
     // The others, and the heavy ones: modules their views load through @assets, with
-    // what they share or import on demand (a Shiki language, …) split into chunks/.
+    // their shared and on-demand modules split into chunks/.
     {
         entryPoints: {
             extras: 'resources/js/extras.js',
-            'code-block': 'resources/js/heavy/code-block.js',
             editor: 'resources/js/heavy/editor.js',
             signature: 'resources/js/heavy/signature.js',
         },

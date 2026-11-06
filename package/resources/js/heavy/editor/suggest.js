@@ -1,15 +1,8 @@
 import { bind } from '../../alpine/interaction.js'
-/*
- * Menus while typing. / lists what the format can insert (the view's slash template,
- * narrowed by each item's label and data-keywords); : and a word list the emojis it
- * names. Arrow keys move the active item, Enter or a click picks it, Escape closes; the
- * text box points at the menu and its active item, so a screen reader follows them.
- */
-
+// Position the Blade suggestions at the editor caret and insert the selected option.
 import { Extension } from '@tiptap/core'
 import { PluginKey } from '@tiptap/pm/state'
 import Suggestion from '@tiptap/suggestion'
-import { load, score } from '../../support/emoji.js'
 
 let lists = 0
 
@@ -26,17 +19,17 @@ class Options {
         menu.id ||= `editor-suggestion-${++lists}`
         input.setAttribute('aria-controls', menu.id)
 
-        bind(menu, 'pointerdown', event => event.preventDefault())
-        bind(menu, 'click', event => {
-            const option = event.target.closest('[role="option"]')
-
-            if (option) this.pick(option)
-        })
-        bind(menu, 'pointermove', event => {
-            const option = event.target.closest('[role="option"]')
-
-            if (option) this.activate(option)
-        })
+        this.listeners = [
+            bind(menu, 'pointerdown', event => event.preventDefault()),
+            bind(menu, 'click', event => {
+                const option = event.target.closest('[role="option"]')
+                if (option) this.pick(option)
+            }),
+            bind(menu, 'pointermove', event => {
+                const option = event.target.closest('[role="option"]')
+                if (option) this.activate(option)
+            }),
+        ]
     }
 
     get options() {
@@ -62,7 +55,8 @@ class Options {
     }
 
     close() {
-        this.input.removeAttribute('aria-activedescendant')
+        this.activate(null)
+        this.listeners.forEach(dispose => dispose())
         this.input.removeAttribute('aria-controls')
     }
 
@@ -89,118 +83,84 @@ class Options {
     }
 }
 
-// A suggestion whose menu is built and narrowed by build(props) and filter(menu, props).
-function suggestion({ name, char, editor, build, filter, pick, minQueryLength = 0 }) {
-    return Suggestion({
-        editor,
-        pluginKey: new PluginKey(name),
-        char,
-        minQueryLength,
-        render: () => {
-            let menu = null
-            let options = null
-            let cleanup = null
-            let current = null
+export function suggestionMenu(kind, menuFor, search, pick) {
+    const char = kind === 'slash' ? '/' : ':'
 
-            return {
-                onStart: props => {
-                    current = props
-                    menu = build()
-                    options = new Options(menu, option => current.command(option), props.editor.view.dom)
-                    filter(menu, props).then(() => options?.reset())
-                    cleanup = props.mount(menu)
-                },
-                onUpdate: props => {
-                    current = props
-                    filter(menu, props).then(() => options?.reset())
-                },
-                onKeyDown: ({ event }) => event.key !== 'Escape' && !! menu && ! menu.hidden && options.key(event),
-                onExit: () => {
-                    options?.close()
-                    cleanup?.()
-                    menu?.remove()
-                    menu = options = cleanup = null
-                },
-            }
-        },
-        command: ({ editor, range, props: option }) => {
-            editor.chain().focus().deleteRange(range).run()
-            pick(option)
-        },
-    })
-}
-
-/**
- * The slash menu: its items are toolbar controls (data-editor-command and the rest),
- * done as a click on them would be.
- */
-export function slashMenu(template, run) {
     return Extension.create({
-        name: 'slashMenu',
-
+        name: `uiEditor-${kind}`,
         addProseMirrorPlugins() {
-            return [suggestion({
-                name: 'editorSlash',
-                char: '/',
+            return [Suggestion({
                 editor: this.editor,
-                build: () => template.content.firstElementChild.cloneNode(true),
-                filter: async (menu, { query }) => {
-                    query = query.toLocaleLowerCase()
+                pluginKey: new PluginKey(`uiEditor-${kind}`),
+                char,
+                minQueryLength: kind === 'emoji' ? 1 : 0,
+                render: () => {
+                    let options = null
+                    let cleanup = null
+                    let current = null
+                    let revision = 0
+                    let rendered = 0
+                    let timer = null
+                    let stopMorph = null
 
-                    for (const option of menu.querySelectorAll('[role="option"]')) {
-                        option.hidden = !! query && ! `${option.textContent} ${option.dataset.keywords ?? ''}`.toLocaleLowerCase().includes(query)
+                    const close = () => {
+                        if (options) options.menu.hidden = true
+                        options?.close()
+                        cleanup?.()
+                        options = cleanup = null
+                    }
+
+                    const show = () => {
+                        const menu = menuFor()
+                        if (!menu || !current || rendered !== revision) return
+                        if (menu !== options?.menu || !menu.style.width) {
+                            close()
+                            options = new Options(menu, option => current.command(option), current.editor.view.dom)
+                            cleanup = current.mount(menu)
+                        }
+                        options.reset()
+                    }
+
+                    const update = (props, delay = 0) => {
+                        current = props
+                        const request = ++revision
+                        if (options) options.menu.hidden = true
+                        clearTimeout(timer)
+                        timer = setTimeout(async () => {
+                            try {
+                                await search(kind, props.query)
+                                await new Promise(resolve => requestAnimationFrame(resolve))
+                                if (request !== revision) return
+                                rendered = request
+                                show()
+                            } catch {}
+                        }, delay)
+                    }
+
+                    return {
+                        onStart: props => {
+                            stopMorph ??= window.Livewire?.hook('morphed', ({ el }) => {
+                                const menu = menuFor()
+                                if (menu && el.contains(menu) && (menu !== options?.menu || menu.hidden || !menu.style.width)) show()
+                            })
+                            update(props)
+                        },
+                        onUpdate: props => update(props, 100),
+                        onKeyDown: ({ event }) => event.key !== 'Escape' && !!options && !options.menu.hidden && options.key(event),
+                        onExit: () => {
+                            revision++
+                            clearTimeout(timer)
+                            stopMorph?.()
+                            stopMorph = null
+                            close()
+                            current = null
+                        },
                     }
                 },
-                pick: run,
-            })]
-        },
-    })
-}
-
-/**
- * Emoji shortcodes: the best eight matches of the Emoji Picker's data at a URL.
- */
-export function emojiMenu(template, url) {
-    let emojis = null
-
-    const all = () => emojis ??= load(url).then(data => Object.values(data).flat().map(([emoji, label, keywords]) => ({ emoji, label, search: { label: label.toLowerCase(), keywords: keywords.toLowerCase().split('|') } })))
-
-    return Extension.create({
-        name: 'emojiMenu',
-
-        addProseMirrorPlugins() {
-            const editor = this.editor
-
-            return [suggestion({
-                name: 'editorEmoji',
-                char: ':',
-                editor,
-                minQueryLength: 1,
-                build: () => template.content.firstElementChild.cloneNode(true),
-                filter: async (menu, { query }) => {
-                    const option = menu.querySelector('template')
-                    const list = await all().catch(() => [])
-
-                    query = query.toLowerCase()
-
-                    const matches = list
-                        .map(emoji => ({ emoji, score: score(emoji.search, query) }))
-                        .filter(({ score }) => score)
-                        .sort((a, b) => b.score - a.score)
-                        .slice(0, 8)
-
-                    menu.querySelectorAll('[role="option"]').forEach(element => element.remove())
-                    menu.append(...matches.map(({ emoji }) => {
-                        const element = option.content.firstElementChild.cloneNode(true)
-
-                        element.querySelector('[data-editor-emoji]').textContent = emoji.emoji
-                        element.querySelector('[data-editor-emoji-label]').textContent = emoji.label
-                        element.dataset.emoji = emoji.emoji
-
-                        return element
-                    }))
+                command: ({ editor, range, props: option }) => {
+                    editor.chain().focus().deleteRange(range).run()
+                    pick(editor, option)
                 },
-                pick: option => editor.chain().focus().insertContent(option.dataset.emoji).run(),
             })]
         },
     })

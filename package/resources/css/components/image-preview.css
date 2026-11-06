@@ -108,11 +108,4 @@
         @apply px-2 text-xs text-muted-foreground tabular-nums;
     }
 
-    /* One image: nothing to page through. */
-    :where([data-slot="image-preview-content"][data-single]) {
-        & > :is([data-image-preview="previous"], [data-image-preview="next"]),
-        & [data-slot="image-preview-counter"] {
-            @apply hidden;
-        }
-    }
 }

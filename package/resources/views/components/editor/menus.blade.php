@@ -1,18 +1,15 @@
 @blaze
 
-@use('Esoboy\Ui\Support\EditorControls')
 @use('Esoboy\Ui\Support\EditorUploads')
 @use('Esoboy\Ui\Support\RichText')
-@use('Illuminate\View\ComponentAttributeBag')
 
 @aware([
     'format' => 'full',
 ])
 
-{{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a link, a formula), the / and : suggestions, the upload placeholder, the drag handle. --}}
+{{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a link, a formula), the upload placeholder, the drag handle. --}}
 @php
 $rich = RichText::resolve($format);
-$toolbar = $rich->has('toolbar');
 $uploads = EditorUploads::enabled();
 $names = [
     'gray' => __('ui::editor.color-gray'),
@@ -25,38 +22,6 @@ $names = [
     'pink' => __('ui::editor.color-pink'),
 ];
 
-// / items: control => [icon, label, attributes]
-$slash = [
-    'paragraph' => ['pilcrow', __('ui::editor.paragraph'), ['data-editor-command' => 'paragraph']],
-    'heading-1' => ['heading-1', __('ui::editor.heading-1'), ['data-editor-command' => 'heading', 'data-editor-value' => '1']],
-    'heading-2' => ['heading-2', __('ui::editor.heading-2'), ['data-editor-command' => 'heading', 'data-editor-value' => '2']],
-    'heading-3' => ['heading-3', __('ui::editor.heading-3'), ['data-editor-command' => 'heading', 'data-editor-value' => '3']],
-    'heading-4' => ['heading-4', __('ui::editor.heading-4'), ['data-editor-command' => 'heading', 'data-editor-value' => '4']],
-    'heading-5' => ['heading-5', __('ui::editor.heading-5'), ['data-editor-command' => 'heading', 'data-editor-value' => '5']],
-    'heading-6' => ['heading-6', __('ui::editor.heading-6'), ['data-editor-command' => 'heading', 'data-editor-value' => '6']],
-    'bullet-list' => ['list', __('ui::editor.bullet-list'), ['data-editor-command' => 'bullet-list']],
-    'ordered-list' => ['list-ordered', __('ui::editor.ordered-list'), ['data-editor-command' => 'ordered-list']],
-    'task-list' => ['list-todo', __('ui::editor.task-list'), ['data-editor-command' => 'task-list']],
-    'blockquote' => ['text-quote', __('ui::editor.blockquote'), ['data-editor-command' => 'blockquote']],
-    'callout' => ['message-square-warning', __('ui::editor.callout'), ['data-editor-command' => 'callout', 'data-editor-value' => RichText::CALLOUTS['info']]],
-    'code-block' => ['square-code', __('ui::editor.code-block'), ['data-editor-command' => 'code-block']],
-    'horizontal-rule' => ['minus', __('ui::editor.horizontal-rule'), ['data-editor-command' => 'horizontal-rule']],
-    'image' => ['image', __('ui::editor.image'), ['data-editor-action' => 'media', 'data-editor-value' => 'image']],
-    // The toolbar's popover, for a link too; without it, an upload.
-    'video' => ['video', __('ui::editor.video'), $toolbar ? ['data-editor-action' => 'open', 'data-editor-value' => 'video'] : ['data-editor-action' => 'media', 'data-editor-value' => 'video']],
-    'audio' => ['eighth-notes', __('ui::editor.audio'), ['data-editor-action' => 'media', 'data-editor-value' => 'audio']],
-    'file' => ['paperclip', __('ui::editor.file'), ['data-editor-action' => 'media', 'data-editor-value' => 'file']],
-    'table' => ['table', __('ui::editor.table'), ['data-editor-command' => 'table']],
-    'details' => ['list-chevrons-down-up', __('ui::editor.details'), ['data-editor-command' => 'details']],
-    'math' => ['radical', __('ui::editor.math'), ['data-editor-action' => 'open', 'data-editor-value' => 'math']],
-];
-
-// Formulas open the toolbar's popover; a video does without it when it can be uploaded.
-$slash = array_filter($slash, fn (string $control) => EditorControls::allowed($control, $rich) && match ($control) {
-    'math' => $toolbar,
-    'video' => $toolbar || ($rich->has('video') && $uploads),
-    default => true,
-}, ARRAY_FILTER_USE_KEY);
 @endphp
 
 @if ($rich->has('bubble-menu'))
@@ -133,7 +98,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
         @endif
         <x-ui::editor.button command="delete-node" />
         @if ($uploads && $rich->has('image'))
-        <p data-slot="editor-field-error" data-editor-image-error role="alert" hidden></p>
+        <p data-slot="editor-field-error" data-editor-image-error role="alert" hidden>{{ __('ui::editor.upload-failed') }}</p>
         @endif
     </div>
 </template>
@@ -141,7 +106,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 {{-- The cursor in a link: where it goes (opening there), and changing or taking it off. --}}
 <template data-template="bubble-link">
     <div data-slot="editor-bubble" role="toolbar" aria-label="{{ __('ui::editor.link') }}">
-        <a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer" title="{{ __('ui::editor.open-link') }}"></a>
+        <a data-slot="editor-link-href" data-editor-link-href target="_blank" rel="noopener noreferrer">{{ __('ui::editor.open-link') }}</a>
         <x-ui::editor.separator />
         <x-ui::editor.link />
         <x-ui::button variant="ghost" size="icon-sm" data-editor-action="link-remove" :aria-label="__('ui::editor.link-remove')"><x-ui::icon name="unlink" /></x-ui::button>
@@ -157,28 +122,10 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 @endif
 @endif
 
-@if ($rich->has('slash-menu') && $slash)
-<template data-template="slash">
-    <div data-slot="editor-suggestion" role="listbox" aria-label="{{ __('ui::editor.insert') }}">
-        @foreach ($slash as $control => [$icon, $itemLabel, $item])
-        <div {{ new ComponentAttributeBag(['role' => 'option', 'aria-selected' => 'false', 'data-keywords' => $control, ...$item]) }}><x-ui::icon :name="$icon" /><span>{{ $itemLabel }}</span></div>
-        @endforeach
-    </div>
-</template>
-@endif
-
-@if ($rich->has('emoji'))
-<template data-template="emoji">
-    <div data-slot="editor-suggestion" role="listbox" aria-label="{{ __('ui::editor.emoji') }}">
-        <template><div role="option" aria-selected="false"><span data-editor-emoji></span><span data-editor-emoji-label></span></div></template>
-    </div>
-</template>
-@endif
-
 @if ($uploads && $rich->has('image', 'audio', 'video', 'file'))
 {{-- Where dropped or pasted files will go while they upload. --}}
 <template data-template="uploading">
-    <span data-slot="editor-uploading" contenteditable="false"><x-ui::spinner /><span>{{ __('ui::editor.uploading') }}</span><span data-editor-upload-progress></span><button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
+    <span data-slot="editor-uploading" contenteditable="false"><x-ui::spinner /><span>{{ __('ui::editor.uploading') }}</span><span data-editor-upload-progress role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="{{ __('ui::editor.uploading') }}"></span><button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
 </template>
 {{-- Where files that wouldn't upload were to go: why (the uploader's reason), to dismiss. --}}
 <template data-template="upload-failed">
@@ -189,7 +136,7 @@ $slash = array_filter($slash, fn (string $control) => EditorControls::allowed($c
 @if ($rich->has('image'))
 {{-- Where a pasted picture couldn't be read (Word's chart, WPS's picture): upload it there (with an uploader), or dismiss. --}}
 <template data-template="missing-image">
-    <span data-slot="editor-uploading" data-editor-missing contenteditable="false" role="group" aria-label="{{ __('ui::editor.image-missing') }}"><x-ui::icon name="image-off" /><span>{{ __('ui::editor.image-missing') }}</span><span data-editor-upload-message role="alert" hidden></span>@if ($uploads)<button type="button" data-editor-action="upload-missing">{{ __('ui::editor.upload') }}</button>@endif<button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
+    <span data-slot="editor-uploading" data-editor-missing contenteditable="false" role="group" aria-label="{{ __('ui::editor.image-missing') }}"><x-ui::icon name="image-off" /><span>{{ __('ui::editor.image-missing') }}</span><span data-editor-upload-message role="alert" hidden>{{ __('ui::editor.upload-failed') }}</span>@if ($uploads)<button type="button" data-editor-action="upload-missing">{{ __('ui::editor.upload') }}</button>@endif<button type="button" data-editor-action="dismiss-upload" aria-label="{{ __('ui::editor.dismiss') }}"><x-ui::icon name="x" /></button></span>
 </template>
 @endif
 

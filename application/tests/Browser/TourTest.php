@@ -37,6 +37,7 @@ it('moves between steps and finishes', function () {
 it('reports a tour closed before its end', function () {
     visit('/overlays')
         ->click('Start tour')
+        ->assertScript(opened(TOUR))
         ->keys(TOUR, 'Escape')
         ->assertScript(opened(TOUR), false)
         ->assertSee('Tour skipped');
@@ -47,5 +48,8 @@ it('starts from the server at the given step', function () {
         ->click('Start at step 2 from server')
         ->assertScript(opened(TOUR))
         ->assertSeeIn(TOUR.' [data-slot="tour-title"]', 'Menus')
-        ->assertSeeIn(TOUR.' [data-slot="tour-counter"]', '2 / 4');
+        ->assertSeeIn(TOUR.' [data-slot="tour-counter"]', '2 / 4')
+        ->click(TOUR.' button:has-text("Check step")')
+        ->assertSeeIn(TOUR, 'Checked')
+        ->assertNoJavaScriptErrors();
 });

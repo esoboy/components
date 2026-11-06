@@ -64,18 +64,26 @@ class NotifyingForm extends Form
     }
 }
 
-it('renders the toaster as the toast viewport, with what toasts are cloned from', function () {
+it('renders and replaces a notification with the same id and ignores a stale dismissal', function () {
+    $toaster = Livewire::test('ui.toaster')
+        ->call('show', ['id' => 'save', 'message' => 'Saving', 'type' => 'loading'])
+        ->assertSee('Saving')
+        ->call('show', ['id' => 'save', 'message' => 'Saved <img>', 'type' => 'success'])
+        ->assertSee('Saved &lt;img&gt;', false)
+        ->assertDontSee('Saving')
+        ->call('dismiss', 'save', 1)
+        ->assertSee('Saved &lt;img&gt;', false);
+
+    $toaster->call('dismiss', 'save', 2)->assertDontSee('Saved');
+});
+
+it('renders a persisted toast viewport', function () {
     $html = (string) $this->blade('<x-ui::toaster />');
 
     expect($html)
         ->toContainMarkup('<div x-persist="ui-toaster">')
-        ->toContainMarkup('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" wire:ignore>')
-        ->toContainMarkup('<template data-template="toast">')
-        ->toMatch('/<div data-slot="toast" aria-modal="false" tabindex="0">\s*<div data-slot="toast-content">\s*<span data-slot="toast-icon"><\/span>/')
-        ->toMatch('/data-variant="outline" data-size="sm" data-toast-action="data-toast-action"><\/button>/')
-        ->toMatch('/data-variant="ghost" data-size="icon-sm" data-toast-close="data-toast-close" aria-label="Close toast"><svg[^>]*><path d="M18 6 6 18"\/>/')
-        ->toContainMarkup('<template data-template="icon-error"><svg')
-        ->toMatch('/<template data-template="icon-loading"><svg[^>]*data-slot="spinner"/');
+        ->toContainMarkup('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" wire:ignore.self>')
+        ->not->toContain('data-template=');
 
     $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')
         ->assertSee('data-limit="5" data-timeout="8000"', false);
@@ -88,7 +96,18 @@ it('renders the confirm dialog with translated labels', function () {
         ->assertSeeMarkup('<dialog id="ui-confirm" role="alertdialog" data-slot="alert-dialog-content">')
         ->assertSeeMarkup('<h2 id="ui-confirm-title" data-slot="alert-dialog-title">确定要继续吗？</h2>')
         ->assertSeeMarkup('commandfor="ui-confirm" command="close">取消</button>')
-        ->assertSeeMarkup('commandfor="ui-confirm" command="close" value="confirm">继续</button>');
+        ->assertSeeMarkup('value="confirm" commandfor="ui-confirm" command="close">继续</button>');
+});
+
+it('renders a request with its own escaped question, label and description', function () {
+    Livewire::test('ui.confirm')
+        ->call('prepare', 'ui-confirm-popover', 'Publish <draft>?', 'Publish now', 'Subscribers receive this.')
+        ->assertSee('Publish &lt;draft&gt;?', false)
+        ->assertSee('Publish now')
+        ->assertSee('Subscribers receive this.')
+        ->call('prepare', 'ui-confirm-popover', '', '', '')
+        ->assertDontSee('Publish now')
+        ->assertDontSee('Subscribers receive this.');
 });
 
 it('renders a destructive confirm dialog and confirm popovers', function () {
@@ -97,7 +116,7 @@ it('renders a destructive confirm dialog and confirm popovers', function () {
     expect($html)
         ->toContainMarkup('<dialog id="ui-confirm-destructive" role="alertdialog" data-slot="alert-dialog-content" data-size="sm">')
         ->toMatch('/data-slot="alert-dialog-media"[^>]*><svg/')
-        ->toMatch('/data-variant="destructive"[^>]*commandfor="ui-confirm-destructive" command="close" value="confirm">Delete<\/button>/')
+        ->toMatch('/data-variant="destructive"[^>]*value="confirm" commandfor="ui-confirm-destructive" command="close">\s*Delete\s*<\/button>/')
         ->toContainMarkup('<div id="ui-confirm-popover" popover="auto" data-slot="popover-content" data-side="top">')
         ->toMatch('/commandfor="ui-confirm-popover" command="hide-popover" autofocus="autofocus">Cancel<\/button>/')
         ->toMatch('/commandfor="ui-confirm-popover" command="hide-popover" value="confirm">Continue<\/button>/')

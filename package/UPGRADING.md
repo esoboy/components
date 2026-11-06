@@ -146,9 +146,49 @@ Alpine providers handle focus, hover timing, caret positioning, dragging,
 scrolling and SDK lifecycles. They do not restore application values after a
 Livewire morph or maintain separate selection stores.
 
-Editor, Signature and syntax highlighting load their third-party engines on
-demand inside Alpine. Keep using `Ui::editor()`, `Ui::sanitize()` and the existing
-server upload contract. No DOM custom-element methods are public APIs.
+## Feedback, clocks and previews
+
+`Ui::toast()` and `$dispatch('ui-toast', …)` update a Livewire list retained during
+`wire:navigate`. To supply controls, use `close-view` or `action-view` on the
+toaster. Each view receives `$toast` and can wrap its control in
+`<x-ui::toast.close>` or `<x-ui::toast.action>`.
+
+Tour step markup stays in `<x-ui::tour.step>`. An `actions-view` receives
+`$current`, `$step` (zero-based), and `$total`. Use
+`<x-ui::tour.action action="previous|next|finish|close">` around each control.
+The image preview's `controls-view` receives `$image`, `$selected` (zero-based
+or null), and `$total`. Wrap each control in `<x-ui::image-preview.action>`
+with its action name. The preview's surrounding gallery still accepts
+`<x-ui::image-preview.item>` with a custom thumbnail slot.
+
+`wire:confirm` accepts `Question|Button label|Description`. Use
+`.destructive` and `.popover` as before. The library renders the request
+before opening the panel and lets Livewire resume or cancel the original action.
+
+Countdown and Verification Code Button use a server deadline. A visible clock
+updates when its displayed unit changes, at most once a second, and stops
+requesting updates when offscreen, in a background tab, or finished. Named
+deadlines can resume across `wire:navigate`. Keep resend authorization in
+the caller's server action. The button's initial slot remains caller-owned.
+
+Color Picker normalizes hex values on the server and renders the selected
+swatch, input and form value from that result. Pointer movement previews the
+color locally. Releasing the pointer or committing the hue sends the value.
+
+## Editor and Code Block
+
+Editor still loads Tiptap on demand through Alpine. The editor engine handles
+editable content, selection, the KaTeX preview, and upload decorations inside
+the document. Blade renders search results, toolbar overflow groups, form
+messages and status. Upload failures include a localized placeholder in the
+document and the uploader's detailed message in the editor footer. Keep using
+`Ui::editor()`, `Ui::sanitize()` and the existing server upload contract.
+
+Code Block highlights snippets during rendering using the Composer highlighter.
+Unknown languages and snippets over 128 KiB use escaped plain text. The
+browser only handles copying and its feedback. Signature Pad loads its drawing
+SDK on demand. Watermark restores the server-rendered layer after a browser
+mutation. Mentions uses a hidden measurement element to locate the caret.
 
 Sidebar Provider initializes itself. `scope="admin"` isolates its persisted
 preference, and shortcuts affect the focused provider. Overlay targets are
@@ -157,7 +197,8 @@ manual IDs or document-order event handlers.
 
 ## Verification
 
-The existing 13 demo pages at desktop and mobile sizes are the visual baseline.
-Component CSS is held fixed. Tests exercise the public Blade/Livewire interfaces,
+The existing demo pages at desktop and mobile sizes are the visual baseline.
+Tests exercise the public Blade/Livewire interfaces,
 form submission, state changes, keyboard interaction, navigation and multiple
-instances. Architecture checks prevent reintroducing a custom-element runtime.
+instances. Architecture checks cover Alpine event registration, Blade content,
+and the rendering boundary of the migrated providers.

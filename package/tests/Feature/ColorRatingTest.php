@@ -2,6 +2,18 @@
 
 use Livewire\Livewire;
 
+it('keeps one canonical color for the label, swatches and form value', function () {
+    $picker = Livewire::test('ui.color-picker', ['settings' => ['swatches' => ['#f80']]])
+        ->call('setColor', '  #F80 ')
+        ->assertSet('value', '#ff8800')
+        ->assertSee('#ff8800')
+        ->assertSee('aria-pressed="true"', false)
+        ->call('setColor', 'red')
+        ->assertSet('value', '#ff8800');
+
+    $picker->call('setColor', '')->assertSet('value', null)->assertDontSee('aria-pressed="true"', false);
+});
+
 it('selects and clears a valid rating on the server', function () {
     Livewire::test('ui.rating', ['settings' => ['max' => 3]])
         ->call('choose', 2)->assertSet('value', 2)
@@ -25,7 +37,7 @@ it('renders a color picker as a popover trigger with a swatch', function () {
         ->toContainMarkup('<div data-slot="color-picker-area" role="slider" tabindex="0" aria-label="Saturation and brightness">')
         ->toContainMarkup('<input type="range" data-slot="slider-thumb" min="0" max="360" step="1" value="0" aria-orientation="horizontal" aria-label="Hue">')
         ->toContainMarkup('<input data-color-picker-input="data-color-picker-input" value="#2563eb">')
-        ->toContain('data-color-picker-swatch="#2563eb" style="--color-picker-color: #2563eb" aria-label="#2563eb" aria-pressed="true"')
+        ->toContainMarkup('<button data-color-picker-swatch="#2563eb" style="--color-picker-color: #2563eb" aria-label="#2563eb" aria-pressed="true">')
         ->toContain('aria-pressed="false"')
         ->toContainMarkup('<input type="hidden" name="color" value="#2563eb">');
 });

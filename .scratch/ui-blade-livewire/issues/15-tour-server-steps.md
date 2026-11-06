@@ -4,7 +4,7 @@
 
 **Blocked by:** 01：Dialog 家族支持纯行为 trigger/close
 
-**Status:** ready-for-agent
+**Status:** claimed
 
 **Batch:** 3
 

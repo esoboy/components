@@ -1,7 +1,11 @@
 import { draws } from '../support/emoji.js'
+import { emit } from './interaction.js'
 
 export default () => ({
     active: null,
+    previewTimer: null,
+    previewed: '',
+    destroy() { clearTimeout(this.previewTimer) },
     get search() { return this.$el.querySelector('[data-emoji-picker-search]') },
     get items() { return [...this.$el.querySelectorAll('[data-slot="emoji-picker-emoji"]:not([hidden])')] },
     refresh() {
@@ -22,10 +26,15 @@ export default () => ({
         this.active?.removeAttribute('data-active'); this.active?.setAttribute('aria-selected', 'false'); this.active = item ?? null
         if (item) { item.id ||= this.$id('emoji', this.items.indexOf(item)); item.setAttribute('data-active', ''); item.setAttribute('aria-selected', 'true'); this.search?.setAttribute('aria-activedescendant', item.id) }
         else this.search?.removeAttribute('aria-activedescendant')
-        const part = name => this.$el.querySelector(`[data-slot="emoji-picker-${name}"]`)
-        if (part('active-emoji')) part('active-emoji').textContent = item?.textContent ?? ''
-        if (part('active-label')) part('active-label').textContent = item?.getAttribute('aria-label') ?? ''
-        part('active-emoji')?.toggleAttribute('hidden', !item); part('active-label')?.toggleAttribute('hidden', !item); part('placeholder')?.toggleAttribute('hidden', !!item)
+        const footer = this.$el.querySelector('[data-slot="emoji-picker-footer"]')
+        if (!footer) return
+        const glyph = item?.textContent ?? ''
+        clearTimeout(this.previewTimer)
+        if (glyph === this.previewed) return
+        this.previewTimer = setTimeout(() => {
+            this.previewed = glyph
+            emit(footer, 'emoji-preview', { glyph, label: item?.getAttribute('aria-label') ?? '' })
+        }, 150)
     },
     close() { const popup = this.$el.parentElement.closest('[popover]'); if (popup?.matches(':popover-open')) popup.hidePopover() },
     key(event) {

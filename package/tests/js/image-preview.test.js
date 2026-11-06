@@ -1,10 +1,11 @@
-import { engineDriver, cleanupControllers } from './alpine-harness.js'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { provider, cleanupControllers } from './alpine-harness.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import createImagePreview from '../../resources/js/alpine/image-preview.js'
 
 
 afterEach(() => {
     cleanupControllers()
+    delete window.Livewire
     document.body.innerHTML = ''
 })
 
@@ -13,61 +14,43 @@ const actions = ['close', 'previous', 'next', 'zoom-out', 'zoom-in', 'rotate-lef
 function mount(count = 3) {
     const triggers = Array.from({ length: count }, (_, index) => `<button data-slot="image-preview-trigger" data-src="/${index}.jpg" data-alt="Photo ${index}"></button>`).join('')
 
-    document.body.innerHTML = `
+    const data = provider(createImagePreview, `
         <eso-image-preview>
             ${triggers}
+            <div data-image-preview-state data-selected="0" wire:id="viewer">
             <dialog data-slot="image-preview-content">
-                <img data-slot="image-preview-image">
+                <img data-slot="image-preview-image" src="/0.jpg">
                 ${actions.map(action => `<button data-image-preview="${action}"></button>`).join('')}
                 <span data-slot="image-preview-counter"></span>
             </dialog>
-        </eso-image-preview>`
+            </div>
+        </eso-image-preview>`)
 
-    return engineDriver(createImagePreview, document.querySelector('eso-image-preview'))
+    const wire = { select: vi.fn().mockResolvedValue(undefined), previous: vi.fn(), next: vi.fn() }
+    window.Livewire = { find: () => wire }
+    data.sync()
+    data.dialog.showModal()
+    return data
 }
 
-const button = (element, action) => element.querySelector(`[data-image-preview="${action}"]`)
+const button = (element, action) => element.$el.querySelector(`[data-image-preview="${action}"]`)
 const style = (element, name) => element.image.style.getPropertyValue(`--image-preview-${name}`)
 const key = (element, name) => element.image.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }))
 
 describe('image preview', () => {
-    it('opens at the clicked thumbnail, loading its image', () => {
+    it('asks the server to open the selected item and navigate by keyboard', async () => {
         const element = mount()
-
-        element.querySelectorAll('[data-slot="image-preview-trigger"]')[1].click()
-
-        expect(element.dialog.open).toBe(true)
-        expect(element.image.getAttribute('src')).toBe('/1.jpg')
-        expect(element.image.alt).toBe('Photo 1')
-        expect(element.dialog.hasAttribute('data-loading')).toBe(true)
-        expect(element.querySelector('[data-slot="image-preview-counter"]').textContent).toBe('2 / 3')
-
-        element.image.dispatchEvent(new Event('load'))
-        expect(element.dialog.hasAttribute('data-loading')).toBe(false)
-    })
-
-    it('pages with the buttons and arrows, stopping at the ends', () => {
-        const element = mount()
-
-        element.open(0)
-        expect(button(element, 'previous').disabled).toBe(true)
-
-        button(element, 'next').click()
+        const trigger = element.$el.querySelectorAll('[data-slot="image-preview-trigger"]')[1]
+        trigger.click()
+        expect(element.wire.select).toHaveBeenCalledExactlyOnceWith(1)
+        await Promise.resolve()
         key(element, 'ArrowRight')
-        expect(element.index).toBe(2)
-        expect(button(element, 'next').disabled).toBe(true)
-
-        key(element, 'ArrowRight')
-        expect(element.index).toBe(2)
-
-        key(element, 'ArrowLeft')
-        expect(element.index).toBe(1)
+        expect(element.wire.next).toHaveBeenCalledOnce()
     })
 
     it('zooms within bounds, rotates and resets', () => {
         const element = mount()
 
-        element.open(0)
         expect(button(element, 'reset').disabled).toBe(true)
 
         button(element, 'zoom-in').click()
@@ -95,7 +78,6 @@ describe('image preview', () => {
         const element = mount()
         const pointer = (type, x, y) => element.image.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: x, clientY: y, button: 0 }))
 
-        element.open(0)
         pointer('pointerdown', 10, 10)
         pointer('pointermove', 50, 50)
         expect(style(element, 'x')).toBe('0px')
@@ -114,11 +96,10 @@ describe('image preview', () => {
     it('closes with its button and a click beside the image', () => {
         const element = mount()
 
-        element.open(0)
         button(element, 'close').click()
         expect(element.dialog.open).toBe(false)
 
-        element.open(0)
+        element.dialog.showModal()
         element.image.click()
         expect(element.dialog.open).toBe(true)
 
@@ -126,11 +107,4 @@ describe('image preview', () => {
         expect(element.dialog.open).toBe(false)
     })
 
-    it('marks a single image, which has nothing to page through', () => {
-        const element = mount(1)
-
-        element.open(0)
-
-        expect(element.dialog.hasAttribute('data-single')).toBe(true)
-    })
 })

@@ -20,8 +20,8 @@ export function uploads(templates) {
         name: 'uploads',
 
         addCommands: () => ({
-            addUpload: (id, position, kind = 'uploading', message = null) => ({ tr, dispatch }) => {
-                if (dispatch) tr.setMeta(uploadsKey, { add: [{ id, position, kind, message }] })
+            addUpload: (id, position, kind = 'uploading', failed = false) => ({ tr, dispatch }) => {
+                if (dispatch) tr.setMeta(uploadsKey, { add: [{ id, position, kind, failed }] })
 
                 return true
             },
@@ -44,7 +44,7 @@ export function uploads(templates) {
 
                         if (meta?.remove) set = set.remove(set.find(undefined, undefined, spec => spec.id === meta.remove))
 
-                        for (const { id, position, kind, message } of meta?.add ?? []) {
+                        for (const { id, position, kind, failed } of meta?.add ?? []) {
                             const template = templates[kind]
                             const widget = () => {
                                 const element = template.content.firstElementChild.cloneNode(true)
@@ -52,15 +52,12 @@ export function uploads(templates) {
 
                                 element.dataset.editorUpload = id
                                 element.querySelectorAll('[data-editor-action]').forEach(control => control.setAttribute('data-editor-value', id))
-                                if (text && message) {
-                                    text.textContent = message
-                                    text.hidden = false
-                                }
+                                if (text && failed) text.hidden = false
 
                                 return element
                             }
 
-                            if (template) set = set.add(tr.doc, [Decoration.widget(Math.min(position, tr.doc.content.size), widget, { id, kind, message, side: -1 })])
+                            if (template) set = set.add(tr.doc, [Decoration.widget(Math.min(position, tr.doc.content.size), widget, { id, kind, failed, side: -1 })])
                         }
 
                         return set

@@ -4,13 +4,17 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 **Batch:** 3
 
 **Audit coverage:** 原问题 17。
 
-- [ ] 浏览器不再动态创建高亮 token 节点。
-- [ ] 验证转义、支持语言、未知语言、长代码及 Livewire 内容更新。
-- [ ] 不增加调用方初始化要求，保留样式与复制反馈。
-- [ ] 更新公共调用示例和说明，通过相关测试并记录验证结果。
+- [x] 浏览器不再动态创建高亮 token 节点。
+- [x] 验证转义、支持语言、未知语言、长代码及 Livewire 内容更新。
+- [x] 不增加调用方初始化要求，保留样式与复制反馈。
+- [x] 更新公共调用示例和说明，通过相关测试并记录验证结果。
+
+**验证记录**
+
+PHP 和 Chromium 覆盖转义、语言、未知语言/长文本回退、Livewire 更新和剪贴板反馈。

@@ -1,13 +1,13 @@
 <?php
 
 /*
- * Code Block and Trace on the AI page: highlighting loads with its own script, the copy
+ * Code Block and Trace on the AI page: Blade renders highlighted tokens, the copy
  * button copies the code, and a trace step collapses.
  */
 
 it('highlights its code', function () {
     visit('/ai')
-        ->assertScript("document.querySelector('[data-slot=\"code-block\"] span[style]') !== null")
+        ->assertPresent('[data-slot="code-block"] [data-token]')
         ->assertNoJavaScriptErrors();
 });
 

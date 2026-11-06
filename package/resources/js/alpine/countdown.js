@@ -1,32 +1,72 @@
-import { countdowns, format } from '../support/countdown.js'
+import { listen, disconnected } from './interaction.js'
 
-export default verification => ({
-    end: 0, timer: null, finished: true, remaining: 0, started: false,
+const deadlines = new Map()
+
+export default () => ({
+    _timer: null,
+    _observer: null,
+    _visible: false,
+    _due: 0,
+    _request: null,
+    _stopMorph: null,
+
     init() {
         const name = this.$el.dataset.name
-        this.started = countdowns.has(name)
-        this.end = countdowns.get(name) ?? (verification ? 0 : Date.now() + Number(this.$el.dataset.remaining))
-        this.finished = this.end <= Date.now()
-        if (name && !verification) countdowns.set(name, this.end)
-        this.tick()
+        const previous = deadlines.get(name)
+        this._observer = new IntersectionObserver(([entry]) => {
+            this._visible = entry.isIntersecting
+            this._schedule()
+        })
+        this._observer.observe(this.$el)
+        listen(this, document, 'visibilitychange', () => this._schedule())
+        this._stopMorph = window.Livewire?.hook('morphed', ({ el }) => {
+            if (el === this.$el) this._sync()
+        })
+        if (previous && previous !== Number(this.$el.dataset.deadline)) this._call('restore', previous)
+        else this._sync()
     },
-    destroy() { clearTimeout(this.timer) },
+
+    destroy() {
+        clearTimeout(this._timer)
+        this._observer?.disconnect()
+        this._stopMorph?.()
+        disconnected(this)
+    },
+
     start(detail) {
-        if (detail.name !== this.$el.dataset.name) return
-        this.end = Date.now() + Number(detail.seconds ?? this.$el.dataset.seconds ?? 60) * 1000
-        countdowns.set(detail.name, this.end)
-        this.finished = false; this.started = true; this.tick()
+        if (!detail?.name || detail.name !== this.$el.dataset.name) return
+        this._call('start', detail.seconds ?? null)
     },
-    tick() {
-        clearTimeout(this.timer)
-        this.remaining = Math.max(0, this.end - Date.now())
-        if (verification) {
-            if (!this.started) return
-            const label = this.$el.querySelector('[data-verification-code-label]')
-            if (label) label.textContent = this.remaining ? this.$el.dataset.labelCountdown.replace(':seconds', Math.ceil(this.remaining / 1000)) : this.$el.dataset.labelResend
-        } else this.$el.textContent = format(this.remaining, this.$el.dataset.format ?? 'HH:mm:ss')
-        if (this.remaining > 0) this.timer = setTimeout(() => this.tick(), this.remaining % 1000 || 1000)
-        else if (!this.finished) { this.finished = true; this.$dispatch('finish') }
+
+    _call(action, ...arguments_) {
+        clearTimeout(this._timer)
+        const prior = this._request
+        const next = Promise.resolve(prior).catch(() => {}).then(() => this.$el.isConnected && this.$wire[action](...arguments_))
+        this._request = next
+        next.catch(() => {}).finally(() => {
+            if (this._request !== next) return
+            this._request = null
+            this._schedule()
+        })
     },
-    block(event) { if (verification && this.remaining > 0) { event.preventDefault(); event.stopImmediatePropagation() } },
+
+    _sync() {
+        const { name, deadline, delay, running, started } = this.$el.dataset
+        if (name && Number(deadline)) deadlines.set(name, Number(deadline))
+        this._due = Number(delay) ? performance.now() + Number(delay) : 0
+        this.$dispatch('ui-countdown-state', { running: running === 'true', started: started === 'true' })
+        this._schedule()
+    },
+
+    _schedule() {
+        clearTimeout(this._timer)
+        if (!this.$el.isConnected || !this._due || this._request || !this._visible || document.hidden) return
+
+        const remaining = this._due - performance.now()
+        this._timer = setTimeout(() => {
+            if (remaining > 2147483647) return this._schedule()
+            this._due = 0
+            this._call('tick')
+        }, Math.min(2147483647, Math.max(0, remaining)))
+    },
 })
