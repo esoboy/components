@@ -170,8 +170,8 @@ new class extends Component
             $users = $this->users;
         @endphp
         <x-ui::data-table selectable>
-            <div class="flex flex-wrap items-center gap-2">
-                <x-ui::data-table.toolbar collapsible clear-filters clear-action="clearUserFilters">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 py-4">
+                <x-ui::data-table.toolbar class="py-0" collapsible clear-filters clear-action="clearUserFilters">
                     <x-slot:primary>
                         <x-ui::input wire:model.live.debounce.300ms="search" placeholder="Filter emails..." aria-label="Search users" class="h-8 w-[150px] lg:w-[250px]" />
                         <x-ui::data-table.faceted-filter column="role" title="Role" :options="$this::ROLES" :counts="$this->roleCounts" />
@@ -228,9 +228,9 @@ new class extends Component
                 <x-ui::data-table.pagination :paginator="$users" class="mx-0 w-auto" />
             </div>
 
-            <x-ui::data-table.selection-toolbar class="flex flex-wrap items-center gap-2 rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10">
+            <x-ui::data-table.selection-toolbar>
+                <x-ui::button size="sm" wire:click="exportSelected"><x-ui::icon name="download" data-icon="inline-start" />Export</x-ui::button>
                 <x-ui::button variant="secondary" size="sm" wire:click="markSelected('verified')">Mark verified</x-ui::button>
-                <x-ui::button variant="secondary" size="sm" wire:click="exportSelected"><x-ui::icon name="download" data-icon="inline-start" />Export</x-ui::button>
                 <x-ui::button variant="destructive" size="sm" wire:click="deleteSelected" wire:confirm="Delete {{ count($selected) }} users?"><x-ui::icon name="trash" data-icon="inline-start" />Delete</x-ui::button>
             </x-ui::data-table.selection-toolbar>
         </x-ui::data-table>
@@ -267,7 +267,7 @@ new class extends Component
                 </x-slot:summary>
             </x-ui::data-table.table>
 
-            <x-ui::data-table.selection-toolbar class="static mt-2 flex w-fit items-center gap-2 rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10" />
+            <x-ui::data-table.selection-toolbar />
         </x-ui::data-table>
         <p class="text-sm text-muted-foreground">teams: <span id="teams">{{ implode(', ', $teams) ?: 'none' }}</span></p>
     </section>

@@ -16,7 +16,23 @@
     }
 
     :where([data-slot="data-table-selection-toolbar"]) {
-        @apply flex flex-wrap items-center gap-2;
+        @apply fixed inset-x-3 z-40 mx-auto flex w-max flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-popover p-2 text-popover-foreground shadow-lg;
+        max-inline-size: calc(100% - 1.5rem);
+        bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--ui-selection-offset, 0px));
+    }
+
+    :where([data-slot="data-table-selection-status"]) {
+        @apply flex shrink-0 items-center gap-1 ps-2 text-sm font-medium tabular-nums;
+    }
+
+    :where([data-slot="data-table-selection-actions"]) {
+        @apply flex min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:border-s sm:ps-3;
+    }
+
+    @media (pointer: coarse) {
+        :where([data-slot="data-table-selection-toolbar"] [data-slot="button"]) {
+            @apply min-h-11 min-w-11;
+        }
     }
 
     :where([data-slot="data-table-content"]) {

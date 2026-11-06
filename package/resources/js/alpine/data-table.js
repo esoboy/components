@@ -17,6 +17,19 @@
 const ALL = '[data-data-table-select-all]'
 const ROW = '[data-data-table-select-row]'
 const TOGGLE = '[data-data-table-row-toggle]'
+const SELECTION_BAR = '[data-slot="data-table-selection-toolbar"]'
+const SELECTION_OFFSET = '--ui-selection-offset'
+
+function stackSelectionBars() {
+    let offset = 0
+
+    for (const bar of document.querySelectorAll(SELECTION_BAR)) {
+        if (! bar.offsetHeight) continue
+        const position = `${offset}px`
+        if (bar.style.getPropertyValue(SELECTION_OFFSET) !== position) bar.style.setProperty(SELECTION_OFFSET, position)
+        offset += bar.offsetHeight + 8
+    }
+}
 
 // Sets or removes an attribute only when it changes, so the observer isn't woken for nothing.
 const set = (element, name, value) => {
@@ -33,10 +46,14 @@ export default () => ({
     _hovered: null,
     _observer: null,
     _resizes: null,
+    _selectionBar: null,
 
     init() {
         this._observer = new MutationObserver(() => this._refresh())
-        this._resizes = new ResizeObserver(() => this._stick())
+        this._resizes = new ResizeObserver(() => {
+            this._stick()
+            if (this._selectionBar) stackSelectionBars()
+        })
 
         listen(this, this.$el, 'change', event => {
             if (event.target.matches?.(ALL) && this._owns(event.target)) this._selectAll(event.target.checked)
@@ -68,6 +85,7 @@ export default () => ({
         disconnected(this)
         this._observer.disconnect()
         this._resizes.disconnect()
+        if (this._selectionBar) queueMicrotask(stackSelectionBars)
     },
 
     get rows() {
@@ -86,10 +104,24 @@ export default () => ({
         this._expand()
         this._sync()
         this._stick()
+        this._observeSelectionBar()
 
         for (const container of this.$el.querySelectorAll('[data-slot="table-container"]')) {
             if (this._owns(container)) this._edges(container)
         }
+    },
+
+    _observeSelectionBar() {
+        const bar = [...this.$el.querySelectorAll(SELECTION_BAR)].find(element => this._owns(element)) ?? null
+        if (bar === this._selectionBar) {
+            if (bar && ! bar.style.getPropertyValue(SELECTION_OFFSET)) stackSelectionBars()
+            return
+        }
+
+        if (this._selectionBar) this._resizes.unobserve(this._selectionBar)
+        this._selectionBar = bar
+        if (bar) this._resizes.observe(bar)
+        stackSelectionBars()
     },
 
     _selectAll(checked) {

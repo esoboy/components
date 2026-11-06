@@ -86,14 +86,14 @@ it('hides and shows columns', function () {
         ->assertSet('hiddenColumns', []);
 });
 
-it('renders the active sort and direction in the header select', function () {
+it('renders one header button and marks the active direction in its menu', function () {
     $html = Livewire::test(Payments::class)->call('sort', 'email', 'desc')->html();
 
     expect($html)
         ->toContainMarkup('<th aria-sort="descending">')
-        ->toContainMarkup('<select data-slot="native-select" aria-label="Email — Sort">')
-        ->toContainMarkup('<option value="desc" selected>Desc</option>')
-        ->toContainMarkup('<option value="default">Default</option>');
+        ->toContainMarkup('<button data-slot="button" data-data-table-sort aria-label="Email — Sort" aria-haspopup="menu">')
+        ->toContainMarkup('<button role="menuitemradio" aria-checked="true" data-data-table-sort-option="desc">')
+        ->toContainMarkup('<button role="menuitemradio" aria-checked="false" data-data-table-sort-option="default">');
 });
 
 it('renders the selection boxes bound to the selected rows', function () {

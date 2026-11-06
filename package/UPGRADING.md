@@ -213,7 +213,7 @@ and details. Enable selection on the container with `selectable`.
 
 Place `total`, `page-size`, and `pagination` independently. Pass the page's
 paginator directly to `pagination`. Put page-owned filters in the toolbar's
-`primary` and `secondary` slots. The table generates sort selects, and direct
+`primary` and `secondary` slots. Sortable headers open a menu, and direct
 calls to `sort` supply `asc`, `desc`, or `default`.
 
 For nested rows, set `tree` and optionally `children-field` on the table.

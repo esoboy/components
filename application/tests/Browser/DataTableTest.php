@@ -82,14 +82,24 @@ it('searches by email', function () {
 });
 
 it('sorts from a column header', function () {
+    $name = USERS.' >> button[aria-label="Name — Sort"]';
+    $email = USERS.' >> button[aria-label="Email — Sort"]';
+    $options = '[data-slot="dropdown-menu-content"]:popover-open [data-data-table-sort-option=';
+
     visit('/data')
-        ->select(USERS.' >> select[aria-label="Name — Sort"]', 'desc')
+        ->assertSeeIn($name, 'Name')
+        ->click($name)
+        ->assertScript(visibleEmails(), '01,02,03,04,05,06,07,08,09,10')
+        ->click($options.'"desc"]')
         ->assertScript(visibleEmails(), '15,14,13,12,11,10,09,08,07,06')
         ->assertQueryStringHas('sortBy', 'name')
-        ->select(USERS.' >> select[aria-label="Email — Sort"]', 'asc')
-        ->assertScript("document.querySelector('select[aria-label=\"Name — Sort\"]').value", 'default')
+        ->click($email)
+        ->click($options.'"asc"]')
+        ->assertScript("document.querySelector('button[aria-label=\"Name — Sort\"]').closest('th').hasAttribute('aria-sort')", false)
         ->assertQueryStringHas('sortBy', 'email')
-        ->select(USERS.' >> select[aria-label="Email — Sort"]', 'default')
+        ->click($email)
+        ->assertAttribute($options.'"asc"]', 'aria-checked', 'true')
+        ->click($options.'"default"]')
         ->assertScript(visibleEmails(), '01,02,03,04,05,06,07,08,09,10');
 });
 
@@ -150,20 +160,60 @@ it('expands a row into its details', function () {
         ->assertSeeIn('[data-slot="toast"]', 'user01@example.com');
 });
 
-it('folds the secondary filters without clearing their effects', function () {
+it('keeps independent selection toolbars fixed and reachable while scrolling', function (int $width) {
+    $tree = '[data-slot="data-table"] >> nth=1';
+    $position = <<<'JS'
+        (() => {
+            const bars = [...document.querySelectorAll('[data-slot="data-table-selection-toolbar"]')];
+            const [first, second] = bars.map(bar => bar.getBoundingClientRect());
+            return bars.length === 2
+                && bars.every(bar => getComputedStyle(bar).position === 'fixed')
+                && first.top - second.bottom >= 7
+                && Math.abs(first.bottom - (innerHeight - 16)) < 1
+                && [first, second].every(bar => bar.left >= 0 && bar.right <= innerWidth);
+        })()
+        JS;
+
+    $page = visit('/data')->resize($width, 900)
+        ->click(USERS.' >> [data-data-table-select-row] >> nth=0')
+        ->assertSeeIn(USERS.' >> [data-slot="data-table-selection-toolbar"]', '1 selected');
+
+    $page->script("document.querySelectorAll('[data-data-table-select-all]')[1].scrollIntoView({ block: 'center' })");
+    $page->click($tree.' >> [data-data-table-select-all]')
+        ->assertScript($position)
+        ->click($tree.' >> [data-data-table-select-row] >> nth=0')
+        ->assertScript($position)
+        ->click($tree.' >> [data-slot="data-table-selection-toolbar"] [aria-label="Clear selection"]')
+        ->assertMissing($tree.' >> [data-slot="data-table-selection-toolbar"]')
+        ->assertSeeIn(USERS.' >> [data-slot="data-table-selection-toolbar"]', '1 selected')
+        ->assertNoJavaScriptErrors();
+})->with(['desktop' => [1280], 'mobile' => [390]]);
+
+it('keeps the column settings top-aligned when toggling secondary filters', function (int $width) {
     User::query()->where('email', 'user01@example.com')->update(['email_verified_at' => null]);
     $toolbar = USERS.' >> [data-slot="data-table-toolbar"]';
     $advanced = $toolbar.' [data-slot="data-table-secondary-filters"]';
+    $aligned = <<<'JS'
+        (() => {
+            const table = document.querySelector('eso-data-table');
+            const toolbar = table.querySelector('[data-slot="data-table-toolbar"]').getBoundingClientRect();
+            const settings = table.querySelector('[data-data-table-view-options]').getBoundingClientRect();
+            return Math.abs(toolbar.top - settings.top) < 1 && settings.left >= toolbar.right;
+        })()
+        JS;
 
-    visit('/data')
+    visit('/data')->resize($width, 900)
+        ->assertScript($aligned)
         ->click($toolbar.' button:text-is("More filters")')
+        ->assertScript($aligned)
         ->click($advanced.' input[type="checkbox"]')
         ->assertSeeIn(USERS.' >> [data-slot="data-table-count"]', '14 total')
         ->click($toolbar.' button:text-is("More filters")')
+        ->assertScript($aligned)
         ->assertSeeIn(USERS.' >> [data-slot="data-table-count"]', '14 total')
         ->click($toolbar.' [data-data-table-reset]')
         ->assertSeeIn(USERS.' >> [data-slot="data-table-count"]', '15 total');
-});
+})->with(['desktop' => [1280], 'mobile' => [390]]);
 
 it('hides a column from the view options', function () {
     visit('/data')
@@ -181,7 +231,7 @@ it('reorders table columns through the settings list while leaving the fixed col
     $order = <<<'JS'
         (() => {
             const table = document.querySelector('eso-data-table table');
-            const headings = [...table.querySelectorAll('th select')].map(select => select.getAttribute('aria-label'));
+            const headings = [...table.querySelectorAll('th [data-data-table-sort]')].map(button => button.getAttribute('aria-label'));
             return headings[0] === 'Name — Sort' && headings.indexOf('Email — Sort') > headings.indexOf('Role — Sort');
         })()
         JS;
