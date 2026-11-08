@@ -140,8 +140,16 @@ with `wire:model` on the root (Dialog, Sheet, Drawer, Alert Dialog, Popover):
 Icons are Lucide's, built in (the version is in `resources/icons/lucide.php`):
 
 ```blade
-<x-ui::icon name="chevron-down" class="size-4" />
+<x-ui::icon name="chevron-down" size="sm" />
+<x-ui::button size="sm">
+    <x-ui::icon name="plus" size="sm" data-icon="inline-start" /> Add
+</x-ui::button>
 ```
+
+Icon sizes are `xs` (12px), `sm` (14px), `default` (16px), and `lg` (20px).
+Without an explicit `size`, an icon is 16px on its own and follows its container's
+icon sizing inside controls. An explicit `size` takes priority over that automatic
+sizing. Use `class` for a custom size.
 
 Use the canonical names shipped with the package. An unknown name fails the render.
 A newer Lucide comes with a newer package (`npm run icons` regenerates the set).
@@ -228,12 +236,20 @@ The toaster is kept across `wire:navigate`, so a toast shown before
 ## Typography
 
 ```blade
-<x-ui::heading level="1" size="xl">Order summary</x-ui::heading>
-<p><x-ui::text size="sm" color="muted">Last updated just now</x-ui::text></p>
+<x-ui::heading level="1" variant="title" size="xl">Order summary</x-ui::heading>
+<x-ui::heading variant="subtitle" size="xs">Payment and billing details</x-ui::heading>
+<p><x-ui::text variant="primary">Your payment has been received.</x-ui::text></p>
+<p><x-ui::text variant="secondary" size="sm">Last updated just now</x-ui::text></p>
 ```
 
 Heading renders a native `h1` through `h6` with `level="1"` through `level="6"`.
 Omitted or invalid levels render `h2`. Text renders an inline `span`.
+
+Heading variants are `title` (default, foreground) and `subtitle`
+(muted foreground). Text variants are `primary` (default,
+foreground) and `secondary` (muted foreground). Variants only change color,
+preserving the heading level, font size and font weight. Text `variant="primary"` uses the foreground color;
+`color="primary"` uses the theme's primary accent color.
 
 The Blade components map sizes to the original shadcn Typography examples.
 Heading sizes are `xs` (H4), `sm` (H3), `default` (H2), and `lg` (H1).
@@ -242,7 +258,8 @@ The library also provides `xl` and `2xl` for larger headings, using the theme's
 Text sizes are `sm` (Small), `default` (body), and `lg` (Large).
 Both accept
 `color="default|foreground|muted|primary|destructive|success|warning|info"`.
-The default inherits the surrounding text color. Named colors follow the active theme.
+The default uses the variant's color. Explicit named colors override the variant's
+color and follow the active theme.
 
 ## Light and dark
 

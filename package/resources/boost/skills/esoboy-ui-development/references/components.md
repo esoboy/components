@@ -24,7 +24,7 @@ Use the shadcn/ui Base UI documentation and registry as the component reference.
 - **item** — a row of media, text and actions; `variant` (`default`, `outline`, `muted`), `size`. Parts: actions, content, description, footer, group, header, media, separator, title.
 - **separator** — `orientation`, `decorative`.
 - **label** — a form label.
-- **icon** — a Lucide icon: `name` (required).
+- **icon** — a Lucide icon: `name` (required), `size` (`xs` = 12px, `sm` = 14px, `default` = 16px, `lg` = 20px). Without explicit `size`, follows the container's icon sizing, or 16px standalone. Explicit `size` overrides container sizing; use `class` for custom dimensions.
 - **aspect-ratio** — keeps its content at `:ratio="16 / 9"`.
 - **qr-code** — *(not in shadcn)* drawn on the server: `value` (required), `size`, `level` (`L`, `M`, `Q`, `H`), `icon`, `icon-size`.
 - **statistic** — *(not in shadcn)* a figure with its label and trend. Parts: label, trend, value.

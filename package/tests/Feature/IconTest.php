@@ -10,7 +10,25 @@ use Illuminate\View\ViewException;
 
 it('renders a lucide icon as lucide-react does, decorative by default', function () {
     expect(trim($this->blade('<x-ui::icon name="chevron-down" class="size-4" />')))
-        ->toBe('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-4"><path d="m6 9 6 6 6-6"/></svg>');
+        ->toBe('<svg class="size-4" data-slot="icon" data-size="default" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>');
+});
+
+it('renders explicit static and dynamic sizes without leaking a native size attribute', function (string $size, string $class) {
+    foreach ([
+        (string) $this->blade('<x-ui::icon name="plus" size="'.$size.'" />'),
+        (string) $this->blade('<x-ui::icon name="plus" :size="$size" />', ['size' => $size]),
+    ] as $html) {
+        expect($html)->toContain('data-size="'.$size.'"', 'class="'.$class.'"')
+            ->not->toContain(' size=');
+    }
+})->with([
+    ['xs', 'size-3'], ['sm', 'size-3.5'], ['default', 'size-4'], ['lg', 'size-5'],
+]);
+
+it('leaves unspecified sizes available for container sizing', function () {
+    expect((string) $this->blade('<x-ui::button size="xs"><x-ui::icon name="plus" /></x-ui::button>'))
+        ->toContain('data-slot="icon" data-size="default"')
+        ->not->toContain('class="size-');
 });
 
 it('folds a static name into plain svg at compile time', function () {

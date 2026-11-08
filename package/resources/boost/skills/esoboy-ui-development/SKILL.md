@@ -216,7 +216,7 @@ Component events are listened to with `wire:` on the component: `wire:emoji-sele
 
 - One style, shadcn's. Restyle with utility classes; change the palette, radius and fonts with a `@theme` block after the imports, never with hardcoded colors on components.
 - Dark mode follows the user's choice: `@uiTheme('app')` on `<html>` renders it, `dark:` utilities follow it, and any control with `theme="light|dark|system|toggle"` changes it (render its state with `Ui::theme('app')`). There is no mode-toggle component.
-- Icons are Lucide's: `<x-ui::icon name="trash" class="size-4" />`. Only shipped names exist; check the name on lucide.dev. Inside Buttons, `data-icon="inline-start"` or `inline-end` spaces an icon as shadcn does.
+- Icons are Lucide's: `<x-ui::icon name="trash" size="sm" />`. Sizes are `xs`, `sm`, `default`, `lg` (12, 14, 16, 20px). Omit `size` to follow a control's automatic icon sizing (16px standalone). Only shipped names exist; check the name on lucide.dev. Inside Buttons, `data-icon="inline-start"` or `inline-end` spaces an icon as shadcn does.
 
 ## Translations
 

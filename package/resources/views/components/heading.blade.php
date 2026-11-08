@@ -2,6 +2,7 @@
 
 @props([
     'level' => 2,
+    'variant' => 'title',
     'size' => 'default',
     'color' => 'default',
 ])
@@ -17,4 +18,4 @@ $tag = match ($level) {
 };
 @endphp
 
-<{{ $tag }} {{ $attributes->merge(['data-slot' => 'heading', 'data-size' => $size, 'data-color' => $color]) }}>{{ $slot }}</{{ $tag }}>
+<{{ $tag }} {{ $attributes->merge(['data-slot' => 'heading', 'data-variant' => $variant, 'data-size' => $size, 'data-color' => $color]) }}>{{ $slot }}</{{ $tag }}>

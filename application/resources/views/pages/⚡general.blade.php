@@ -52,10 +52,37 @@ PHP;
     <section class="space-y-4">
         <x-ui::heading size="xs">Typography</x-ui::heading>
         <div class="space-y-2">
-            <x-ui::heading level="3" size="xl" color="primary">Order summary</x-ui::heading>
-            <p><x-ui::text>Your payment has been received.</x-ui::text></p>
-            <x-ui::heading level="3" size="2xl">Payment history</x-ui::heading>
-            <p><x-ui::text size="sm" color="muted">Last updated just now</x-ui::text></p>
+            <x-ui::heading level="3" variant="title" size="xl">Order summary</x-ui::heading>
+            <x-ui::heading level="4" variant="subtitle" size="xs">Payment and billing details</x-ui::heading>
+            <p><x-ui::text variant="primary">Your payment has been received.</x-ui::text></p>
+            <p><x-ui::text variant="secondary" size="sm">Last updated just now</x-ui::text></p>
+            <x-ui::heading level="3" size="2xl" color="primary">Payment history</x-ui::heading>
+        </div>
+    </section>
+
+    <section class="space-y-4" data-icon-sizes>
+        <x-ui::heading size="xs">Icons</x-ui::heading>
+        <p class="text-sm text-muted-foreground">Match the icon size to the control, or omit it to use the control’s automatic icon sizing.</p>
+        <div class="flex flex-wrap items-center gap-4">
+            @foreach (['xs', 'sm', 'default', 'lg'] as $size)
+                <x-ui::button :size="$size" variant="outline">
+                    <x-ui::icon name="plus" :size="$size" data-icon="inline-start" /> {{ $size }}
+                </x-ui::button>
+            @endforeach
+        </div>
+        <div class="flex flex-wrap items-center gap-4" data-icon-auto>
+            @foreach (['xs', 'sm', 'default', 'lg'] as $size)
+                <x-ui::button :size="$size" variant="outline">
+                    <x-ui::icon name="plus" data-icon="inline-start" /> Auto {{ $size }}
+                </x-ui::button>
+            @endforeach
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+            <x-ui::icon name="plus" />
+            @foreach (['xs', 'sm', 'default', 'lg'] as $size)
+                <x-ui::icon name="plus" :size="$size" :aria-label="$size" />
+            @endforeach
+            <x-ui::icon name="plus" class="size-8" aria-label="Custom size" />
         </div>
     </section>
 

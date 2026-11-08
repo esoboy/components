@@ -8,9 +8,9 @@ use Esoboy\Ui\Support\Icons;
 
 it('renders native heading levels independently of typography and preserves the slot', function (int $level) {
     $this->blade(
-        '<x-ui::heading :level="$level" size="xs" color="primary" id="title"><em>Title</em></x-ui::heading>',
-        ['level' => $level],
-    )->assertSeeMarkup('<h'.$level.' id="title" data-slot="heading" data-size="xs" data-color="primary"><em>Title</em></h'.$level.'>');
+        '<x-ui::heading :level="$level" :variant="$variant" size="xs" color="primary" id="title"><em>Title</em></x-ui::heading>',
+        ['level' => $level, 'variant' => 'subtitle'],
+    )->assertSeeMarkup('<h'.$level.' id="title" data-slot="heading" data-variant="subtitle" data-size="xs" data-color="primary"><em>Title</em></h'.$level.'>');
 })->with([1, 2, 3, 4, 5, 6]);
 
 it('handles literal, omitted and invalid heading levels', function () {
@@ -19,16 +19,16 @@ it('handles literal, omitted and invalid heading levels', function () {
         <x-ui::heading>Default</x-ui::heading>
         <x-ui::heading level="7">Fallback</x-ui::heading>
         BLADE)
-        ->assertSeeMarkup('<h3 data-slot="heading" data-size="default" data-color="default">Literal</h3>')
-        ->assertSeeMarkup('<h2 data-slot="heading" data-size="default" data-color="default">Default</h2>')
-        ->assertSeeMarkup('<h2 data-slot="heading" data-size="default" data-color="default">Fallback</h2>');
+        ->assertSeeMarkup('<h3 data-slot="heading" data-variant="title" data-size="default" data-color="default">Literal</h3>')
+        ->assertSeeMarkup('<h2 data-slot="heading" data-variant="title" data-size="default" data-color="default">Default</h2>')
+        ->assertSeeMarkup('<h2 data-slot="heading" data-variant="title" data-size="default" data-color="default">Fallback</h2>');
 });
 
 it('renders inline text with its typography and Blade slot', function () {
-    $this->blade('<p><x-ui::text size="lg" color="muted" class="italic"><em>Note</em></x-ui::text></p>')
+    $this->blade('<p><x-ui::text :variant="$variant" size="lg" color="muted" class="italic"><em>Note</em></x-ui::text></p>', ['variant' => 'secondary'])
         ->assertSeeMarkupInOrder([
             '<p>',
-            '<span class="italic" data-slot="text" data-size="lg" data-color="muted"><em>Note</em></span>',
+            '<span class="italic" data-slot="text" data-variant="secondary" data-size="lg" data-color="muted"><em>Note</em></span>',
             '</p>',
         ]);
 });
@@ -189,7 +189,7 @@ it('renders kbd, skeleton and a translated spinner', function () {
 
     expect($spinner)
         ->toContain('role="status"')
-        ->toContain('class="size-6" data-slot="spinner" aria-label="加载中"')
+        ->toContain('class="size-6"', 'data-slot="spinner"', 'aria-label="加载中"')
         ->toContainMarkup('<path d="M21 12a9 9 0 1 1-6.219-8.56"/>')
         ->not->toContain('aria-hidden');
 });
