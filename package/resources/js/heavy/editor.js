@@ -12,8 +12,7 @@
  * by default, or wraps when More is omitted, with one tab stop and arrow keys within it; one tooltip
  * names whichever control is pointed at.
  *
- * Media selection emits ui-editor-media-request and the app resolves it with attachments.
- * Dropped and pasted files and imported images use the separate editor uploader.
+ * Media selection, dropped and pasted files, and image imports emit ui-editor-media-request.
  *
  * Built into dist/editor.js; Alpine loads it on demand.
  */
@@ -35,14 +34,13 @@ import { clone, readTemplates } from '../support/templates.js'
 import { COMMANDS } from './editor/commands.js'
 import { MoveBlocks, dragHandle } from './editor/drag.js'
 import { Find, findKey } from './editor/find.js'
-import { Saving, dataFile, imageFile, savingKey, unsaved, unsavedImages, wordImages } from './editor/images.js'
+import { Saving, dataFile, savingKey, unsaved, unsavedImages, wordImages } from './editor/images.js'
 import { accepted, attachmentNode, kindOf, safeUrl, videoNode } from './editor/media.js'
 import { Audio, PlainCodeBlock, Video, callout, collapsible, embed, figures, file, formulas, imageRows, picture, tables, tasks, toMathML } from './editor/nodes.js'
 import { wordLists } from './editor/paste.js'
 import { blockStyle, styleExtensions } from './editor/styles.js'
 import { suggestionMenu } from './editor/suggest.js'
 import { overflow } from './editor/toolbar.js'
-import { upload } from './editor/upload.js'
 import { uploads, uploadsKey } from './editor/uploads.js'
 import { generic, passthrough, whitelist } from './editor/whitelist.js'
 
@@ -105,7 +103,7 @@ export default (binding = {}) => ({
     _refused: false,
     _saved: new Map(),
     _failed: new Map(),
-    _loaded: new Set(),
+    _seenImages: new Set(),
     _unsaved: { doc: null, images: [] },
     _hosts: [],
     _rtf: '',
@@ -162,6 +160,7 @@ export default (binding = {}) => ({
                     'role': 'textbox',
                     'aria-multiline': 'true',
                     'aria-label': this.$el.dataset.label ?? '',
+                    ...this.$el.hasAttribute('data-labelledby') ? { 'aria-labelledby': this.$el.dataset.labelledby } : {},
                     // How to reach the toolbar and the bubble menus from the text.
                     'aria-description': labels.keyboard ?? '',
                     ...this.$el.dataset.placeholder ? { 'aria-placeholder': this.$el.dataset.placeholder } : {},
@@ -219,7 +218,7 @@ export default (binding = {}) => ({
         this._editor.view.dispatch(this._editor.state.tr.setMeta('addToHistory', false).setMeta('preventUpdate', true))
 
         this._reported = this.value
-        this._loaded = new Set(this._unsavedImages())
+        this._seenImages = new Set(this._unsavedImages())
         this._listen()
         this.$el.toggleAttribute('data-editor-mac', MAC)
         const form = this.$el.closest('form')
@@ -251,7 +250,7 @@ export default (binding = {}) => ({
         this._sync()
         if (binding.property) this.$watch('$wire.' + binding.property, value => this.restore(value))
         this._attributes = new MutationObserver(records => records.forEach(record => this.attributeChangedCallback(record.attributeName)))
-        this._attributes.observe(this.$el, { attributes: true, attributeFilter: ['aria-invalid', 'aria-describedby', 'data-disabled'] })
+        this._attributes.observe(this.$el, { attributes: true, attributeFilter: ['aria-invalid', 'aria-describedby', 'data-disabled', 'data-label', 'data-labelledby'] })
     },
 
     publish(value) {
@@ -288,7 +287,7 @@ export default (binding = {}) => ({
             this._editor.setEditable(! disabled)
         }
 
-        // The text box carries the field's error state.
+        // Refresh the text box's label and validation attributes after morphing.
         this._editor.view.setProps({})
         this._sync()
     },
@@ -312,6 +311,8 @@ export default (binding = {}) => ({
 
         if (! this._editor || value === this.value || this._holds(value)) return
         this._mediaRequest = null
+        for (const request of this._requests) this._placeholder(request.id)
+        this._requests.clear()
 
         const { from, to } = this._editor.state.selection
         const near = (doc, position) => doc.resolve(Math.min(position, doc.content.size))
@@ -321,7 +322,7 @@ export default (binding = {}) => ({
             .command(({ tr }) => !! tr.setSelection(TextSelection.between(near(tr.doc, from), near(tr.doc, to))))
             .run()
         this._reported = this.value
-        this._unsavedImages().forEach(src => this._loaded.add(src))
+        this._unsavedImages().forEach(src => this._seenImages.add(src))
         const input = this.$el.querySelector('[data-editor-model]')
         if (input) input.value = this.value
     },
@@ -930,7 +931,7 @@ export default (binding = {}) => ({
         const multiple = operation === 'insert' && !placeholder
         this._mediaRequest = { requestId, kind, operation, multiple, from, to, placeholder }
         this._mediaError(false)
-        this.$dispatch('ui-editor-media-request', { name, requestId, kind, operation, multiple })
+        this.$dispatch('ui-editor-media-request', { name, requestId, kind, operation, multiple, source: 'picker' })
     },
 
     _canPickMedia(kind) {
@@ -998,39 +999,57 @@ export default (binding = {}) => ({
      * Dismissed, nothing goes there.
      */
     async _uploadFiles(files, range, source) {
+        if (! this._canUploadMedia()) return
+
         const accept = accepted(this._format.features)
+        const items = [...files].map(file => ({ file, kind: kindOf({ mime: file.type, url: file.name }) }))
+            .filter(({ kind }) => accept.includes(kind) || accept.includes('file'))
 
-        files = [...files].filter(file => accept.includes(kindOf({ mime: file.type, url: file.name })) || accept.includes('file'))
-
-        if (! this.$el.dataset.upload || ! files.length || ! this._editor) return
+        if (! items.length) return
 
         const request = { from: range.from, to: range.to, id: `upload-${++uploaded}` }
-
-        // How far the files have got, together, shows on the placeholder.
-        const sent = files.map(() => 0)
-        const size = files.reduce((sum, file) => sum + file.size, 0) || 1
-        const progress = index => (loaded, total) => {
-            sent[index] = files[index].size * loaded / total
-            this._progress(request.id, sent.reduce((sum, part) => sum + part, 0) / size)
+        const pending = []
+        const updateProgress = () => {
+            const total = pending.reduce((sum, item) => sum + item.size, 0)
+            const sent = pending.reduce((sum, item) => sum + item.size * item.share, 0)
+            this._progress(request.id, sent / (total || 1))
         }
 
         this._requests.add(request)
-        this._placeholder(request.id, request.from, 'uploading')
-        this._busy(files.length)
+        for (const { file, kind } of items) {
+            const item = { size: file.size || 1, share: 0 }
+            item.response = this._requestUpload({ source, kind, operation: 'insert', file }, (loaded, total) => {
+                if (! Number.isFinite(loaded) || ! Number.isFinite(total) || total <= 0) return
+                item.share = Math.max(0, Math.min(1, loaded / total))
+                updateProgress()
+            })
+            if (item.response) pending.push(item)
+        }
+        if (! pending.length) {
+            this._requests.delete(request)
+            return
+        }
 
-        const results = await Promise.allSettled(files.map((file, index) => this._send({ file, source }, progress(index)).finally(() => this._busy(-1))))
+        if (this._requests.has(request)) {
+            this._placeholder(request.id, request.from, 'uploading')
+            updateProgress()
+        }
+        this._busy(pending.length)
+
+        const results = await Promise.allSettled(pending.map(item => item.response.finally(() => this._busy(-1))))
 
         if (! this._requests.delete(request) || ! this._editor) return
 
         const attachments = results.flatMap(result => result.status === 'fulfilled' && result.value ? [result.value] : [])
-        const reason = results.find(result => result.status === 'rejected')?.reason?.message || this._labels.failed
+        const failure = results.find(result => result.status === 'rejected' && result.reason?.name !== 'AbortError')
+        const invalid = results.some(result => result.status === 'fulfilled' && ! result.value)
 
-        // What wouldn't upload is said after what did.
+        // Report failures after inserted files. Cancelled files are skipped.
         this._placeholder(request.id)
         this._tracked.add(request)
         this._insert(attachments, request)
         this._tracked.delete(request)
-        if (attachments.length < files.length) this._placeholder(request.id, request.to, 'failed', reason)
+        if (failure || invalid) this._placeholder(request.id, request.to, 'failed', failure?.reason?.message || this._labels.failed)
     },
 
     // The upload placeholder by this id: put (of a kind, saying why) where it goes, or
@@ -1066,20 +1085,37 @@ export default (binding = {}) => ({
         this._placeholder(id)
     },
 
-    // To the uploader. The address of its answer is the app's: its copies are never external.
-    async _send(item, progress = null) {
-        const attachment = await upload(this.$el.dataset.upload, { ...item, progress, context: this.$el.dataset.uploadContext, token: this.$el.dataset.uploadToken })
+    _canUploadMedia() {
+        return this._editor?.isEditable && this.$el.hasAttribute('data-media-upload') && ! this.$el.hasAttribute('data-disabled') && ! this.$el.hasAttribute('data-source')
+    },
 
-        if (! attachment?.url || ! safeUrl(attachment.url)) return null
+    // The application may claim a request during dispatch. Only claimed requests become busy.
+    _requestUpload(item, progress = null) {
+        let response
+        let dispatching = true
+        this.$dispatch('ui-editor-media-request', {
+            name: this.$el.dataset.editorName ?? null,
+            requestId: String(++mediaRequests),
+            ...item,
+            progress,
+            respondWith(result) {
+                if (dispatching && ! response) response = Promise.resolve(result)
+            },
+        })
+        dispatching = false
 
-        const { host } = new URL(attachment.url, document.baseURI)
+        return response?.then(attachment => {
+            if (! safeUrl(attachment?.url)) return null
 
-        if (host !== location.host && ! this._hosts.includes(host)) {
-            this._hosts.push(host)
-            this._unsaved = { doc: null, images: [] }
-        }
+            const { host } = new URL(attachment.url, document.baseURI)
 
-        return attachment
+            if (host !== location.host && ! this._hosts.includes(host)) {
+                this._hosts.push(host)
+                this._unsaved = { doc: null, images: [] }
+            }
+
+            return attachment
+        })
     },
 
     _insert(attachments, range) {
@@ -1111,40 +1147,46 @@ export default (binding = {}) => ({
     _unsavedImages() {
         const { doc } = this._editor.state
 
-        if (this._unsaved.doc !== doc) this._unsaved = { doc, images: this._has('image') && this.$el.dataset.upload ? unsavedImages(doc, this._hosts) : [] }
+        if (this._unsaved.doc !== doc) this._unsaved = { doc, images: this._has('image') && this.$el.hasAttribute('data-media-upload') ? unsavedImages(doc, this._hosts) : [] }
 
         return this._unsaved.images
     },
 
     /**
-     * Saves images the app has no copy of (someone asked, or they came in), each to the
-     * uploader as a file: a data: one as itself, another site's as the browser reads it,
-     * or by its address, for the server to fetch, when its site doesn't let the browser
-     * read it. Until then it shows as saving; its copy takes its place wherever it is by
-     * then. One saved before takes its copy at once; one that wouldn't says why in its
-     * menu, saved again only when asked.
+     * Offers the app a data image as a File, or an external image as a URL.
+     * The returned copy replaces all occurrences of the source image.
      */
-    _save(sources) {
-        if (! this._editor || ! this.$el.dataset.upload) return
+    _save(sources, automatic = false) {
+        if (! this._canUploadMedia()) return
 
         this._swapImages(new Map(sources.filter(src => this._saved.has(src)).map(src => [src, this._saved.get(src)])))
+        const pending = this._saving.size
 
         for (const src of new Set(sources)) {
-            const kind = unsaved(src, this._hosts)
+            const source = unsaved(src, this._hosts)
 
-            if (! kind || this._saving.has(src) || this._saved.has(src)) continue
+            if (! source || this._saving.has(src) || this._saved.has(src)) continue
+
+            if (automatic) this._seenImages.add(src)
+            const response = this._requestUpload({
+                kind: 'image', source, operation: 'import', automatic,
+                ...(source === 'data' ? { file: dataFile(src) } : { url: new URL(src, document.baseURI).href }),
+            })
+            if (! response) continue
 
             this._saving.add(src)
             this._failed.delete(src)
             this._busy(1)
-            this._saveImage(src, kind)
+            response
                 .then(attachment => {
                     if (! attachment) return this._failed.set(src, this._labels.failed)
 
                     this._saved.set(src, attachment)
                     this._swapImages(new Map([[src, attachment]]))
                 })
-                .catch(error => this._failed.set(src, error.message || this._labels.failed))
+                .catch(error => {
+                    if (error?.name !== 'AbortError') this._failed.set(src, error?.message || this._labels.failed)
+                })
                 .finally(() => {
                     this._saving.delete(src)
                     this._editor?.commands.setSaving([...this._saving])
@@ -1152,7 +1194,7 @@ export default (binding = {}) => ({
                 })
         }
 
-        this._editor.commands.setSaving([...this._saving])
+        if (this._saving.size !== pending) this._editor.commands.setSaving([...this._saving])
     },
 
     /**
@@ -1180,30 +1222,13 @@ export default (binding = {}) => ({
         if (this.panel?.querySelector('[data-editor-busy]')) this._updatePanel({ uploads: this._uploading, refused: this._refused })
     },
 
-    // A form submitted around it while it uploads doesn't; before Livewire's wire:submit
-    // (on the form) hears of it.
-    async _saveImage(src, kind) {
-        if (kind === 'data') return this._send({ file: dataFile(src), source: 'data' })
-
-        const file = await imageFile(src).catch(() => null)
-
-        return this._send({ file, url: src, source: 'external' })
-    },
-
-    /**
-     * Images that came in (pasted, dropped, from the source view, inserted) saved as
-     * config ui.editor.auto_upload says (data-auto-upload): not those the content had
-     * when it loaded or the server set it, one put back (undone) after it was saved, or
-     * one that wouldn't save.
-     */
+    // Offer new images once. Applications choose whether to accept automatic imports.
     _autoSave() {
-        const auto = (this.$el.dataset.autoUpload ?? '').split(' ').filter(Boolean)
+        if (! this._canUploadMedia()) return
 
-        if (! this._editor || ! auto.length) return
+        const sources = this._unsavedImages().filter(src => ! this._seenImages.has(src) && ! this._saved.has(src) && ! this._failed.has(src) && ! this._saving.has(src))
 
-        const sources = this._unsavedImages().filter(src => auto.includes(unsaved(src, this._hosts)) && ! this._loaded.has(src) && ! this._saved.has(src) && ! this._failed.has(src) && ! this._saving.has(src))
-
-        if (sources.length) this._save(sources)
+        if (sources.length) this._save(sources, true)
     },
 
     // The images at these addresses take the app's copies, a step of its own to undo.
@@ -1328,7 +1353,7 @@ export default (binding = {}) => ({
 
         const position = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos ?? view.state.selection.from
 
-        // Taken without an uploader too, so the browser doesn't open the file instead.
+        // Keep the browser from opening a dropped file.
         event.preventDefault()
         this._uploadFiles(files, { from: position, to: position }, 'drop')
 
@@ -1580,7 +1605,7 @@ export default (binding = {}) => ({
 
         const reason = type === 'image' ? this._failed.get(node.attrs.src) ?? '' : ''
         for (const error of this._all('[data-editor-image-error]')) error.hidden = !reason
-        if (this.$el.dataset.upload) this._updatePanel({ imageError: reason })
+        if (this.$el.hasAttribute('data-media-upload')) this._updatePanel({ imageError: reason })
 
         if (this.panel?.querySelector('[data-editor-link-frame]')) this._updatePanel({ link: href })
 

@@ -6,7 +6,7 @@
         </x-ui::input-group>
     </div>
 @endif
-<ul role="tree" data-slot="tree-list" {{ $attributes->only(['aria-label', 'aria-labelledby']) }} @if ($settings['checkable'] ?? false) aria-multiselectable="true" @endif>
+<ul role="tree" data-slot="tree-list" {{ $treeLabel }} @if ($settings['checkable'] ?? false) aria-multiselectable="true" @endif>
     @include('ui::livewire.tree-nodes', ['nodes' => $nodes, 'level' => 1, 'ancestorDisabled' => $settings['disabled'] ?? false])
 </ul>
 @if ($settings['searchable'] ?? false)

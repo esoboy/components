@@ -4,7 +4,7 @@
  * Cascader on the Inputs page: a column per level in a popover; the value is the path.
  */
 
-const CASCADER = '#region-picker';
+const CASCADER = 'eso-cascader:has(#region-picker)';
 
 it('shows the bound path on its trigger', function () {
     visit('/inputs')
@@ -32,7 +32,7 @@ it('shows disabled options it does not pick', function () {
 
 it('picks any level with change-on-select', function () {
     visit('/inputs')
-        ->click('#category-picker [data-cascader-trigger]')
-        ->click('#category-picker [data-cascader-item][data-value="zhejiang"]')
+        ->click('eso-cascader:has(#category-picker) [data-cascader-trigger]')
+        ->click('eso-cascader:has(#category-picker) [data-cascader-item][data-value="zhejiang"]')
         ->assertSeeIn('#category', '["zhejiang"]');
 });

@@ -4,7 +4,7 @@
  * Tree Select on the Inputs page: a Select-style trigger opening a Tree.
  */
 
-const TREE_SELECT = '#department-picker';
+const TREE_SELECT = 'eso-tree-select:has(#department-picker)';
 
 it('picks one item and shows it on its trigger', function () {
     visit('/inputs')
@@ -17,7 +17,7 @@ it('picks one item and shows it on its trigger', function () {
 });
 
 it('checks several items when checkable', function () {
-    $select = '#departments-picker';
+    $select = 'eso-tree-select:has(#departments-picker)';
 
     visit('/inputs')
         ->click($select.' [data-slot="select-trigger"]')

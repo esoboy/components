@@ -1,10 +1,6 @@
 /*
- * Images not saved to the app yet: on another host than the page's and the app's own
- * (config ui.editor.hosts, data-image-hosts), or data: (pasted from a page, a
- * screenshot tool or Word). They stay as they are until saved, from the image's menu or
- * the footer's "save all", or as they come in (ui.editor.auto_upload): each goes to
- * the app's uploader as a file (upload.js), and its copy takes their place wherever
- * they are by then. Meanwhile they show as saving.
+ * Images from another host, or data images pasted from a page or a document.
+ * They stay in the editor until the application returns its copy.
  */
 
 import { Extension } from '@tiptap/core'
@@ -14,9 +10,6 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 export const savingKey = new PluginKey('editorSaving')
 
 const DATA = /^data:image\/(?:png|jpe?g|gif|webp|bmp|avif);base64,[a-z\d+/]+={0,2}$/i
-
-// Pictures, as the uploader takes images (EditorUploads::IMAGES): not SVG, which holds markup.
-const PICTURES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'image/avif']
 
 // A picture written into the address: what the editor keeps of data: images (not SVG,
 // which holds markup).
@@ -108,25 +101,6 @@ export function wordImages(html, rtf) {
     else images.forEach(image => image.replaceWith(MISSING))
 
     return template.innerHTML
-}
-
-/**
- * Another site's image as a file, as the browser reads it: only when its site lets pages
- * read it (CORS), and a picture; otherwise it throws, for the server to fetch it.
- */
-export async function imageFile(src) {
-    const response = await fetch(src, { mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer' })
-
-    if (! response.ok) throw new Error(`The image answered ${response.status}.`)
-
-    const blob = await response.blob()
-    const type = blob.type.split(';')[0].trim().toLowerCase()
-
-    if (! PICTURES.includes(type)) throw new Error('The address is not a picture.')
-
-    const name = decodeURIComponent(new URL(src, document.baseURI).pathname.split('/').pop() ?? '').replace(/\.[^.]*$/, '') || 'image'
-
-    return new File([blob], `${name}.${type.split('/')[1].replace('jpeg', 'jpg')}`, { type })
 }
 
 function decorate(doc, pending) {

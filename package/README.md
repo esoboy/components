@@ -93,6 +93,22 @@ shadcn/ui's:
 
 Controls inside `<x-ui::field>` show their validation errors; standalone controls don't.
 
+Date Picker selects days by default. Use `granularity="month"` for `YYYY-MM`
+values and `granularity="quarter"` for `YYYY-Q1` through `YYYY-Q4`.
+
+```blade
+<x-ui::date-picker granularity="month" wire:model.live="reportMonth" />
+<x-ui::date-picker granularity="quarter" mode="range" wire:model.live="reportQuarters"
+    min="2025-Q1" max="2027-Q4" />
+```
+
+Single selection binds a string or `null`. Multiple selection binds a list, and
+range selection binds `['from' => …, 'to' => …]`. Preset strings and `disabled-dates`
+use the selected granularity. Presets also accept dates as `DateTimeInterface`
+objects. `min` and `max` accept period values or ISO dates, including the period
+containing each boundary. `caption-layout="dropdown"` shows a year selector in
+the month and quarter panels. Time selection applies to day granularity.
+
 Dialog, Sheet, Drawer and Alert Dialog attach their trigger and close behavior to
 the single rendered control in each slot. Put the appearance and any application
 action on that control.
@@ -182,10 +198,11 @@ Declare the media types the application can select for this editor:
     x-on:ui-editor-media-request="$wire.openMedia($event.detail)" />
 ```
 
-The editor emits `ui-editor-media-request` synchronously from its root with
-`name`, `requestId`, `kind` (`image`, `video`, `audio` or `file`),
-`operation` (`insert` or `replace`) and `multiple`. Use `name` or `wire:model`
-to identify the editor. To open the system picker, call the application's file input
+The editor emits a bubbling `ui-editor-media-request` from its root. Each request
+includes `name` (the editor's `name` or `wire:model`), `requestId`, `source`,
+`kind` (`image`, `video`, `audio` or `file`) and `operation`.
+Picker requests have `source: 'picker'`, an `insert` or `replace` operation
+and a `multiple` flag. To open the system picker, call the application's file input
 from the Alpine listener during the same user interaction, then upload through the app.
 A library picker can open through a Livewire action. Return the authorized attachments
 through the Livewire component that owns the editor:
@@ -199,15 +216,37 @@ Each attachment has a web or relative `url` and may include `name`, `mime`, `siz
 in bytes, `alt`, `width`, `height`, and `poster`. Supply the MIME type for image,
 video and audio requests. `file` accepts any attachment, and replacing a file card
 preserves its presentation. The result goes to the original editor and mapped position.
-Each request can be completed once. A newer request, a disabled or unmounted editor,
-a replaced document, entering source mode, or removing the replacement target
-invalidates it. The optional `ui.editor.uploader` handles dropped or pasted files
-and image imports independently.
+Each picker request can be completed once. A newer picker request, a disabled or
+unmounted editor, a replaced document, entering source mode, or removing the
+replacement target invalidates it.
 
-An `EditorUploader` implements `authorize($source, $url, $context)` to apply the
-app's permissions and rate limits before a remote fetch. It can throw
-`AuthorizationException` to deny the request. Its `upload()` receives the validated
-file for storage and checks that need file content. Remote imports require PHP cURL.
+Set `:media-upload="true"` to also receive one event per dropped or pasted file
+(`source: 'drop'` or `'paste'`, `operation: 'insert'`, with a `file`) and per
+image to import (`source: 'data'` with a `file`, or `'external'` with a `url`,
+`operation: 'import'`). The editor offers each new image source once with
+`automatic: true`. It uses `false` when the user asks to save an image. Same-origin images and
+hosts listed in `:image-hosts="['cdn.example.com', '*.assets.example.com']"`
+already count as belonging to the application.
+
+For a file or image import, call `request.respondWith(promise)` synchronously in
+the listener. The promise returns one attachment. Reject it with an `Error` to
+show a failure message. Reject with an `AbortError` to cancel without a message.
+An empty or invalid attachment also reports a failure.
+For dropped or pasted files, the application can call `request.progress(loaded, total)`
+with byte counts. To decline a request, leave it unclaimed. The application owns
+authorization, validation, and transport. The editor handles progress, mapped
+insertion positions and replacement of imported images.
+
+```blade
+<x-ui::editor wire:model="body" :media-picker="['image', 'file']" :media-upload="true"
+    x-on:ui-editor-media-request="
+        const request = $event.detail
+        if (request.source === 'picker') $wire.openMedia(request)
+        else if (!request.automatic) request.respondWith(uploadMedia(request))
+    " />
+```
+
+Here `uploadMedia` is a method on the application's surrounding Alpine component.
 
 The editor's toolbar collapses controls that do not fit into More by default. To show
 all tools, wrapping onto new rows, turn off `collapse-toolbar`. For a custom toolbar,
@@ -230,8 +269,15 @@ The content area's maximum height is `24rem`; customize it with `--editor-max-he
 <x-ui::editor wire:model="body" :collapse-toolbar="false" style="--editor-max-height: 32rem;" />
 ```
 
-The toaster is kept across `wire:navigate`, so a toast shown before
-`$this->redirect('/orders', navigate: true)` stays on the next page.
+To keep toasts across `wire:navigate`, wrap the toaster in Livewire's `@persist`
+in your shared application layout. Use the same key on each participating page.
+This also keeps a toast shown before `$this->redirect('/orders', navigate: true)`.
+
+```blade
+@persist('app-toaster')
+    <x-ui::toaster />
+@endpersist
+```
 
 ## Typography
 

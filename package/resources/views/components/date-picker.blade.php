@@ -13,6 +13,7 @@
     'dayView' => null,
     'selectedView' => null,
     'mode' => 'single',
+    'granularity' => 'day',
     'disabled' => false,
     'placeholder' => null,
     'value' => null,
@@ -33,10 +34,12 @@
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value);
+$granularity = in_array($granularity, ['month', 'quarter'], true) ? $granularity : 'day';
+$time = $granularity === 'day' && $time;
 $numberOfMonths ??= $mode === 'range' ? 2 : 1;
-$presets = DatePresets::normalize($presets, $mode);
+$presets = DatePresets::normalize($presets, $mode, $granularity);
 $validation = $state->attributes();
-$settings = compact('dayView', 'selectedView', 'mode', 'disabled', 'placeholder', 'month', 'captionLayout', 'numberOfMonths', 'weekStartsOn', 'min', 'max', 'disabledDates', 'presets', 'time', 'timeMode', 'step', 'timeValue', 'validation');
+$settings = compact('dayView', 'selectedView', 'mode', 'granularity', 'disabled', 'placeholder', 'month', 'captionLayout', 'numberOfMonths', 'weekStartsOn', 'min', 'max', 'disabledDates', 'presets', 'time', 'timeMode', 'step', 'timeValue', 'validation');
 $key = $attributes->get('wire:key') ?? $attributes->get('id') ?? Model::scope('date-picker'.(Model::key($attributes) ?? ''), $loop ?? null);
 @endphp
 

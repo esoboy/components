@@ -53,7 +53,12 @@ final class Model
 
         foreach ($attributes->getAttributes() as $name => $value) {
             if (str_starts_with($name, 'wire:model')) {
-                $binding[$name.($number && ! str_contains($name, '.number') ? '.number' : '')] = $value.($index === null ? '' : '.'.$index);
+                if ($number) {
+                    // Livewire 4 applies input coercion from the modifiers before .live.
+                    $modifiers = array_diff(array_slice(explode('.', $name), 1), ['number']);
+                    $name = implode('.', ['wire:model', 'number', ...$modifiers]);
+                }
+                $binding[$name] = $value.($index === null ? '' : '.'.$index);
             }
         }
 

@@ -1,7 +1,6 @@
 /*
  * Slider: native range inputs stacked over a drawn track, one per thumb. Thumbs stay
- * inside the track (shadcn's thumbAlignment="edge"), so positions are offset by half
- * a thumb (6px) at each end.
+ * inside the track, so positions are offset by half a thumb at each end.
  */
 @layer components {
     :where([data-slot="slider"]) {
@@ -18,6 +17,7 @@
 
     :where([data-slot="slider-control"]) {
         @apply relative flex min-h-3 w-full touch-none items-center select-none;
+        --slider-thumb-size: 12px;
     }
 
     :where([data-slot="slider"][data-disabled] [data-slot="slider-control"]) {
@@ -42,14 +42,14 @@
 
     :where([data-slot="slider-range"]) {
         @apply absolute bg-primary select-none;
-        --from: calc(6px + (100% - 12px) * var(--start) / 100);
-        --to: calc(6px + (100% - 12px) * var(--end) / 100);
+        --from: calc(var(--slider-thumb-size) / 2 + (100% - var(--slider-thumb-size)) * var(--start) / 100);
+        --to: calc(var(--slider-thumb-size) / 2 + (100% - var(--slider-thumb-size)) * var(--end) / 100);
     }
 
     :where([data-slot="slider"][data-orientation="horizontal"] [data-slot="slider-range"]) {
         @apply inset-y-0;
-        left: var(--from);
-        right: calc(100% - var(--to));
+        inset-inline-start: var(--from);
+        inset-inline-end: calc(100% - var(--to));
     }
 
     :where([data-slot="slider"][data-orientation="vertical"] [data-slot="slider-range"]) {
@@ -60,7 +60,7 @@
 
     /* A single thumb fills from the very start of the track. */
     :where([data-slot="slider"]:not(:has([data-slot="slider-thumb"] ~ [data-slot="slider-thumb"]))[data-orientation="horizontal"] [data-slot="slider-range"]) {
-        left: 0;
+        inset-inline-start: 0;
     }
 
     :where([data-slot="slider"]:not(:has([data-slot="slider-thumb"] ~ [data-slot="slider-thumb"]))[data-orientation="vertical"] [data-slot="slider-range"]) {
@@ -79,18 +79,24 @@
         }
 
         &::-webkit-slider-thumb {
-            @apply pointer-events-auto relative block size-3 shrink-0 appearance-none rounded-full border border-ring bg-white transition-[color,box-shadow];
+            @apply pointer-events-auto relative block shrink-0 appearance-none rounded-full border border-ring bg-white;
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            translate: var(--slider-thumb-translate, none);
         }
 
         &::-moz-range-thumb {
-            @apply pointer-events-auto block size-3 shrink-0 rounded-full border border-ring bg-white transition-[color,box-shadow];
+            @apply pointer-events-auto block shrink-0 rounded-full border border-ring bg-white;
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            translate: var(--slider-thumb-translate, none);
         }
 
-        &:is(:hover, :focus-visible, :active)::-webkit-slider-thumb {
+        &:is(:hover, :focus-visible, [data-dragging="true"])::-webkit-slider-thumb {
             box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-ring) 50%, transparent);
         }
 
-        &:is(:hover, :focus-visible, :active)::-moz-range-thumb {
+        &:is(:hover, :focus-visible, [data-dragging="true"])::-moz-range-thumb {
             box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-ring) 50%, transparent);
         }
 

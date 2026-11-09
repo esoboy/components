@@ -36,10 +36,9 @@ class Calendar extends Component
         $this->settings = $settings;
         $this->value = $value;
         $first = is_array($value) ? ($value['from'] ?? $value[0] ?? null) : $value;
-        $month = $settings['month'] ?? (is_string($first) ? substr($first, 0, 7) : now()->format('Y-m'));
+        $month = $settings['month'] ?? (is_string($first) ? $this->selectedMonth($first) : now()->format('Y-m'));
         $this->month = preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) ? $month : now()->format('Y-m');
-        $minimum = $settings['startMonth'] ?? (! empty($settings['min']) ? substr($settings['min'], 0, 7) : null);
-        $maximum = $settings['endMonth'] ?? (! empty($settings['max']) ? substr($settings['max'], 0, 7) : null);
+        [$minimum, $maximum] = $this->monthBounds();
         if ($minimum && $this->month < $minimum) {
             $this->month = $minimum;
         }
@@ -60,7 +59,7 @@ class Calendar extends Component
     {
         $first = is_array($this->value) ? ($this->value['from'] ?? $this->value[0] ?? null) : $this->value;
         if (is_string($first)) {
-            $this->goTo(substr($first, 0, 7));
+            $this->goTo($this->selectedMonth($first));
         }
         $this->syncTimes();
     }
@@ -98,23 +97,22 @@ class Calendar extends Component
 
     public function select(string $date): void
     {
-        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
-        if (! $parsed || $parsed->format('Y-m-d') !== $date || $this->disabled($date)) {
+        if (! $this->selectable($date)) {
             return;
         }
 
         $mode = $this->settings['mode'] ?? 'single';
         if ($mode === 'range') {
-            $from = substr($this->value['from'] ?? '', 0, 10) ?: null;
-            $to = substr($this->value['to'] ?? '', 0, 10) ?: null;
+            $from = $this->selectionKey($this->value['from'] ?? '') ?: null;
+            $to = $this->selectionKey($this->value['to'] ?? '') ?: null;
             $range = ! $from || $to ? ['from' => $date, 'to' => null]
                 : ($date < $from ? ['from' => $date, 'to' => $from] : ['from' => $from, 'to' => $date]);
             $this->value = ['from' => $this->at($range['from'], 'from'), 'to' => $this->at($range['to'], 'to')];
         } elseif ($mode === 'multiple') {
             $values = (array) $this->value;
-            $dates = array_map(fn ($value) => substr($value, 0, 10), $values);
+            $dates = array_map($this->selectionKey(...), $values);
             $this->value = in_array($date, $dates, true)
-                ? array_values(array_filter($values, fn ($value) => substr($value, 0, 10) !== $date))
+                ? array_values(array_filter($values, fn ($value) => $this->selectionKey($value) !== $date))
                 : [...$values, $this->at($date, 'from')];
             sort($this->value);
         } else {
@@ -134,8 +132,7 @@ class Calendar extends Component
         }
         $dates = is_array($value) ? $value : [$value];
         foreach ($dates as $date) {
-            $parsed = is_string($date) ? \DateTimeImmutable::createFromFormat('!Y-m-d', substr($date, 0, 10)) : false;
-            if ($date && (! $parsed || $parsed->format('Y-m-d') !== substr($date, 0, 10) || $this->disabled(substr($date, 0, 10)))) {
+            if ($date && (! is_string($date) || ! $this->selectable($this->selectionKey($date)))) {
                 return;
             }
         }
@@ -149,7 +146,7 @@ class Calendar extends Component
         $this->value = $value;
         $first = is_array($value) ? ($value['from'] ?? $value[0] ?? null) : $value;
         if ($first) {
-            $this->goTo(substr($first, 0, 7));
+            $this->goTo($this->selectedMonth($first));
         }
         $this->dispatch('ui-calendar-picked', close: true);
     }
@@ -157,6 +154,23 @@ class Calendar extends Component
     protected function at(?string $date, string $part): ?string
     {
         return $date && ($this->settings['time'] ?? false) ? $date.' '.$this->times[$part] : $date;
+    }
+
+    protected function selectionKey(?string $date): string
+    {
+        return substr($date ?? '', 0, 10);
+    }
+
+    protected function selectedMonth(string $date): string
+    {
+        return substr($date, 0, 7);
+    }
+
+    protected function selectable(string $date): bool
+    {
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+
+        return $parsed && $parsed->format('Y-m-d') === $date && ! $this->disabled($date);
     }
 
     public function disabled(string $date): bool
@@ -168,10 +182,18 @@ class Calendar extends Component
 
     public function canShow(string $month): bool
     {
-        $min = $this->settings['startMonth'] ?? (! empty($this->settings['min']) ? substr($this->settings['min'], 0, 7) : null);
-        $max = $this->settings['endMonth'] ?? (! empty($this->settings['max']) ? substr($this->settings['max'], 0, 7) : null);
+        [$min, $max] = $this->monthBounds();
 
         return (! $min || $month >= $min) && (! $max || $month <= $max);
+    }
+
+    /** @return array{?string, ?string} */
+    protected function monthBounds(): array
+    {
+        return [
+            $this->settings['startMonth'] ?? (! empty($this->settings['min']) ? substr($this->settings['min'], 0, 7) : null),
+            $this->settings['endMonth'] ?? (! empty($this->settings['max']) ? substr($this->settings['max'], 0, 7) : null),
+        ];
     }
 
     public function format(string $date, string $pattern): string

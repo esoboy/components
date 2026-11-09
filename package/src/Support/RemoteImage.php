@@ -16,14 +16,15 @@ use LengthException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * An image on another site as a file, for the uploader: what the server does when the
- * browser can't read it (its site doesn't share it with pages, CORS). Only from public
+ * Downloads an image on another site as a file for applications that import it. Only from public
  * addresses, never the server's own network (localhost, 10.x, 169.254.x, …), through
  * redirects too, connecting to the address checked; no larger than PHP takes uploads;
- * a picture (EditorUploads::IMAGES), whatever it was called.
+ * a picture, whatever it was called.
  */
 final class RemoteImage
 {
+    public const MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp', 'image/avif'];
+
     private const REDIRECTS = 3;
 
     public static function download(string $url): ?UploadedFile
@@ -175,7 +176,7 @@ final class RemoteImage
         $size = filesize($path);
         $mime = $size > 0 && $size <= $max ? (new finfo(FILEINFO_MIME_TYPE))->file($path) : null;
 
-        if (! in_array($mime, EditorUploads::IMAGES, true)) {
+        if (! in_array($mime, self::MIME_TYPES, true)) {
             return null;
         }
 

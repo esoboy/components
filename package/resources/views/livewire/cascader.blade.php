@@ -1,5 +1,6 @@
-<eso-cascader {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style'])->merge(['data-slot' => 'cascader', 'x-data' => 'uiCascader', 'x-on:keydown' => 'key($event)', 'x-on:toggle.capture' => 'toggled($event)', 'x-on:ui-cascader-picked' => 'picked($event.detail)']) }}>
-    <x-ui::select.trigger :size="$settings['size'] ?? 'default'" data-cascader-trigger :data-placeholder="! $labels" :disabled="$settings['disabled'] ?? false" :commandfor="$this->getId().'-cascader-popup'" :attributes="$attributes->only(['class', 'style'])->merge($settings['validation'] ?? [])">
+@php($labelling = ['id', 'aria-label', 'aria-labelledby'])
+<eso-cascader {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style', ...$labelling])->merge(['data-slot' => 'cascader', 'x-data' => 'uiCascader', 'x-on:keydown' => 'key($event)', 'x-on:toggle.capture' => 'toggled($event)', 'x-on:ui-cascader-picked' => 'picked($event.detail)']) }}>
+    <x-ui::select.trigger :size="$settings['size'] ?? 'default'" data-cascader-trigger :data-placeholder="! $labels" :disabled="$settings['disabled'] ?? false" :commandfor="$this->getId().'-cascader-popup'" :attributes="$attributes->only(['class', 'style', ...$labelling])->merge($settings['validation'] ?? [])">
         <x-ui::select.value :placeholder="$labels ? implode(' '.($settings['separator'] ?? '/').' ', $labels) : ($settings['placeholder'] ?? null)" />
     </x-ui::select.trigger>
     <div id="{{ $this->getId() }}-cascader-popup" popover="auto" data-slot="cascader-content" data-side="bottom" data-align="start" style="--side-offset: 4px;" wire:ignore.self>

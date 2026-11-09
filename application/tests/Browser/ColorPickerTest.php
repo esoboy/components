@@ -5,7 +5,7 @@
  * color.
  */
 
-const COLOR_PICKER = '#brand-color';
+const COLOR_PICKER = 'eso-color-picker:has(#brand-color)';
 
 it('picks a swatch', function () {
     visit('/inputs')
@@ -29,7 +29,7 @@ it('renders a color supplied by the parent and clears it through the field', fun
     $page = visit('/inputs');
     $page->script(<<<'JS'
         (() => {
-            const root = document.querySelector('#brand-color').parentElement.closest('[wire\\:id]');
+            const root = document.querySelector('eso-color-picker:has(#brand-color)').parentElement.closest('[wire\\:id]');
             Livewire.find(root.getAttribute('wire:id')).$set('color', 'f80');
         })()
         JS);
@@ -57,7 +57,7 @@ it('binds keyboard changes from the shared hue slider', function () {
 
     $page->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'End')
         ->keys(COLOR_PICKER.' [data-color-picker-hue] input', 'ArrowLeft')
-        ->assertScript("document.querySelector('#brand-color [data-color-picker-hue] input').value === '359'")
+        ->assertScript("document.querySelector('eso-color-picker:has(#brand-color) [data-color-picker-hue] input').value === '359'")
         ->assertScript("document.getElementById('color').textContent.trim() !== '#ff0000'")
         ->assertNoJavaScriptErrors();
 });

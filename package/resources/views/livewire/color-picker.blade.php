@@ -1,15 +1,16 @@
 @php
+    $labelling = ['id', 'aria-label', 'aria-labelledby'];
     $disabled = (bool) ($settings['disabled'] ?? false);
     $placeholder = $settings['placeholder'] ?? null;
     $name = $attributes->get('name');
 @endphp
-<eso-color-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name'])->merge(['data-slot' => 'color-picker', 'x-data' => 'uiColorPicker',
+<eso-color-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name', ...$labelling])->merge(['data-slot' => 'color-picker', 'x-data' => 'uiColorPicker',
     'x-on:input' => 'previewHue($event)', 'x-on:change' => 'commitHue($event)', 'x-on:keydown' => 'key($event)',
     'x-on:pointerdown' => 'start($event)', 'x-on:pointermove' => 'move($event)',
     'x-on:pointerup' => 'end($event)', 'x-on:pointercancel' => 'cancel()',
     'data-value' => $color ?? false, 'data-name' => $name ?? false, 'data-placeholder' => $placeholder, ...$settings['validation'] ?? []]) }}>
     <x-ui::popover>
-        <x-ui::popover.trigger><x-ui::button variant="outline" data-color-picker-trigger :data-empty="$color ? 'false' : 'true'" :disabled="$disabled" :attributes="$attributes->only(['class', 'style'])->merge($settings['validation'] ?? [])">
+        <x-ui::popover.trigger><x-ui::button variant="outline" data-color-picker-trigger :data-empty="$color ? 'false' : 'true'" :disabled="$disabled" :attributes="$attributes->only(['class', 'style', ...$labelling])->merge($settings['validation'] ?? [])">
             <span data-slot="color-picker-swatch" style="--color-picker-color: {{ $color ?? 'transparent' }}"></span>
             <span data-slot="color-picker-value">{{ $color ?? $placeholder }}</span>
         </x-ui::button></x-ui::popover.trigger>

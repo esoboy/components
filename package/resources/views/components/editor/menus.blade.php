@@ -1,17 +1,17 @@
 @blaze
 
-@use('Esoboy\Ui\Support\EditorUploads')
 @use('Esoboy\Ui\Support\RichText')
 
 @aware([
     'format' => 'full',
     'mediaPicker' => [],
+    'mediaUpload' => false,
 ])
 
 {{-- What the editor's script shows as needed, as templates it clones: the bubble menus (selected text, a table, a selected block, a link, a formula), the upload placeholder, the drag handle. --}}
 @php
 $rich = RichText::resolve($format);
-$uploads = EditorUploads::enabled();
+$uploads = $mediaUpload;
 $replaceKinds = array_filter(['image', 'video', 'audio', 'file'], fn ($kind) => in_array($kind, $mediaPicker, true) && $rich->has($kind));
 $names = [
     'gray' => __('ui::editor.color-gray'),

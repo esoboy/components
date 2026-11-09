@@ -5,13 +5,9 @@ use Dom\HTMLDocument;
 use Esoboy\Ui\Facades\Ui;
 use Esoboy\Ui\Rules\RichTextLength;
 use Esoboy\Ui\Support\EditorControls;
-use Esoboy\Ui\Support\EditorUploads;
 use Esoboy\Ui\Support\RichText;
 use Esoboy\Ui\Tests\Fixtures\Posts;
-use Esoboy\Ui\Tests\Fixtures\Uploads;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\ViewException;
@@ -101,15 +97,13 @@ describe('formats', function () {
 });
 
 describe('the view', function () {
-    beforeEach(fn () => config()->set('ui.editor.uploader', Uploads::class));
-
     it('renders the editor with its format and sanitized content', function () {
-        $html = (string) $this->blade('<x-ui::editor wire:model="body" :media-picker="[\'image\', \'video\', \'audio\', \'file\']" placeholder="Write" :max-length="500" value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
+        $html = (string) $this->blade('<x-ui::editor wire:model="body" :media-upload="true" :media-picker="[\'image\', \'video\', \'audio\', \'file\']" placeholder="Write" :max-length="500" value="<p onclick=\'x\'>Hi <b>there</b></p><script>alert(1)</script>" />');
 
         expect($html)
             ->toContain('data-format="{&quot;features&quot;:[&quot;heading&quot;,')
             ->toContain('&quot;layout&quot;,&quot;toolbar&quot;,&quot;bubble-menu&quot;,&quot;slash-menu&quot;,&quot;drag-handle&quot;,&quot;find-replace&quot;,&quot;source&quot;,')
-            ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;failed&quot;:&quot;The upload failed.&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}" data-upload="http://localhost/esoboy-ui/editor/upload" data-image-hosts="localhost" data-max-length="500"')
+            ->toContain('data-labels="{&quot;expand&quot;:&quot;Expand&quot;,&quot;collapse&quot;:&quot;Collapse&quot;,&quot;task&quot;:&quot;Done&quot;,&quot;caption&quot;:&quot;Write a caption…&quot;,&quot;failed&quot;:&quot;The upload failed.&quot;,&quot;keyboard&quot;:&quot;Alt+F10 moves to the toolbar or the menu by the selection; Escape comes back.&quot;}"')
             ->toContain('&quot;allow&quot;:{&quot;a&quot;:{&quot;href&quot;:&quot;*&quot;,&quot;target&quot;:[&quot;_blank&quot;,&quot;_self&quot;],&quot;rel&quot;:&quot;*&quot;,&quot;title&quot;:&quot;*&quot;,&quot;download&quot;:&quot;*&quot;,&quot;type&quot;:&quot;*&quot;,&quot;style&quot;:0},')
             ->toContain('&quot;section&quot;:{&quot;style&quot;:1}')
             ->toContain('data-placeholder="Write" data-label="Rich text editor" data-editor-name="body"')
@@ -214,9 +208,7 @@ describe('the view', function () {
     });
 
     it('offers spacing, callouts, a link card, captions, image links, cell colors and an upload placeholder', function () {
-        config()->set('ui.editor.uploader', Uploads::class);
-
-        $html = (string) $this->blade('<x-ui::editor />');
+        $html = (string) $this->blade('<x-ui::editor :media-upload="true" />');
 
         expect(substr_count($html, 'data-editor-command="margin-top"'))->toBe(6)
             ->and(substr_count($html, 'data-editor-command="letter-spacing"'))->toBe(6)
@@ -234,9 +226,7 @@ describe('the view', function () {
     });
 
     it('saves and shapes media and lets the app choose a video alongside the link action', function () {
-        config()->set('ui.editor.uploader', Uploads::class);
-
-        $html = (string) $this->blade('<x-ui::editor name="body" :media-picker="[\'video\']" />');
+        $html = (string) $this->blade('<x-ui::editor name="body" :media-upload="true" :media-picker="[\'video\']" />');
 
         preg_match('~<template data-template="bubble-node">(.*?)</template>~s', $html, $node);
 
@@ -567,24 +557,13 @@ describe('the server', function () {
     });
 });
 
-describe('uploads', function () {
-    // A picture, as a site would send it.
-    $png = fn () => base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
-    $post = fn (array $data) => test()->post('/esoboy-ui/editor/upload', $data, ['Accept' => 'application/json']);
-
-    beforeEach(function () {
-        Uploads::$uploads = [];
-        config()->set('ui.editor.uploader', Uploads::class);
-    });
-
-    it('renders declared media selection without an uploader', function () {
-        config()->set('ui.editor.uploader', null);
-
+describe('media events', function () {
+    it('renders declared media selection independently of file uploads', function () {
         $html = (string) $this->blade('<x-ui::editor name="body" :media-picker="[\'image\', \'audio\']" />');
 
         preg_match('~<template data-template="missing-image">(.*?)</template>~s', $html, $missing);
 
-        expect($html)->not->toContain('data-upload')
+        expect($html)->not->toContain('data-media-upload')
             ->not->toContain('data-image-hosts')
             ->toContain('data-media-picker="image audio"', 'data-editor-for="image audio"')
             ->not->toContain('data-editor-action="save-image"')
@@ -596,98 +575,16 @@ describe('uploads', function () {
             ->and(controls($html))->toContain('image', 'audio')->not->toContain('file');
     });
 
-    it('tells the editor where to upload, the app’s hosts, its sealed context and what goes up by itself', function () {
-        config()->set('ui.editor.hosts', ['cdn.app.test', 'https://img.app.test:8443/x', '*.oss.test']);
-        config()->set('ui.editor.auto_upload', ['external' => true, 'data' => false]);
-        config()->set('app.asset_url', 'https://assets.app.test');
-        config()->set('filesystems.disks.s3.url', 'https://bucket.s3.test/files');
+    it('enables file upload events and uses the image hosts supplied by the caller', function () {
+        $html = (string) $this->blade(<<<'BLADE'
+            <x-ui::editor :media-upload="true" :image-hosts="['cdn.app.test', '*.oss.test']" />
+            BLADE);
 
-        $html = (string) $this->blade('<x-ui::editor :upload-context="[\'post\' => 7]" />');
-
-        preg_match('~data-upload-context="([^"]+)"~', $html, $context);
-
-        expect($html)->toContain('data-upload="http://localhost/esoboy-ui/editor/upload"')
-            ->toContain('data-image-hosts="cdn.app.test img.app.test:8443 *.oss.test localhost assets.app.test bucket.s3.test"')
-            ->toContain('data-auto-upload="external"')
+        expect($html)->toContainMarkup('<eso-editor data-media-upload>')
+            ->toContain('data-image-hosts="cdn.app.test *.oss.test"')
             ->toContainMarkup('<template data-template="upload-failed">')
-            ->and(EditorUploads::open(html_entity_decode($context[1])))->toBe(['post' => 7])
             ->and(controls($html))->not->toContain('image', 'audio', 'file');
+
+        expect(Route::has('esoboy-ui.editor.upload'))->toBeFalse();
     });
-
-    it('hands each file to the uploader, with where it came from and the page’s context, and answers with its attachment', function () use ($post) {
-        $post(['source' => 'drop', 'file' => UploadedFile::fake()->create('a.pdf', 3, 'application/pdf'), 'context' => EditorUploads::seal(['post' => 7])])
-            ->assertOk()
-            ->assertExactJson(['attachment' => ['url' => '/uploads/a.pdf', 'name' => 'a.pdf', 'mime' => 'application/pdf', 'size' => 3072]]);
-
-        $post(['source' => 'paste', 'file' => UploadedFile::fake()->create('empty.png', 1, 'image/png')])->assertExactJson(['attachment' => null]);
-
-        expect(array_map(fn ($upload) => [$upload->source, $upload->url, $upload->context], Uploads::$uploads))->toBe([['drop', null, ['post' => 7]], ['paste', null, []]]);
-    });
-
-    it('says why it won’t: the request, a changed context, an image that isn’t a picture, the uploader’s reason; nothing without an uploader', function () use ($post) {
-        $post(['source' => 'stolen', 'file' => UploadedFile::fake()->create('a.png')])->assertUnprocessable()->assertJsonValidationErrors('source');
-        $post(['source' => 'drop'])->assertUnprocessable()->assertJsonValidationErrors('file');
-        $post(['source' => 'drop', 'file' => UploadedFile::fake()->create('a.png'), 'context' => 'forged'])->assertForbidden();
-        $post(['source' => 'data', 'file' => UploadedFile::fake()->createWithContent('a.png', '<svg onload="x()"/>')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'This image couldn’t be read.']);
-        $post(['source' => 'drop', 'file' => UploadedFile::fake()->image('refuse.png')])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'Not this one.']);
-
-        config()->set('ui.editor.uploader', null);
-
-        $post(['source' => 'drop', 'file' => UploadedFile::fake()->image('a.png')])->assertNotFound();
-        expect(array_map(fn ($upload) => $upload->file->getClientOriginalName(), Uploads::$uploads))->toBe(['refuse.png']);
-    });
-
-    it('checks the application policy before requesting a remote image', function () use ($post, $png) {
-        Http::fake(['*' => Http::response($png())]);
-
-        $post([
-            'source' => 'external',
-            'url' => 'http://93.184.216.34/a.png',
-            'context' => EditorUploads::seal(['denied' => true]),
-        ])->assertForbidden();
-
-        Http::assertNothingSent();
-        expect(Uploads::$uploads)->toBe([]);
-    });
-
-    it('fetches an image on another site the browser couldn’t read, as a file for the uploader', function () use ($post, $png) {
-        Http::fake([
-            '93.184.216.34/old/cat.png' => Http::response('', 302, ['Location' => '/pics/cat.png']),
-            '93.184.216.34/pics/cat.png' => Http::response($png(), 200, ['Content-Type' => 'application/octet-stream']),
-        ]);
-
-        $post(['source' => 'external', 'url' => 'http://93.184.216.34/old/cat.png'])
-            ->assertOk()
-            ->assertJsonPath('attachment.url', '/uploads/cat.png')
-            ->assertJsonPath('attachment.mime', 'image/png');
-
-        expect(Uploads::$uploads[0]->url)->toBe('http://93.184.216.34/old/cat.png')
-            ->and(Uploads::$uploads[0]->source)->toBe('external')
-            ->and(is_file(Uploads::$uploads[0]->file->getPathname()))->toBeFalse();
-    });
-
-    it('fetches nothing from the server’s own network, through redirects too, nor what isn’t a picture', function (string $url) use ($post, $png) {
-        Http::fake([
-            '93.184.216.34/inside' => Http::response('', 302, ['Location' => 'http://10.0.0.1/a.png']),
-            '93.184.216.34/page' => Http::response('<html></html>', 200, ['Content-Type' => 'image/png']),
-            '*' => Http::response($png(), 200),
-        ]);
-
-        $post(['source' => 'external', 'url' => $url])->assertUnprocessable()->assertJsonValidationErrors(['file' => 'This image couldn’t be read.']);
-
-        expect(Uploads::$uploads)->toBe([]);
-        Http::assertSentCount(str_starts_with($url, 'http://93.184.216.34/') ? 1 : 0);
-    })->with([
-        'localhost' => 'http://127.0.0.1/a.png',
-        'cloud metadata' => 'http://169.254.169.254/latest/meta-data',
-        'a cloud’s shared network' => 'http://100.100.100.200/latest/meta-data',
-        'a private network' => 'http://10.0.0.1/a.png',
-        'IPv6 loopback' => 'http://[::1]/a.png',
-        'IPv4 in IPv6' => 'http://[::ffff:127.0.0.1]/a.png',
-        'a name for none' => 'http://unresolvable.invalid/a.png',
-        'a file' => 'file:///etc/passwd',
-        'credentials' => 'http://user:secret@93.184.216.34/a.png',
-        'a redirect inside' => 'http://93.184.216.34/inside',
-        'a page' => 'http://93.184.216.34/page',
-    ]);
 });

@@ -83,7 +83,9 @@ $page = collect(config('demo'))->collapse()->get($current);
             </x-ui::sidebar.inset>
         </x-ui::sidebar.provider>
 
-        <x-ui::toaster action-view="ui-demo.toast-action" />
+        @persist('demo-toaster')
+            <x-ui::toaster action-view="ui-demo.toast-action" />
+        @endpersist
         <x-ui::confirm />
 
         @uiScripts

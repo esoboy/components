@@ -65,6 +65,23 @@ it('renders a combobox from options with a PHP selected label', function () {
     expect($html)->toContainMarkup('<input data-combobox-input value="Next.js" placeholder="Select a framework">')->toContain('data-combobox-trigger')->toContain('data-combobox-clear')->toContainMarkup('<div role="option" data-value="next" aria-selected="true">')->toContain('No items found.');
 });
 
+it('associates the label with the combobox control rendered from options', function (string $mode, string $control) {
+    $html = (string) $this->blade(<<<BLADE
+        <label id="framework-label" for="framework">Framework</label>
+        <x-ui::combobox {$mode} id="framework" aria-label="Framework chooser" aria-labelledby="framework-label" :options="[]" />
+        BLADE);
+
+    expect($html)->toContainMarkup("<{$control} id=\"framework\" aria-label=\"Framework chooser\" aria-labelledby=\"framework-label\">")
+        ->and(substr_count($html, ' id="framework"'))->toBe(1)
+        ->and(substr_count($html, ' aria-label="Framework chooser"'))->toBe(1)
+        ->and(substr_count($html, ' aria-labelledby="framework-label"'))->toBe(1);
+})->with([
+    'single' => ['', 'input role="combobox"'],
+    'autocomplete' => ['autocomplete', 'input role="combobox"'],
+    'multiple' => ['multiple', 'input role="combobox" data-slot="combobox-chip-input"'],
+    'button' => ['button', 'button data-combobox-trigger'],
+]);
+
 it('renders multiple chosen chips and native form values in PHP', function () {
     app()->setLocale('zh_CN');
     $html = (string) $this->blade('<x-ui::combobox multiple :value="[\'a\']" :options="[\'a\' => \'Alpha\']" name="tags" placeholder="Add" class="max-w-xs" />');

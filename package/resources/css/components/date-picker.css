@@ -33,6 +33,22 @@
         @apply w-auto p-0;
     }
 
+    :where([data-slot="date-picker-periods"]) {
+        @apply mt-2 grid w-56 grid-cols-3 gap-1;
+    }
+
+    [data-granularity="quarter"] :where([data-slot="date-picker-periods"]) {
+        @apply grid-cols-2;
+    }
+
+    [data-slot="date-picker-periods"] :where([data-range-middle]) {
+        @apply bg-muted text-foreground;
+    }
+
+    [data-slot="date-picker-periods"] :where([aria-pressed="true"]:not([data-range-middle])) {
+        @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground;
+    }
+
     :where([data-slot="date-picker-time"]) {
         @apply grid gap-3 border-t p-2;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));

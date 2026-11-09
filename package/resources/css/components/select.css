@@ -43,6 +43,10 @@
     :where([data-slot="select-content"][data-align-trigger="true"]) {
         transition: none;
         scale: 1;
+
+        &:not([data-positioned]) {
+            visibility: hidden;
+        }
     }
 
     :where([data-slot="select-group"]) {

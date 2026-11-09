@@ -34,6 +34,47 @@ it('normalizes Carbon presets and selects them in PHP', function () {
     Livewire::test(DatePicker::class, ['settings' => ['presets' => $presets, 'mode' => 'range']])->call('preset', 'Week')->assertSet('value', $presets['Week']);
 });
 
+it('renders month values as Blade options and native form values', function () {
+    $html = (string) $this->blade('<x-ui::date-picker granularity="month" name="report" value="2026-02" min="2026-02-15" max="2026-10-01" time />');
+
+    expect($html)->toContain('February 2026')
+        ->toContainMarkup('<button data-date-picker-period="2026-02" aria-pressed="true">')
+        ->toContainMarkup('<button data-date-picker-period="2026-01" disabled="disabled">')
+        ->toContainMarkup('<input type="hidden" name="report" value="2026-02">')
+        ->not->toContain('data-day=', 'data-date-picker-time=');
+});
+
+it('enforces month limits and disabled months on the server', function () {
+    Livewire::test(DatePicker::class, ['settings' => [
+        'granularity' => 'month', 'mode' => 'multiple', 'min' => '2026-02-15', 'max' => '2026-04', 'disabledDates' => ['2026-03'],
+    ]])->call('select', '2026-01')->assertSet('value', null)
+        ->call('select', '2026-03')->assertSet('value', null)
+        ->call('select', '2026-02-15')->assertSet('value', null)
+        ->call('select', '2026-05')->assertSet('value', null)
+        ->call('select', '2026-04')->assertSet('value', ['2026-04'])
+        ->call('select', '2026-02')->assertSet('value', ['2026-02', '2026-04'])
+        ->call('select', '2026-04')->assertSet('value', ['2026-02']);
+});
+
+it('uses quarter bounds for navigation, range selection and presets', function () {
+    $presets = DatePresets::normalize(['Half year' => [Carbon::parse('2027-04-15'), '2027-Q3'], 'Too early' => ['2026-Q2', '2027-Q1']], 'range', 'quarter');
+    expect($presets['Half year'])->toBe(['from' => '2027-Q2', 'to' => '2027-Q3']);
+
+    $picker = Livewire::test(DatePicker::class, ['settings' => [
+        'granularity' => 'quarter', 'mode' => 'range', 'min' => '2026-Q3', 'max' => '2027-Q3', 'presets' => $presets,
+    ], 'value' => ['from' => '2027-Q3', 'to' => null]])
+        ->assertSet('month', '2027-07')
+        ->call('goToYear', 2028)->assertSet('month', '2027-07')
+        ->call('goToYear', 2026)->assertSet('month', '2026-07')
+        ->call('preset', 'Too early')->assertSet('value.from', '2027-Q3')
+        ->call('select', '2026-Q3')->assertSet('value', ['from' => '2026-Q3', 'to' => '2027-Q3']);
+
+    expect($picker->html())->toContainMarkup('<button data-date-picker-period="2026-Q4" aria-pressed="true" data-range-middle="data-range-middle">');
+
+    $picker->call('preset', 'Half year')->assertSet('value', $presets['Half year'])
+        ->assertSet('month', '2027-04');
+});
+
 it('renders the shared time options with PHP generated labels', function () {
     $html = (string) $this->blade('<x-ui::date-picker time value="2026-01-05 14:30" />');
     expect($html)->toContain('data-date-picker-time="from"')

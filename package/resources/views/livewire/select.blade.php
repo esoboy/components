@@ -1,10 +1,12 @@
 @php
+    $labelling = ['id', 'aria-label', 'aria-labelledby'];
     $name = $attributes->get('name');
     $disabled = $settings['disabled'] ?? false;
     $validation = $settings['validation'] ?? [];
+    $triggerAttributes = $attributes->only($labelling)->merge($validation);
     $popup = $this->getId().'-listbox';
 @endphp
-<eso-select {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge([
+<eso-select {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', ...$labelling])->merge([
     'data-slot' => 'select',
     'data-value' => is_scalar($value) ? (string) $value : false,
     'data-name' => $name,
@@ -13,15 +15,16 @@
     'x-on:focusout' => '!$el.contains($event.relatedTarget) && blurModel()',
     'x-on:click' => 'click($event)',
     'x-on:keydown' => 'key($event)',
+    'x-on:beforetoggle.capture' => 'beforeToggle($event)',
     'x-on:toggle.capture' => 'toggle($event)',
     'x-on:scroll.document.capture.passive' => 'align($event)',
     'x-on:resize.window' => 'align()',
     ...$validation,
 ]) }}>
     @if ($choiceMarkup)
-        {!! $choiceMarkup->render($value, $validation, $disabled, $popup) !!}
+        {!! $choiceMarkup->render($value, $triggerAttributes, $disabled, $popup) !!}
     @else
-        <x-ui::select.trigger :size="$settings['size'] ?? 'default'" :disabled="$disabled" :commandfor="$popup" :aria-controls="$popup" :data-placeholder="$label === null" :attributes="new \Illuminate\View\ComponentAttributeBag($validation)">
+        <x-ui::select.trigger :size="$settings['size'] ?? 'default'" :disabled="$disabled" :commandfor="$popup" :aria-controls="$popup" :data-placeholder="$label === null" :attributes="$triggerAttributes">
             <x-ui::select.value :placeholder="$settings['placeholder'] ?? null" :label="$label" />
         </x-ui::select.trigger>
         <x-ui::select.content :id="$popup">

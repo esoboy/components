@@ -1,8 +1,14 @@
 <div {{ $attributes }}
+    data-demo-media-endpoint="{{ route('demo.editor.media') }}"
+    data-demo-media-token="{{ csrf_token() }}"
     x-data="{
         localMedia: null,
         uploadingMedia: false,
         requestMedia(request) {
+            if (request.source !== 'picker') {
+                if (!request.automatic) request.respondWith(this.postMedia(request))
+                return
+            }
             if (request.kind !== 'audio') {
                 this.$wire.openMedia(request)
                 return
@@ -15,6 +21,33 @@
             this.$refs.audioPicker.value = ''
             this.$refs.audioPicker.multiple = request.multiple
             this.$refs.audioPicker.click()
+        },
+        postMedia({ source, file, url, progress }) {
+            const body = new FormData()
+            body.append('source', source)
+            if (file) body.append('file', file)
+            if (url) body.append('url', url)
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest()
+                xhr.open('POST', this.$root.dataset.demoMediaEndpoint)
+                xhr.setRequestHeader('Accept', 'application/json')
+                xhr.setRequestHeader('X-CSRF-TOKEN', this.$root.dataset.demoMediaToken)
+                xhr.responseType = 'json'
+                xhr.upload.onprogress = event => {
+                    if (event.lengthComputable) progress?.(event.loaded, event.total)
+                }
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve(xhr.response?.attachment)
+                    } else {
+                        const message = Object.values(xhr.response?.errors ?? {}).flat()[0]
+                        reject(new Error(message))
+                    }
+                }
+                xhr.onerror = () => reject(new Error())
+                xhr.send(body)
+            })
         },
         uploadAudio(event) {
             const request = this.localMedia

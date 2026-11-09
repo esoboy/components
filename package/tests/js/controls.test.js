@@ -16,7 +16,7 @@ const bound = initial => {
 const choices = '<button data-slot="select-trigger"><span data-slot="select-value" data-placeholder="Pick">Pick</span></button><div data-slot="select-content" popover="auto"><button data-slot="select-item" data-value="a"><span data-slot="select-item-text"><b>Apple</b></span></button><button data-slot="select-item" data-value="b" aria-disabled="true"><span data-slot="select-item-text">Banana</span></button><button data-slot="select-item" data-value="c"><span data-slot="select-item-text">Cherry</span></button></div><select x-ref="input"><option value=""></option><option value="a">Apple</option><option value="c">Cherry</option></select>'
 
 it('closes and returns focus after sending an enabled choice to Livewire', () => {
-    const wire = { choose: vi.fn() }; const data = provider(select, '<div>'+choices+'</div>', { wire })
+    const wire = { choose: vi.fn().mockResolvedValue() }; const data = provider(select, '<div>'+choices+'</div>', { wire })
     data.choose(data.items[1]); expect(wire.choose).not.toHaveBeenCalled()
     data.content.showPopover(); data.choose(data.items[2])
     expect(wire.choose).toHaveBeenCalledWith('c')
@@ -88,12 +88,29 @@ it('paints a range from native thumbs and prevents crossing', () => {
     data.paint(); const range = data.$el.querySelector('[data-slot="slider-range"]'); expect(range.style.getPropertyValue('--start')).toBe('20'); expect(range.style.getPropertyValue('--end')).toBe('80')
     data.thumbs[0].value = '90'; data.input({ target: data.thumbs[0] }); expect(data.thumbs[0].value).toBe('80')
 })
-it('drags the nearest slider thumb using the native input event value', () => {
+it('only emits effective slider changes and ends a cancelled pointer once', () => {
     const data = provider(slider, '<div><div data-slot="slider-control"><div data-slot="slider-range"></div><input type="range" data-slot="slider-thumb" min="0" max="100" value="20"><input type="range" data-slot="slider-thumb" min="0" max="100" value="80"></div></div>')
-    const control = data.$el.firstElementChild; control.getBoundingClientRect = () => ({ left: 0, width: 100 })
-    const changed = vi.fn(); data.thumbs[1].addEventListener('input', changed)
-    data.press({ target: control, currentTarget: control, button: 0, clientX: 70, preventDefault() {} }); data.end()
-    expect(data.thumbs[1].value).toBe('70'); expect(changed.mock.calls[0][0].detail).toBe('70')
+    const control = data.$el.firstElementChild
+    control.getBoundingClientRect = () => ({ left: 0, width: 100 })
+    const input = vi.fn(event => [event.target.valueAsNumber, event.detail])
+    const change = vi.fn(event => [event.target.valueAsNumber, event.detail])
+    data.$el.addEventListener('input', input)
+    data.$el.addEventListener('change', change)
+    const pointer = { target: control, currentTarget: data.$el, button: 0, pointerId: 1, preventDefault() {} }
+
+    data.press({ ...pointer, clientX: 30 })
+    data.move({ ...pointer, clientX: 90, pointerId: 2 })
+    data.end({ ...pointer, type: 'pointercancel', pointerId: 2 })
+    data.move({ ...pointer, clientX: 90 })
+    data.move({ ...pointer, clientX: 100 })
+    data.end({ ...pointer, type: 'pointercancel' })
+    data.end({ ...pointer, type: 'lostpointercapture' })
+    data.move({ ...pointer, clientX: 10 })
+
+    expect(input.mock.results.map(result => result.value)).toEqual([[30, 30], [80, 80]])
+    expect(change.mock.results.map(result => result.value)).toEqual([[80, 80]])
+    expect(data.thumbs.map(thumb => thumb.valueAsNumber)).toEqual([80, 80])
+    expect(data.drag).toBeNull()
 })
 it('marks the active OTP caret without changing rendered characters', () => {
     const data = provider(otp, '<div><input data-slot="input-otp-input" maxlength="4" value="12"><div data-slot="input-otp-slot" data-index="0">1</div><div data-slot="input-otp-slot" data-index="2"></div></div>')

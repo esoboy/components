@@ -55,6 +55,6 @@ it('aligns the list with the trigger by default', function () {
 it('validates a select inside a field', function () {
     $this->withViewErrors(['fruit' => 'Pick a fruit.'])
         ->blade('<x-ui::field><x-ui::select id="fruit" wire:model="fruit"><x-ui::select.trigger>x</x-ui::select.trigger></x-ui::select></x-ui::field>')
-        ->assertSeeMarkup('<eso-select data-slot="select" aria-invalid="true" aria-describedby="fruit-error" id="fruit">')
+        ->assertSeeMarkup('<button data-slot="select-trigger" aria-invalid="true" aria-describedby="fruit-error" id="fruit">')
         ->assertSeeMarkupInOrder(['</eso-select>', 'Pick a fruit.']);
 });

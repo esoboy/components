@@ -2,7 +2,6 @@
 
 @use('Esoboy\Ui\Assets')
 @use('Esoboy\Ui\Support\ControlState')
-@use('Esoboy\Ui\Support\EditorUploads')
 @use('Esoboy\Ui\Support\EditorControls')
 @use('Esoboy\Ui\Support\Model')
 @use('Esoboy\Ui\Support\RichText')
@@ -12,14 +11,14 @@
     'showError' => true,
 ])
 
-{{-- Format controls the document and toolbar. Media-picker enables application-owned selection.
-    Upload-context applies to dropped and pasted files and image imports through ui.editor.uploader. --}}
+{{-- Format controls the document and toolbar. Media props enable requests for the application. --}}
 @props([
     'format' => 'full',
     'collapseToolbar' => true,
     'maxLength' => null,
-    'uploadContext' => [],
     'mediaPicker' => [],
+    'mediaUpload' => false,
+    'imageHosts' => [],
     'placeholder' => null,
     'label' => null,
     'value' => null,
@@ -33,7 +32,7 @@ $value = Model::value($attributes, $value);
 $value = $rich->sanitize(is_string($value) ? $value : '');
 $name = $attributes->get('name');
 $counts = $rich->has('character-count') || $maxLength;
-$uploads = EditorUploads::enabled() && $rich->has('image', 'audio', 'video', 'file');
+$uploads = $mediaUpload && $rich->has('image', 'audio', 'video', 'file');
 $images = $uploads && $rich->has('image');
 
 $mediaKinds = array_values(array_filter(['image', 'video', 'audio', 'file'], fn ($kind) => in_array($kind, $mediaPicker, true) && $rich->has($kind)));
@@ -43,21 +42,21 @@ $find = $rich->has('find-replace');
 $links = $rich->has('bubble-menu') && $rich->has('link');
 $characters = $counts ? RichText::characters($value, $format) : 0;
 $key = $attributes->get('wire:key') ?? Model::scope('editor-panels', $loop ?? null);
+$ariaLabel = $attributes->get('aria-label');
+$ariaLabelledBy = $attributes->get('aria-labelledby');
 @endphp
 
 
-<eso-editor {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge([
+<eso-editor {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'aria-label', 'aria-labelledby'])->merge([
     'data-slot' => 'editor', 'x-data' => 'uiEngine('.json_encode(Model::binding($attributes)).')', 'data-engine' => app(Assets::class)->url('editor.js'),
     'data-format' => json_encode($rich->client(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     'data-labels' => json_encode(['expand' => __('ui::editor.expand-details'), 'collapse' => __('ui::editor.collapse-details'), 'task' => __('ui::editor.task-checkbox'), 'caption' => __('ui::editor.caption-placeholder'), 'failed' => __('ui::editor.upload-failed'), 'keyboard' => $rich->has('toolbar', 'bubble-menu') ? __('ui::editor.keyboard-hint') : ''], JSON_UNESCAPED_UNICODE),
-    'data-upload' => $uploads ? route('esoboy-ui.editor.upload') : false,
-    'data-upload-token' => $uploads ? csrf_token() : false,
-    'data-upload-context' => $uploads && $uploadContext ? EditorUploads::seal($uploadContext) : false,
-    'data-image-hosts' => $images ? implode(' ', EditorUploads::hosts()) : false,
-    'data-auto-upload' => $images && EditorUploads::auto() ? implode(' ', EditorUploads::auto()) : false,
+    'data-media-upload' => $uploads,
+    'data-image-hosts' => $images && $imageHosts ? implode(' ', $imageHosts) : false,
     'data-max-length' => $maxLength ?? false,
     'data-placeholder' => $placeholder ?? false,
-    'data-label' => $label ?? __('ui::editor.label'),
+    'data-label' => $ariaLabel === null ? ($label ?? __('ui::editor.label')) : html_entity_decode((string) $ariaLabel, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+    'data-labelledby' => $ariaLabelledBy === null ? null : html_entity_decode((string) $ariaLabelledBy, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
     'data-name' => $name ?? false,
     'data-editor-name' => $name ?? Model::key($attributes) ?? false,
     'data-media-picker' => $mediaKinds ? implode(' ', $mediaKinds) : false,

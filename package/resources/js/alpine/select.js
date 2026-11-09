@@ -6,6 +6,18 @@ export default () => ({
     typed: '',
     typedAt: 0,
     positioning: null,
+    pendingChoice: null,
+    stopMorph: null,
+
+    init() {
+        this.stopMorph = window.Livewire?.hook('morphed', ({ el }) => {
+            if (! el.contains(this.$el) || ! this.content?.matches(':popover-open')) return
+
+            // The server render can replace the position and selected item while the popover stays open.
+            this.trigger.setAttribute('aria-expanded', 'true')
+            this.align()
+        })
+    },
 
     notifyModel() { notifyModel(this) },
     blurModel() { emit(this.$el, 'blur') },
@@ -15,18 +27,38 @@ export default () => ({
     get items() { return [...this.$el.querySelectorAll(ITEM)] },
     get enabled() { return this.items.filter(item => item.getAttribute('aria-disabled') !== 'true') },
     get selected() { return this.items.find(item => item.getAttribute('aria-selected') === 'true') },
+    get openingItem() {
+        const pending = this.pendingChoice && this.enabled.find(item => item.dataset.value === this.pendingChoice.value)
+        return pending || this.selected || this.enabled[0]
+    },
 
     choose(item) {
         if (! item || item.getAttribute('aria-disabled') === 'true') return
         if (this.trigger.disabled) return
         if (this.content.matches(':popover-open')) this.content.hidePopover()
         this.trigger.focus()
-        if (item !== this.selected) this.$wire.choose(item.dataset.value)
+
+        const value = item.dataset.value
+        if (value === (this.pendingChoice?.value ?? this.selected?.dataset.value)) return
+
+        // Keep the just-clicked item as the menu's anchor while Blade still shows the saved value.
+        const request = this.$wire.choose(value)
+        this.pendingChoice = { value, request }
+        const finish = () => {
+            if (this.pendingChoice?.request !== request) return
+            this.pendingChoice = null
+            if (this.selected?.dataset.value !== value) this.align()
+        }
+        request.then(finish, finish)
     },
 
     click(event) {
         const item = event.target.closest?.(ITEM)
         if (item && this.content?.contains(item)) this.choose(item)
+    },
+
+    beforeToggle(event) {
+        if (event.target === this.content && event.newState === 'open') event.target.removeAttribute('data-positioned')
     },
 
     toggle(event) {
@@ -44,7 +76,7 @@ export default () => ({
             this.align()
         }
 
-        ;(this.selected ?? this.enabled[0])?.focus({ preventScroll: true })
+        this.openingItem?.focus({ preventScroll: true })
     },
 
     align(event) {
@@ -53,7 +85,7 @@ export default () => ({
 
         const content = this.content
         const trigger = this.trigger.getBoundingClientRect()
-        const item = this.selected ?? this.enabled[0]
+        const item = this.openingItem
         const value = this.$el.querySelector('[data-slot="select-value"]')?.getBoundingClientRect() ?? trigger
 
         Object.assign(content.style, { positionArea: 'none', positionTryFallbacks: 'none', inset: 'auto', margin: '0', width: `${trigger.width}px` })
@@ -73,6 +105,7 @@ export default () => ({
         left = Math.max(10, Math.min(left, window.innerWidth - content.offsetWidth - 10))
         Object.assign(content.style, { top: `${top}px`, left: `${left}px` })
         content.scrollTop = Math.max(0, top - alignedTop)
+        content.dataset.positioned = ''
     },
 
     key(event) {
@@ -103,5 +136,8 @@ export default () => ({
         }
     },
 
-    destroy() { this.positioning?.disconnect() },
+    destroy() {
+        this.positioning?.disconnect()
+        this.stopMorph?.()
+    },
 })

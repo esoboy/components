@@ -4,7 +4,7 @@
  */
 @layer components {
     :where([data-slot="toggle"], [data-slot="toggle-group-item"]) {
-        @apply inline-flex items-center justify-center gap-1 rounded-lg text-sm font-medium whitespace-nowrap transition-all outline-none select-none hover:bg-muted hover:text-foreground;
+        @apply inline-flex items-center justify-center gap-1 rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all outline-none select-none hover:bg-muted hover:text-foreground;
         @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
 
         & > input {
@@ -34,7 +34,7 @@
     }
 
     :where([data-slot="toggle"], [data-slot="toggle-group-item"])[data-variant="outline"] {
-        @apply border border-input bg-transparent hover:bg-muted;
+        @apply border-input bg-transparent hover:bg-muted;
     }
 
     :where([data-slot="toggle"], [data-slot="toggle-group-item"])[data-size="default"] {
@@ -75,12 +75,12 @@
     [data-slot="toggle-group"][data-spacing="0"][data-orientation="horizontal"] > [data-slot="toggle-group-item"] {
         &:first-child { @apply rounded-l-lg; }
         &:last-child { @apply rounded-r-lg; }
-        &[data-variant="outline"]:not(:first-child) { @apply border-l-0; }
+        &:not(:first-child) { @apply border-l-0; }
     }
 
     [data-slot="toggle-group"][data-spacing="0"][data-orientation="vertical"] > [data-slot="toggle-group-item"] {
         &:first-child { @apply rounded-t-lg; }
         &:last-child { @apply rounded-b-lg; }
-        &[data-variant="outline"]:not(:first-child) { @apply border-t-0; }
+        &:not(:first-child) { @apply border-t-0; }
     }
 }

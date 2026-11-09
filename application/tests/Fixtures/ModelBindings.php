@@ -53,7 +53,11 @@ class ModelBindings extends Component
     {
         return <<<'BLADE'
             <div>
-                <x-ui::editor id="body-editor" wire:model.live.blur="body" format="basic" />
+                <span id="body-editor-label">Article body</span>
+                <x-ui::editor id="body-editor"
+                    :aria-label="str_contains($body, '!') ? 'Review & publish article' : 'Edit & review article'"
+                    :aria-labelledby="str_contains($body, '!') ? null : 'body-editor-label'"
+                    wire:model.live.blur="body" format="basic" />
                 <button id="enable-toolbar-action" type="button" wire:click="$toggle('toolbarEnabled')">Toggle toolbar action</button>
                 <output id="toolbar-actions">{{ $toolbarActions }}</output>
                 <x-ui::editor id="slot-editor" wire:model="slotBody" :format="['basic', 'character-count']" style="width: 235px">

@@ -1,6 +1,6 @@
 @layer components {
     :where([data-slot="button"]) {
-        @apply inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none;
+        @apply inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent text-sm font-medium whitespace-nowrap transition-all outline-none select-none;
         @apply focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50;
         @apply active:not-aria-[haspopup]:translate-y-px;
         @apply disabled:pointer-events-none disabled:opacity-50;
@@ -17,7 +17,7 @@
     }
 
     :where([data-slot="button"][data-variant="outline"]) {
-        @apply hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground;
+        @apply bg-clip-padding hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground;
         border-color: light-dark(var(--color-border), var(--color-input));
         background-color: light-dark(var(--color-background), color-mix(in oklab, var(--color-input) 30%, transparent));
 

@@ -138,7 +138,7 @@ new class extends Component
 
     <section class="space-y-2">
         <h2 class="text-lg font-semibold">format="basic"</h2>
-        <x-ui::editor wire:model="intro" format="basic" :media-picker="['image']" />
+        <x-ui::editor wire:model="intro" format="basic" :media-picker="['image']" :media-upload="true" />
     </section>
 
     <section class="space-y-2">
@@ -149,9 +149,9 @@ new class extends Component
     <form wire:submit="publish" class="space-y-4">
         <x-ui::field>
             <x-ui::field.label>format="full"</x-ui::field.label>
-            <x-ui::editor wire:model="article" :media-picker="['image', 'video', 'audio', 'file']" :collapse-toolbar="false" :max-length="2000" :upload-context="['page' => 'editor']" />
+            <x-ui::editor wire:model="article" :media-picker="['image', 'video', 'audio', 'file']" :media-upload="true" :collapse-toolbar="false" :max-length="2000" />
             <x-ui::field.description>All tools stay visible and wrap onto new rows (:collapse-toolbar="false"). Long documents scroll inside the editor.</x-ui::field.description>
-            <x-ui::field.description>Image, video and file open this app's attachment library. Audio opens the system file picker and uploads through Livewire. Both return attachments to the editor that requested them. Dropped and pasted files use the separate editor uploader.</x-ui::field.description>
+            <x-ui::field.description>Image, video and file open this app's attachment library. Audio opens the system file picker and uploads through Livewire. The app handles dropped and pasted files and saves images when requested.</x-ui::field.description>
         </x-ui::field>
         <p role="status" x-show="uploadingMedia" x-cloak>Uploading audio…</p>
         @error('mediaFiles') <p role="alert">{{ $message }}</p> @enderror

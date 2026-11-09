@@ -7,42 +7,76 @@
 
 it('shows the bound date on its trigger', function () {
     visit('/controls')
-        ->assertSeeIn('#demo-picker [data-slot="date-picker-value"]', 'October 26, 2026')
+        ->assertSeeIn('eso-date-picker:has(#demo-picker) [data-slot="date-picker-value"]', 'October 26, 2026')
         ->assertNoJavaScriptErrors();
 });
 
 it('picks a date in its popover, which stays open as in shadcn', function () {
     visit('/controls')
-        ->click('#demo-picker [data-date-picker-trigger]')
-        ->assertScript(opened('#demo-picker [data-date-picker-content]'))
-        ->click('#demo-picker button[data-day="2026-10-12"]')
+        ->click('eso-date-picker:has(#demo-picker) [data-date-picker-trigger]')
+        ->assertScript(opened('eso-date-picker:has(#demo-picker) [data-date-picker-content]'))
+        ->click('eso-date-picker:has(#demo-picker) button[data-day="2026-10-12"]')
         ->assertSeeIn('#date', '2026-10-12')
-        ->assertSeeIn('#demo-picker [data-slot="date-picker-value"]', 'October 12, 2026')
-        ->assertScript(opened('#demo-picker [data-date-picker-content]'))
-        ->keys('#demo-picker button[data-day="2026-10-12"]', 'Escape')
-        ->assertScript(opened('#demo-picker [data-date-picker-content]'), false);
+        ->assertSeeIn('eso-date-picker:has(#demo-picker) [data-slot="date-picker-value"]', 'October 12, 2026')
+        ->assertScript(opened('eso-date-picker:has(#demo-picker) [data-date-picker-content]'))
+        ->keys('eso-date-picker:has(#demo-picker) button[data-day="2026-10-12"]', 'Escape')
+        ->assertScript(opened('eso-date-picker:has(#demo-picker) [data-date-picker-content]'), false);
 });
 
 it('fills a range from a preset', function () {
     $today = now()->toDateString();
 
     visit('/controls')
-        ->click('#demo-presets [data-date-picker-trigger]')
-        ->click('#demo-presets [data-date-picker-preset]:has-text("Today")')
+        ->click('eso-date-picker:has(#demo-presets) [data-date-picker-trigger]')
+        ->click('eso-date-picker:has(#demo-presets) [data-date-picker-preset]:has-text("Today")')
         ->assertSeeIn('#period', "{$today} → {$today}");
+});
+
+it('binds the selected month and keeps the caller slot reactive and actionable', function () {
+    $picker = 'eso-date-picker:has(#demo-month-picker)';
+    $november = $picker.' [data-date-picker-period="2026-11"]';
+
+    visit('/controls')
+        ->click($picker.' [data-date-picker-trigger]')
+        ->assertPresent($picker.' [data-date-picker-period="2026-12"]:disabled')
+        ->keys($november, 'Enter')
+        ->assertSeeIn('#report-month', '2026-11')
+        ->assertSeeIn('#report-month-slot', '2026-11')
+        ->click($picker.' button:has-text("Use November 2025")')
+        ->assertSeeIn('#report-month', '2025-11')
+        ->assertSeeIn('#report-month-slot', '2025-11')
+        ->assertPresent($picker.' [data-date-picker-period="2025-11"][aria-pressed="true"]')
+        ->select($picker.' [data-calendar-year]', '2027')
+        ->assertPresent($picker.' [data-date-picker-period="2027-01"]')
+        ->assertNoJavaScriptErrors();
+});
+
+it('selects quarters across years and orders the bound range', function () {
+    $picker = 'eso-date-picker:has(#demo-quarter-picker)';
+
+    visit('/controls')
+        ->click($picker.' [data-date-picker-trigger]')
+        ->click($picker.' [data-date-picker-next-year]')
+        ->assertPresent($picker.' [data-date-picker-next-year]:disabled')
+        ->click($picker.' [data-date-picker-period="2027-Q2"]')
+        ->click($picker.' [data-date-picker-previous-year]')
+        ->click($picker.' [data-date-picker-period="2026-Q3"]')
+        ->assertSeeIn('#report-quarters', '2026-Q3 → 2027-Q2')
+        ->assertPresent($picker.' [data-date-picker-period="2026-Q4"][data-range-middle]')
+        ->assertNoJavaScriptErrors();
 });
 
 it('binds the date with a complete time in ten-minute intervals', function () {
     visit('/controls')
-        ->click('#demo-datetime [data-date-picker-trigger]')
-        ->click('#demo-datetime [data-time-hour-toggle]')
-        ->click('#demo-datetime [data-time-hour-choice="18"]')
-        ->assertSeeIn('#demo-datetime [data-time-hour-label]', '18:00')
+        ->click('eso-date-picker:has(#demo-datetime) [data-date-picker-trigger]')
+        ->click('eso-date-picker:has(#demo-datetime) [data-time-hour-toggle]')
+        ->click('eso-date-picker:has(#demo-datetime) [data-time-hour-choice="18"]')
+        ->assertSeeIn('eso-date-picker:has(#demo-datetime) [data-time-hour-label]', '18:00')
         ->assertSeeIn('#starts-at', '2026-10-29 10:30')
-        ->assertNotPresent('#demo-datetime [data-time-option="18:45"]')
-        ->click('#demo-datetime [data-time-option="18:40"]')
+        ->assertNotPresent('eso-date-picker:has(#demo-datetime) [data-time-option="18:45"]')
+        ->click('eso-date-picker:has(#demo-datetime) [data-time-option="18:40"]')
         ->assertSeeIn('#starts-at', '2026-10-29 18:40')
-        ->click('#demo-datetime button[data-day="2026-10-30"]')
+        ->click('eso-date-picker:has(#demo-datetime) button[data-day="2026-10-30"]')
         ->assertSeeIn('#starts-at', '2026-10-30 18:40');
 });
 
@@ -50,11 +84,11 @@ it('binds separate start and end times for a date range', function () {
     $month = now()->format('Y-m');
 
     visit('/controls')
-        ->click('#demo-shift [data-date-picker-trigger]')
-        ->click('#demo-shift [data-date-picker-time="from"] [aria-label="Hour"] [data-time-option="8"]')
-        ->click('#demo-shift button[data-day="'.$month.'-08"]')
-        ->click('#demo-shift button[data-day="'.$month.'-09"]')
-        ->click('#demo-shift [data-date-picker-time="to"] [aria-label="Hour"] [data-time-option="17"]')
+        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-trigger]')
+        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-time="from"] [aria-label="Hour"] [data-time-option="8"]')
+        ->click('eso-date-picker:has(#demo-shift) button[data-day="'.$month.'-08"]')
+        ->click('eso-date-picker:has(#demo-shift) button[data-day="'.$month.'-09"]')
+        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-time="to"] [aria-label="Hour"] [data-time-option="17"]')
         ->assertSeeIn('#shift', $month.'-08 08:00 → '.$month.'-09 17:00');
 });
 

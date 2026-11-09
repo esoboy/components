@@ -18,6 +18,10 @@ beforeEach(function () {
 it('commits editor blur bindings when focus leaves the entire editor', function () {
     visit('/model-binding-ui')
         ->assertPresent('#body-editor .ProseMirror')
+        ->assertAttribute('#body-editor [role="textbox"]', 'aria-label', 'Edit & review article')
+        ->assertAttribute('#body-editor [role="textbox"]', 'aria-labelledby', 'body-editor-label')
+        ->assertAttributeMissing('#body-editor', 'aria-label')
+        ->assertAttributeMissing('#body-editor', 'aria-labelledby')
         ->click('#body-editor .ProseMirror')
         ->keys('#body-editor .ProseMirror', ['End', '!'])
         ->assertSeeIn('#server-body', '<p>Before</p>')
@@ -25,6 +29,8 @@ it('commits editor blur bindings when focus leaves the entire editor', function 
         ->assertSeeIn('#server-body', '<p>Before</p>')
         ->click('#outside')
         ->assertSeeIn('#server-body', 'Before!')
+        ->assertAttribute('#body-editor [role="textbox"]', 'aria-label', 'Review & publish article')
+        ->assertAttributeMissing('#body-editor [role="textbox"]', 'aria-labelledby')
         ->assertNoJavaScriptErrors();
 });
 
@@ -140,22 +146,23 @@ it('initializes a plain Blade control without a caller Alpine setup or a Livewir
 it('updates PHP combobox labels and chips after the parent replaces their values', function () {
     $page = visit('/controls');
     $page->script("Livewire.first().\$set('framework', 'nuxt')");
-    $page->assertValue('#demo-combobox [role="combobox"]', 'Nuxt.js');
+    $page->assertValue('#demo-combobox', 'Nuxt.js');
     $page->script("Livewire.first().\$set('frameworks', ['astro', 'remix'])");
-    $page->assertSeeIn('#demo-chips [data-slot="combobox-chips"]', 'Astro')->assertSeeIn('#demo-chips [data-slot="combobox-chips"]', 'Remix');
+    $page->assertSeeIn('eso-combobox:has(#demo-chips) [data-slot="combobox-chips"]', 'Astro')
+        ->assertSeeIn('eso-combobox:has(#demo-chips) [data-slot="combobox-chips"]', 'Remix');
     $page->script("Livewire.first().\$set('framework', null)");
-    $page->assertValue('#demo-combobox [role="combobox"]', '')
+    $page->assertValue('#demo-combobox', '')
         ->assertNoJavaScriptErrors();
 });
 
 it('updates PHP date labels and time controls after a parent reset', function () {
     $page = visit('/controls');
     $page->script("Livewire.first().\$set('startsAt', '2026-11-12 15:40')");
-    $page->assertSeeIn('#demo-datetime [data-slot="date-picker-value"]', 'November 12, 2026')
-        ->click('#demo-datetime [data-date-picker-trigger]')
-        ->assertSeeIn('#demo-datetime [data-time-hour-label]', '15:00')
-        ->assertAttribute('#demo-datetime [data-time-option="15:40"]', 'aria-pressed', 'true')
-        ->assertPresent('#demo-datetime button[data-day="2026-11-12"]')
+    $page->assertSeeIn('eso-date-picker:has(#demo-datetime) [data-slot="date-picker-value"]', 'November 12, 2026')
+        ->click('eso-date-picker:has(#demo-datetime) [data-date-picker-trigger]')
+        ->assertSeeIn('eso-date-picker:has(#demo-datetime) [data-time-hour-label]', '15:00')
+        ->assertAttribute('eso-date-picker:has(#demo-datetime) [data-time-option="15:40"]', 'aria-pressed', 'true')
+        ->assertPresent('eso-date-picker:has(#demo-datetime) button[data-day="2026-11-12"]')
         ->assertNoJavaScriptErrors();
 });
 

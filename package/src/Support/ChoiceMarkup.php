@@ -4,6 +4,7 @@ namespace Esoboy\Ui\Support;
 
 use Dom\HTMLDocument;
 use Dom\HTMLElement;
+use Illuminate\View\ComponentAttributeBag;
 
 /**
  * Keeps the custom-parts interface while rendering its selected labels in PHP.
@@ -37,8 +38,7 @@ final class ChoiceMarkup
         ], $this->items);
     }
 
-    /** @param array<string, string> $attributes */
-    public function render(mixed $value, array $attributes, bool $disabled, string $popup): string
+    public function render(mixed $value, ComponentAttributeBag $attributes, bool $disabled, string $popup): string
     {
         $values = array_map('strval', is_array($value) ? $value : ($value === null ? [] : [$value]));
         $selected = [];
@@ -77,8 +77,11 @@ final class ChoiceMarkup
                 if ($selected !== []) {
                     $element->removeAttribute('data-placeholder');
                 }
-                foreach ($attributes as $name => $attribute) {
-                    $element->setAttribute($name, $attribute);
+                foreach ($attributes->getAttributes() as $name => $attribute) {
+                    if ($attribute !== null && $attribute !== false) {
+                        // Blade has escaped the value. The DOM serializer will escape it again.
+                        $element->setAttribute($name, html_entity_decode((string) $attribute, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                    }
                 }
                 if ($disabled) {
                     $element->setAttribute('disabled', '');

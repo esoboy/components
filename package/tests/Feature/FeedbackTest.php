@@ -77,12 +77,12 @@ it('renders and replaces a notification with the same id and ignores a stale dis
     $toaster->call('dismiss', 'save', 2)->assertDontSee('Saved');
 });
 
-it('renders a persisted toast viewport', function () {
+it('renders a toast viewport without persisting it by default', function () {
     $html = (string) $this->blade('<x-ui::toaster />');
 
     expect($html)
-        ->toContainMarkup('<div x-persist="ui-toaster">')
         ->toContainMarkup('<div role="region" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Notifications" tabindex="-1" popover="manual" data-slot="toast-viewport" data-limit="3" data-timeout="5000" wire:ignore.self>')
+        ->not->toContain('x-persist=')
         ->not->toContain('data-template=');
 
     $this->blade('<x-ui::toaster :limit="5" :timeout="8000" />')

@@ -2,10 +2,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import full from '../Fixtures/editor-full.json'
 import createEditor from '../../resources/js/heavy/editor.js'
 import { engineDriver, cleanupControllers } from './alpine-harness.js'
-import axios from 'axios'
-
-vi.mock('axios', () => ({ default: { post: vi.fn() } }))
-
 /*
  * ProseMirror measures the selection to scroll it into view; jsdom lays nothing out.
  */
@@ -142,28 +138,23 @@ const select = (element, text) => {
     element.editor.commands.setTextSelection({ from, to: from + text.length })
 }
 
-// Pastes clipboard data as the browser would.
-// The view's attributes with an uploader (config ui.editor.uploader).
-const UPLOADS = 'data-upload="/upload" data-upload-token="token" data-upload-context="sealed"'
+const UPLOADS = 'data-media-upload'
 
-/**
- * The uploader's route, answered by the test: each post waits for answer(attachment) or
- * answer(null, status, errors). Images' own addresses answer as their sites would: those
- * in readable as pictures, the rest not to pages (CORS).
- */
-function uploader({ readable = [] } = {}) {
-    const posts = []
+// An application listener that claims media uploads and returns attachments on demand.
+function uploader(element, accepts = request => ! request.automatic) {
+    const requests = []
+    element.addEventListener('ui-editor-media-request', ({ detail }) => {
+        if (! detail.respondWith || ! accepts(detail)) return
 
-    axios.post.mockImplementation((url, body, options) => new Promise(resolve => posts.push({
-        url, headers: options.headers, form: Object.fromEntries(body.entries()),
-        progress: (loaded, total) => options.onUploadProgress({ loaded, total }),
-        answer: (attachment, status = 200, errors = {}) => resolve({ status, data: status === 200 ? { attachment } : { message: 'The given data was invalid.', errors } }),
-    })))
-    vi.stubGlobal('fetch', vi.fn((url, options) => {
-        return readable.includes(url) ? Promise.resolve(new Response('PNG', { headers: { 'Content-Type': 'image/png' } })) : Promise.reject(new TypeError('Failed to fetch'))
-    }))
-
-    return posts
+        detail.respondWith(new Promise((resolve, reject) => requests.push({
+            ...detail,
+            answer(attachment, error) {
+                if (error) reject(new Error(error))
+                else resolve(attachment)
+            },
+        })))
+    })
+    return requests
 }
 
 function mediaRequests(element) {
@@ -526,26 +517,23 @@ describe('media', () => {
         expect(element.value).not.toContain('/duplicate.png')
     })
 
-    it('uploads pasted files three at a time and inserts the answers where the selection was', async () => {
+    it('offers each pasted file by kind and inserts the answers in order at the original selection', async () => {
         const [element] = mount('<p>Hello world</p>', { attributes: UPLOADS })
-        const posts = uploader()
+        const posts = uploader(element)
         select(element, 'Hello')
         paste(element, { files: ['a.png', 'b.mp3', 'c.zip', 'x.png'].map(name => new File(['x'], name)) })
         element.editor.chain().setTextSelection(12).insertContent('!').run()
         await settle()
 
         expect(element.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(1)
-        expect(posts.map(post => [post.url, post.form.source, post.form.file.name, post.form.context, post.headers['X-CSRF-TOKEN']])).toEqual([
-            ['/upload', 'paste', 'a.png', 'sealed', 'token'],
-            ['/upload', 'paste', 'b.mp3', 'sealed', 'token'],
-            ['/upload', 'paste', 'c.zip', 'sealed', 'token'],
+        expect(posts.map(post => [post.source, post.kind, post.file.name])).toEqual([
+            ['paste', 'image', 'a.png'],
+            ['paste', 'audio', 'b.mp3'],
+            ['paste', 'file', 'c.zip'],
+            ['paste', 'image', 'x.png'],
         ])
 
         posts[0].answer({ url: '/a.png', name: 'a.png', mime: 'image/png', alt: 'A', width: 10, height: 20 })
-        await settle()
-
-        expect(posts).toHaveLength(4)
-
         posts[1].answer({ url: '/b.mp3', name: 'b.mp3' })
         posts[2].answer({ url: '/c.zip', name: 'c.zip', size: 1536 })
         posts[3].answer({ url: 'javascript:alert(1)', name: 'x.png' })
@@ -621,13 +609,13 @@ describe('media', () => {
 
     it('uploads pasted files, and turns pasted links into what they are', async () => {
         const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
-        const posts = uploader()
+        const posts = uploader(element)
 
         element.editor.commands.setTextSelection(6)
         paste(element, { files: [new File(['x'], 'shot.png', { type: 'image/png' })] })
         await settle()
 
-        expect(posts.map(post => [post.form.source, post.form.file.name])).toEqual([['paste', 'shot.png']])
+        expect(posts.map(post => [post.source, post.file.name])).toEqual([['paste', 'shot.png']])
 
         posts[0].answer({ url: '/shot.png', mime: 'image/png' })
         await settle()
@@ -641,7 +629,7 @@ describe('media', () => {
 
     it('shows where files will go until they are there, why one would not upload, and nothing once dismissed', async () => {
         const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
-        const posts = uploader()
+        const posts = uploader(element)
         const placeholders = () => element.querySelectorAll('[data-slot="editor-uploading"]')
 
         element.editor.commands.setTextSelection(6)
@@ -654,7 +642,7 @@ describe('media', () => {
         expect(element.value).toBe('<p>Hello</p>')
 
         posts[0].answer({ url: '/a.png', mime: 'image/png' })
-        posts[1].answer(null, 422, { file: ['Files up to 20 MB only.'] })
+        posts[1].answer(null, 'Files up to 20 MB only.')
         await settle()
 
         expect(element.value).toContain('src="/a.png"')
@@ -698,10 +686,9 @@ describe('media', () => {
         expect(element.value).not.toContain('/v.mp4')
     })
 
-    it('leaves pasted files to the uploader and only requests declared media types', async () => {
+    it('only requests declared media capabilities', async () => {
         const [plain] = mount('<p>Hello</p>')
         const requests = mediaRequests(plain)
-        const posts = uploader()
 
         mediaButton(plain, 'image').click()
         plain.editor.commands.setTextSelection(6)
@@ -709,13 +696,47 @@ describe('media', () => {
         await settle()
 
         expect(requests).toEqual([])
-        expect(posts).toEqual([])
         expect(plain.querySelectorAll('[data-slot="editor-uploading"]')).toHaveLength(0)
     })
 
-    it('saves images it has no copy of when asked, one or all, each a file: as read, or for the server to fetch', async () => {
+    it('offers a dropped file and leaves the editor idle when the application ignores it', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
+        const requests = mediaRequests(element)
+        const file = new File(['video'], 'movie.mp4', { type: 'video/mp4' })
+        const event = new Event('drop', { bubbles: true, cancelable: true })
+
+        vi.spyOn(element.editor.view, 'posAtCoords').mockReturnValue({ pos: 3 })
+        Object.defineProperty(event, 'dataTransfer', { value: { files: [file], getData: () => '' } })
+        element.editor.view.dom.dispatchEvent(event)
+        await settle()
+
+        expect(requests).toHaveLength(1)
+        expect(requests[0]).toMatchObject({ source: 'drop', kind: 'video', operation: 'insert', file })
+        expect(event.defaultPrevented).toBe(true)
+        expect(element.busy).toBe(false)
+        expect(element.querySelector('[data-slot="editor-uploading"]')).toBeNull()
+        expect(element.value).toBe('<p>Hello</p>')
+    })
+
+    it('discards a pending file insertion when Livewire replaces the document', async () => {
+        const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
+        const requests = uploader(element)
+
+        paste(element, { files: [new File(['image'], 'photo.png', { type: 'image/png' })] })
+        expect(element.busy).toBe(true)
+
+        element.value = '<p>From Livewire</p>'
+        requests[0].answer({ url: '/photo.png', mime: 'image/png' })
+        await settle()
+
+        expect(element.value).toBe('<p>From Livewire</p>')
+        expect(element.busy).toBe(false)
+        expect(element.querySelector('[data-slot="editor-uploading"]')).toBeNull()
+    })
+
+    it('offers data images as files and external images as URLs when asked', async () => {
         const [element] = mount('<p>Hello</p>', { attributes: `${UPLOADS} data-image-hosts="cdn.app.test *.img.test"` })
-        const posts = uploader({ readable: ['https://other.test/a.png'] })
+        const posts = uploader(element)
         const save = Object.assign(document.createElement('button'), { type: 'button' })
         const error = Object.assign(document.createElement('p'), { hidden: true })
         const images = () => element.value.match(/src="[^"]+"/g)
@@ -751,8 +772,8 @@ describe('media', () => {
         save.click()
         await settle()
 
-        // Its site shares it: the browser reads it, and sends it as a file.
-        expect(posts.map(post => [post.form.source, post.form.url, post.form.file?.name])).toEqual([['external', 'https://other.test/a.png', 'a.png']])
+        // The application receives the address of the external image.
+        expect(posts.map(post => [post.source, post.url, post.file?.name])).toEqual([['external', 'https://other.test/a.png', undefined]])
         expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(2)
 
         posts[0].answer({ url: 'https://files.app.test/a.png', name: 'a.png', mime: 'image/png' })
@@ -762,16 +783,15 @@ describe('media', () => {
         expect(element.querySelectorAll('[data-editor-saving]')).toHaveLength(0)
         await expectPanel(element, { unsaved: 2 })
 
-        // All at once: a data one as a file; one its site doesn't share by its address,
-        // for the server to fetch.
+        // The application receives a File for a data image and a URL for an external image.
         control(element, '[data-editor-action="save-images"]').click()
         await settle()
 
-        expect(posts.slice(1).map(post => [post.form.source, post.form.url ?? null, post.form.file?.name ?? null, post.form.file?.type ?? null])).toEqual([['data', null, 'image-1.png', 'image/png'], ['external', 'https://other.test/d.png', null, null]])
+        expect(posts.slice(1).map(post => [post.source, post.url ?? null, post.file?.name ?? null, post.file?.type ?? null])).toEqual([['external', 'https://other.test/d.png', null, null], ['data', null, 'image-1.png', 'image/png']])
         await expectPanel(element, { saving: true })
 
-        posts[1].answer({ url: '/uploads/e.png' })
-        posts[2].answer(null, 422, { file: ['This image couldn’t be read.'] })
+        posts[1].answer(null, 'This image couldn’t be read.')
+        posts[2].answer({ url: '/uploads/e.png' })
         await settle()
 
         expect(images().slice(4, 6)).toEqual(['src="https://other.test/d.png"', 'src="/uploads/e.png"'])
@@ -797,19 +817,19 @@ describe('media', () => {
         expect(images()[5]).toBe('src="/uploads/e.png"')
     })
 
-    it('saves images as they come in, as auto_upload says: not those it loaded with, one undone, or one that failed', async () => {
-        const [element] = mount('<p><img src="https://other.test/old.png"></p>', { attributes: `${UPLOADS} data-auto-upload="external"` })
-        const posts = uploader()
+    it('lets the application choose automatic imports and offers each new source once', async () => {
+        const [element] = mount('<p><img src="https://other.test/old.png"></p>', { attributes: UPLOADS })
+        const posts = uploader(element, request => request.automatic && request.source === 'external')
         const images = () => element.value.match(/src="[^"]+"/g)
 
         element.editor.commands.setTextSelection(element.editor.state.doc.content.size - 1)
         paste(element, { 'text/html': '<p><img src="https://other.test/new.png"><img src="https://other.test/bad.png"><img src="data:image/png;base64,iVBORw0KGgo="></p>' })
         await settle()
 
-        expect(posts.map(post => post.form.url)).toEqual(['https://other.test/new.png', 'https://other.test/bad.png'])
+        expect(posts.map(post => post.url)).toEqual(['https://other.test/new.png', 'https://other.test/bad.png'])
 
         posts[0].answer({ url: '/uploads/new.png' })
-        posts[1].answer(null, 500)
+        posts[1].answer(null, 'The image could not be saved.')
         await settle()
 
         expect(images()).toEqual(['src="https://other.test/old.png"', 'src="/uploads/new.png"', 'src="https://other.test/bad.png"', 'src="data:image/png;base64,iVBORw0KGgo="'])
@@ -870,7 +890,7 @@ describe('media', () => {
 
     it('shows how far uploads have got, and keeps a form around it from submitting until they are done', async () => {
         const [element] = mount('<p>Hello</p>', { attributes: UPLOADS })
-        const posts = uploader()
+        const posts = uploader(element)
         const busy = []
         const form = element.closest('form')
         const submitted = vi.fn()

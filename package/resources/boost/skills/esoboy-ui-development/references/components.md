@@ -46,7 +46,7 @@ Heading and Text use the sizes from the original shadcn Typography examples. Hea
 - **combobox** — `multiple` for chips, `autocomplete` for free text with suggestions, `:filter="false"` to filter on the server. Parts: chips-input, clear, content, empty, input, item, list, trigger, value.
 - **command** — a searchable command list; `:filter="false"` to filter on the server. Parts: dialog, empty, group, input, item, list, separator, shortcut.
 - **calendar** — `mode` (`single`, `multiple`, `range`), `min`, `max`, `:disabled-dates`, `caption-layout="dropdown"`, `number-of-months`, `week-starts-on`.
-- **date-picker** — a Calendar in a popover. Add `time` to bind a date and time to one property, or `time time-mode="combined" step="600"` to choose a complete time in 10-minute intervals. `mode="range"` provides separate start and end times. `time-value` sets the initial time.
+- **date-picker** — a Calendar in a popover. `granularity="month"` binds `YYYY-MM`. `granularity="quarter"` binds `YYYY-Q1` through `YYYY-Q4`. Both support `single`, `multiple`, and `range` modes, period keys in `disabled-dates` and presets, and year navigation. For day granularity, add `time` to bind a date and time to one property, or `time time-mode="combined" step="600"` to choose a complete time in 10-minute intervals. `mode="range"` provides separate start and end times. `time-value` sets the initial time.
 - **time-picker** — a 24-hour popover with separate hour and minute grids. Use `wire:model` or `name`, and `step="1"` to show the seconds grid. In `mode="combined"`, open the hour range to jump to an available hour or use the arrows to browse adjacent hours. Selecting a complete time updates the value. Combined mode defaults to five minutes and accepts `step` in seconds for whole-minute intervals, such as `300` or `600`. `min` and `max` limit choices. The default slot adds caller-owned content inside the popup.
 - **toggle** — a two-state button; `variant`, `size`, `checked`.
 - **toggle-group** — `multiple`, `variant`, `size`, `spacing`. Parts: item.
@@ -65,7 +65,7 @@ Heading and Text use the sizes from the original shadcn Typography examples. Hea
 - **tree** — *(not in shadcn)* `:items`; `checkable`, `searchable`, `expand-all`, `:expanded`, `load` for lazy children, `draggable`.
 - **tree-select** — *(not in shadcn)* a Select-style trigger opening a Tree; the Tree's props.
 - **transfer** — *(not in shadcn)* two checkbox lists; the value is the right list; `:titles`, `searchable`.
-- **editor** — *(not in shadcn)* rich text (Tiptap); `format`, `max-length`, `placeholder`, `media-picker`, `upload-context`. Clean its value with `Ui::sanitize()` before storing.
+- **editor** — *(not in shadcn)* rich text (Tiptap); `format`, `max-length`, `placeholder`, `media-picker`, `media-upload`, `image-hosts`. Clean its value with `Ui::sanitize()` before storing.
 - **rich-text** — *(not in shadcn)* shows rich text cleaned to `format`: `:html`. Parts: toc.
 
 ## Uploads

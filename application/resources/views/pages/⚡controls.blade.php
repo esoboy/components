@@ -36,6 +36,8 @@ new class extends Component
     public array $range = ['from' => '2026-10-20', 'to' => '2026-11-03'];
 
     public array $period = ['from' => null, 'to' => null];
+    public ?string $reportMonth = '2026-10';
+    public array $reportQuarters = ['from' => null, 'to' => null];
 
     public ?string $time = '10:30:00';
 
@@ -115,6 +117,16 @@ new class extends Component
             ]" />
         </div>
         <p class="text-sm text-muted-foreground">period: <span id="period">{{ ($period['from'] ?? '').' → '.($period['to'] ?? '') }}</span></p>
+        <div class="flex flex-wrap items-start gap-6">
+            <x-ui::date-picker id="demo-month-picker" granularity="month" wire:model.live="reportMonth" caption-layout="dropdown" min="2025-01" max="2027-12" :disabled-dates="['2026-12']" placeholder="Pick a month">
+                <div class="border-t p-2">
+                    <p id="report-month-slot" class="mb-2 text-sm text-muted-foreground">Report month: {{ $reportMonth ?? 'none' }}</p>
+                    <x-ui::button size="sm" variant="outline" wire:click="$set('reportMonth', '2025-11')">Use November 2025</x-ui::button>
+                </div>
+            </x-ui::date-picker>
+            <x-ui::date-picker id="demo-quarter-picker" granularity="quarter" mode="range" wire:model.live="reportQuarters" month="2026-10" min="2026-Q1" max="2027-Q4" placeholder="Pick a quarter range" />
+        </div>
+        <p class="text-sm text-muted-foreground">month: <span id="report-month">{{ $reportMonth ?? 'none' }}</span>, quarters: <span id="report-quarters">{{ ($reportQuarters['from'] ?? '').' → '.($reportQuarters['to'] ?? '') }}</span></p>
         <div class="flex flex-wrap items-start gap-4">
             <x-ui::field class="w-fit">
                 <x-ui::label for="demo-date-time">Date</x-ui::label>
@@ -191,12 +203,12 @@ new class extends Component
     </section>
 
     <section class="space-y-4">
-        <h2 class="text-lg font-semibold">Combobox</h2>
+        <h2 id="demo-combobox-label" class="text-lg font-semibold">Combobox</h2>
         @php $options = ['next' => 'Next.js', 'sveltekit' => 'SvelteKit', 'nuxt' => 'Nuxt.js', 'remix' => 'Remix', 'astro' => 'Astro']; @endphp
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::combobox id="demo-combobox" wire:model.live="framework" :options="$options" placeholder="Select a framework" clearable option-view="examples.framework-label">
+            <x-ui::combobox id="demo-combobox" aria-labelledby="demo-combobox-label" wire:model.live="framework" :options="$options" placeholder="Select a framework" clearable option-view="examples.framework-label">
                 <x-slot:empty-state>No items found.</x-slot:empty-state>
-                <x-ui::button variant="ghost" size="sm" wire:click="$set('framework', 'astro')">Use Astro</x-ui::button>
+                <x-ui::button variant="ghost" size="sm" wire:click="$set('framework', 'astro')" :disabled="$framework === 'astro'">Use Astro</x-ui::button>
             </x-ui::combobox>
             <x-ui::combobox id="demo-chips" multiple wire:model.live="frameworks" :options="$options" placeholder="Add framework" class="w-full max-w-xs" empty="No items found." selected-view="examples.framework-label" />
         </div>

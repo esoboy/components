@@ -100,13 +100,10 @@ class UiServiceProvider extends ServiceProvider
     }
 
     /**
-     * config/ui.php: the Editor's formats, whitelist, embed platforms, hosts and uploader.
-     * Its route hands what the Editor uploads to the uploader.
+     * config/ui.php: the Editor's formats, whitelist and embed platforms.
      */
     protected function bootConfig(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/editor.php');
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/ui.php' => config_path('ui.php'),

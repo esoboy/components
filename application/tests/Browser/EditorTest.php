@@ -41,9 +41,8 @@ it('inserts a server-rendered slash command and emoji suggestion', function () {
         ->assertNoJavaScriptErrors();
 });
 
-it('sends pasted files as multipart and inserts the uploader response', function () {
-    // Pest's HTTP driver does not parse multipart files. Check the browser's
-    // actual request body here; package feature tests exercise the PHP uploader.
+it('lets the application handle a pasted file and inserts its attachment', function () {
+    // Pest's HTTP driver does not parse multipart files. Check the browser's actual request body.
     Route::middleware('web')->post('/browser-editor-upload', function (Request $request) {
         expect($request->header('content-type'))->toStartWith('multipart/form-data; boundary=');
         expect($request->getContent())->toContain('name="source"', 'paste', 'filename="upload-check.txt"', 'Upload integration check');
@@ -54,7 +53,7 @@ it('sends pasted files as multipart and inserts the uploader response', function
     $page = visit('/editor')->assertPresent(ARTICLE.' .ProseMirror');
     $page->script(<<<'JS'
         (() => {
-            document.querySelector('[data-editor-name="article"]').dataset.upload = '/browser-editor-upload';
+            document.querySelector('[data-demo-media-endpoint]').dataset.demoMediaEndpoint = '/browser-editor-upload';
             const input = document.querySelector('[data-editor-name="article"] .ProseMirror');
             const clipboard = new DataTransfer();
             clipboard.items.add(new File(['Upload integration check'], 'upload-check.txt', { type: 'text/plain' }));

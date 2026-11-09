@@ -70,7 +70,7 @@ Bind `wire:model` (with any modifier) on the control itself, never on an inner i
 | Select, Radio Group, Combobox, single Toggle Group | the item's `value` |
 | Combobox `multiple`, Toggle Group `multiple`, Tags Input, Transfer, checkable Tree | list of values |
 | Combobox `autocomplete` | the typed text |
-| Calendar, Date Picker | `Y-m-d`, or `Y-m-d H:i` with Date Picker's `time` prop. `step="1"` includes seconds. `mode="range"` gives `['from' => …, 'to' => …]`. |
+| Calendar, Date Picker | `Y-m-d`. Date Picker supports `granularity="month"` (`YYYY-MM`), `granularity="quarter"` (`YYYY-Q1` to `YYYY-Q4`) and day values with `time` (`Y-m-d H:i`, with seconds at `step="1"`). `mode="range"` gives `['from' => …, 'to' => …]`. |
 | Slider | number, or a list for several thumbs (`:value="[25, 75]"`) |
 | Number Input, Rating | number |
 | Cascader | the path of values, `['asia', 'china', 'beijing']` |
@@ -153,7 +153,15 @@ Ui::countdown('sms');                                   // restarts Verification
 Ui::theme('app');                                       // the user's theme choice: light, dark or system
 ```
 
-These work in components, form objects and actions called by a Livewire request, and throw outside one. From Blade, `$dispatch('ui-toast', { message: 'Saved' })` shows a toast too. Toasts shown before `$this->redirect(..., navigate: true)` stay on the next page.
+These work in components, form objects and actions called by a Livewire request, and throw outside one. From Blade, `$dispatch('ui-toast', { message: 'Saved' })` shows a toast too.
+
+To keep toasts across `wire:navigate`, including redirects with `navigate: true`, wrap the toaster in the shared application layout. Use the same persistence key on each participating page.
+
+```blade
+@persist('app-toaster')
+    <x-ui::toaster />
+@endpersist
+```
 
 Component events are listened to with `wire:` on the component: `wire:emoji-select` (`{ emoji, label }`), `wire:mentions-search`, `wire:mentions-select`, `wire:tour-change`, `wire:tour-close`, `wire:finish` (Countdown), `wire:move` (draggable Tree).
 
@@ -208,8 +216,8 @@ Component events are listened to with `wire:` on the component: `wire:emoji-sele
 
 - `format` (`text`, `basic`, `full`, a format named in `config/ui.php`, or a list of features) decides what can be written, what pasted HTML keeps and which tools show.
 - Always clean what comes back before storing it, with the same format: `$post->body = Ui::sanitize($this->body, 'basic');`. Validate the length as the Editor counts it with `new \Esoboy\Ui\Rules\RichTextLength(max: 2000, format: 'basic')`; `Ui::plainText()` gives the text for search and summaries.
-- Declare allowed media selection types with `:media-picker="['image', 'file']"`. The editor emits `ui-editor-media-request`; the application owns the picker, upload and authorization, then calls `Ui::editor($name)->resolveMedia($requestId, $attachments)`. An empty result cancels the request. To open the system picker, handle the event in Alpine before a Livewire round trip.
-- Dropped and pasted files and image imports go to the app's `Esoboy\Ui\Contracts\EditorUploader`, configured as `editor.uploader` in `config/ui.php`. Implement `authorize($source, $url, $context)` for permissions and rate limits before any remote fetch, and `upload()` to validate and store the file.
+- Declare media selection types with `:media-picker="['image', 'file']"`. For a `ui-editor-media-request` with `source: 'picker'`, the application opens the picker and calls `Ui::editor($name)->resolveMedia($requestId, $attachments)`. An empty list cancels the request. Open the system picker in Alpine during the original interaction.
+- Enable `:media-upload="true"` to receive the same event for dropped or pasted files and image imports. The application decides by `source`, `kind` and `automatic` whether to call `request.respondWith(promise)` synchronously. The promise returns one attachment or rejects with an `AbortError` for a silent cancellation. Authorization, validation and transport belong to the application.
 - `Ui::editor('body')->insert([['url' => …, 'name' => …, 'mime' => …]])` inserts the app's own media at the cursor.
 
 ## Styling and Theme

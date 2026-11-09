@@ -15,11 +15,9 @@ Blade/Livewire interface, not the design.
   there is intentionally no compatibility layer.
 - Simple options render through the same parts as custom slots.
 
-Runtime code belongs in Alpine providers. Build scripts and browser tests are
-tooling, not runtime code. Third-party editing/drawing engines and the editor's
-upload transport are dependencies; their adapters remain inside the corresponding
-Alpine lifecycle. The lazy editor uses Axios for upload progress, while PHP still
-validates and stores uploads through the configured uploader.
+Runtime code belongs in Alpine providers. Third-party editing and drawing engines
+are integrated through the corresponding Alpine lifecycle. The application
+handles the editor's upload transport, authorization, validation and storage.
 
 ## Public interface
 
@@ -193,9 +191,14 @@ a localized placeholder for failures. Keep using `Ui::editor()` and `Ui::sanitiz
 For toolbar and slash-menu media selection, declare the supported kinds with
 `media-picker` and handle `ui-editor-media-request` in the application. Return
 the selected attachments with `Ui::editor($name)->resolveMedia($requestId, $attachments)`.
-The package uploader handles dropped and pasted files and remote image imports.
-Implement `EditorUploader::authorize($source, $url, $context)` to check permissions
-before the package retrieves remote content. Remote image imports require PHP cURL.
+For dropped or pasted files and image imports, enable `:media-upload="true"` and
+handle the same event by `source`. Claim accepted requests with
+`request.respondWith(promise)` in the listener. The promise returns the stored
+attachment. Use `request.automatic` to decide whether to import a newly inserted
+image and `image-hosts` to identify your media hosts. Remove the previous
+`upload-context` prop and `uploader`, `hosts`, and `auto_upload` config entries.
+Move authorization, validation and storage to the application. The package
+upload route and `EditorUploader` interface have been removed.
 
 Code Block highlights snippets during rendering using the Composer highlighter.
 Unknown languages and snippets over 128 KiB use escaped plain text. The
