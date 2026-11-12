@@ -113,8 +113,9 @@ final class RichTextFormat
         $html = ($this->sanitizer ??= new HtmlSanitizer($this->config()))->sanitize($html);
         $html = preg_replace('~<img(?![^>]* src=)[^>]*/>|<(iframe|video|audio)(?![^>]* src=)[^>]*></\1>~', '', $html) ?? '';
 
+        // Attachment links use spans for their icon, name and size even without style.
         do {
-            $html = preg_replace('~<span>((?:(?!<span[\s>]).)*?)</span>~s', '$1', $html, -1, $count) ?? '';
+            $html = preg_replace('~<a\b[^>]*\sdownload="[^"]*"[^>]*>.*?</a>(*SKIP)(*F)|<span>((?:(?!<span[\s>]).)*?)</span>~s', '$1', $html, -1, $count) ?? '';
         } while ($count);
 
         return $html;

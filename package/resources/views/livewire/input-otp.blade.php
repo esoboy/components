@@ -19,5 +19,5 @@
         'spellcheck' => 'false',
         'value' => $code,
         ...($settings['validation'] ?? []),
-    ]) }} wire:model.live.debounce.100ms="value">
+    ]) }} wire:model.live.debounce.16ms="value">
 </eso-input-otp>

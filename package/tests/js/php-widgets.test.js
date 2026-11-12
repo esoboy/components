@@ -35,11 +35,14 @@ it('navigates cascader columns and restores focus after a leaf selection',()=>{
     data.key({target:document.activeElement,key:'ArrowLeft',preventDefault(){}}); expect(document.activeElement.textContent).toBe('A')
     data.picked({leaf:true,depth:1}); expect(data.panel.matches(':popover-open')).toBe(false); expect(document.activeElement).toBe(data.trigger)
 })
-it('keeps combobox suggestions open after server options are morphed',()=>{
+it('shows morphed combobox suggestions while the list is requested',()=>{
     let morphed; const stop = vi.fn(); window.Livewire = {hook:(_,callback)=>{morphed=callback;return stop}}
-    const data = provider(combobox,'<div><input data-combobox-input><div data-slot="combobox-content" popover><button data-slot="combobox-item">Apple</button></div></div>',{wire:{value:null}})
-    data.input.focus(); morphed({el:data.$el}); expect(data.panel.matches(':popover-open')).toBe(true)
+    const data = provider(combobox,'<div data-autocomplete><input data-combobox-input><div data-slot="combobox-content" popover></div></div>',{wire:{value:null}})
+    data.input.focus(); data.open(); expect(data.panel.matches(':popover-open')).toBe(false)
+    data.panel.innerHTML = '<button data-slot="combobox-item">Apple</button>'
+    morphed({el:data.$el}); expect(data.panel.matches(':popover-open')).toBe(true)
     data.key({key:'ArrowDown',preventDefault(){}}); expect(data.input.getAttribute('aria-activedescendant')).toBe(data.items[0].id)
+    data.close(); morphed({el:data.$el}); expect(data.panel.matches(':popover-open')).toBe(false)
     data.destroy(); expect(stop).toHaveBeenCalled()
 })
 it('delegates tree selection and expansion to PHP actions',async()=>{

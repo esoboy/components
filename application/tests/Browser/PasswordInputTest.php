@@ -17,3 +17,18 @@ it('shows and hides the password', function () {
         ->assertValue('#password', 'secret')
         ->assertNoJavaScriptErrors();
 });
+
+it('keeps the visibility control within the input group', function () {
+    visit('/inputs')
+        ->assertScript(<<<'JS'
+            () => {
+                const group = document.querySelector('#password').closest('[data-slot="input-group"]');
+                const addon = group.querySelector('[data-slot="input-group-addon"]');
+                const groupBounds = group.getBoundingClientRect();
+                const addonBounds = addon.getBoundingClientRect();
+
+                return addonBounds.top >= groupBounds.top && addonBounds.bottom <= groupBounds.bottom;
+            }
+            JS)
+        ->assertNoJavaScriptErrors();
+});

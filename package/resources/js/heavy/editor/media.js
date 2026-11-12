@@ -172,7 +172,7 @@ export function videoNode(input, features, platforms) {
     if (src) {
         const ratio = /^<iframe/i.test(text) ? ratioOf(text) : null
 
-        return { type: 'embed', attrs: { src, style: ratio && ratio !== RATIOS[0] ? EMBED_STYLE.replace('16 / 9', ratio) : null } }
+        return { type: 'embed', attrs: { src, style: ratio ? EMBED_STYLE.replace('16 / 9', ratio) : EMBED_STYLE } }
     }
 
     const path = text.split(/[?#]/)[0]

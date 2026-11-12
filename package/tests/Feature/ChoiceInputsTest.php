@@ -86,7 +86,7 @@ it('renders an input otp with slots over one input', function () {
         ->assertSeeMarkup('<div data-slot="input-otp-group">')
         ->assertSeeMarkup('<div data-slot="input-otp-slot" data-index="0"></div>')
         ->assertSeeMarkup('<div data-slot="input-otp-separator" role="separator">')
-        ->assertSeeMarkup('<input type="text" data-slot="input-otp-input" maxlength="4" autocomplete="one-time-code" spellcheck="false" wire:model.live.debounce.100ms="value" inputmode="numeric">');
+        ->assertSeeMarkup('<input type="text" data-slot="input-otp-input" maxlength="4" autocomplete="one-time-code" spellcheck="false" wire:model.live.debounce.16ms="value" inputmode="numeric">');
 });
 
 it('validates an input otp inside a field', function () {

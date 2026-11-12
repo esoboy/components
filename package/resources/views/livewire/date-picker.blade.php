@@ -1,11 +1,12 @@
 @php($labelling = ['id', 'aria-label', 'aria-labelledby'])
-<eso-date-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name', ...$labelling])->merge(['data-slot' => 'date-picker', 'data-mode' => $settings['mode'], 'data-time' => (bool) ($settings['time'] ?? false), ...($settings['validation'] ?? [])]) }}
+@php($dateRange = $settings['mode'] === 'range' && ! $periods)
+<eso-date-picker {{ $attributes->whereDoesntStartWith('wire:model')->except(['class', 'style', 'name', ...$labelling])->merge(['data-slot' => 'date-picker', 'data-mode' => $settings['mode'], 'data-granularity' => $settings['granularity'] ?? 'day', 'data-time' => (bool) ($settings['time'] ?? false), ...($settings['validation'] ?? [])]) }}
     @if ($settings['time'] ?? false) x-data="uiTimePicker" x-on:toggle.capture="scrollToTime($event)" @endif>
     <x-ui::popover>
         <x-ui::popover.trigger><x-ui::button variant="outline" :disabled="$settings['disabled'] ?? false" data-date-picker-trigger :data-empty="$label === '' ? 'true' : 'false'" :attributes="$attributes->only(['class', 'style', ...$labelling])->merge($settings['validation'] ?? [])">
-            @if ($settings['mode'] === 'range')<x-ui::icon name="calendar" data-icon="inline-start" />@endif
+            @if ($dateRange)<x-ui::icon name="calendar" data-icon="inline-start" />@endif
             <span data-slot="date-picker-value">{{ $label !== '' && isset($settings['selectedView']) ? view($settings['selectedView'], ['value' => $value, 'label' => $label]) : ($label ?: ($settings['placeholder'] ?? null)) }}</span>
-            @if ($settings['mode'] !== 'range')<x-ui::icon name="chevron-down" data-icon="inline-end" />@endif
+            @unless ($dateRange)<x-ui::icon name="chevron-down" data-icon="inline-end" />@endunless
         </x-ui::button></x-ui::popover.trigger>
         <x-ui::popover.content align="start" data-date-picker-content>
             <div data-slot="date-picker-body" @if (($settings['time'] ?? false) && $settings['mode'] !== 'range' && count($months) === 1) data-time-side @endif>

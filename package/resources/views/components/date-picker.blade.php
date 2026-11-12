@@ -34,7 +34,7 @@
 @php
 $state = ControlState::for($attributes, $errors ?? null, $uiField, $showError);
 $value = Model::value($attributes, $value);
-$granularity = in_array($granularity, ['month', 'quarter'], true) ? $granularity : 'day';
+$granularity = $granularity === 'month' ? 'month' : 'day';
 $time = $granularity === 'day' && $time;
 $numberOfMonths ??= $mode === 'range' ? 2 : 1;
 $presets = DatePresets::normalize($presets, $mode, $granularity);

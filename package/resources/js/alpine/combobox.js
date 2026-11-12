@@ -1,4 +1,5 @@
 export default () => ({
+    wantsOpen: false,
     stopMorph: null,
     get input() { return this.$el.querySelector('[data-combobox-input]') },
     get panel() { return this.$el.querySelector('[data-slot="combobox-content"]') },
@@ -8,7 +9,6 @@ export default () => ({
         this.stopMorph = window.Livewire.hook('morphed', ({ el }) => {
             if (el !== this.$el) return
             this.refresh()
-            if (document.activeElement === this.input) this.open()
         })
     },
     destroy() { this.stopMorph?.() },
@@ -16,20 +16,36 @@ export default () => ({
         for (const [index, item] of this.items.entries()) item.id ||= this.$id('combobox-item', index)
         const clear = this.$el.querySelector('[data-combobox-clear]')
         if (clear) clear.hidden = !this.$wire.value?.length
-        if (this.$el.hasAttribute('data-autocomplete') && document.activeElement === this.input) {
-            this.items.length ? this.open() : this.close()
-        }
+        this.syncPopover()
     },
     open() {
-        if (this.input?.disabled || this.panel.matches(':popover-open') || this.$el.hasAttribute('data-autocomplete') && !this.items.length) return
-        this.panel.showPopover({ source: this.$el.querySelector('[data-combobox-anchor], [data-combobox-trigger]') ?? this.input })
-        this.input?.setAttribute('aria-expanded', 'true')
-        this.panel.id ||= this.$id('combobox-list')
-        this.input?.setAttribute('aria-controls', this.panel.id)
+        this.wantsOpen = true
+        this.syncPopover()
     },
     close() {
-        if (this.panel.matches(':popover-open')) this.panel.hidePopover()
-        this.input?.setAttribute('aria-expanded', 'false')
+        this.wantsOpen = false
+        this.syncPopover()
+    },
+    syncPopover() {
+        const { input, panel } = this
+        const trigger = this.$el.querySelector('[data-combobox-trigger]')
+        // Suggestions can arrive after the input event or after the user has dismissed the list.
+        const show = this.wantsOpen && !input?.disabled && (!this.$el.hasAttribute('data-autocomplete') || this.items.length > 0)
+
+        if (show && !panel.matches(':popover-open')) {
+            panel.showPopover({ source: this.$el.querySelector('[data-combobox-anchor], [data-combobox-trigger]') ?? input })
+        } else if (!show && panel.matches(':popover-open')) {
+            panel.hidePopover()
+        }
+
+        panel.id ||= this.$id('combobox-list')
+        for (const control of [input, trigger]) {
+            control?.setAttribute('aria-expanded', String(show))
+            control?.setAttribute('aria-controls', panel.id)
+        }
+    },
+    outside(event) {
+        if (this.wantsOpen && !this.$el.contains(event.target)) this.close()
     },
     click(event) {
         if (event.target.closest('[data-combobox-clear]')) { this.$wire.clear(); this.input?.focus(); return }

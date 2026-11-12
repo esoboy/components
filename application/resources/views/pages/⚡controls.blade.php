@@ -36,8 +36,7 @@ new class extends Component
     public array $range = ['from' => '2026-10-20', 'to' => '2026-11-03'];
 
     public array $period = ['from' => null, 'to' => null];
-    public ?string $reportMonth = '2026-10';
-    public array $reportQuarters = ['from' => null, 'to' => null];
+    public ?string $reportMonth = null;
 
     public ?string $time = '10:30:00';
 
@@ -109,24 +108,25 @@ new class extends Component
         <div class="flex flex-wrap items-start gap-6">
             <x-ui::date-picker id="demo-picker" wire:model.live="date" placeholder="Pick a date" />
             <x-ui::date-picker mode="range" wire:model.live="range" placeholder="Pick a date range" />
-            <x-ui::date-picker id="demo-presets" mode="range" wire:model.live="period" placeholder="Pick a period" :presets="[
-                'Today' => [today(), today()],
-                'Last 7 days' => [today()->subDays(6), today()],
-                'Last 30 days' => [today()->subDays(29), today()],
-                'This month' => [today()->startOfMonth(), today()->endOfMonth()],
-            ]" />
         </div>
-        <p class="text-sm text-muted-foreground">period: <span id="period">{{ ($period['from'] ?? '').' → '.($period['to'] ?? '') }}</span></p>
         <div class="flex flex-wrap items-start gap-6">
-            <x-ui::date-picker id="demo-month-picker" granularity="month" wire:model.live="reportMonth" caption-layout="dropdown" min="2025-01" max="2027-12" :disabled-dates="['2026-12']" placeholder="Pick a month">
-                <div class="border-t p-2">
-                    <p id="report-month-slot" class="mb-2 text-sm text-muted-foreground">Report month: {{ $reportMonth ?? 'none' }}</p>
-                    <x-ui::button size="sm" variant="outline" wire:click="$set('reportMonth', '2025-11')">Use November 2025</x-ui::button>
-                </div>
-            </x-ui::date-picker>
-            <x-ui::date-picker id="demo-quarter-picker" granularity="quarter" mode="range" wire:model.live="reportQuarters" month="2026-10" min="2026-Q1" max="2027-Q4" placeholder="Pick a quarter range" />
+            <x-ui::date-picker id="demo-presets" granularity="month" mode="range" wire:model.live="period" caption-layout="dropdown" placeholder="Pick a month range" :presets="[
+                'This month' => [today(), today()],
+                'Last 3 months' => [today()->startOfMonth()->subMonths(2), today()],
+            ]" />
+            @php
+                $currentMonth = today()->toImmutable()->startOfMonth();
+            @endphp
+            <x-ui::date-picker id="demo-month-picker" granularity="month" wire:model.live="reportMonth" caption-layout="dropdown" placeholder="Pick a month"
+                :min="$currentMonth->subYear()->startOfYear()->format('Y-m')"
+                :max="$currentMonth->addYear()->endOfYear()->format('Y-m')"
+                :disabled-dates="[$currentMonth->addMonth()->format('Y-m')]"
+                :presets="[
+                    'This month' => $currentMonth,
+                    'Last month' => $currentMonth->subMonth(),
+                ]" />
         </div>
-        <p class="text-sm text-muted-foreground">month: <span id="report-month">{{ $reportMonth ?? 'none' }}</span>, quarters: <span id="report-quarters">{{ ($reportQuarters['from'] ?? '').' → '.($reportQuarters['to'] ?? '') }}</span></p>
+        <p class="text-sm text-muted-foreground">month range: <span id="period">{{ ($period['from'] ?? '').' → '.($period['to'] ?? '') }}</span>, month: <span id="report-month">{{ $reportMonth ?? 'none' }}</span></p>
         <div class="flex flex-wrap items-start gap-4">
             <x-ui::field class="w-fit">
                 <x-ui::label for="demo-date-time">Date</x-ui::label>

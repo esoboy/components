@@ -1,6 +1,6 @@
 /*
  * The Editor's blocks beyond StarterKit, each written as plain HTML that reads anywhere
- * and parsed back from it: no data-* attributes or classes, inline style for the rest.
+ * and parsed back from it, using inline styles for their layout by default.
  * Their style is the whitelisted one they came with (passthrough), or what the editor
  * gives what it creates.
  */
@@ -10,16 +10,23 @@ import CodeBlock from '@tiptap/extension-code-block'
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details'
 import Image from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
-import { Table, TableCell, TableHeader, TableRow, createColGroup } from '@tiptap/extension-table'
+import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
 import { NodeSelection, Plugin, TextSelection } from '@tiptap/pm/state'
 import { dataImage } from './images.js'
-import { EMBED_STYLE, playable, safeUrl, secure, still } from './media.js'
+import { playable, safeUrl, secure, still } from './media.js'
 import { resizable } from './resize.js'
-import { computed, restyle } from './styles.js'
-import { declarations } from './whitelist.js'
+import { restyle } from './styles.js'
 
 // Attributes the node writes itself, so they don't render as attributes of their own.
 const own = (fallback, parseHTML) => ({ default: fallback, parseHTML, renderHTML: () => ({}) })
+const inlineStyle = style => style ? { style } : {}
+
+// Schema defaults style new nodes. An empty string records an imported element without style.
+const styled = (list, defaultStyle) => ({
+    default: restyle(defaultStyle, {}),
+    parseHTML: element => list.style(element) ?? '',
+    renderHTML: ({ style }) => inlineStyle(style),
+})
 
 // A box first in the item (alone or in a label), as Markdown's, GitHub's and Tiptap's are.
 const checkbox = item => item.querySelector(':scope > input[type="checkbox"], :scope > label > input[type="checkbox"]')
@@ -27,13 +34,17 @@ const checkbox = item => item.querySelector(':scope > input[type="checkbox"], :s
 /**
  * Task lists: <ul> with a box opening each item, styled inline as a list without bullets.
  */
-export const tasks = labels => [
+export const tasks = (labels, list) => [
     TaskList.extend({
+        addAttributes: () => ({ style: styled(list, 'list-style-type:none;padding-left:0') }),
         parseHTML: () => [{ tag: 'ul', priority: 60, getAttrs: list => [...list.children].some(item => item.matches('li') && checkbox(item)) ? null : false }],
-        renderHTML: ({ HTMLAttributes }) => ['ul', mergeAttributes(HTMLAttributes, { style: 'list-style-type:none;padding-left:0' }), 0],
+        renderHTML: ({ HTMLAttributes }) => ['ul', HTMLAttributes, 0],
     }),
     TaskItem.extend({
-        addAttributes: () => ({ checked: { default: false, keepOnSplit: false, parseHTML: item => checkbox(item)?.hasAttribute('checked') ?? false, renderHTML: () => ({}) } }),
+        addAttributes: () => ({
+            checked: { ...own(false, item => checkbox(item)?.hasAttribute('checked') ?? false), keepOnSplit: false },
+            style: styled(list, 'display:flex;align-items:baseline;gap:0.5em'),
+        }),
         parseHTML: () => [{
             tag: 'li',
             priority: 60,
@@ -52,7 +63,7 @@ export const tasks = labels => [
                 return rest
             },
         }],
-        renderHTML: ({ node, HTMLAttributes }) => ['li', mergeAttributes(HTMLAttributes, { style: 'display:flex;align-items:baseline;gap:0.5em' }), ['input', { type: 'checkbox', disabled: 'disabled', checked: node.attrs.checked ? 'checked' : null }], ['div', 0]],
+        renderHTML: ({ node, HTMLAttributes }) => ['li', HTMLAttributes, ['input', { type: 'checkbox', disabled: 'disabled', checked: node.attrs.checked ? 'checked' : null }], ['div', 0]],
     }).configure({ nested: true, a11y: { checkboxLabel: node => `${labels.task}: ${node.textContent}` } }),
 ]
 
@@ -80,11 +91,15 @@ export const PlainCodeBlock = CodeBlock.extend({
     addAttributes: () => ({}),
 }).configure({ enableTabIndentation: true, tabSize: 4 })
 
+const tableColumns = table => [...table.querySelectorAll(':scope > colgroup > col')]
+const wrapsTable = element => element?.matches('div') && element.children.length === 1 && element.firstElementChild.matches('table')
+
 // A cell's column widths: Tiptap's colwidth, else its columns' <col> widths.
 function columnWidths(cell) {
     if (cell.getAttribute('colwidth')) return cell.getAttribute('colwidth').split(',').map(Number)
 
-    const columns = [...cell.closest('table')?.querySelectorAll(':scope > colgroup > col') ?? []]
+    const table = cell.closest('table')
+    const columns = table ? tableColumns(table) : []
     const span = Number(cell.getAttribute('colspan')) || 1
     let index = 0
 
@@ -93,45 +108,46 @@ function columnWidths(cell) {
         index += Number(sibling.getAttribute('colspan')) || 1
     }
 
-    const widths = columns.slice(index, index + span).map(column => parseInt(column.style.width, 10))
+    const widths = Array.from({ length: span }, (_, offset) => parseInt(columns[index + offset]?.style.width, 10) || 0)
 
-    return widths.length === span && widths.every(width => width > 0) ? widths : null
+    return widths.some(width => width > 0) ? widths : null
 }
 
-/**
- * A cell: its whitelisted style, over the editor's border and padding unless it has a
- * border of its own (a table copied from a page drew its borders with a class).
- */
 const cell = (extension, style, list) => extension.extend({
     addAttributes() {
         return {
             ...this.parent?.(),
             colwidth: own(null, columnWidths),
-            style: {
-                default: style,
-                parseHTML: element => {
-                    const kept = list.style(element)
-
-                    return computed(kept, 'border-top-style') ? kept : restyle(style, Object.fromEntries(declarations(kept)))
-                },
-            },
+            style: styled(list, style),
         }
     },
 })
 
 /**
- * Tables: collapsed borders and padded cells inline; column widths on <col>, the table
- * as wide as they add up to (or the page) and scrolling in a div when wider.
+ * Tables keep the styles of the wrapper and table, and store resized column widths on <col>.
  */
 export function tables(styles, list) {
     return [
         Table.extend({
+            addAttributes() {
+                return {
+                    ...this.parent?.(),
+                    style: styled(list, 'border-collapse:collapse;width:100%'),
+                    wrapperStyle: own('overflow-x:auto', table => wrapsTable(table.parentElement) ? list.style(table.parentElement) ?? '' : ''),
+                    columnStyles: own([], table => tableColumns(table).map(column => restyle(list.style(column), { width: null }))),
+                }
+            },
             // The div a table scrolls in is the table's own: it isn't kept as a block.
-            parseHTML: () => [{ tag: 'div', priority: 60, skip: true, getAttrs: element => element.children.length === 1 && element.firstElementChild.matches('table') ? null : false }, { tag: 'table' }],
+            parseHTML: () => [{ tag: 'div', priority: 60, skip: true, getAttrs: element => wrapsTable(element) ? null : false }, { tag: 'table' }],
             renderHTML({ node, HTMLAttributes }) {
-                const { colgroup, tableWidth } = createColGroup(node, this.options.cellMinWidth)
+                const widths = node.firstChild?.content.content.flatMap(({ attrs }) => Array.from({ length: attrs.colspan }, (_, index) => attrs.colwidth?.[index])) ?? []
+                const { wrapperStyle, columnStyles } = node.attrs
+                const columns = widths.map((width, index) => {
+                    const style = columnStyles[index]
 
-                return ['div', { style: 'overflow-x:auto' }, ['table', mergeAttributes(HTMLAttributes, { style: `border-collapse:collapse;width:${tableWidth || '100%'}` }), colgroup, ['tbody', 0]]]
+                    return ['col', inlineStyle(width ? restyle(style, { width: `${width}px` }) : style)]
+                })
+                return ['div', inlineStyle(wrapperStyle), ['table', HTMLAttributes, ['colgroup', ...columns], ['tbody', 0]]]
             },
         }).configure({ resizable: true, cellMinWidth: 48, allowTableNodeSelection: true }),
         TableRow,
@@ -174,8 +190,11 @@ const rowStyle = count => `display: grid; grid-template-columns: repeat(${count}
 const inRow = image => image.type.create({ ...image.attrs, style: restyle(image.attrs.style, { 'width': '100%', 'margin-left': null, 'margin-right': null }) })
 const outOfRow = image => image.type.create({ ...image.attrs, style: restyle(image.attrs.style, { 'width': null, 'margin-left': 'auto', 'margin-right': 'auto' }) })
 
-// A grid row of images (an <img>, or a linked one, each), as the editor writes them.
-const isRow = element => /grid/.test(element.style.display) && element.children.length > 1 && [...element.children].every(child => child.matches('img[src]') || (child.matches('a[href]') && child.children.length === 1 && child.firstElementChild.matches('img[src]')))
+// The row is still a group of images after its grid style has been cleared.
+const isRow = element => (! element.style.display || /grid/.test(element.style.display))
+    && ! element.textContent.trim()
+    && element.children.length > 1
+    && [...element.children].every(child => child.matches('img[src]') || linked(child) && child.matches('a[href]'))
 
 /**
  * Images side by side, in a row of equal columns: an image joins the next one (or the
@@ -189,18 +208,28 @@ export function imageRows() {
         content: 'image+',
         draggable: true,
         parseHTML: () => [{ tag: 'div', priority: 60, getAttrs: element => isRow(element) ? null : false }],
-        renderHTML: ({ node }) => ['div', { style: rowStyle(node.childCount) }, 0],
+        renderHTML: ({ HTMLAttributes }) => ['div', HTMLAttributes, 0],
         // In the editor its images keep no handles: their column sizes them.
         addNodeView: () => ({ node }) => {
             const dom = document.createElement('div')
+            const layout = row => {
+                if (row.attrs.style) dom.style.cssText = row.attrs.style
+                else dom.removeAttribute('style')
+            }
 
             dom.dataset.editorRow = ''
-            dom.style.cssText = rowStyle(node.childCount)
+            layout(node)
 
             return {
                 dom,
                 contentDOM: dom,
-                update: next => next.type === node.type && ((dom.style.cssText = rowStyle(next.childCount)), true),
+                update: next => {
+                    if (next.type !== node.type) return false
+
+                    layout(next)
+
+                    return true
+                },
             }
         },
         addCommands: () => ({
@@ -218,10 +247,10 @@ export function imageRows() {
                 if (parent.type === row) {
                     if (dispatch) {
                         const others = parent.content.content.filter((child, index) => index !== $position.index())
-                        const left = others.length === 1 ? [outOfRow(others[0])] : [row.create(null, others)]
+                        const left = others.length === 1 ? outOfRow(others[0]) : row.create({ ...parent.attrs, style: parent.attrs.style && rowStyle(others.length) }, others)
 
-                        tr.replaceWith($position.before(), $position.after(), [...left, outOfRow(image)])
-                        tr.setSelection(NodeSelection.create(tr.doc, $position.before() + left[0].nodeSize))
+                        tr.replaceWith($position.before(), $position.after(), [left, outOfRow(image)])
+                        tr.setSelection(NodeSelection.create(tr.doc, $position.before() + left.nodeSize))
                     }
 
                     return true
@@ -242,7 +271,10 @@ export function imageRows() {
                     const from = after ? selection.from : selection.from - other.nodeSize
                     const to = after ? selection.to + other.nodeSize : selection.to
 
-                    tr.replaceWith(from, to, row.create(null, after ? [inRow(image), ...images] : [...images, inRow(image)]))
+                    const content = after ? [inRow(image), ...images] : [...images, inRow(image)]
+                    const attributes = other.type === row ? other.attrs : {}
+
+                    tr.replaceWith(from, to, row.create({ ...attributes, style: rowStyle(content.length) }, content))
                     tr.setSelection(NodeSelection.create(tr.doc, from + 1 + (after ? 0 : images.reduce((size, node) => size + node.nodeSize, 0))))
                 }
 
@@ -284,7 +316,7 @@ export function figures(styles) {
             isolating: true,
             draggable: true,
             parseHTML: () => [{ tag: 'figure', priority: 60, getAttrs: figure => figure.querySelector('img[src]') ? null : false }],
-            renderHTML: ({ HTMLAttributes }) => ['figure', mergeAttributes({ style: styles.figure }, HTMLAttributes), 0],
+            renderHTML: ({ HTMLAttributes }) => ['figure', HTMLAttributes, 0],
             addCommands: () => ({
                 // A caption under the selected image, or the image alone again.
                 toggleCaption: () => ({ state, tr, dispatch }) => {
@@ -300,7 +332,9 @@ export function figures(styles) {
                         tr.replaceWith($position.before(), $position.after(), image)
                         tr.setSelection(NodeSelection.create(tr.doc, $position.before()))
                     } else if (dispatch) {
-                        tr.replaceWith(selection.from, selection.to, schema.nodes.figure.create(null, [image, schema.nodes.figcaption.create()]))
+                        const caption = schema.nodes.figcaption.create({ style: styles.caption })
+
+                        tr.replaceWith(selection.from, selection.to, schema.nodes.figure.create({ style: styles.figure }, [image, caption]))
                         tr.setSelection(TextSelection.create(tr.doc, selection.from + image.nodeSize + 2))
                     }
 
@@ -330,7 +364,7 @@ export function figures(styles) {
             content: 'inline*',
             // Only in a figure: elsewhere it is a block like any other.
             parseHTML: () => [{ tag: 'figcaption', context: 'figure/' }],
-            renderHTML: ({ HTMLAttributes }) => ['figcaption', mergeAttributes({ style: styles.caption }, HTMLAttributes), 0],
+            renderHTML: ({ HTMLAttributes }) => ['figcaption', HTMLAttributes, 0],
         }),
     ]
 }
@@ -378,7 +412,7 @@ export const Audio = Node.create({
  * Files: a download link drawn as a card (clip, name, size) with inline style, so it
  * reads as one anywhere.
  */
-export const file = card => Node.create({
+export const file = list => Node.create({
     name: 'file',
     group: 'block',
     atom: true,
@@ -389,19 +423,23 @@ export const file = card => Node.create({
         name: own(null, link => link.getAttribute('download') || link.querySelector(':scope > span:nth-of-type(2)')?.textContent || link.textContent.trim()),
         mime: own(null, link => link.getAttribute('type')),
         size: own(null, link => link.querySelector(':scope > span:nth-of-type(3)')?.textContent ?? null),
+        partStyles: own(['flex-shrink:0', 'min-width:0px;overflow-wrap:anywhere', 'flex-shrink:0;white-space:nowrap;opacity:0.6'],
+            link => [...link.querySelectorAll(':scope > span')].map(list.style)),
     }),
 
     parseHTML: () => [{ tag: 'a[download][href]', priority: 80, getAttrs: link => safeUrl(link.getAttribute('href')) ? null : false }],
 
-    // Its parts styled (a long name wraps, the icon and size keep their size), never bare
-    // spans, which filtering takes out.
-    renderHTML: ({ node, HTMLAttributes }) => [
-        'a',
-        mergeAttributes({ href: node.attrs.href, download: node.attrs.name ?? '', type: node.attrs.mime, style: card }, HTMLAttributes),
-        ['span', { style: 'flex-shrink:0' }, '📎'],
-        ['span', { style: 'min-width:0px;overflow-wrap:anywhere' }, node.attrs.name ?? ''],
-        ...node.attrs.size ? [['span', { style: 'flex-shrink:0;white-space:nowrap;opacity:0.6' }, node.attrs.size]] : [],
-    ],
+    renderHTML: ({ node, HTMLAttributes }) => {
+        const part = (index, text) => ['span', inlineStyle(node.attrs.partStyles?.[index]), text]
+
+        return [
+            'a',
+            mergeAttributes({ href: node.attrs.href, download: node.attrs.name ?? '', type: node.attrs.mime }, HTMLAttributes),
+            part(0, '📎'),
+            part(1, node.attrs.name ?? ''),
+            ...node.attrs.size ? [part(2, node.attrs.size)] : [],
+        ]
+    },
 })
 
 /**
@@ -424,8 +462,7 @@ export function embed(platforms) {
 
         parseHTML: () => [{ tag: 'iframe[src]', getAttrs: frame => playable(secure(frame.getAttribute('src')), platforms) ? null : false }],
 
-        // A 16:9 player as wide as the page, unless its style says otherwise.
-        renderHTML: ({ HTMLAttributes }) => ['iframe', mergeAttributes({ style: EMBED_STYLE }, HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy' })],
+        renderHTML: ({ HTMLAttributes }) => ['iframe', mergeAttributes(HTMLAttributes, { allowfullscreen: 'allowfullscreen', loading: 'lazy' })],
 
         addNodeView: () => resizable('iframe', ({ attrs }) => ({ src: attrs.src, title: attrs.title, allowfullscreen: true, loading: 'lazy' })),
     })

@@ -18,6 +18,32 @@ it('takes no more than its length', function () {
         ->assertValue('#code', '123456');
 });
 
+it('starts updating the slots before continuous typing stops', function () {
+    $page = visit('/controls');
+
+    $page->script(<<<'JS'
+        window.otpUpdatedDuringTyping = false;
+        const input = document.querySelector('#code');
+        const otp = input.closest('[data-slot="input-otp"]');
+        const observer = new MutationObserver(() => {
+            if (input.value.length < input.maxLength && otp.querySelector('[data-slot="input-otp-slot"]').textContent === '1') {
+                window.otpUpdatedDuringTyping = true;
+                observer.disconnect();
+            }
+        });
+        observer.observe(otp, { childList: true, characterData: true, subtree: true });
+        JS);
+
+    $page->typeSlowly('#code', '123456', 55);
+    $page->assertScript('window.otpUpdatedDuringTyping === true');
+
+    $slots = "[...document.querySelectorAll('[data-slot=\"input-otp-slot\"]')].map(slot => slot.textContent.trim()).join('')";
+    $page->page()->waitForFunction("$slots === '123456'");
+
+    $page->page()->locator('#code')->press('Backspace');
+    $page->page()->waitForFunction("$slots === '12345'");
+});
+
 it('binds the code and validates it inside a field', function () {
     visit('/controls')
         ->type('#code', '123')

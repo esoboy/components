@@ -25,8 +25,12 @@
     }
 
     /* The range trigger leads with a calendar icon, as in shadcn's range example. */
-    [data-slot="date-picker"][data-mode="range"] :where([data-date-picker-trigger]) {
+    [data-slot="date-picker"][data-mode="range"][data-granularity="day"] :where([data-date-picker-trigger]) {
         @apply w-auto justify-start;
+    }
+
+    [data-slot="date-picker"][data-granularity="month"] :where([data-date-picker-trigger]) {
+        @apply w-auto min-w-[212px] max-w-full;
     }
 
     [data-slot="date-picker"] :where([data-date-picker-content]) {
@@ -35,10 +39,6 @@
 
     :where([data-slot="date-picker-periods"]) {
         @apply mt-2 grid w-56 grid-cols-3 gap-1;
-    }
-
-    [data-granularity="quarter"] :where([data-slot="date-picker-periods"]) {
-        @apply grid-cols-2;
     }
 
     [data-slot="date-picker-periods"] :where([data-range-middle]) {

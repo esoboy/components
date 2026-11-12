@@ -1,4 +1,13 @@
-# PHP-first components
+# Upgrading
+
+## Date Picker
+
+Replace `granularity="quarter"` with `granularity="month" mode="range"` to select
+the months covered by a quarter. Convert bound values, presets and bounds to
+`YYYY-MM`, using the first month for the start and the last month for the end.
+For disabled quarters, list each covered month in `disabled-dates`.
+
+## PHP-first components
 
 The visual contract is unchanged: existing styles, tokens, slots and `data-slot`
 selectors remain the reference. The migration changes state ownership and the

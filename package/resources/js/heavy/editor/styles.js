@@ -10,9 +10,6 @@ import Highlight from '@tiptap/extension-highlight'
 
 const BLOCKS = ['paragraph', 'heading']
 
-// The block styles clearing takes off (marks go too).
-const BLOCK_PROPERTIES = ['text-align', 'margin-left', 'text-indent', 'line-height', 'margin-top', 'margin-bottom', 'letter-spacing']
-
 let scratch = null
 
 const declaration = () => (scratch ??= document.createElement('div')).style
@@ -107,6 +104,39 @@ function restyleBlocks(change) {
 
         return found
     }
+}
+
+function clearStyles({ tr, dispatch }) {
+    if (! dispatch) return true
+
+    for (const { $from, $to } of tr.selection.ranges) {
+        tr.doc.nodesBetween($from.pos, $to.pos, (node, position) => {
+            for (const attribute of ['style', 'wrapperStyle', 'partStyles', 'colwidth']) {
+                if (node.attrs[attribute]) tr.setNodeAttribute(position, attribute, null)
+            }
+
+            if (node.attrs.columnStyles?.some(Boolean)) {
+                tr.setNodeAttribute(position, 'columnStyles', node.attrs.columnStyles.map(() => null))
+            }
+
+            if (node.attrs.attributes?.style != null) {
+                const { style, ...attributes } = node.attrs.attributes
+
+                tr.setNodeAttribute(position, 'attributes', attributes)
+            }
+
+            // Formulas store their MathML as markup, including any allowed styles.
+            if (node.attrs.mathml?.includes(' style=')) {
+                const template = document.createElement('template')
+
+                template.innerHTML = node.attrs.mathml
+                template.content.querySelectorAll('[style]').forEach(element => element.removeAttribute('style'))
+                tr.setNodeAttribute(position, 'mathml', template.innerHTML)
+            }
+        })
+    }
+
+    return true
 }
 
 /**
@@ -220,7 +250,7 @@ export function styleExtensions(format, list) {
             },
             clearFormatting: () => ({ chain }) => chain()
                 .unsetAllMarks()
-                .command(restyleBlocks(style => restyle(style, Object.fromEntries(BLOCK_PROPERTIES.map(property => [property, null])))))
+                .command(clearStyles)
                 .run(),
         }),
 

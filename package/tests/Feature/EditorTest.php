@@ -207,6 +207,13 @@ describe('the view', function () {
         expect(array_intersect_key($fixture, array_flip($keys)))->toBe(array_intersect_key(RichText::resolve('full')->client(), array_flip($keys)));
     });
 
+    it('preserves unstyled attachment details when sanitizing editor HTML', function () {
+        $html = '<p><span>Text</span></p><a href="/f.pdf" download="f.pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a>';
+
+        expect(RichText::resolve('full')->sanitize($html))
+            ->toBe('<p>Text</p><a href="/f.pdf" download="f.pdf" rel="noopener noreferrer nofollow"><span>📎</span><span>f.pdf</span><span>1 KB</span></a>');
+    });
+
     it('offers spacing, callouts, a link card, captions, image links, cell colors and an upload placeholder', function () {
         $html = (string) $this->blade('<x-ui::editor :media-upload="true" />');
 

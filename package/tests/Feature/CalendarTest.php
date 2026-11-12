@@ -56,22 +56,23 @@ it('enforces month limits and disabled months on the server', function () {
         ->call('select', '2026-04')->assertSet('value', ['2026-02']);
 });
 
-it('uses quarter bounds for navigation, range selection and presets', function () {
-    $presets = DatePresets::normalize(['Half year' => [Carbon::parse('2027-04-15'), '2027-Q3'], 'Too early' => ['2026-Q2', '2027-Q1']], 'range', 'quarter');
-    expect($presets['Half year'])->toBe(['from' => '2027-Q2', 'to' => '2027-Q3']);
+it('uses month bounds for year navigation, range selection and presets', function () {
+    $presets = DatePresets::normalize(['Three months' => [Carbon::parse('2027-04-15'), '2027-06'], 'Too early' => ['2026-06', '2027-01']], 'range', 'month');
+    expect($presets['Three months'])->toBe(['from' => '2027-04', 'to' => '2027-06']);
 
     $picker = Livewire::test(DatePicker::class, ['settings' => [
-        'granularity' => 'quarter', 'mode' => 'range', 'min' => '2026-Q3', 'max' => '2027-Q3', 'presets' => $presets,
-    ], 'value' => ['from' => '2027-Q3', 'to' => null]])
+        'granularity' => 'month', 'mode' => 'range', 'min' => '2026-07-15', 'max' => '2027-07-15', 'presets' => $presets,
+    ], 'value' => ['from' => '2027-07', 'to' => null]])
         ->assertSet('month', '2027-07')
         ->call('goToYear', 2028)->assertSet('month', '2027-07')
         ->call('goToYear', 2026)->assertSet('month', '2026-07')
-        ->call('preset', 'Too early')->assertSet('value.from', '2027-Q3')
-        ->call('select', '2026-Q3')->assertSet('value', ['from' => '2026-Q3', 'to' => '2027-Q3']);
+        ->call('preset', 'Too early')->assertSet('value.from', '2027-07')
+        ->call('select', '2026-Q4')->assertSet('value', ['from' => '2027-07', 'to' => null])
+        ->call('select', '2026-07')->assertSet('value', ['from' => '2026-07', 'to' => '2027-07']);
 
-    expect($picker->html())->toContainMarkup('<button data-date-picker-period="2026-Q4" aria-pressed="true" data-range-middle="data-range-middle">');
+    expect($picker->html())->toContainMarkup('<button data-date-picker-period="2026-08" aria-pressed="true" data-range-middle="data-range-middle">');
 
-    $picker->call('preset', 'Half year')->assertSet('value', $presets['Half year'])
+    $picker->call('preset', 'Three months')->assertSet('value', $presets['Three months'])
         ->assertSet('month', '2027-04');
 });
 

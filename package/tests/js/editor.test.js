@@ -308,6 +308,51 @@ describe('styles', () => {
         expect(element.value).toBe('<p>Hello world</p>')
     })
 
+    it('clears styles from all selected tags through the toolbar', () => {
+        const [element] = mount('<section style="padding: 8px;"><p style="color: red;"><strong>Text</strong></p><img src="/a.png" alt="Example" style="width: 120px;"></section>')
+
+        element.editor.commands.selectAll()
+        run(element, 'clear-formatting')
+
+        expect(element.value).toBe('<section><p>Text</p><img src="/a.png" alt="Example"></section>')
+    })
+
+    it('keeps cleared styles off when generated layouts are loaded again', () => {
+        const [element] = mount('<ul style="padding-left: 0;"><li style="display: flex;"><input type="checkbox" checked><div><p>Done</p></div></li></ul>'
+            + '<div style="overflow-x: auto;"><table style="border-collapse: collapse;"><colgroup><col style="width: 120px"><col style="min-width: 48px"></colgroup><tbody><tr><td colspan="2" style="padding: 6px;"><p>Cell</p></td></tr></tbody></table></div>'
+            + '<figure style="margin: 0;"><img src="/a.png"><figcaption style="text-align: center;">Caption</figcaption></figure>'
+            + '<div style="display: grid;"><img src="/b.png"><img src="/c.png"></div>'
+            + '<a href="/f.pdf" download="f.pdf" style="display: flex;"><span>📎</span><span style="min-width: 0;">f.pdf</span><span>1 KB</span></a>'
+            + '<iframe src="https://www.youtube-nocookie.com/embed/abc" style="width: 100%;"></iframe>'
+            + '<p><math><mi style="color: red;">x</mi></math></p>', {
+            whitelist: { allow: { ...full.allow, mi: { ...full.allow.mi, style: '*' } } },
+        })
+        const original = element.value
+
+        element.editor.commands.selectAll()
+        run(element, 'clear-formatting')
+
+        const cleared = element.value
+        expect(cleared).toBe(original.replace(/ style="[^"]*"/g, ''))
+        expect(cleared).not.toMatch(/style=|data-editor-unstyled/)
+
+        run(element, 'undo')
+        expect(element.value).toBe(original)
+
+        element.value = cleared
+        expect(element.value).toBe(cleared)
+        expect(element.editor.getJSON().content.map(node => node.type)).toEqual(['taskList', 'table', 'figure', 'imageRow', 'file', 'embed', 'paragraph'])
+    })
+
+    it('keeps styles outside the selection', () => {
+        const [element] = mount('<p style="color: red;"><span style="font-size: 20px;">Keep Clear</span></p><p style="color: blue;">Other</p>')
+
+        select(element, 'Clear')
+        run(element, 'clear-formatting')
+
+        expect(element.value).toBe('<p><span style="font-size: 20px;">Keep </span>Clear</p><p style="color: blue;">Other</p>')
+    })
+
     it('changes one property of a style, keeping the others', () => {
         const [element] = mount('<p><span style="font-size: 20px; color: rgb(255, 0, 0);">Hello</span> world</p>')
 
@@ -437,15 +482,16 @@ describe('blocks', () => {
         expect(element.value).toBe('<details><summary>More</summary><div><p>Hidden</p></div></details><pre><code>echo 1;</code></pre>')
     })
 
-    it('writes tables with inline borders and column widths', () => {
+    it('keeps imported table column widths and styles only new tables by default', () => {
         const [element] = mount('<table><colgroup><col style="width: 120px"><col></colgroup><tbody><tr><th><p>A</p></th><th><p>B</p></th></tr><tr><td><p>1</p></td><td><p>2</p></td></tr></tbody></table>')
 
-        expect(element.value).toBe('<div style="overflow-x: auto;"><table style="border-collapse: collapse; width: 100%;"><colgroup><col style="width: 120px;"><col style="min-width: 48px;"></colgroup><tbody><tr>'
-            + '<th style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top; background-color: rgba(128, 128, 128, 0.1); text-align: left;" colwidth="120"><p>A</p></th>'.replace(' colwidth="120"', '')
-            + '<th style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top; background-color: rgba(128, 128, 128, 0.1); text-align: left;"><p>B</p></th></tr><tr>'
-            + '<td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top;"><p>1</p></td>'
-            + '<td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top;"><p>2</p></td></tr></tbody></table></div>')
+        expect(element.value).toBe('<div><table><colgroup><col style="width: 120px;"><col></colgroup><tbody><tr><th><p>A</p></th><th><p>B</p></th></tr><tr><td><p>1</p></td><td><p>2</p></td></tr></tbody></table></div>')
         expect(element.editor.getJSON().content[0].content[0].content[0].attrs.colwidth).toEqual([120])
+
+        element.value = '<p>Intro</p>'
+        run(element, 'table')
+        expect(element.value).toContain('<div style="overflow-x: auto;"><table style="border-collapse: collapse; width: 100%;">')
+        expect(element.value).toContain('<th style="border: 1px solid')
     })
 
     it('keeps media on web addresses with their style, and data: images until uploaded', () => {
@@ -454,9 +500,9 @@ describe('blocks', () => {
         expect(element.value).toBe('<img style="width: 50%; margin-left: auto; border-radius: 8px;" src="/a.png" alt="A" width="1200" height="800"><img src="data:image/png;base64,AAAA">'
             + '<video src="https://cdn.test/v.mp4" poster="/p.jpg" controls="controls" preload="metadata"></video>'
             + '<audio src="/a.mp3" controls="controls" preload="metadata"></audio>'
-            + '<a href="/f.pdf" download="f.pdf" type="application/pdf" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(128, 128, 128, 0.4); border-radius: 8px; color: inherit; text-decoration: none;"><span style="flex-shrink: 0;">📎</span><span style="min-width: 0px; overflow-wrap: anywhere;">f.pdf</span><span style="flex-shrink: 0; white-space: nowrap; opacity: 0.6;">1 KB</span></a>'
-            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://www.youtube-nocookie.com/embed/abc?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>'
-            + '<iframe style="display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border: 0px;" src="https://player.vimeo.com/video/1?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
+            + '<a href="/f.pdf" download="f.pdf" type="application/pdf"><span>📎</span><span>f.pdf</span><span>1 KB</span></a>'
+            + '<iframe src="https://www.youtube-nocookie.com/embed/abc?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>'
+            + '<iframe src="https://player.vimeo.com/video/1?autoplay=0" allowfullscreen="allowfullscreen" loading="lazy"></iframe>')
     })
 
     it('captions images, links them, and wraps blocks in callouts', () => {
@@ -468,7 +514,7 @@ describe('blocks', () => {
         })
         element.editor.chain().setNodeSelection(image).toggleCaption().run()
 
-        expect(element.value).toBe('<figure style="margin: 0px;"><a href="https://x.test"><img src="/a.png"></a><figcaption style="margin-top: 6px; text-align: center; font-size: 0.875em; color: rgb(107, 114, 128);">Cap</figcaption></figure>'
+        expect(element.value).toBe('<figure><a href="https://x.test"><img src="/a.png"></a><figcaption>Cap</figcaption></figure>'
             + '<figure style="margin: 0px;"><img src="/b.png"><figcaption style="margin-top: 6px; text-align: center; font-size: 0.875em; color: rgb(107, 114, 128);"></figcaption></figure><p>Note</p>')
 
         element.editor.chain().setTextSelection(element.editor.state.doc.content.size - 2).setCallout(full.callouts.info).run()
@@ -484,7 +530,7 @@ describe('blocks', () => {
         run(element, 'cell-background', '#fef08a')
         run(element, 'cell-align', 'middle')
 
-        expect(element.value).toContain('<td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: middle; background-color: rgb(254, 240, 138);"><p>1</p></td><td style="border: 1px solid rgba(128, 128, 128, 0.4); padding: 6px 10px; vertical-align: top;"><p>2</p></td>')
+        expect(element.value).toContain('<td style="background-color: rgb(254, 240, 138); vertical-align: middle;"><p>1</p></td><td><p>2</p></td>')
         expect(active(element, 'cell-align', 'middle')).toBe(true)
     })
 
@@ -624,7 +670,7 @@ describe('media', () => {
         paste(element, { 'text/plain': 'https://youtu.be/dQw4w9WgXcQ' })
 
         expect(element.value).toContain('src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0"')
-        expect(element.value).toContain('<h2>Heading</h2><ul style="list-style-type: none; padding-left: 0px;"><li style="display: flex; align-items: baseline; gap: 0.5em;"><input type="checkbox" disabled="disabled" checked="checked"><div><p>Done</p></div></li></ul><p><strong>bold</strong></p>')
+        expect(element.value).toContain('<h2>Heading</h2><ul><li><input type="checkbox" disabled="disabled" checked="checked"><div><p>Done</p></div></li></ul><p><strong>bold</strong></p>')
     })
 
     it('shows where files will go until they are there, why one would not upload, and nothing once dismissed', async () => {
@@ -996,8 +1042,8 @@ describe('media', () => {
         expect(videoNode('https://cdn.test/a.mp4?t=1', ['video', 'embed'], platforms)).toEqual({ type: 'video', attrs: { src: 'https://cdn.test/a.mp4?t=1', style: MEDIA_STYLE } })
         expect(videoNode('https://cdn.test/watch', ['video', 'embed'], platforms)).toBeNull()
         expect(videoNode('https://youtu.be/dQw4w9WgXcQ', ['video'], platforms)).toBeNull()
-        expect(videoNode('https://www.acfun.cn/v/ac123', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://www.acfun.cn/player/ac123?autoplay=false', style: null } })
-        expect(videoNode('<iframe src="https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&amp;tvId=2" width="640" height="360"></iframe>', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&tvId=2&autoplay=false', style: null } })
+        expect(videoNode('https://www.acfun.cn/v/ac123', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://www.acfun.cn/player/ac123?autoplay=false', style: EMBED_STYLE } })
+        expect(videoNode('<iframe src="https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&amp;tvId=2" width="640" height="360"></iframe>', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=1&tvId=2&autoplay=false', style: EMBED_STYLE } })
         expect(videoNode('<iframe width="360" height="640" src="//player.bilibili.com/player.html?bvid=BV1&amp;page=1"></iframe>', ['embed'], platforms)).toEqual({ type: 'embed', attrs: { src: 'https://player.bilibili.com/player.html?bvid=BV1&page=1&autoplay=0', style: EMBED_STYLE.replace('16 / 9', '9 / 16') } })
         expect(videoNode('<iframe width="500" height="300" src="https://player.vimeo.com/video/1"></iframe>', ['embed'], platforms).attrs.style).toBe(EMBED_STYLE.replace('16 / 9', '500 / 300'))
         expect(videoNode('<iframe src="https://evil.test/x"></iframe>', ['video', 'embed'], platforms)).toBeNull()

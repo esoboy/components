@@ -18,57 +18,34 @@ class DatePicker extends Calendar
         return $this->settings['granularity'] ?? 'day';
     }
 
-    /** @return array{string, string}|null */
-    private function periodMonths(string $value): ?array
+    private function isMonth(string $value): bool
     {
-        if ($this->granularity() === 'month' && preg_match('/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/D', $value)) {
-            return [$value, $value];
-        }
-        if ($this->granularity() === 'quarter' && preg_match('/^((?!0000)\d{4})-Q([1-4])$/D', $value, $matches)) {
-            $last = (int) $matches[2] * 3;
-
-            return [sprintf('%s-%02d', $matches[1], $last - 2), sprintf('%s-%02d', $matches[1], $last)];
-        }
-
-        return null;
+        return preg_match('/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/D', $value) === 1;
     }
 
     protected function selectionKey(?string $date): string
     {
-        return $this->granularity() === 'day' ? parent::selectionKey($date) : ($date ?? '');
+        return $this->granularity() === 'month' ? ($date ?? '') : parent::selectionKey($date);
     }
 
     protected function selectedMonth(string $date): string
     {
-        $period = $this->periodMonths($date);
-        if ($period === null) {
-            return parent::selectedMonth($date);
+        if ($this->granularity() === 'month' && $this->isMonth($date)) {
+            [$min] = $this->monthBounds();
+
+            return max($date, $min ?? $date);
         }
 
-        [$min] = $this->monthBounds();
-
-        return max($period[0], $min ?? $period[0]);
-    }
-
-    /** @return array{?string, ?string} */
-    protected function monthBounds(): array
-    {
-        [$min, $max] = parent::monthBounds();
-
-        return [$this->periodMonths($min ?? '')[0] ?? $min, $this->periodMonths($max ?? '')[1] ?? $max];
+        return parent::selectedMonth($date);
     }
 
     protected function selectable(string $date): bool
     {
-        if ($this->granularity() === 'day') {
+        if ($this->granularity() !== 'month') {
             return parent::selectable($date);
         }
 
-        $period = $this->periodMonths($date);
-        [$min, $max] = $this->monthBounds();
-
-        return $period !== null && ! ($this->settings['disabled'] ?? false)
-            && (! $min || $period[1] >= $min) && (! $max || $period[0] <= $max)
+        return $this->isMonth($date) && $this->canShow($date) && ! ($this->settings['disabled'] ?? false)
             && ! in_array($date, $this->settings['disabledDates'] ?? [], true);
     }
 
@@ -87,7 +64,7 @@ class DatePicker extends Calendar
 
     public function goToYear(int $year): void
     {
-        if ($this->granularity() !== 'day' && ($month = $this->monthInYear($year)) !== null) {
+        if ($this->granularity() === 'month' && ($month = $this->monthInYear($year)) !== null) {
             $this->goTo($month);
         }
     }
@@ -95,20 +72,19 @@ class DatePicker extends Calendar
     /** @return array<string, mixed> */
     private function yearPeriods(): array
     {
-        $quarter = $this->granularity() === 'quarter';
         $year = (int) substr($this->month, 0, 4);
         $mode = $this->settings['mode'] ?? 'single';
         $from = $mode === 'range' ? ($this->value['from'] ?? null) : null;
         $to = $mode === 'range' ? ($this->value['to'] ?? null) : null;
         $options = [];
-        foreach (range(1, $quarter ? 4 : 12) as $number) {
-            $key = sprintf($quarter ? '%04d-Q%d' : '%04d-%02d', $year, $number);
-            $date = sprintf('%04d-%02d-01', $year, $quarter ? $number * 3 - 2 : $number);
+        foreach (range(1, 12) as $number) {
+            $key = sprintf('%04d-%02d', $year, $number);
+            $date = $key.'-01';
             $middle = $from && $to && $key > $from && $key < $to;
             $options[] = [
                 'key' => $key,
-                'text' => $this->format($date, $quarter ? 'QQQ' : 'MMM'),
-                'label' => $this->format($date, $quarter ? 'yQQQQ' : 'yMMMM'),
+                'text' => $this->format($date, 'MMM'),
+                'label' => $this->format($date, 'yMMMM'),
                 'pressed' => $mode === 'range' ? $key === $from || $key === $to || $middle : in_array($key, (array) $this->value, true),
                 'middle' => (bool) $middle,
                 'disabled' => ! $this->selectable($key),
@@ -188,10 +164,8 @@ class DatePicker extends Calendar
             if (! $value) {
                 return '';
             }
-            if ($this->granularity() !== 'day') {
-                $period = $this->periodMonths($value);
-
-                return $period ? $this->format($period[0].'-01', $this->granularity() === 'quarter' ? 'yQQQ' : 'yMMMM') : '';
+            if ($this->granularity() === 'month') {
+                return $this->isMonth($value) ? $this->format($value.'-01', 'yMMMM') : '';
             }
             if (! ($this->settings['time'] ?? false)) {
                 return $this->format($value, $mode === 'single' ? 'yMMMMd' : 'yMMMdd');
@@ -208,11 +182,11 @@ class DatePicker extends Calendar
 
     public function render(): View
     {
-        $daily = $this->granularity() === 'day';
+        $monthly = $this->granularity() === 'month';
 
         return view('ui::livewire.date-picker', [
-            'months' => $daily ? $this->months() : [],
-            'periods' => $daily ? null : $this->yearPeriods(),
+            'months' => $monthly ? [] : $this->months(),
+            'periods' => $monthly ? $this->yearPeriods() : null,
             'label' => $this->label(),
             'timeOptions' => $this->timeOptions(),
         ]);

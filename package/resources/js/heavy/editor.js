@@ -50,7 +50,7 @@ const TOOLTIP_CONTROL = 'button:has(> [data-editor-tip])'
 
 // The nodes and marks that keep their whitelisted style (and other attributes), and the
 // marks that keep only other attributes.
-const STYLED = ['paragraph', 'heading', 'blockquote', 'bulletList', 'orderedList', 'listItem', 'taskList', 'taskItem', 'codeBlock', 'horizontalRule', 'details', 'detailsSummary', 'detailsContent', 'table', 'tableRow', 'tableCell', 'tableHeader', 'image', 'video', 'audio', 'file', 'embed', 'figure', 'figcaption', 'callout', 'textStyle', 'highlight', 'link']
+const STYLED = ['paragraph', 'heading', 'blockquote', 'bulletList', 'orderedList', 'listItem', 'taskList', 'taskItem', 'codeBlock', 'horizontalRule', 'details', 'detailsSummary', 'detailsContent', 'table', 'tableRow', 'tableCell', 'tableHeader', 'image', 'imageRow', 'video', 'audio', 'file', 'embed', 'figure', 'figcaption', 'callout', 'textStyle', 'highlight', 'link']
 const MARKS = ['bold', 'italic', 'underline', 'strike', 'code', 'superscript', 'subscript']
 const ROVE = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
 
@@ -400,14 +400,14 @@ export default (binding = {}) => ({
             styleExtensions(this._format, list),
             has('superscript') && Superscript,
             has('subscript') && Subscript,
-            has('task-list') && tasks(labels),
+            has('task-list') && tasks(labels, list),
             has('details') && collapsible(labels),
             has('code-block') && PlainCodeBlock,
             has('table') && tables(styles, list),
             has('image') && [picture(list), figures(styles), imageRows(), Saving],
             has('video') && Video,
             has('audio') && Audio,
-            has('file') && file(styles.card),
+            has('file') && file(list),
             has('embed') && embed(this._format.platforms),
             has('math') && formulas(),
             has('callout') && callout(styles),

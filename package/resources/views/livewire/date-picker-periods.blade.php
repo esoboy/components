@@ -2,7 +2,7 @@
     $year = $periods['year'];
     $caption = $this->format(sprintf('%04d-01-01', $year), 'y');
 @endphp
-<div data-slot="calendar" data-granularity="{{ $settings['granularity'] }}">
+<div data-slot="calendar">
     <div data-slot="calendar-months">
         <nav data-slot="calendar-nav" aria-label="{{ __('ui::calendar.year') }}">
             <x-ui::button variant="ghost" size="icon" data-date-picker-previous-year :disabled="! $periods['previous']" wire:click="goToYear({{ $year - 1 }})" :aria-label="__('ui::date-picker.previous-year')"><x-ui::icon name="chevron-left" /></x-ui::button>

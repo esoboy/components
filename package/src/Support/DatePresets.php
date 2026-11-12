@@ -30,17 +30,13 @@ final class DatePresets
     private static function key(mixed $date, string $granularity): ?string
     {
         if ($date instanceof DateTimeInterface) {
-            return match ($granularity) {
-                'month' => $date->format('Y-m'),
-                'quarter' => $date->format('Y-\Q').(int) ceil((int) $date->format('n') / 3),
-                default => $date->format('Y-m-d'),
-            };
+            return $date->format($granularity === 'month' ? 'Y-m' : 'Y-m-d');
         }
 
         if ($date === null || $date === '') {
             return null;
         }
 
-        return $granularity === 'day' ? substr((string) $date, 0, 10) : (string) $date;
+        return $granularity === 'month' ? (string) $date : substr((string) $date, 0, 10);
     }
 }

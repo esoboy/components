@@ -23,46 +23,52 @@ it('picks a date in its popover, which stays open as in shadcn', function () {
         ->assertScript(opened('eso-date-picker:has(#demo-picker) [data-date-picker-content]'), false);
 });
 
-it('fills a range from a preset', function () {
-    $today = now()->toDateString();
+it('fills a month range from a preset', function () {
+    $from = today()->startOfMonth()->subMonths(2)->format('Y-m');
+    $to = today()->format('Y-m');
 
     visit('/controls')
         ->click('eso-date-picker:has(#demo-presets) [data-date-picker-trigger]')
-        ->click('eso-date-picker:has(#demo-presets) [data-date-picker-preset]:has-text("Today")')
-        ->assertSeeIn('#period', "{$today} → {$today}");
+        ->assertPresent('eso-date-picker:has(#demo-presets) [data-calendar-year]')
+        ->click('eso-date-picker:has(#demo-presets) [data-date-picker-preset]:has-text("Last 3 months")')
+        ->assertSeeIn('#period', "{$from} → {$to}");
 });
 
-it('binds the selected month and keeps the caller slot reactive and actionable', function () {
+it('binds a month from the grid and from the preset footer', function () {
     $picker = 'eso-date-picker:has(#demo-month-picker)';
-    $november = $picker.' [data-date-picker-period="2026-11"]';
+    $footer = $picker.' [data-slot="date-picker-presets"]';
+    $currentMonth = today()->toImmutable()->startOfMonth();
+    $thisMonth = $currentMonth->format('Y-m');
+    $lastMonth = $currentMonth->subMonth()->format('Y-m');
+    $manualMonth = $currentMonth->subMonths(2);
+    $disabledMonth = $currentMonth->addMonth();
 
     visit('/controls')
         ->click($picker.' [data-date-picker-trigger]')
-        ->assertPresent($picker.' [data-date-picker-period="2026-12"]:disabled')
-        ->keys($november, 'Enter')
-        ->assertSeeIn('#report-month', '2026-11')
-        ->assertSeeIn('#report-month-slot', '2026-11')
-        ->click($picker.' button:has-text("Use November 2025")')
-        ->assertSeeIn('#report-month', '2025-11')
-        ->assertSeeIn('#report-month-slot', '2025-11')
-        ->assertPresent($picker.' [data-date-picker-period="2025-11"][aria-pressed="true"]')
-        ->select($picker.' [data-calendar-year]', '2027')
-        ->assertPresent($picker.' [data-date-picker-period="2027-01"]')
+        ->select($picker.' [data-calendar-year]', $disabledMonth->format('Y'))
+        ->assertPresent($picker.' [data-date-picker-period="'.$disabledMonth->format('Y-m').'"]:disabled')
+        ->select($picker.' [data-calendar-year]', $manualMonth->format('Y'))
+        ->keys($picker.' [data-date-picker-period="'.$manualMonth->format('Y-m').'"]', 'Enter')
+        ->assertSeeIn('#report-month', $manualMonth->format('Y-m'))
+        ->click($footer.' button:has-text("This month")')
+        ->assertSeeIn('#report-month', $thisMonth)
+        ->click($footer.' button:has-text("Last month")')
+        ->assertSeeIn('#report-month', $lastMonth)
+        ->assertPresent($picker.' [data-date-picker-period="'.$lastMonth.'"][aria-pressed="true"]')
         ->assertNoJavaScriptErrors();
 });
 
-it('selects quarters across years and orders the bound range', function () {
-    $picker = 'eso-date-picker:has(#demo-quarter-picker)';
+it('selects months across years and orders the bound range', function () {
+    $picker = 'eso-date-picker:has(#demo-presets)';
 
     visit('/controls')
         ->click($picker.' [data-date-picker-trigger]')
-        ->click($picker.' [data-date-picker-next-year]')
-        ->assertPresent($picker.' [data-date-picker-next-year]:disabled')
-        ->click($picker.' [data-date-picker-period="2027-Q2"]')
+        ->select($picker.' [data-calendar-year]', '2027')
+        ->click($picker.' [data-date-picker-period="2027-02"]')
         ->click($picker.' [data-date-picker-previous-year]')
-        ->click($picker.' [data-date-picker-period="2026-Q3"]')
-        ->assertSeeIn('#report-quarters', '2026-Q3 → 2027-Q2')
-        ->assertPresent($picker.' [data-date-picker-period="2026-Q4"][data-range-middle]')
+        ->click($picker.' [data-date-picker-period="2026-11"]')
+        ->assertSeeIn('#period', '2026-11 → 2027-02')
+        ->assertPresent($picker.' [data-date-picker-period="2026-12"][data-range-middle]')
         ->assertNoJavaScriptErrors();
 });
 

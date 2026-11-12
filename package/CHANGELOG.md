@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.0 - 2026-11-12
+
+- Use the same month picker for single and range selection. Remove quarter granularity from Date Picker. See [UPGRADING.md](UPGRADING.md) to migrate quarter values to month ranges.
+- Keep Combobox closed after dismissal and Livewire updates. Forward the accessible label to the Combobox control.
+- Clear inline styles in the Editor selection and preserve the unstyled result when reopening it.
+- Show Input OTP changes sooner and adjust Input Group addon spacing.
+
 ## v0.5.0 - 2026-11-09
 
 - Add month and quarter selection to Date Picker, including range and multiple selection, presets and bounds.

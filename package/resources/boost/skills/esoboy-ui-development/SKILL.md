@@ -70,7 +70,7 @@ Bind `wire:model` (with any modifier) on the control itself, never on an inner i
 | Select, Radio Group, Combobox, single Toggle Group | the item's `value` |
 | Combobox `multiple`, Toggle Group `multiple`, Tags Input, Transfer, checkable Tree | list of values |
 | Combobox `autocomplete` | the typed text |
-| Calendar, Date Picker | `Y-m-d`. Date Picker supports `granularity="month"` (`YYYY-MM`), `granularity="quarter"` (`YYYY-Q1` to `YYYY-Q4`) and day values with `time` (`Y-m-d H:i`, with seconds at `step="1"`). `mode="range"` gives `['from' => …, 'to' => …]`. |
+| Calendar, Date Picker | `Y-m-d`. Date Picker supports `granularity="month"` (`YYYY-MM`) and day values with `time` (`Y-m-d H:i`, with seconds at `step="1"`). `mode="range"` gives `['from' => …, 'to' => …]`. |
 | Slider | number, or a list for several thumbs (`:value="[25, 75]"`) |
 | Number Input, Rating | number |
 | Cascader | the path of values, `['asia', 'china', 'beijing']` |

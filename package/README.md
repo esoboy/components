@@ -93,21 +93,20 @@ shadcn/ui's:
 
 Controls inside `<x-ui::field>` show their validation errors; standalone controls don't.
 
-Date Picker selects days by default. Use `granularity="month"` for `YYYY-MM`
-values and `granularity="quarter"` for `YYYY-Q1` through `YYYY-Q4`.
+Date Picker selects days by default. Use `granularity="month"` for `YYYY-MM` values.
 
 ```blade
 <x-ui::date-picker granularity="month" wire:model.live="reportMonth" />
-<x-ui::date-picker granularity="quarter" mode="range" wire:model.live="reportQuarters"
-    min="2025-Q1" max="2027-Q4" />
+<x-ui::date-picker granularity="month" mode="range" wire:model.live="reportMonths"
+    caption-layout="dropdown" min="2025-01" max="2027-12" />
 ```
 
 Single selection binds a string or `null`. Multiple selection binds a list, and
 range selection binds `['from' => …, 'to' => …]`. Preset strings and `disabled-dates`
 use the selected granularity. Presets also accept dates as `DateTimeInterface`
-objects. `min` and `max` accept period values or ISO dates, including the period
-containing each boundary. `caption-layout="dropdown"` shows a year selector in
-the month and quarter panels. Time selection applies to day granularity.
+objects. In month mode, `min` and `max` accept month values or ISO dates and
+include the month containing each boundary. `caption-layout="dropdown"` shows
+a year selector in the month panel. Time selection applies to day granularity.
 
 Dialog, Sheet, Drawer and Alert Dialog attach their trigger and close behavior to
 the single rendered control in each slot. Put the appearance and any application

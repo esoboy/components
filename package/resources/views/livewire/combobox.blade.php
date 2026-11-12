@@ -2,7 +2,7 @@
     $settings += ['multiple' => false, 'autocomplete' => false, 'filter' => true, 'button' => false, 'disabled' => false, 'placeholder' => null, 'trigger' => true, 'clearable' => false, 'empty' => null];
     $labelling = ['id', 'aria-label', 'aria-labelledby'];
 @endphp
-<eso-combobox {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style', ...$labelling])->merge(['data-slot' => 'combobox', 'data-multiple' => (bool) $settings['multiple'], 'data-autocomplete' => (bool) $settings['autocomplete'], 'x-data' => 'uiCombobox', 'x-on:click' => 'click($event)', 'x-on:input' => 'open()', 'x-on:keydown' => 'key($event)', 'x-on:pointermove' => 'hover($event)', 'x-on:pointerdown.outside' => 'close()', 'x-on:ui-combobox-picked' => 'picked($event.detail)', 'x-effect' => '$wire.query; $wire.value; $nextTick(() => refresh())']) }}>
+<eso-combobox {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style', ...$labelling])->merge(['data-slot' => 'combobox', 'data-multiple' => (bool) $settings['multiple'], 'data-autocomplete' => (bool) $settings['autocomplete'], 'x-data' => 'uiCombobox', 'x-on:click' => 'click($event)', 'x-on:input' => 'open()', 'x-on:keydown' => 'key($event)', 'x-on:pointermove' => 'hover($event)', 'x-on:pointerdown.document' => 'outside($event)', 'x-on:ui-combobox-picked' => 'picked($event.detail)', 'x-effect' => '$wire.query; $wire.value; $nextTick(() => refresh())']) }}>
     @if ($settings['multiple'])
     <div data-slot="combobox-chips" data-combobox-anchor {{ $attributes->only(['class', 'style']) }}>
         @foreach ((array) $value as $chosen)
