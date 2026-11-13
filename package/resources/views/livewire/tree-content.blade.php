@@ -10,11 +10,7 @@
     @include('ui::livewire.tree-nodes', ['nodes' => $nodes, 'level' => 1, 'ancestorDisabled' => $settings['disabled'] ?? false])
 </ul>
 @if ($settings['searchable'] ?? false)
-    <div data-slot="tree-empty" @if (array_filter($nodes, fn ($item) => $this->matches($item))) hidden @endif>{{ __('ui::tree.no_results') }}</div>
+    <div data-slot="tree-empty" @if (in_array(true, $matchingNodes, true)) hidden @endif>{{ __('ui::tree.no_results') }}</div>
 @endif
 @if ($slots->has('default')){{ $slots }}@endif
-@if ($attributes->has('name'))
-    @foreach (($settings['checkable'] ?? false) ? (array) $value : [$value] as $selected)
-        <input type="hidden" name="{{ $attributes->get('name').(($settings['checkable'] ?? false) ? '[]' : '') }}" value="{{ $selected }}">
-    @endforeach
-@endif
+@include('ui::livewire.form-value')

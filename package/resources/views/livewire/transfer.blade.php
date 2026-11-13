@@ -38,9 +38,5 @@
     @endif
     @endforeach
     @if ($slots->has('default')){{ $slots }}@endif
-    @if ($attributes->has('name'))
-        @foreach ($value as $item)
-        <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $item }}">
-        @endforeach
-    @endif
+    @include('ui::livewire.form-value')
 </eso-transfer>

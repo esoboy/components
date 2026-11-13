@@ -4,9 +4,12 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "test:css": "node --test tests/css/styles.test.mjs",
         "dev": "vite"
     },
     "devDependencies": {
+        "@tailwindcss/node": "^4.3.3",
+        "@tailwindcss/oxide": "^4.3.3",
         "@tailwindcss/vite": "^4.3.3",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",

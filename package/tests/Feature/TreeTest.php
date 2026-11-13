@@ -1,6 +1,77 @@
 <?php
 
+use Esoboy\Ui\Livewire\Tree;
+use Esoboy\Ui\Support\HtmlFragment;
 use Esoboy\Ui\Support\Options;
+use Livewire\Livewire;
+
+// Instrument traversal cost while exercising the public Blade entry, not a timing threshold.
+class TreeTraversalBudget extends Tree
+{
+    public static int $indexedNodes = 0;
+
+    public function index(): array
+    {
+        $index = parent::index();
+        self::$indexedNodes += count($index);
+
+        return $index;
+    }
+}
+
+it('renders a large checkable tree with a linear traversal budget', function () {
+    Livewire::component('ui.tree', TreeTraversalBudget::class);
+    TreeTraversalBudget::$indexedNodes = 0;
+    $items = array_map(fn ($id) => ['value' => (string) $id, 'label' => 'Node '.$id], range(1, 200));
+    $html = (string) $this->blade('<x-ui::tree checkable :items="$items" />', compact('items'));
+
+    expect(HtmlFragment::parse($html)->querySelectorAll('[role="treeitem"]')->length)->toBe(200)
+        ->and(TreeTraversalBudget::$indexedNodes)->toBeLessThanOrEqual(200 * 8);
+});
+
+it('refreshes checked and matching states after each tree action', function (string $component) {
+    $items = [['value' => 'root', 'label' => 'Root', 'children' => [
+        ['value' => 'a', 'label' => 'Apple'],
+        ['value' => 'b', 'label' => 'Banana'],
+        ['value' => 'off', 'label' => 'Disabled', 'disabled' => true],
+    ]]];
+    $tree = Livewire::test($component, ['items' => $items, 'settings' => ['checkable' => true, 'searchable' => true]])
+        ->call('choose', 'a');
+    $document = HtmlFragment::parse($tree->html());
+    expect($document->querySelector('[data-value="root"]')->getAttribute('aria-checked'))->toBe('mixed');
+
+    $tree->call('choose', 'b')->assertSet('value', ['root', 'a', 'b']);
+    $document = HtmlFragment::parse($tree->html());
+    expect($document->querySelector('[data-value="root"]')->getAttribute('aria-checked'))->toBe('true')
+        ->and($document->querySelector('[data-value="off"]')->getAttribute('aria-checked'))->toBe('false');
+
+    $tree->set('value', [])->set('query', 'Banana');
+    $document = HtmlFragment::parse($tree->html());
+    expect($document->querySelector('[data-value="root"]')->getAttribute('aria-checked'))->toBe('false')
+        ->and($document->querySelector('[data-value="root"]')->hasAttribute('hidden'))->toBeFalse()
+        ->and($document->querySelector('[data-value="a"]')->hasAttribute('hidden'))->toBeTrue()
+        ->and($document->querySelector('[data-value="b"]')->hasAttribute('hidden'))->toBeFalse();
+    $tree->set('query', 'missing');
+    expect(HtmlFragment::parse($tree->html())->querySelector('[data-slot="tree-empty"]')->hasAttribute('hidden'))->toBeFalse();
+})->with(['ui.tree', 'ui.tree-select']);
+
+it('includes lazy children in checked states without retaining the previous render', function () {
+    app()->instance('tree-test-loader', new class
+    {
+        public function __invoke(string $value): array
+        {
+            return [['value' => $value.'.child', 'label' => 'Loaded child']];
+        }
+    });
+    $tree = Livewire::test('ui.tree', [
+        'items' => [['value' => 'root', 'label' => 'Root', 'lazy' => true]],
+        'settings' => ['checkable' => true, 'load' => 'tree-test-loader'],
+        'value' => ['root'],
+    ])->call('expand', 'root')->assertSet('value', ['root', 'root.child']);
+    expect(HtmlFragment::parse($tree->html())->querySelector('[data-value="root.child"]')->getAttribute('aria-checked'))->toBe('true');
+    $tree->call('choose', 'root.child')->assertSet('value', []);
+    expect(HtmlFragment::parse($tree->html())->querySelector('[data-value="root"]')->getAttribute('aria-checked'))->toBe('false');
+});
 
 $items = [
     ['value' => 'orders', 'label' => 'Orders', 'children' => [

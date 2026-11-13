@@ -22,7 +22,7 @@
     ...$validation,
 ]) }}>
     @if ($choiceMarkup)
-        {!! $choiceMarkup->render($value, $triggerAttributes, $disabled, $popup) !!}
+        {!! \Esoboy\Ui\Support\ViewSlots::render($choiceMarkup->render($value, $triggerAttributes, $disabled, $popup), $this->getId(), $ownerId) !!}
     @else
         <x-ui::select.trigger :size="$settings['size'] ?? 'default'" :disabled="$disabled" :commandfor="$popup" :aria-controls="$popup" :data-placeholder="$label === null" :attributes="$triggerAttributes">
             <x-ui::select.value :placeholder="$settings['placeholder'] ?? null" :label="$label" />

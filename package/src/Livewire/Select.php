@@ -5,12 +5,16 @@ namespace Esoboy\Ui\Livewire;
 use Esoboy\Ui\Support\ChoiceMarkup;
 use Esoboy\Ui\Support\Options;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Modelable;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
 class Select extends Component
 {
+    #[Locked]
+    public ?string $ownerId = null;
+
     #[Modelable]
     public mixed $value = null;
 

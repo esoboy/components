@@ -89,5 +89,8 @@ jobs:
       - run: npm ci && npm run build && npx playwright install --with-deps chromium
         working-directory: application
 
+      - run: npm run test:css
+        working-directory: application
+
       - run: vendor/bin/pest
         working-directory: application

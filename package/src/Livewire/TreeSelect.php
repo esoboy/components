@@ -9,9 +9,11 @@ class TreeSelect extends Tree
 {
     public function render(): View
     {
+        $data = $this->viewData();
+
         return view('ui::livewire.tree-select', [
-            'nodes' => $this->data(),
-            'labels' => Options::find($this->data(), (array) $this->value),
+            ...$data,
+            'labels' => Options::find($data['nodes'], (array) $this->value),
         ]);
     }
 }

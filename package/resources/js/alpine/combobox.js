@@ -4,6 +4,7 @@ export default () => ({
     get input() { return this.$el.querySelector('[data-combobox-input]') },
     get panel() { return this.$el.querySelector('[data-slot="combobox-content"]') },
     get items() { return [...this.$el.querySelectorAll('[data-slot="combobox-item"]:not([aria-disabled="true"])')] },
+    get pending() { return !!this.input && this.input.value !== this.$el.dataset.query },
     init() {
         this.refresh()
         this.stopMorph = window.Livewire.hook('morphed', ({ el }) => {
@@ -16,7 +17,17 @@ export default () => ({
         for (const [index, item] of this.items.entries()) item.id ||= this.$id('combobox-item', index)
         const clear = this.$el.querySelector('[data-combobox-clear]')
         if (clear) clear.hidden = !this.$wire.value?.length
+        if (this.pending) this.highlight(null)
         this.syncPopover()
+    },
+    inputChanged() {
+        this.highlight(null)
+        this.open()
+    },
+    guardChoice(event) {
+        if (!this.pending || !event.target.closest('[data-slot="combobox-item"]')) return
+        event.preventDefault()
+        event.stopImmediatePropagation()
     },
     open() {
         this.wantsOpen = true
@@ -28,6 +39,7 @@ export default () => ({
     },
     syncPopover() {
         const { input, panel } = this
+        panel.setAttribute('aria-busy', String(this.pending))
         const trigger = this.$el.querySelector('[data-combobox-trigger]')
         // Suggestions can arrive after the input event or after the user has dismissed the list.
         const show = this.wantsOpen && !input?.disabled && (!this.$el.hasAttribute('data-autocomplete') || this.items.length > 0)
@@ -58,9 +70,14 @@ export default () => ({
         if (target) { this.input?.setAttribute('aria-activedescendant', target.id); target.scrollIntoView({ block: 'nearest' }) }
         else this.input?.removeAttribute('aria-activedescendant')
     },
-    hover(event) { const item = event.target.closest('[data-slot="combobox-item"]'); if (this.items.includes(item)) this.highlight(item) },
+    hover(event) { const item = event.target.closest('[data-slot="combobox-item"]'); if (!this.pending && this.items.includes(item)) this.highlight(item) },
     key(event) {
         if (event.isComposing) return
+        if (this.pending && ['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) {
+            event.preventDefault()
+            this.highlight(null)
+            return
+        }
         const items = this.items
         const index = items.findIndex(item => item.dataset.highlighted === 'true')
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {

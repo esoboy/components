@@ -2,7 +2,7 @@
     $settings += ['multiple' => false, 'autocomplete' => false, 'filter' => true, 'button' => false, 'disabled' => false, 'placeholder' => null, 'trigger' => true, 'clearable' => false, 'empty' => null];
     $labelling = ['id', 'aria-label', 'aria-labelledby'];
 @endphp
-<eso-combobox {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style', ...$labelling])->merge(['data-slot' => 'combobox', 'data-multiple' => (bool) $settings['multiple'], 'data-autocomplete' => (bool) $settings['autocomplete'], 'x-data' => 'uiCombobox', 'x-on:click' => 'click($event)', 'x-on:input' => 'open()', 'x-on:keydown' => 'key($event)', 'x-on:pointermove' => 'hover($event)', 'x-on:pointerdown.document' => 'outside($event)', 'x-on:ui-combobox-picked' => 'picked($event.detail)', 'x-effect' => '$wire.query; $wire.value; $nextTick(() => refresh())']) }}>
+<eso-combobox {{ $attributes->whereDoesntStartWith('wire:model')->except(['name', 'class', 'style', ...$labelling])->merge(['data-slot' => 'combobox', 'data-query' => $query, 'data-multiple' => (bool) $settings['multiple'], 'data-autocomplete' => (bool) $settings['autocomplete'], 'x-data' => 'uiCombobox', 'x-on:click' => 'click($event)', 'x-on:click.capture' => 'guardChoice($event)', 'x-on:input' => 'inputChanged()', 'x-on:keydown' => 'key($event)', 'x-on:pointermove' => 'hover($event)', 'x-on:pointerdown.document' => 'outside($event)', 'x-on:ui-combobox-picked' => 'picked($event.detail)', 'x-effect' => '$wire.query; $wire.value; $nextTick(() => refresh())']) }}>
     @if ($settings['multiple'])
     <div data-slot="combobox-chips" data-combobox-anchor {{ $attributes->only(['class', 'style']) }}>
         @foreach ((array) $value as $chosen)
@@ -36,9 +36,7 @@
         </x-ui::combobox.list>
         @if ($slots->has('default'))<div data-slot="combobox-footer">{{ $slots }}</div>@endif
     </x-ui::combobox.content>
-    @if ($attributes->has('name'))
-        @foreach ((array) $value as $part)
-        <input type="hidden" name="{{ $attributes->get('name') }}{{ $settings['multiple'] ? '[]' : '' }}" value="{{ $part }}">
-        @endforeach
+    @if ($value !== null)
+        @include('ui::livewire.form-value')
     @endif
 </eso-combobox>

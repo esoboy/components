@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.7.0 - 2026-11-13
+
+- Preserve caller-owned actions and nested Livewire component state in custom Select and Command content.
+- Forward behavior-slot attributes without double escaping and omit disabled controls from native form values.
+- Compute Tree selection and search states once per render; prevent Combobox from confirming stale search results.
+- Add CSS group entries with their own dependencies and Tailwind sources, sharing the existing Nova theme. See [README.md](README.md) for selective imports.
+
+Known issue: the range Date Picker's Hour panels can become hidden after a Livewire update. This also reproduces in v0.6.0 and remains unresolved in this release.
+
 ## v0.6.0 - 2026-11-12
 
 - Use the same month picker for single and range selection. Remove quarter granularity from Date Picker. See [UPGRADING.md](UPGRADING.md) to migrate quarter values to month ranges.

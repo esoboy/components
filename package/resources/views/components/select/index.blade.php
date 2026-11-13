@@ -29,5 +29,5 @@ $settings = [
 ];
 @endphp
 
-@livewire('ui.select', ['options' => $options, 'markup' => $options === null ? (string) $slot : '', 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-select-'.$key))
+@livewire('ui.select', ['options' => $options, 'markup' => $options === null ? \Esoboy\Ui\Support\ViewSlots::capture($slot) : '', 'ownerId' => Model::component()?->getId(), 'settings' => $settings, 'value' => $value, ...$attributes->except('wire:key')->getAttributes()], key('ui-select-'.$key))
 <x-ui::field.error :state="$state" />

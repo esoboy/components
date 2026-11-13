@@ -12,7 +12,5 @@
             @if ($slots->has('default')){{ $slots }}@endif
         </x-ui::popover.content>
     </x-ui::popover>
-    @unless ($settings['disabled'] ?? false)
-        @include('ui::livewire.form-value')
-    @endunless
+    @include('ui::livewire.form-value')
 </eso-time-picker>

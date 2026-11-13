@@ -72,6 +72,70 @@ it('filters its items as you type and chooses one with the keyboard', function (
         ->assertNoJavaScriptErrors();
 });
 
+it('does not confirm stale options while the current search is pending', function () {
+    $page = visit('/controls')->click('#demo-combobox');
+    $page->script(<<<'JS'
+        (() => {
+            const original = window.fetch;
+            const hold = new Promise(resolve => window.releaseSearch = () => { window.fetch = original; resolve(); });
+            window.fetch = async (...args) => {
+                const response = await original(...args);
+                await hold;
+                return response;
+            };
+            const input = document.querySelector('#demo-combobox');
+            input.value = 'nu';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            for (const key of ['ArrowDown', 'Enter']) input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+            input.closest('eso-combobox').querySelector('[data-value="next"]').click();
+        })()
+        JS);
+    $page->script('window.releaseSearch()');
+    $page->assertScript("document.querySelectorAll('eso-combobox:has(#demo-combobox) [data-slot=\"combobox-item\"]').length", 1)
+        ->assertSeeIn('#framework', 'none')
+        ->assertValue('#demo-combobox', 'nu')
+        ->keys('#demo-combobox', ['ArrowDown', 'Enter'])
+        ->assertSeeIn('#framework', 'nuxt')
+        ->assertValue('#demo-combobox', 'Nuxt.js')
+        ->assertNoJavaScriptErrors();
+});
+
+it('keeps newer queries and dismissal when an earlier response arrives', function (string $dismiss) {
+    $page = visit('/controls')->click('#demo-combobox');
+    $page->script(<<<'JS'
+        (() => {
+            const original = window.fetch;
+            let held = false;
+            window.fetch = async (...args) => {
+                const response = await original(...args);
+                if (!held) {
+                    held = true;
+                    await new Promise(resolve => {
+                        window.releaseFirstSearch = () => { window.fetch = original; resolve(); };
+                        window.firstSearchWaiting = true;
+                    });
+                }
+                return response;
+            };
+        })()
+        JS);
+    $page->type('#demo-combobox', 'nu');
+    $page->page()->waitForFunction('window.firstSearchWaiting === true');
+    $page->fill('#demo-combobox', 'as')->keys('#demo-combobox', ['ArrowDown', 'Enter']);
+    if ($dismiss === 'Tab') {
+        $page->keys('#demo-combobox', 'Tab');
+    } else {
+        $page->click('#demo-combobox-label');
+    }
+    $page->assertScript(opened(COMBOBOX_CONTENT), false);
+    $page->script('window.releaseFirstSearch()');
+    $page->assertScript("document.querySelector('#demo-combobox').closest('eso-combobox').dataset.query", 'as')
+        ->assertValue('#demo-combobox', 'as')->assertSeeIn('#framework', 'none')
+        ->assertScript(opened(COMBOBOX_CONTENT), false)
+        ->click('#demo-combobox')->keys('#demo-combobox', ['ArrowDown', 'Enter'])
+        ->assertSeeIn('#framework', 'astro')->assertNoJavaScriptErrors();
+})->with(['Tab', 'outside']);
+
 it('shows its empty state when nothing matches', function () {
     visit('/controls')
         ->assertAttribute('input#demo-combobox', 'aria-labelledby', 'demo-combobox-label')

@@ -363,7 +363,7 @@ it('renders the caller-provided faceted filter and clear control', function () {
 
     expect($html)
         ->toMatch('/data-variant="outline" data-size="sm"[^>]*data-data-table-faceted-filter="data-data-table-faceted-filter"/')
-        ->toContainMarkup('<div data-value="paid" wire:click="$parent.toggleFilter(\'status\', \'paid\')">')
+        ->toContainMarkup('<div data-value="paid" wire:click="toggleFilter(\'status\', \'paid\')">')
         ->toContainMarkup('<span data-slot="data-table-filter-count">3</span>')
         ->not->toContain('data-chosen')
         ->not->toContain('data-data-table-reset');

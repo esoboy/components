@@ -35,6 +35,7 @@ use Esoboy\Ui\Support\PendingControl;
 use Esoboy\Ui\Support\Sequence;
 use Esoboy\Ui\Support\SidebarState;
 use Esoboy\Ui\Support\Theme;
+use Esoboy\Ui\Support\ViewSlots;
 use Esoboy\Ui\View\DataTable;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\Facades\Blade;
@@ -55,6 +56,7 @@ class UiServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        ViewSlots::boot();
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'ui');
         Blade::component(DataTable::class, 'ui::data-table.table');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'ui');

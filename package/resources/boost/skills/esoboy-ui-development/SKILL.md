@@ -28,6 +28,13 @@ Check these once in the app; the components need them.
 @import '../../vendor/esoboy/ui/resources/css/extras.css'; /* components shadcn/ui doesn't have */
 ```
 
+For smaller applications, select CSS groups instead of the full entries: `controls.css`
+for basic forms, `overlays.css` for dialogs/menus, `pickers.css` for selects and date/time
+controls, `display.css` for content, `navigation.css` for navigation/layout, `data.css`
+for Data Table, and `trees.css` for Tree/Cascader/Transfer. Each includes its own Nova
+theme, dependencies and Tailwind source paths. Use `ui.css` + `extras.css` when the
+application needs the complete library. See the package README for the group table.
+
 ```blade
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @uiTheme('app')>
 <body>

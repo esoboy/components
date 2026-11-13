@@ -37,7 +37,7 @@ it('navigates cascader columns and restores focus after a leaf selection',()=>{
 })
 it('shows morphed combobox suggestions while the list is requested',()=>{
     let morphed; const stop = vi.fn(); window.Livewire = {hook:(_,callback)=>{morphed=callback;return stop}}
-    const data = provider(combobox,'<div data-autocomplete><input data-combobox-input><div data-slot="combobox-content" popover></div></div>',{wire:{value:null}})
+    const data = provider(combobox,'<div data-autocomplete data-query=""><input data-combobox-input><div data-slot="combobox-content" popover></div></div>',{wire:{value:null}})
     data.input.focus(); data.open(); expect(data.panel.matches(':popover-open')).toBe(false)
     data.panel.innerHTML = '<button data-slot="combobox-item">Apple</button>'
     morphed({el:data.$el}); expect(data.panel.matches(':popover-open')).toBe(true)

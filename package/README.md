@@ -15,9 +15,32 @@ actions, and Alpine supplies the browser interactions that need it.
 composer require esoboy/ui
 ```
 
-Import the styles after Tailwind in the app's CSS entry: `ui.css` has the components
-shadcn/ui has, `extras.css` the others (Editor, Tree, Tour, Cascader, …), for apps that
-use any:
+Import styles after Tailwind. Choose the groups your application uses; each includes
+its component dependencies, Nova theme and the Blade sources Tailwind needs:
+
+```css
+@import 'tailwindcss';
+@import '../../vendor/esoboy/ui/resources/css/controls.css';
+/* Add pickers.css, display.css, navigation.css, data.css or trees.css as needed. */
+```
+
+| Entry | Includes |
+| --- | --- |
+| `controls.css` | Buttons, inputs, fields, checkbox/radio/switch, input groups, native select, toggles and icons |
+| `overlays.css` | Controls plus dialogs, drawers, menus, popovers, tooltips and Command |
+| `pickers.css` | Overlays plus Select, Combobox, Calendar, Date/Time Picker, Input OTP, Slider and Tabs |
+| `display.css` | Controls plus cards, alerts, badges, avatars, tables, messages, toast and typography |
+| `navigation.css` | Overlays plus sidebar, navigation, pagination, accordion, tabs, carousel and layout interactions |
+| `data.css` | Pickers plus Data Table, table, pagination and badges |
+| `trees.css` | Pickers plus Tree, Tree Select, Cascader and Transfer |
+
+Imports share their dependencies; do not copy styles or register additional `@source`
+paths for these groups. Application utilities still override defaults without `!`.
+`base.css` contains the shared tokens, utilities and base states, with no component
+template scan; group entries include it automatically.
+
+For applications using the complete library, `ui.css` includes every shadcn component
+and `extras.css` includes the remaining components (Editor, uploads, Tour, …):
 
 ```css
 @import 'tailwindcss';
@@ -369,6 +392,7 @@ an axe pass over every page. Build `dist/` first; the tests publish it:
 ```bash
 cd ../application
 npm ci && npm run build && npx playwright install chromium
+npm run test:css   # group dependencies, size budgets and Nova computed-style parity
 composer test
 ```
 

@@ -178,42 +178,45 @@ class Tree extends Component
         return array_values(array_filter(array_map('strval', array_keys($this->index())), fn ($value) => isset($selected[$value])));
     }
 
-    public function checked(string $value): string
+    /** @return array<string, mixed> */
+    protected function viewData(): array
     {
-        $selected = ($this->settings['checkable'] ?? false) ? $this->cascade((array) $this->value) : array_map('strval', (array) $this->value);
-        if (in_array($value, $selected, true)) {
-            return 'true';
-        }
-        $walk = function (array $items) use (&$walk, $selected): bool {
+        $nodes = $this->data();
+        $checkable = $this->settings['checkable'] ?? false;
+        $selected = array_fill_keys($checkable ? $this->cascade((array) $this->value) : [], true);
+        $checked = [];
+        $matching = [];
+
+        // Compute descendants before their parent, once per render. No state survives
+        // an action or a parent update, so lazy children and replaced values stay fresh.
+        $walk = function (array $items) use (&$walk, $selected, &$checked, &$matching): array {
+            $hasSelection = false;
+            $hasMatch = false;
             foreach ($items as $item) {
-                if (in_array((string) $item['value'], $selected, true) || $walk($item['children'] ?? [])) {
-                    return true;
-                }
+                $id = (string) $item['value'];
+                [$childSelected, $childMatches] = $walk($item['children'] ?? []);
+                $chosen = isset($selected[$id]);
+                $checked[$id] = $chosen ? 'true' : ($childSelected ? 'mixed' : 'false');
+                $matching[$id] = $childMatches || $this->query === '' || mb_stripos((string) ($item['label'] ?? $id), $this->query) !== false;
+                $hasSelection = $hasSelection || $chosen || $childSelected;
+                $hasMatch = $hasMatch || $matching[$id];
             }
 
-            return false;
+            return [$hasSelection, $hasMatch];
         };
+        $walk($nodes);
 
-        return $walk(($this->index()[$value]['children'] ?? [])) ? 'mixed' : 'false';
-    }
-
-    /** @param array<string, mixed> $item */
-    public function matches(array $item): bool
-    {
-        if ($this->query === '' || mb_stripos((string) ($item['label'] ?? $item['value']), $this->query) !== false) {
-            return true;
-        }
-        foreach ($item['children'] ?? [] as $child) {
-            if ($this->matches($child)) {
-                return true;
-            }
-        }
-
-        return false;
+        return [
+            'nodes' => $nodes,
+            'checkedStates' => $checked,
+            'matchingNodes' => $matching,
+            'expandedNodes' => array_fill_keys($this->expanded, true),
+            'firstValue' => isset($nodes[0]) ? (string) $nodes[0]['value'] : null,
+        ];
     }
 
     public function render(): View
     {
-        return view('ui::livewire.tree', ['nodes' => $this->data()]);
+        return view('ui::livewire.tree', $this->viewData());
     }
 }

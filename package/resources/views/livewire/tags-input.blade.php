@@ -8,9 +8,5 @@
     @endforeach
     <input type="text" data-slot="tags-input-input" x-ref="entry" wire:model="entry" wire:keydown.enter.prevent="add" wire:blur="add" x-on:keydown="if (!$event.isComposing && $event.key === ',') { $event.preventDefault(); $wire.add() } else if ($event.key === 'Backspace' && !$el.value) $wire.removeLast()" x-on:input="if (/[,，\n]/.test($el.value)) $wire.add()" placeholder="{{ $settings['placeholder'] ?? '' }}" autocomplete="off" {{ $attributes->only($labelling)->merge($settings['validation'] ?? []) }} @disabled(($settings['disabled'] ?? false) || (($settings['max'] ?? null) && count($value) >= $settings['max']))>
     @if ($slots->has('default')){{ $slots }}@endif
-    @if ($attributes->has('name'))
-        @foreach ($value as $tag)
-        <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $tag }}">
-        @endforeach
-    @endif
+    @include('ui::livewire.form-value')
 </eso-tags-input>

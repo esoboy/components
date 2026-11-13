@@ -9,7 +9,7 @@ use Livewire\Livewire;
  */
 
 it('defines the status colours beside destructive, light and dark', function () {
-    $css = file_get_contents(__DIR__.'/../../resources/css/ui.css');
+    $css = file_get_contents(__DIR__.'/../../resources/css/base.css');
 
     foreach (['success', 'warning', 'info'] as $name) {
         expect($css)->toMatch("/--color-{$name}: light-dark\\(oklch\\([^)]+\\), oklch\\([^)]+\\)\\);/")

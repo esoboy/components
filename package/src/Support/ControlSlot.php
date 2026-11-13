@@ -77,7 +77,13 @@ final class ControlSlot
         foreach ($control->attributes as $attribute) {
             $existing[$attribute->name] = $attribute->value;
         }
-        $merged = (new ComponentAttributeBag($existing))->merge($attributes->getAttributes(), escape: false)->getAttributes();
+        // Blade escapes forwarded values; DOM attributes need their decoded values.
+        // Existing DOM attributes and generated behavior are already decoded.
+        $forwarded = array_map(
+            fn ($value) => is_string($value) ? html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8') : $value,
+            $attributes->getAttributes(),
+        );
+        $merged = (new ComponentAttributeBag($existing))->merge($forwarded, escape: false)->getAttributes();
         $binding = $behavior instanceof Closure ? $behavior($control) : $behavior;
         foreach (array_replace($merged, $binding) as $name => $value) {
             if ($value === false || $value === null) {

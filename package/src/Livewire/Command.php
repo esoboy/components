@@ -4,6 +4,7 @@ namespace Esoboy\Ui\Livewire;
 
 use Esoboy\Ui\Support\HtmlFragment;
 use Esoboy\Ui\Support\SearchText;
+use Esoboy\Ui\Support\ViewSlots;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Reactive;
@@ -15,7 +16,7 @@ class Command extends Component
     public string $markup = '';
 
     #[Locked]
-    public bool $hasParent = false;
+    public ?string $ownerId = null;
 
     #[Reactive]
     public ?string $boundQuery = null;
@@ -51,19 +52,6 @@ class Command extends Component
             }
 
         }
-        if ($this->hasParent) {
-            foreach ($document->querySelectorAll('[data-slot="command-item"], [data-slot="command-item"] *') as $control) {
-                if ($control->closest('[wire\\:id]')) {
-                    continue;
-                }
-                foreach ($control->attributes as $attribute) {
-                    if (explode('.', $attribute->name)[0] === 'wire:click'
-                        && preg_match('/^(?:[a-zA-Z_]|\$(?:set|toggle|refresh|commit|call)\b)/', $attribute->value)) {
-                        $attribute->value = '$parent.'.$attribute->value;
-                    }
-                }
-            }
-        }
         foreach ($document->querySelectorAll('[data-slot="command-group"]') as $group) {
             if (! $group->querySelector('[data-slot="command-item"]:not([hidden])')) {
                 $group->setAttribute('hidden', '');
@@ -76,14 +64,7 @@ class Command extends Component
         }
         if ($input = $document->querySelector('[data-command-input]')) {
             if ($this->boundQuery === null) {
-                $input->setAttribute('wire:model.live.debounce.100ms', 'query');
-            } else {
-                foreach ($input->attributes as $attribute) {
-                    if (explode('.', $attribute->name)[0] === 'wire:model') {
-                        $attribute->value = '$parent.'.$attribute->value;
-                    }
-                }
-                $input->setAttribute('wire:input.debounce.100ms', 'search($event.target.value)');
+                $input->setAttribute('x-model', 'searchValue');
             }
             $input->setAttribute('value', $this->query);
         }
@@ -93,6 +74,6 @@ class Command extends Component
             $content .= $document->saveHtml($child);
         }
 
-        return view('ui::livewire.command', ['content' => $content, 'empty' => $matches === 0]);
+        return view('ui::livewire.command', ['content' => ViewSlots::render($content, $this->getId(), $this->ownerId), 'empty' => $matches === 0]);
     }
 }

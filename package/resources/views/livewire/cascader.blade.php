@@ -17,9 +17,5 @@
         @endforeach
     </div>
     @if ($slots->has('default')){{ $slots }}@endif
-    @if ($attributes->has('name'))
-        @foreach ($labels ? $value : [] as $part)
-        <input type="hidden" name="{{ $attributes->get('name') }}[]" value="{{ $part }}">
-        @endforeach
-    @endif
+    @include('ui::livewire.form-value', ['value' => $labels ? $value : []])
 </eso-cascader>

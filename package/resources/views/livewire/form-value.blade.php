@@ -1,4 +1,4 @@
-@if ($attributes->has('name'))
+@if ($attributes->has('name') && ! ($settings['disabled'] ?? false))
     @if (is_array($value))
         @foreach ($value as $index => $part)
         <input type="hidden" name="{{ $attributes->get('name') }}[{{ is_string($index) ? $index : '' }}]" value="{{ $part }}">

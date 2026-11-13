@@ -17,7 +17,7 @@
         }
         $boundQuery = $binding ? (string) \Esoboy\Ui\Support\Model::value(new \Illuminate\View\ComponentAttributeBag($binding)) : null;
     @endphp
-    @livewire('ui.command', ['markup' => (string) $slot, 'hasParent' => $owner !== null, 'boundQuery' => $boundQuery, ...$attributes->except('wire:key')->getAttributes()], key('ui-command-'.$key))
+    @livewire('ui.command', ['markup' => \Esoboy\Ui\Support\ViewSlots::capture($slot), 'ownerId' => $owner?->getId(), 'boundQuery' => $boundQuery, ...$attributes->except('wire:key')->getAttributes()], key('ui-command-'.$key))
 @else
     <eso-command {{ $attributes->merge(['data-slot' => 'command', 'data-filter' => 'false', 'data-empty' => ! str_contains((string) $slot, 'data-slot="command-item"'), 'x-data' => 'uiCommand', 'x-on:keydown' => 'key($event)', 'x-on:pointermove' => 'hover($event)']) }}>{{ $slot }}</eso-command>
 @endif

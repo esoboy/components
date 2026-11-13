@@ -34,5 +34,5 @@
             @endif
         </x-ui::popover.content>
     </x-ui::popover>
-    <input type="hidden" @if ($name) name="{{ $name }}" @endif value="{{ $color }}">
+    @include('ui::livewire.form-value', ['value' => $color])
 </eso-color-picker>
