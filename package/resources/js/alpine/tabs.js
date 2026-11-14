@@ -1,6 +1,16 @@
 import boundValue from './value.js'
 
-export default binding => Object.defineProperties(boundValue(binding), Object.getOwnPropertyDescriptors({
+export default binding => {
+const model = boundValue(binding)
+const value = Object.getOwnPropertyDescriptor(model, 'value')
+let owner
+return Object.defineProperties(model, Object.getOwnPropertyDescriptors({
+    // Morph evaluates panel bindings on detached clones without the original refs.
+    // Read the existing value in the initialized Tabs scope, including during cloning.
+    init() { owner = this },
+    get value() { return value.get.call(owner) },
+    set value(next) { value.set.call(owner, next) },
+
     refresh() {
         this.value
         const root = this.$id('tabs')
@@ -34,3 +44,4 @@ export default binding => Object.defineProperties(boundValue(binding), Object.ge
         if (next) { event.preventDefault(); next.focus() }
     },
 }))
+}

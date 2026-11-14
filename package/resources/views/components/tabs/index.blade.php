@@ -20,5 +20,5 @@ if ($value === null && preg_match('/data-slot="tabs-trigger"[^>]*data-value="([^
 
 <eso-tabs {{ $attributes->whereDoesntStartWith('wire:model')->except('name')->merge(['data-slot' => 'tabs', 'data-orientation' => $orientation, 'data-value' => is_scalar($value) ? (string) $value : false, 'x-data' => 'uiTabs('.json_encode(Model::binding($attributes)).')', 'x-effect' => 'refresh()', 'x-on:click' => 'click($event)', 'x-on:keydown' => 'key($event)', 'x-on:focusout' => '!$el.contains($event.relatedTarget) && blur()']) }}>
     {{ $slot }}
-    <input type="hidden" x-ref="input" value="{{ $value }}" {{ $attributes->whereStartsWith('wire:model')->merge($attributes->only('name')->getAttributes()) }}>
+    <input type="hidden" x-ref="input" value="{{ $value }}" x-bind:value="value" {{ $attributes->whereStartsWith('wire:model')->merge($attributes->only('name')->getAttributes()) }}>
 </eso-tabs>

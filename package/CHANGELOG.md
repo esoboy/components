@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.1 - 2026-11-14
+
+- Fix active Tabs panels disappearing after Livewire updates, including the Date Picker's range time panels. Preserve current native tab values while bound values and Blade content continue to update.
+
 ## v0.7.0 - 2026-11-13
 
 - Preserve caller-owned actions and nested Livewire component state in custom Select and Command content.

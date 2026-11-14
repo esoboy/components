@@ -88,14 +88,35 @@ it('binds the date with a complete time in ten-minute intervals', function () {
 
 it('binds separate start and end times for a date range', function () {
     $month = now()->format('Y-m');
+    $picker = 'eso-date-picker:has(#demo-shift)';
+    $from = $picker.' [data-date-picker-time="from"]';
+    $to = $picker.' [data-date-picker-time="to"]';
 
     visit('/controls')
-        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-trigger]')
-        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-time="from"] [aria-label="Hour"] [data-time-option="8"]')
-        ->click('eso-date-picker:has(#demo-shift) button[data-day="'.$month.'-08"]')
-        ->click('eso-date-picker:has(#demo-shift) button[data-day="'.$month.'-09"]')
-        ->click('eso-date-picker:has(#demo-shift) [data-date-picker-time="to"] [aria-label="Hour"] [data-time-option="17"]')
-        ->assertSeeIn('#shift', $month.'-08 08:00 → '.$month.'-09 17:00');
+        ->click($picker.' [data-date-picker-trigger]')
+        ->click($from.' [aria-label="Hour"] [data-time-option="8"]')
+        ->assertSeeIn($from.' [role="tab"][data-value="hour"]', '08')
+        ->assertVisible($from.' [role="tabpanel"][data-value="hour"]')
+        ->assertVisible($to.' [role="tabpanel"][data-value="hour"]')
+        ->click($picker.' button[data-day="'.$month.'-08"]')
+        ->assertSeeIn('#shift', $month.'-08 08:00 →')
+        ->click($picker.' button[data-day="'.$month.'-09"]')
+        ->assertSeeIn('#shift', $month.'-08 08:00 → '.$month.'-09 09:00')
+        ->click($to.' [aria-label="Hour"] [data-time-option="17"]')
+        ->assertSeeIn('#shift', $month.'-08 08:00 → '.$month.'-09 17:00')
+        ->keys($from.' [role="tab"][data-value="hour"]', 'ArrowRight')
+        ->assertScript('document.activeElement.matches('.json_encode($from.' [role="tab"][data-value="minute"]').')')
+        ->keys('*:focus', 'Enter')
+        ->click($from.' [aria-label="Minute"] [data-time-option="30"]')
+        ->assertSeeIn('#shift', $month.'-08 08:30 → '.$month.'-09 17:00')
+        ->assertVisible($from.' [role="tabpanel"][data-value="minute"]')
+        ->assertVisible($to.' [role="tabpanel"][data-value="hour"]')
+        ->keys($from.' [data-time-option="30"]', 'Escape')
+        ->assertScript(opened($picker.' [data-date-picker-content]'), false)
+        ->click($picker.' [data-date-picker-trigger]')
+        ->assertVisible($from.' [role="tabpanel"][data-value="minute"]')
+        ->assertVisible($to.' [role="tabpanel"][data-value="hour"]')
+        ->assertNoJavaScriptErrors();
 });
 
 it('selects seconds with the keyboard and dismisses the time picker with Escape', function () {
@@ -106,7 +127,7 @@ it('selects seconds with the keyboard and dismisses the time picker with Escape'
         ->click('#demo-time')
         ->click('[data-time-picker-content] [role="tab"][data-value="second"]')
         ->keys('[data-time-picker-content] [aria-label="Second"] [data-time-option="0"]', 'ArrowRight')
-        ->assertScript("document.activeElement.matches(".json_encode($second).")")
+        ->assertScript('document.activeElement.matches('.json_encode($second).')')
         ->keys($second, 'Enter')
         ->assertSeeIn('#time', '10:30:01')
         ->assertSeeIn('#demo-time', '10:30:01')
