@@ -1,3 +1,0 @@
-@blaze(fold: true)
-
-{{ $slot }}

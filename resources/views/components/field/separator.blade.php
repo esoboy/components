@@ -1,0 +1,1 @@
+<div {{ $attributes->merge(['data-slot' => 'field-separator', 'data-content' => $slot->isNotEmpty() ? 'true' : 'false']) }}><x-ui::separator />@if($slot->isNotEmpty())<span data-slot="field-separator-content">{{ $slot }}</span>@endif</div>

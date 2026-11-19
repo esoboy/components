@@ -2,95 +2,84 @@ name: package
 
 on:
   push:
+    branches: ['**']
   pull_request:
-
-defaults:
-  run:
-    working-directory: package
+  workflow_call:
 
 jobs:
-  php:
+  verify:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         php: ['8.4', '8.5']
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: zip
           coverage: none
-
-      - run: composer install --no-interaction --prefer-dist
-
-      - run: composer lint -- --test
-
-      - run: composer analyse
-
-      - run: composer test
-
-  js:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          coverage: none
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: package/package-lock.json
-
-      # The JavaScript tests import the Alpine build shipped with Livewire.
-      - run: composer install --no-dev --no-interaction --prefer-dist
+      - run: composer install --no-interaction --prefer-dist
       - run: npm ci
-
-      - run: npm test
-
+      - run: npm run format:check
       - run: npm run build
+      - run: npm test
+      - run: npm run docs && git diff --exit-code -- docs/components.md
+      - run: composer lint -- --test && composer analyse && composer test
+      - run: composer --working-dir=dist validate --strict
+      - if: matrix.php == '8.4'
+        run: composer --working-dir=dist archive --format=zip --dir="$RUNNER_TEMP" --file=esoboy-ui
+      - if: matrix.php == '8.4'
+        uses: actions/upload-artifact@v4
+        with:
+          name: esoboy-ui
+          path: ${{ runner.temp }}/esoboy-ui.zip
+          if-no-files-found: error
 
-  # The demo app installs the package as apps do and drives its pages in Chromium.
-  browser:
+  consumer:
+    needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    env:
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
     steps:
       - uses: actions/checkout@v4
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
+          extensions: zip
           coverage: none
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            package/package-lock.json
-            application/package-lock.json
-
-      - run: npm ci && npm run build
-
-      - run: composer install --no-interaction --prefer-dist
-        working-directory: application
-
-      - run: cp .env.example .env && php artisan key:generate
-        working-directory: application
-
-      - run: npm ci && npm run build && npx playwright install --with-deps chromium
-        working-directory: application
-
-      - run: npm run test:css
-        working-directory: application
-
-      - run: vendor/bin/pest
-        working-directory: application
+      - uses: actions/download-artifact@v4
+        with:
+          name: esoboy-ui
+          path: ${{ runner.temp }}
+      - run: |
+          composer create-project --no-install --no-scripts --no-interaction laravel/laravel "$RUNNER_TEMP/consumer" '^13.0'
+          php tests/distribution/prepare-host.php "$RUNNER_TEMP/consumer" "$RUNNER_TEMP/esoboy-ui.zip"
+          cd "$RUNNER_TEMP/consumer"
+          cp .env.example .env
+          composer install --no-dev --no-interaction --prefer-dist
+          npm install --no-audit --no-fund
+          npm run build
+          php artisan key:generate
+          php artisan route:cache
+          php artisan view:cache
+      - run: npm ci && npx playwright install --with-deps chromium
+      - run: |
+          php "$RUNNER_TEMP/consumer/artisan" serve --host=127.0.0.1 --port=18744 --no-reload > "$RUNNER_TEMP/consumer.log" 2>&1 &
+          pid=$!
+          trap 'kill "$pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18744/ui-package-test > /dev/null; then break; fi
+            sleep 1
+          done
+          node --test tests/distribution/consumer.test.mjs

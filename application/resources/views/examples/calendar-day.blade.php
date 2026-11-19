@@ -1,1 +1,0 @@
-<span>{{ $day['number'] }}</span>

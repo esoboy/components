@@ -1,5 +1,14 @@
+/vendor
+/.vscode/
 .DS_Store
 Thumbs.db
-/.idea
-/.vscode
-/.claude/settings.local.json
+composer.lock
+.phpunit.result.cache
+.phpunit.cache
+/node_modules
+/dist
+/esoboy-ui.zip
+/.dist-*/
+/.idea/
+/resources/dist/
+/resources/icons/catalog.php

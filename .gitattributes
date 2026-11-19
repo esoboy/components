@@ -1,2 +1,11 @@
 * text=auto eol=lf
 *.bat text eol=crlf
+
+# The development repository contains sources. Only dist/ is used for releases.
+/.idea export-ignore
+/vendor export-ignore
+/node_modules export-ignore
+/dist export-ignore
+/.dist-* export-ignore
+/composer.lock export-ignore
+/esoboy-ui.zip export-ignore

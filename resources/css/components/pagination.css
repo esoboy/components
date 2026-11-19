@@ -1,0 +1,35 @@
+@layer components {
+    [data-slot='pagination'][data-paginated] {
+        @apply flex-wrap items-center gap-3;
+    }
+    [data-slot='pagination-jump'] {
+        @apply flex items-center gap-2 text-sm;
+    }
+    [data-slot='pagination-jump'] > span {
+        @apply whitespace-nowrap text-muted-foreground;
+    }
+    [data-slot='pagination-jump'] > .ui-input-group {
+        @apply w-20;
+    }
+    [data-slot='pagination-jump'] input[type='number'] {
+        @apply tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none;
+    }
+    [data-slot='pagination'][data-paginated] > [data-slot='pagination-content'] {
+        @apply flex-wrap justify-center;
+    }
+    .ui-button.ui-pagination-previous:has([data-icon]) {
+        @apply pl-1.5;
+    }
+    .ui-button.ui-pagination-next:has([data-icon]) {
+        @apply pr-1.5;
+    }
+    :is(.ui-pagination-previous, .ui-pagination-next) > svg {
+        @apply rtl:rotate-180;
+    }
+    .ui-pagination-label {
+        @apply hidden sm:block;
+    }
+    [data-slot='pagination'][data-paginated] .ui-pagination-label {
+        @apply @max-xl:hidden;
+    }
+}

@@ -1,54 +1,42 @@
 name: release
 
-# A tag (v1.2.0) publishes package/ with its built dist/ to esoboy/ui, the repository
-# Composer installs esoboy/ui from: dist/ is gitignored here, and @uiScripts needs it.
-# The UI environment's secret UI_SPLIT_TOKEN is a token that may push to esoboy/ui.
-
 on:
   push:
     tags: ['v*']
 
-defaults:
-  run:
-    working-directory: package
-
 jobs:
-  split:
+  verify:
+    uses: ./.github/workflows/package.yml
+
+  publish:
+    needs: verify
     runs-on: ubuntu-latest
     environment: UI
-
+    concurrency: publish-esoboy-ui
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: esoboy-ui
+          path: ${{ runner.temp }}/artifact
       - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          coverage: none
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package/package-lock.json
-
-      # The JavaScript tests import the Alpine build shipped with Livewire.
-      - run: composer install --no-dev --no-interaction --prefer-dist
-      - run: npm ci
-
-      - run: npm test
-
-      - run: npm run build
-
-      # Each release is one commit of the package as it ships, dist/ included, under the tag.
-      - env:
-          TOKEN: ${{ secrets.UI_SPLIT_TOKEN }}
+          repository: esoboy/ui
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.UI_SPLIT_TOKEN }}
+      - name: Publish the verified Composer package
+        env:
           TAG: ${{ github.ref_name }}
         run: |
-          sed -i '\#^/dist$#d' .gitignore
-          git init --quiet --initial-branch=main
+          unzip -q "$RUNNER_TEMP/artifact/esoboy-ui.zip" -d "$RUNNER_TEMP/production"
+          rsync -a --delete --exclude='/.git/' "$RUNNER_TEMP/production/" ./
+          git add --all
+          if git show-ref --quiet --verify "refs/tags/$TAG"; then
+            test "$(git write-tree)" = "$(git rev-parse "refs/tags/$TAG^{tree}")"
+            exit
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add --all
-          git commit --quiet --message "esoboy/ui ${TAG}"
-          git tag "${TAG}"
-          git push --force "https://x-access-token:${TOKEN}@github.com/esoboy/ui.git" main "refs/tags/${TAG}"
+          if ! git diff --cached --quiet; then git commit -m "esoboy/ui $TAG"; fi
+          git tag "$TAG"
+          git push --atomic origin HEAD:refs/heads/main "refs/tags/$TAG"

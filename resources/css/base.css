@@ -1,0 +1,78 @@
+@layer components {
+    [data-ui-trigger] {
+        display: contents;
+    }
+    [data-ui-overlay]:is(
+        [data-slot='popover'],
+        [data-slot='tooltip'],
+        [data-slot='hover-card'],
+        [data-slot='dropdown-menu'],
+        [data-slot='context-menu'],
+        [data-slot='dialog'],
+        [data-slot='alert-dialog'],
+        [data-slot='sheet'],
+        [data-slot='drawer']
+    ) {
+        display: contents;
+    }
+    [data-slot='icon'] {
+        flex: none;
+        vertical-align: middle;
+    }
+    :where([data-slot]) {
+        border-color: var(--color-border);
+        outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+    }
+    :where([data-slot])[aria-invalid='true'] {
+        border-color: var(--color-destructive);
+        outline-color: var(--color-destructive);
+    }
+    :where(button, input, textarea, select)[data-slot]:disabled,
+    a[data-slot][aria-disabled='true'] {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    a[data-slot][aria-disabled='true'] {
+        pointer-events: none;
+    }
+    [data-slot='field-error'] {
+        color: var(--color-destructive);
+        font-size: 0.875rem;
+    }
+    [data-slot='separator'] {
+        height: 1px;
+        width: 100%;
+        background: var(--color-border);
+    }
+    [data-slot='separator'][aria-orientation='vertical'] {
+        height: auto;
+        min-height: 1rem;
+        width: 1px;
+        align-self: stretch;
+    }
+    [data-slot='skeleton'] {
+        background: var(--color-accent);
+        border-radius: var(--radius-ui-md);
+        min-height: 1rem;
+        animation: ui-pulse 2s ease-in-out infinite;
+    }
+    [data-slot='spinner'] {
+        animation: ui-spin 1s linear infinite;
+    }
+    @keyframes ui-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    @keyframes ui-pulse {
+        50% {
+            opacity: 0.5;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        [data-slot='spinner'],
+        [data-slot='skeleton'] {
+            animation: none;
+        }
+    }
+}
