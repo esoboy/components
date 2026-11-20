@@ -46,6 +46,10 @@ php artisan vendor:publish --tag=ui-assets --force
 
 静态副本位于 `public/vendor/esoboy/ui/`。升级后，过期副本会自动切换到当前包的路由，再次发布即可更新静态文件。
 
+### Laravel Boost
+
+使用 Laravel Boost 的项目可在宿主应用运行 `php artisan boost:install`，勾选 Agent Skills、第三方包 `esoboy/ui` 和目标编码助手。Boost 会安装 `esoboy-ui-development`，其中包含当前版本的组件用法和 Blade 示例。已经选过该包的项目在升级组件库后运行 `php artisan boost:update` 即可同步。
+
 ## 使用
 
 ```blade

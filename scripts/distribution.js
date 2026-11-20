@@ -17,6 +17,7 @@ const runtime = [
     'src',
     'routes',
     'lang',
+    'resources/boost',
     'resources/views',
     'resources/content/schema.json',
     'resources/icons/catalog.php',

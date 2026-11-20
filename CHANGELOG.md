@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.2 - 2026-11-20
+
+- 恢复随 Laravel Boost 安装的 `esoboy-ui-development` 技能。Composer 包包含当前组件 API 的说明，以及从公共渲染测试用例同步的 90 个 Blade 组件示例。
+
 ## v1.0.1 - 2026-11-20
 
 - 修复 Livewire 重绘后 Dialog 触发按钮失效和页面滚动锁残留。替换后的按钮可以打开弹层并接回焦点。

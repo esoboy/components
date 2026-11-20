@@ -16,7 +16,7 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
         'routes',
         'src',
     ])
-    assert.deepEqual(entries('resources'), ['content', 'css', 'dist', 'icons', 'views'])
+    assert.deepEqual(entries('resources'), ['boost', 'content', 'css', 'dist', 'icons', 'views'])
     assert.deepEqual(entries('resources/css'), ['ui.css'])
     assert.deepEqual(entries('resources/dist'), ['editor.js', 'ui.js'])
     assert.deepEqual(entries('resources/icons'), ['LICENSE', 'catalog.php'])
@@ -38,6 +38,14 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
         if (node.name === 'theme' || node.name === 'custom-variant') continue
         assert.equal(node.name, 'layer')
         assert.equal(node.params, 'components')
+    }
+})
+
+test('the Composer package ships the Boost skill and its component reference', () => {
+    const skill = 'resources/boost/skills/esoboy-ui-development'
+    for (const file of ['SKILL.md', 'references/components.md']) {
+        const path = `${skill}/${file}`
+        assert.deepEqual(readFileSync(`dist/${path}`), readFileSync(path))
     }
 })
 

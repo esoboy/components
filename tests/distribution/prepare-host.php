@@ -10,7 +10,7 @@ if (! $host || ! $archive || $zip->open($archive) !== true) {
 }
 $package = json_decode($zip->getFromName('composer.json'), true, flags: JSON_THROW_ON_ERROR);
 $zip->close();
-$package['version'] = '1.0.1';
+$package['version'] = '1.0.2';
 $package['dist'] = [
     'type' => 'zip',
     'url' => 'file:///'.ltrim(str_replace('\\', '/', $archive), '/'),

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
@@ -68,10 +68,15 @@ function countWithNames(items) {
 
 const intro =
     '# 组件目录\n\n全部公开组件使用 `x-ui::`。以下最小调用均由包的公共渲染测试执行。状态契约见 [状态与组合](state-and-composition.md)。\n\n'
+const catalog = names
+    .map((name) => `## ${name}\n\n\`\`\`blade\n${examples[name]}\n\`\`\`\n`)
+    .join('\n')
+writeFileSync(resolve(root, 'docs/components.md'), intro + catalog)
+const skillReferences = resolve(root, 'resources/boost/skills/esoboy-ui-development/references')
+mkdirSync(skillReferences, { recursive: true })
 writeFileSync(
-    resolve(root, 'docs/components.md'),
-    intro +
-        names.map((name) => `## ${name}\n\n\`\`\`blade\n${examples[name]}\n\`\`\`\n`).join('\n'),
+    resolve(skillReferences, 'components.md'),
+    '# Esoboy UI 组件示例\n\n按公开组件名查找本版本经过渲染测试的 Blade 调用。\n\n' + catalog,
 )
 writeFileSync(
     coveragePath,
