@@ -21,7 +21,9 @@ composer test
 
 `npm run build` 合并 `resources/css/ui.css` 的本地导入，保留供宿主 Tailwind 编译的指令，并用 esbuild 构建通用组件脚本和完整 Editor。图标由锁定版本 `lucide-static/icon-nodes.json` 的正式名称与节点生成，PHP 直接按名称读取图形。更新 Lucide 时同步更新 `lucide-static`、`lucide-react` 和 npm 锁文件，并运行包测试。选用图标时可浏览 [Lucide 官方目录](https://lucide.dev/icons/)。
 
-`docs/examples.json` 是公共调用样例的来源。修改样例后运行 `npm run docs` 生成[组件目录](components.md)。Pest 逐项渲染这些调用。包构建和 CI 都可以从单独检出的开发仓库运行。
+`docs/examples.json` 是公共调用样例的来源。新增根组件时，在覆盖表中填写对应关系或归类，再运行 `npm run docs` 生成[组件目录](components.md)和[覆盖统计](shadcn-coverage.md#统计)。Pest 逐项渲染这些调用。包构建和 CI 都可以从单独检出的开发仓库运行。
+
+组件模板在自己输出的 `data-slot` 元素上添加 `data-esoboy-ui`。组件 CSS 用 `:where([data-esoboy-ui])` 限定对应的 slot 选择器，保持原有 CSS 优先级。宿主可继续用 `data-slot` 定位元素，也可在 Blade 插槽里使用自己的同名标记。
 
 ## 生产包
 

@@ -375,7 +375,9 @@ export function messageScroller() {
 }
 
 export function tour(initial = false) {
-    return Object.assign(dialog(initial), {
+    const base = dialog(initial)
+    const destroyDialog = base.destroy
+    return Object.assign(base, {
         index: 0,
         highlighted: null,
         oldOutline: '',
@@ -401,7 +403,7 @@ export function tour(initial = false) {
             this.$nextTick(() => this.position())
         },
         position() {
-            if (!this.opened) return
+            if (!this.opened || !this.panel) return
             this.clearHighlight()
             const step = this.$root.querySelector(
                 `[data-slot="tour-step"][data-index="${this.index}"]`,
@@ -432,7 +434,7 @@ export function tour(initial = false) {
         },
         destroy() {
             this.clearHighlight()
-            dialog().destroy.call(this)
+            destroyDialog.call(this)
         },
     })
 }

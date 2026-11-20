@@ -1,5 +1,6 @@
 <?php
 
+use Dom\HTMLDocument;
 use Esoboy\Ui\Support\DataTableColumns;
 use Illuminate\Database\Eloquent\Collection as Models;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,40 @@ use Illuminate\Support\HtmlString;
 use Illuminate\View\ViewException;
 use Livewire\Component;
 use Livewire\Livewire;
+use Livewire\WithPagination;
+
+class EmbeddedPaginationExample extends Component
+{
+    public function render(): string
+    {
+        return <<<'BLADE'
+            <div>
+                @php($pager = (new \Illuminate\Pagination\LengthAwarePaginator([['id' => 3]], 5, 1, 3, ['path' => '/orders', 'pageName' => 'ordersPage']))->appends(['status' => 'open'])->fragment('list'))
+                <x-ui::pagination :paginator="$pager" jumpable />
+                <x-ui::data-table :rows="$pager" :columns="['id' => ['label' => 'Order']]" />
+            </div>
+        BLADE;
+    }
+}
+
+class LivePaginationExample extends EmbeddedPaginationExample
+{
+    use WithPagination;
+}
+
+it('uses paginator URLs inside a host without pagination actions and the named page on a paginating host', function () {
+    $ordinary = HTMLDocument::createFromString(Livewire::test(EmbeddedPaginationExample::class)->html(), LIBXML_NOERROR);
+    expect($ordinary->querySelector('.ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
+        ->and($ordinary->querySelector('[data-slot="data-table"] .ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
+        ->and($ordinary->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('location.assign');
+
+    $live = Livewire::test(LivePaginationExample::class);
+    $document = HTMLDocument::createFromString($live->html(), LIBXML_NOERROR);
+    expect($document->querySelector('.ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
+        ->and($document->querySelector('[data-slot="data-table"] .ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
+        ->and($document->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('gotoPage');
+    $live->call('gotoPage', 4, 'ordersPage')->assertSet('paginators.ordersPage', 4);
+});
 
 class DataTableHostExample extends Component
 {
@@ -101,6 +136,27 @@ it('renders cells only for real rows and authorized visible columns in the calle
     $host->set('empty', true)->set('layout', [])->assertSee('Order')->assertSee('Status')
         ->assertSee('No records')->assertSeeHtml('colspan="3"');
     expect(DataTableHostExample::$rendered)->toBe([]);
+});
+
+it('renders default and custom cells from the same single-pass row source', function () {
+    $rows = (function () {
+        yield ['id' => 5, 'number' => 'Order 5', 'status' => 'ready'];
+        yield ['id' => 2, 'number' => 'Order 2', 'status' => 'sent'];
+    })();
+    $columns = ['number' => ['label' => 'Number'], 'status' => ['label' => 'Status']];
+    $html = Blade::render(<<<'BLADE'
+        <x-ui::data-table :rows="$rows" :columns="$columns">
+            <x-slot:toolbar><x-ui::badge>Current orders</x-ui::badge></x-slot:toolbar>
+            @foreach ($component->records as $order)
+                <x-ui::data-table.cell column="status" :row="$order">
+                    <x-ui::badge>Custom {{ $order['status'] }}</x-ui::badge>
+                </x-ui::data-table.cell>
+            @endforeach
+        </x-ui::data-table>
+        BLADE, compact('rows', 'columns'));
+    $cells = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelectorAll('tbody td');
+    expect(array_map(fn ($cell) => trim($cell->textContent), iterator_to_array($cells)))
+        ->toBe(['Order 5', 'Custom ready', 'Order 2', 'Custom sent']);
 });
 
 it('mounts nested bulk tools only while selected records exist', function () {

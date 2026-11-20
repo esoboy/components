@@ -41,7 +41,7 @@ Editor 默认由包内 Laravel 路由提供完整生产文件，带内容版本�
 
 ## 验收范围
 
-PHP 测试覆盖所有 90 个根组件的最小调用、当前值协议和数据约束；演示应用覆盖目录、分类及实际示例。静态检查包含 PHPStan level 8、Pint、Prettier 和 JS 架构边界规则。
+PHP 测试逐个渲染公开根组件的最小调用，并覆盖当前值协议和数据约束。演示应用覆盖目录、分类及实际示例。静态检查包含 PHPStan level 8、Pint、Prettier 和 JS 架构边界规则。[公开组件目录](components.md)
 
 本地演示的 Chromium 测试覆盖组件挂载、10 个分类的重复 id、运行时错误和移动布局，包含选择、日期范围、菜单、滑块、OTP、拖动、弹层、图片预览、调用方 slot 和编辑器生命周期。在演示目录运行 `npm run test:browser`，截图写入 `storage/app/ui-browser/`。2026-11-18 的视觉验收涵盖 1440/390px、浅色与深色、459 个官方实际示例、公开组合及动画采样。历史结果与比较条件见 [shadcn 组件覆盖](shadcn-coverage.md)。
 

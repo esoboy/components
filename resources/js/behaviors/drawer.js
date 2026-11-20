@@ -24,8 +24,14 @@ export function drawer(
     const base = dialog(initial, modal)
     let resize,
         observer,
+        observedPanel,
         escape,
         previousOffset = 0
+    function untrack() {
+        drawers.delete(observedPanel)
+        observer?.disconnect()
+        observedPanel = null
+    }
     return Object.defineProperties(
         Object.create(Object.getPrototypeOf(base), Object.getOwnPropertyDescriptors(base)),
         Object.getOwnPropertyDescriptors({
@@ -35,12 +41,9 @@ export function drawer(
                 base.init.call(this)
                 resize = () => this.positionSnap()
                 window.addEventListener('resize', resize)
-                this.$nextTick(() => {
-                    observer = new ResizeObserver(() => {
-                        this.positionSnap()
-                        updateStack()
-                    })
-                    observer.observe(this.panel)
+                observer = new ResizeObserver(() => {
+                    this.positionSnap()
+                    updateStack()
                 })
                 escape = (event) => {
                     if (
@@ -85,12 +88,18 @@ export function drawer(
                 )
             },
             sync(value) {
-                const wasOpen = this.panel?.open
+                const panel = this.panel
+                const wasOpen = panel?.open
                 base.sync.call(this, value)
-                if (value) {
-                    if (!wasOpen) this.panel.focus({ preventScroll: true })
-                    drawers.add(this.panel)
-                    this.panel.style.removeProperty('--ui-swipe-duration')
+                if (value && panel?.open) {
+                    if (panel !== observedPanel) {
+                        untrack()
+                        observedPanel = panel
+                        observer.observe(panel)
+                        drawers.add(panel)
+                    }
+                    if (!wasOpen) panel.focus({ preventScroll: true })
+                    panel.style.removeProperty('--ui-swipe-duration')
                     this.positionSnap()
                 }
                 updateStack()
@@ -288,15 +297,15 @@ export function drawer(
                 dismiss ? this.close() : this.positionSnap()
             },
             closed() {
+                if (this.panel?.open) return
                 base.closed.call(this)
-                drawers.delete(this.panel)
+                untrack()
                 updateStack()
             },
             destroy() {
                 window.removeEventListener('resize', resize)
-                observer?.disconnect()
+                untrack()
                 document.removeEventListener('keydown', escape)
-                drawers.delete(this.panel)
                 base.destroy.call(this)
                 updateStack()
             },

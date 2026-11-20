@@ -1,4 +1,4 @@
-import { dialog, unlockScroll } from './overlay.js'
+import { dialog } from './overlay.js'
 
 export function sidebar(initial = true, collapsible = 'offcanvas') {
     const modal = dialog(initial)
@@ -18,9 +18,8 @@ export function sidebar(initial = true, collapsible = 'offcanvas') {
             media = matchMedia('(max-width: 767px)')
             resize = () => {
                 changing = true
-                if (this.panel?.matches(':modal')) this.panel.close()
-                else if (this.panel) this.panel.open = false
-                unlockScroll(this.panel)
+                modal.destroy.call(this)
+                if (this.panel) this.panel.open = false
                 this.mobile = media.matches && collapsible !== 'none'
                 this.opened = this.mobile ? false : desktopOpen
                 this.$nextTick(() => {
@@ -54,33 +53,18 @@ export function sidebar(initial = true, collapsible = 'offcanvas') {
                 this.panel.open = true
             }
         },
-        open() {
-            this.returnFocus = document.activeElement
-            this.opened = true
-        },
+        open: modal.open,
         close() {
             if (collapsible === 'none' && !this.mobile) return
             this.opened = false
         },
-        toggle() {
-            this.opened ? this.close() : this.open()
-        },
+        toggle: modal.toggle,
         closed() {
             if (changing || !this.mobile) return
-            unlockScroll(this.panel)
-            this.opened = false
-            this.returnFocus?.focus()
+            modal.closed.call(this)
         },
         backdrop(event) {
-            if (event.target !== this.panel || !this.mobile) return
-            const box = this.panel.getBoundingClientRect()
-            if (
-                event.clientX < box.left ||
-                event.clientX > box.right ||
-                event.clientY < box.top ||
-                event.clientY > box.bottom
-            )
-                this.close()
+            if (this.mobile) modal.backdrop.call(this, event)
         },
         destroy() {
             media?.removeEventListener('change', resize)

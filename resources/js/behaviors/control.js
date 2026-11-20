@@ -33,7 +33,18 @@ export function control() {
                 })
             })
             observer.observe(this.$root, { attributes: true, attributeFilter: ['data-ui-control'] })
-            const form = this.$root.closest('form')
+            // A field can change its native form owner without remounting the control.
+            const onForm = (type, handler) =>
+                this.listen(
+                    this.$root.getRootNode(),
+                    type,
+                    (event) => {
+                        const field = this.$root.querySelector('input[form]')
+                        const form = field ? field.form : this.$root.closest('form')
+                        if (event.target === form) handler(event)
+                    },
+                    true,
+                )
             const reset = (event) =>
                 this.$nextTick(async () => {
                     const value = initialOutput ? await initialOutput : initial
@@ -46,8 +57,8 @@ export function control() {
                     this.$dispatch('value-changed', { value: copyValue(value) })
                 })
             // A composite control's blur modifier must also flush on form submit.
-            this.listen(form, 'reset', reset)
-            this.listen(form, 'submit', () => this.signal('blur'), true)
+            onForm('reset', reset)
+            onForm('submit', () => this.signal('blur'))
         },
         write(value, committed = false) {
             if (this.config.disabled || this.config.readonly) return

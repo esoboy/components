@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.1 - 2026-11-20
+
+- 修复 Livewire 重绘后 Dialog 触发按钮失效和页面滚动锁残留。替换后的按钮可以打开弹层并接回焦点。
+- 非受控 Slider 在同一 `wire:key` 下保留已编辑的手柄、提交值和重置初值。更换 key 时采用新的初值和手柄数量。
+- Editor、Cropper、Signature、Rating 和选择控件支持通过 `form` 关联外部表单。只读问卷切换题目时，FormData 始终包含各题已填写的答案。
+- Pagination 和 DataTable 默认页脚根据宿主的分页动作选择导航方式。普通 Livewire 宿主可以使用分页链接及手动跳页。
+- 修复窄屏 Dropdown Menu 及子菜单的横向溢出。同步此前的组件样式隔离、Combobox 搜索与定位、Calendar 导航和示例覆盖更新，并在独立 Laravel 宿主中验证生产 ZIP。
+
 ## v1.0.0 - 2026-11-19
 
 - Composer 生产包提供一份可导入的 Tailwind CSS 源文件，组件样式位于 `components` 层。宿主布局通过 `@uiScript` 加载通用 JS，编辑器按需加载独立脚本。安装和升级见 [README](README.md)。

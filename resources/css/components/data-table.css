@@ -1,23 +1,23 @@
 @layer components {
-    [data-slot='data-table'] {
+    [data-slot='data-table']:where([data-esoboy-ui]) {
         @apply min-w-0 space-y-4;
     }
-    [data-slot='data-table-container'] {
+    [data-slot='data-table-container']:where([data-esoboy-ui]) {
         @apply @container min-w-0 space-y-4;
     }
-    [data-slot='data-table-frame'] {
+    [data-slot='data-table-frame']:where([data-esoboy-ui]) {
         @apply overflow-hidden rounded-ui-md border;
     }
-    [data-slot='data-table-toolbar'] {
+    [data-slot='data-table-toolbar']:where([data-esoboy-ui]) {
         @apply flex flex-wrap items-center gap-2;
     }
-    [data-slot='data-table-footer'] {
+    [data-slot='data-table-footer']:where([data-esoboy-ui]) {
         @apply flex flex-wrap items-center gap-x-4 gap-y-2;
     }
-    [data-slot='data-table-filter-primary'] {
+    [data-slot='data-table-filter-primary']:where([data-esoboy-ui]) {
         @apply flex min-w-0 flex-wrap items-center gap-2 @max-xl:w-full;
     }
-    [data-slot='data-table-filter-actions'] {
+    [data-slot='data-table-filter-actions']:where([data-esoboy-ui]) {
         @apply flex flex-wrap items-center gap-2;
     }
     .ui-table-secondary {
@@ -26,22 +26,23 @@
     .ui-table-filter-fields {
         @apply flex flex-wrap items-center gap-4 py-1;
     }
-    [data-slot='data-table-page-size'] {
+    [data-slot='data-table-page-size']:where([data-esoboy-ui]) {
         @apply flex items-center gap-2 whitespace-nowrap text-sm font-medium;
     }
-    [data-slot='data-table-total'] {
+    [data-slot='data-table-total']:where([data-esoboy-ui]) {
         @apply whitespace-nowrap text-sm text-muted-foreground tabular-nums;
     }
-    [data-slot='data-table-selection'] {
+    [data-slot='data-table-selection']:where([data-esoboy-ui]) {
         @apply z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-2 rounded-ui-lg border bg-popover p-1.5 text-popover-foreground shadow-md;
     }
-    [data-slot='data-table-selection'] > [role='status'] {
+    [data-slot='data-table-selection']:where([data-esoboy-ui]) > [role='status'] {
         @apply px-2 text-sm font-medium tabular-nums;
     }
-    [data-slot='data-table-selection'] > [data-slot='separator'][aria-orientation='vertical'] {
+    [data-slot='data-table-selection']:where([data-esoboy-ui])
+        > [data-slot='separator']:where([data-esoboy-ui])[aria-orientation='vertical'] {
         @apply h-5;
     }
-    [data-slot='data-table-selection-actions'] {
+    [data-slot='data-table-selection-actions']:where([data-esoboy-ui]) {
         @apply flex flex-wrap items-center gap-1;
     }
     .ui-table-columns-trigger {
@@ -93,50 +94,54 @@
         @apply ms-auto;
     }
 
-    [data-slot='data-table-filters'] > [data-slot='collapsible'] {
+    [data-slot='data-table-filters']:where([data-esoboy-ui])
+        > [data-slot='collapsible']:where([data-esoboy-ui]) {
         @apply flex flex-wrap items-center gap-2;
     }
-    [data-slot='data-table-toolbar'] > [data-slot='data-table-filters'],
-    [data-slot='data-table-toolbar']
-        > [data-slot='data-table-filters']
-        > [data-slot='collapsible'] {
+    [data-slot='data-table-toolbar']:where([data-esoboy-ui])
+        > [data-slot='data-table-filters']:where([data-esoboy-ui]),
+    [data-slot='data-table-toolbar']:where([data-esoboy-ui])
+        > [data-slot='data-table-filters']:where([data-esoboy-ui])
+        > [data-slot='collapsible']:where([data-esoboy-ui]) {
         display: contents;
     }
 
-    [data-slot='data-table'] :is(th, td)[data-align='end'] {
+    [data-slot='data-table']:where([data-esoboy-ui]) :is(th, td)[data-align='end'] {
         text-align: end;
     }
-    [data-slot='data-table'] :is(th, td)[data-align='center'] {
+    [data-slot='data-table']:where([data-esoboy-ui]) :is(th, td)[data-align='center'] {
         text-align: center;
     }
-    [data-slot='data-table'] [data-fixed] {
+    [data-slot='data-table']:where([data-esoboy-ui]) [data-fixed] {
         @apply sticky z-1 bg-background;
     }
-    [data-slot='data-table'] [data-fixed='start'] {
+    [data-slot='data-table']:where([data-esoboy-ui]) [data-fixed='start'] {
         inset-inline-start: var(--dt-inset);
     }
-    [data-slot='data-table'] [data-fixed='end'] {
+    [data-slot='data-table']:where([data-esoboy-ui]) [data-fixed='end'] {
         inset-inline-end: var(--dt-inset);
     }
-    [data-slot='data-table'] tr:hover > [data-fixed] {
+    [data-slot='data-table']:where([data-esoboy-ui]) tr:hover > [data-fixed] {
         background: color-mix(in oklab, var(--color-muted) 50%, var(--color-background));
     }
-    [data-slot='data-table'] tr[data-state='selected'] > [data-fixed] {
+    [data-slot='data-table']:where([data-esoboy-ui]) tr[data-state='selected'] > [data-fixed] {
         @apply bg-muted;
     }
 
-    [data-slot='data-table-footer'] > [data-slot='pagination'] {
+    [data-slot='data-table-footer']:where([data-esoboy-ui])
+        > [data-slot='pagination']:where([data-esoboy-ui]) {
         @apply m-0 ms-auto w-auto;
     }
-    [data-slot='data-table-selection'][data-placement='table'] {
+    [data-slot='data-table-selection']:where([data-esoboy-ui])[data-placement='table'] {
         @apply sticky bottom-3;
     }
-    [data-slot='data-table-selection'][data-placement='viewport'] {
+    [data-slot='data-table-selection']:where([data-esoboy-ui])[data-placement='viewport'] {
         @apply fixed inset-x-3 bottom-3;
         max-width: calc(100% - 1.5rem);
     }
     @container (max-width: 36rem) {
-        [data-slot='data-table-footer'] > [data-slot='pagination'] {
+        [data-slot='data-table-footer']:where([data-esoboy-ui])
+            > [data-slot='pagination']:where([data-esoboy-ui]) {
             @apply m-0 w-full justify-between;
         }
     }

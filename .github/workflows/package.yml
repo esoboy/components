@@ -28,7 +28,7 @@ jobs:
       - run: npm run format:check
       - run: npm run build
       - run: npm test
-      - run: npm run docs && git diff --exit-code -- docs/components.md
+      - run: npm run docs && git diff --exit-code -- docs/components.md docs/shadcn-coverage.md
       - run: composer lint -- --test && composer analyse && composer test
       - run: composer --working-dir=dist validate --strict
       - if: matrix.php == '8.4'

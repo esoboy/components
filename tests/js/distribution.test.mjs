@@ -20,6 +20,8 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
     assert.deepEqual(entries('resources/css'), ['ui.css'])
     assert.deepEqual(entries('resources/dist'), ['editor.js', 'ui.js'])
     assert.deepEqual(entries('resources/icons'), ['LICENSE', 'catalog.php'])
+    const notices = readFileSync('dist/THIRD-PARTY-LICENSES.txt', 'utf8')
+    assert.ok(notices.includes(readFileSync('resources/css/LICENSE.shadcn', 'utf8').trim()))
     const manifest = JSON.parse(readFileSync('dist/composer.json', 'utf8'))
     const source = JSON.parse(readFileSync('composer.json', 'utf8'))
     for (const field of ['require', 'autoload', 'extra'])
@@ -37,6 +39,16 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
         assert.equal(node.name, 'layer')
         assert.equal(node.params, 'components')
     }
+})
+
+test('the button has one declaration for each base utility', () => {
+    const utilities = []
+    const css = postcss.parse(readFileSync('dist/resources/css/ui.css', 'utf8'))
+    css.walkRules('.ui-button', (rule) => {
+        rule.walkAtRules('apply', (apply) => utilities.push(...apply.params.split(/\s+/)))
+    })
+    assert.ok(utilities.length > 0)
+    assert.equal(new Set(utilities).size, utilities.length)
 })
 
 test('a host with source detection disabled still builds every component default', async () => {

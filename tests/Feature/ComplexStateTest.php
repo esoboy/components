@@ -1,6 +1,8 @@
 <?php
 
 use Esoboy\Ui\Livewire\Cascader;
+use Esoboy\Ui\Livewire\Combobox;
+use Esoboy\Ui\Livewire\Command;
 use Esoboy\Ui\Livewire\Transfer;
 use Esoboy\Ui\Livewire\Tree;
 use Esoboy\Ui\Livewire\TreeSelect;
@@ -22,6 +24,12 @@ it('initializes cascader navigation from the selected leaf and retains browsing 
 });
 
 it('does not carry unused inherited state', function () {
+    foreach (['size', 'displayValue'] as $key) {
+        expect(property_exists(Combobox::class, $key))->toBeFalse();
+    }
+    foreach (['size', 'displayValue', 'side', 'align', 'sideOffset', 'alignOffset', 'alignItemWithTrigger', 'popupClass'] as $key) {
+        expect(property_exists(Command::class, $key))->toBeFalse();
+    }
     foreach ([Tree::class, TreeSelect::class, Cascader::class] as $class) {
         expect(property_exists($class, 'options'))->toBeFalse();
     }

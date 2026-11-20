@@ -12,13 +12,11 @@
 | shadcn 部分对应 | 1（Typography） |
 | shadcn 缺失 | 3（Aspect Ratio、Chart、Direction） |
 | 本库扩展根组件 | 24 |
-| 本库基础封装根组件 | 4（heading、text、icon、toaster） |
-
-计数闭合：官网 66 = 62 + 1 + 3；本库 89 = 62 + 23 + 4。按名称比较，本库有 27 个根名称不在官网目录；其中 23 个是扩展，4 个是基础封装，不能把全部 27 个称为官网没有的独立能力。
+| 本库基础封装根组件 | 4（heading、text、toaster、icon） |
 
 ## 官网完整对应表
 
-以下 66 项逐项对应 [官网目录](https://ui.shadcn.com/docs/components)。组件存在性由当前源码核实。
+下表逐项对应 [官网目录](https://ui.shadcn.com/docs/components)。组件存在性由当前源码核实。
 
 | shadcn 组件 | 本库公开入口（前缀 x-ui::） | 状态 |
 | --- | --- | --- |

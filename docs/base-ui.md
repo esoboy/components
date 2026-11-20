@@ -1,6 +1,6 @@
 # Base UI 对照与组件能力
 
-基线为 shadcn 官网 Components 的 **Base UI / Nova** 示例，固定提交 `e62c9435fff729a175f38983dee73b2cb4f6a069`（2026-11-13）。[官方源码](https://github.com/shadcn-ui/ui/tree/e62c9435fff729a175f38983dee73b2cb4f6a069/apps/v4/registry/bases/base/ui)、[Nova 样式](https://github.com/shadcn-ui/ui/blob/e62c9435fff729a175f38983dee73b2cb4f6a069/apps/v4/registry/styles/style-nova.css)。来源许可见包内 THIRD_PARTY_NOTICES.md。
+基线为 shadcn 官网 Components 的 **Base UI / Nova** 示例，固定提交 `e62c9435fff729a175f38983dee73b2cb4f6a069`（2026-11-13）。发行包的 `THIRD-PARTY-LICENSES.txt` 包含这份上游许可。[官方源码](https://github.com/shadcn-ui/ui/tree/e62c9435fff729a175f38983dee73b2cb4f6a069/apps/v4/registry/bases/base/ui) · [Nova 样式](https://github.com/shadcn-ui/ui/blob/e62c9435fff729a175f38983dee73b2cb4f6a069/apps/v4/registry/styles/style-nova.css) · [随源码保存的许可](../resources/css/LICENSE.shadcn)
 
 本库保留 Blade 渲染、Livewire 4 数据和 Alpine 浏览器交互边界。React Context、render/asChild、客户端渲染列表、Portal 组件不直接移植为公开 API；对应内容组合使用 props / slot，浮层使用原生 top layer。下表列出本库对应入口与模式；实际调用见 components.md，完整模式在演示应用 `/components/{name}`。
 
@@ -73,7 +73,7 @@
 
 ## 本库扩展
 
-90 个公开根组件中，62 项对应上表，heading / text / icon / toaster 为四个基础封装，其余 24 项为扩展。
+公开根组件的数量和归类见[组件覆盖统计](shadcn-coverage.md#统计)。
 
 - 已明确保留：editor、rich-text；按共享内容契约实现。
 - 建议保留：image、image-preview、number-input、password-input、time-picker、datetime-picker、tree、tree-select、tags-input、color-picker、qr-code、cropper、steps、timeline、description-list、statistic。

@@ -2,6 +2,7 @@ import { control } from './control.js'
 
 export function slider() {
     let min, max, step, orientation, inverted
+    const thumbAttributes = new WeakMap()
     let active = null,
         dragSource
     const clamp = (number) =>
@@ -24,6 +25,22 @@ export function slider() {
             this.positions = Array.isArray(this.value)
                 ? [...this.value].map(Number).sort((a, b) => a - b)
                 : [Number(this.value ?? min)]
+        },
+        syncThumb(input, index) {
+            // Internal handles live for the mount, while their native attributes follow Blade.
+            const { thumb, id, label } = this.config
+            const attributes = {
+                ...thumb,
+                id: id && index ? id + '-' + index : id,
+                'aria-label': thumb['aria-label'] ?? label.replace('{n}', index + 1),
+            }
+            for (const name of thumbAttributes.get(input) ?? [])
+                if (!(name in attributes)) input.removeAttribute(name)
+            for (const [name, value] of Object.entries(attributes)) {
+                if (value == null || value === false) input.removeAttribute(name)
+                else input.setAttribute(name, value === true ? name : value)
+            }
+            thumbAttributes.set(input, Object.keys(attributes))
         },
         percent(index) {
             return ((this.positions[index] - min) / (max - min)) * 100

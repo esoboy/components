@@ -1,4 +1,5 @@
 import { dialog, popover, registerTrigger } from './behaviors/overlay.js'
+import { combobox } from './behaviors/combobox.js'
 import { options, tabs, menubar, accordion, choiceGroup } from './behaviors/navigation.js'
 import { disclosure, carousel, resizable, registerStep } from './behaviors/layout.js'
 import { toast, toaster, code, messageScroller, tour } from './behaviors/content.js'
@@ -22,6 +23,7 @@ export function registerUi(Alpine) {
     Alpine.data('uiDialog', dialog)
     Alpine.data('uiDrawer', drawer)
     Alpine.data('uiPopover', popover)
+    Alpine.data('uiCombobox', combobox)
     Alpine.data('uiNavigationMenu', navigationMenu)
     registerTrigger(Alpine)
     Alpine.data('uiOptions', options)

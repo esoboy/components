@@ -118,3 +118,41 @@ export function choiceGroup() {
         },
     }
 }
+
+// Only menus and listboxes use item navigation. Free-form panels keep native keyboard behavior.
+export function navigatePopupList(event) {
+    const panel = event.currentTarget
+    if (
+        event.defaultPrevented ||
+        !['menu', 'listbox'].includes(panel.role) ||
+        event.target.closest('[data-ui-panel]') !== panel
+    )
+        return
+    if (
+        event.target.matches('input:not([type=checkbox],[type=radio]),textarea') &&
+        !['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)
+    )
+        return
+    const items = enabled(panel, '[role="option"],[role^="menuitem"],button').filter(
+        (item) => item.closest('[data-ui-panel]') === panel,
+    )
+    if (moveFocus(event, items)) event.stopPropagation()
+    if (event.key === 'ArrowLeft' && this.$root.hasAttribute('data-ui-submenu')) {
+        event.preventDefault()
+        event.stopPropagation()
+        this.close(true)
+    }
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && event.key !== ' ') {
+        const index = items.indexOf(document.activeElement)
+        const rotated = [...items.slice(index + 1), ...items.slice(0, index + 1)]
+        rotated
+            .find((item) =>
+                (item.textContent || item.parentElement.textContent)
+                    .trim()
+                    .toLowerCase()
+                    .startsWith(event.key.toLowerCase()),
+            )
+            ?.focus()
+    }
+    if (event.key === 'Tab') this.close()
+}

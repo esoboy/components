@@ -1,4 +1,4 @@
-import { enabled, moveFocus } from './navigation.js'
+import { enabled, navigatePopupList } from './navigation.js'
 
 const modals = new Set()
 const popovers = new Map()
@@ -19,14 +19,14 @@ function handlePopoverKey(event) {
     top.close(topPanel.contains(document.activeElement))
 }
 
-export function lockScroll(panel) {
+function lockScroll(panel) {
     if (!modals.size) {
         previousOverflow = document.documentElement.style.overflow
         document.documentElement.style.overflow = 'hidden'
     }
     modals.add(panel)
 }
-export function unlockScroll(panel) {
+function unlockScroll(panel) {
     if (!modals.delete(panel) || modals.size) return
     document.documentElement.style.overflow = previousOverflow
 }
@@ -36,12 +36,18 @@ function owned(root, selector) {
     )
 }
 
+function observeChildren(root, update) {
+    const observer = new MutationObserver(update)
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+}
+
 function afterExit(panel, callback) {
     panel.dataset.ending = ''
     Promise.allSettled(panel.getAnimations().map((animation) => animation.finished)).then(callback)
 }
 
-function focusInPlace(element) {
+export function focusInPlace(element) {
     element?.focus({ preventScroll: true })
 }
 
@@ -57,6 +63,14 @@ export function slotControl(element) {
 
 export function dialog(initial = false, modal = true) {
     let closing = 0
+    let activePanel, stopObserving, stopMorphing
+    function releasePanel() {
+        stopObserving?.()
+        stopMorphing?.()
+        stopObserving = stopMorphing = null
+        unlockScroll(activePanel)
+        activePanel = null
+    }
     return {
         opened: initial,
         returnFocus: null,
@@ -68,22 +82,34 @@ export function dialog(initial = false, modal = true) {
             this.$nextTick(() => this.sync(this.opened))
         },
         sync(value) {
-            if (!this.panel?.isConnected) return
+            const panel = this.panel
+            if (!panel?.isConnected) return
             if (value) {
                 closing++
-                delete this.panel.dataset.ending
+                delete panel.dataset.ending
             }
-            if (value && !this.panel.open) {
-                modal ? this.panel.showModal() : this.panel.show()
-                if (modal) lockScroll(this.panel)
+            if (value && !panel.open) {
+                modal ? panel.showModal() : panel.show()
+                activePanel = panel
+                if (modal) lockScroll(panel)
+                // The browser owns the open attribute while Blade updates the rest of the panel.
+                stopMorphing = window.Livewire?.hook('morph.updating', ({ el, toEl }) => {
+                    if (el === panel && panel.open) toEl.setAttribute('open', '')
+                })
+                stopObserving = observeChildren(this.$root, () => {
+                    if (panel.isConnected) return
+                    releasePanel()
+                    if (this.panel && this.opened) this.sync(true)
+                    else this.closed(panel)
+                })
             }
-            if (!value && this.panel.open) {
+            if (!value && panel.open) {
                 const attempt = ++closing
-                afterExit(this.panel, () => {
-                    if (attempt !== closing || this.opened || !this.panel?.isConnected) return
-                    this.panel.close()
-                    delete this.panel.dataset.ending
-                    unlockScroll(this.panel)
+                afterExit(panel, () => {
+                    if (attempt !== closing || this.opened || !panel.isConnected) return
+                    panel.close()
+                    delete panel.dataset.ending
+                    releasePanel()
                 })
             }
         },
@@ -98,9 +124,13 @@ export function dialog(initial = false, modal = true) {
             this.opened ? this.close() : this.open()
         },
         closed() {
-            unlockScroll(this.panel)
+            if (this.panel?.open) return
+            releasePanel()
             this.opened = false
-            this.returnFocus?.focus()
+            const trigger = this.returnFocus?.isConnected
+                ? this.returnFocus
+                : slotControl(owned(this.$root, '[data-ui-trigger]'))
+            focusInPlace(trigger)
         },
         backdrop(event) {
             if (event.target !== this.panel || this.panel.role === 'alertdialog') return
@@ -115,8 +145,8 @@ export function dialog(initial = false, modal = true) {
         },
         destroy() {
             closing++
-            unlockScroll(this.panel)
-            if (this.panel?.open) this.panel.close()
+            if (activePanel?.open) activePanel.close()
+            releasePanel()
         },
     }
 }
@@ -144,6 +174,7 @@ export function popover() {
         referenceElement,
         referenceBounds,
         pointerOffset,
+        alignedViewport,
         alignmentScroll,
         morphListeners = [],
         hoverTimer,
@@ -151,7 +182,7 @@ export function popover() {
         closing = 0
     return {
         opened: false,
-        pointingToOption: false,
+        navigate: navigatePopupList,
         pointerFocus: false,
         get panel() {
             return owned(overlay, '[data-ui-panel]')
@@ -199,6 +230,7 @@ export function popover() {
             if (popovers.delete(trackedPanel) && !popovers.size)
                 document.removeEventListener('keydown', handlePopoverKey, true)
             trackedPanel = null
+            alignedViewport = null
             observer?.disconnect()
             observer = null
             visibilityObserver?.disconnect()
@@ -240,14 +272,9 @@ export function popover() {
             this.opened = true
             this.position()
             this.track()
-            if (panel.dataset.slot === 'combobox-content') {
-                if (!wasOpen)
-                    this.highlightOption(
-                        enabled(panel, '[role="option"][aria-selected="true"]').at(-1),
-                    )
-                if (focus) focusInPlace(overlay.querySelector('input[role="combobox"]'))
-                return
-            }
+            this.focusOnOpen(panel, focus, focusLast, wasOpen)
+        },
+        focusOnOpen(panel, focus, focusLast) {
             const role = panel.role
             let activeItem =
                 role === 'listbox'
@@ -269,7 +296,7 @@ export function popover() {
                         ? enabled(panel, '[role="option"],[role^="menuitem"]').at(-1)
                         : null) ??
                     panel.querySelector(
-                        'input:enabled,button:enabled,a[href],[tabindex="0"],[tabindex][aria-selected=true]',
+                        'input:enabled:not([type=hidden]),select:enabled,textarea:enabled,button:enabled,a[href],[tabindex="0"],[tabindex][aria-selected=true]',
                     ) ??
                     panel
                 if (target === panel && !panel.hasAttribute('tabindex')) panel.tabIndex = -1
@@ -311,6 +338,9 @@ export function popover() {
         showAt(event) {
             const bounds = this.trigger.getBoundingClientRect()
             this.open(false, { x: event.clientX - bounds.left, y: event.clientY - bounds.top })
+        },
+        selectedOption(panel) {
+            return panel.querySelector('[role="option"][aria-selected="true"]')
         },
         position() {
             const floating = this.panel
@@ -356,7 +386,7 @@ export function popover() {
                 !trigger.closest('[data-touch]') &&
                 anchor.top >= 20 &&
                 anchor.bottom <= innerHeight - 20 &&
-                (floating.querySelector('[role="option"][aria-selected="true"]') ??
+                (this.selectedOption(floating) ??
                     floating.querySelector('[role="option"]:not(:disabled)'))
             const ratio = devicePixelRatio || 1
             const anchorWidth =
@@ -383,14 +413,9 @@ export function popover() {
             const computed = getComputedStyle(floating)
             const panel = { width: parseFloat(computed.width), height: parseFloat(computed.height) }
             const opposite = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' }[side]
-            if (
-                horizontal &&
-                ['popover-content', 'hover-card-content', 'tooltip-content'].includes(
-                    dataset.slot,
-                ) &&
-                panel.width > Math.max(space.left, space.right)
-            ) {
-                placedSide = space.bottom >= panel.height ? 'bottom' : 'top'
+            if (horizontal && panel.width > Math.max(space.left, space.right)) {
+                placedSide =
+                    space.bottom >= panel.height || space.bottom >= space.top ? 'bottom' : 'top'
             } else if (
                 space[side] < (horizontal ? panel.width : panel.height) &&
                 space[opposite] > space[side]
@@ -436,14 +461,19 @@ export function popover() {
                 const center = anchor.top + anchor.height / 2
                 const rowCenter = row.top - popupBox.top + viewport.scrollTop + row.height / 2
                 const above = Math.min(rowCenter, center - 5)
-                const below = Math.min(viewport.scrollHeight - rowCenter, innerHeight - center - 5)
+                // The combobox can have a fixed search field above its scrollable options.
+                const contentHeight =
+                    popupBox.height - viewport.clientHeight + viewport.scrollHeight
+                const below = Math.min(contentHeight - rowCenter, innerHeight - center - 5)
                 setPixels('--available-height', above + below)
                 panel.height = parseFloat(computed.height)
                 const before = Math.min(above, Math.max(panel.height / 2, panel.height - below))
                 top = center - before
                 const scroll = Math.round(rowCenter - before)
                 // Keep the opening alignment without undoing subsequent wheel or keyboard scrolling.
-                if (scroll !== alignmentScroll) viewport.scrollTop = scroll
+                if (viewport !== alignedViewport || scroll !== alignmentScroll)
+                    viewport.scrollTop = scroll
+                alignedViewport = viewport
                 alignmentScroll = scroll
                 const value = trigger.querySelector('[data-slot="select-value"]')
                 const text = alignedItem.querySelector('[data-slot="option-text"]')
@@ -457,10 +487,7 @@ export function popover() {
                 placedSide = 'bottom'
             }
             dataset.side = placedSide
-            const clampedLeft =
-                !pointerOffset && ['left', 'right'].includes(placedSide)
-                    ? left
-                    : clamp(left, 5, innerWidth - panel.width - 5)
+            const clampedLeft = clamp(left, 5, innerWidth - panel.width - 5)
             const clampedTop = clamp(top, 5, innerHeight - panel.height - 5)
             const preserveFraction = alignedItem || dataset.slot === 'navigation-menu-positioner'
             Object.assign(style, {
@@ -502,138 +529,6 @@ export function popover() {
             setPixels('--ui-arrow-x', arrowX)
             setPixels('--ui-arrow-y', arrowY)
         },
-        highlightOption(option, pointer = false) {
-            if (!this.panel || option?.matches(':disabled,[aria-disabled="true"]')) return
-            this.pointingToOption = pointer
-            if (!pointer) option?.scrollIntoView({ block: 'nearest' })
-            this.panel
-                .querySelectorAll('[role="option"]')
-                .forEach((item) => item.toggleAttribute('data-highlighted', item === option))
-            const input = overlay.querySelector('input[role="combobox"]')
-            if (option?.id) input?.setAttribute('aria-activedescendant', option.id)
-            else input?.removeAttribute('aria-activedescendant')
-        },
-        navigateChips(event) {
-            const input = this.$root.querySelector('.ui-combobox-multiple input[role="combobox"]')
-            if (!input || input.disabled || input.readOnly) return false
-            const chips = [...this.$root.querySelectorAll('[data-slot="combobox-chip"]')]
-            const current = chips.indexOf(event.target.closest('[data-slot="combobox-chip"]'))
-            const previous =
-                getComputedStyle(input).direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
-            const next = previous === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft'
-            if (
-                current === -1 &&
-                event.key === 'Backspace' &&
-                event.target === input &&
-                input.value === '' &&
-                chips.length
-            ) {
-                event.preventDefault()
-                this.highlightOption(null)
-                this.$wire.removeLast()
-                return true
-            }
-            let destination
-            if (current === -1) {
-                if (
-                    event.key !== previous ||
-                    event.target !== input ||
-                    input.selectionStart !== 0 ||
-                    !chips.length
-                )
-                    return false
-                destination = chips.length - 1
-            } else if (['Backspace', 'Delete'].includes(event.key)) {
-                event.preventDefault()
-                event.stopPropagation()
-                this.highlightOption(null)
-                const index = Math.min(current, chips.length - 2)
-                this.$wire.choose(JSON.parse(chips[current].dataset.value)).then(() => {
-                    const remaining = this.$root.querySelectorAll('[data-slot="combobox-chip"]')
-                    focusInPlace(remaining[index] ?? input)
-                })
-                return true
-            } else if (event.key === previous) destination = current - 1
-            else if (event.key === next) destination = current + 1
-            else if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
-                focusInPlace(input)
-                this.open(false)
-                destination = -1
-            } else if (['Enter', ' '].includes(event.key) && event.target === chips[current])
-                destination = -1
-            else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-                focusInPlace(input)
-                return false
-            } else return false
-            event.preventDefault()
-            event.stopPropagation()
-            focusInPlace(chips[destination] ?? input)
-            return true
-        },
-        navigate(event) {
-            if (event.defaultPrevented) return
-            const panel = this.panel
-            if (panel?.dataset.slot === 'combobox-content') {
-                if (this.navigateChips(event)) return
-                if (event.key === 'Tab') {
-                    this.close()
-                    return
-                }
-                if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return
-                const wasOpen = this.opened
-                if (!wasOpen && event.key === 'Enter') return
-                if (!wasOpen) this.open(false)
-                const options = enabled(panel, '[role="option"]')
-                const current = options.findIndex((item) => item.hasAttribute('data-highlighted'))
-                if (event.key === 'Enter' && current === -1) {
-                    this.close()
-                    return
-                }
-                event.preventDefault()
-                event.stopPropagation()
-                if (event.key === 'Enter') {
-                    options[current].click()
-                    this.close(true)
-                    return
-                }
-                if (!wasOpen && current !== -1) return
-                const index =
-                    event.key === 'ArrowDown'
-                        ? (current + 1) % options.length
-                        : current === -1
-                          ? options.length - 1
-                          : (current - 1 + options.length) % options.length
-                this.highlightOption(options[index] ?? null)
-                return
-            }
-            if (
-                event.target.matches('input:not([type=checkbox],[type=radio]),textarea') &&
-                !['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)
-            )
-                return
-            const items = enabled(panel, '[role="option"],[role^="menuitem"],button').filter(
-                (item) => item.closest('[data-ui-panel]') === panel,
-            )
-            if (moveFocus(event, items)) event.stopPropagation()
-            if (event.key === 'ArrowLeft' && this.$root.hasAttribute('data-ui-submenu')) {
-                event.preventDefault()
-                event.stopPropagation()
-                this.close(true)
-            }
-            if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && event.key !== ' ') {
-                const index = items.indexOf(document.activeElement)
-                const rotated = [...items.slice(index + 1), ...items.slice(0, index + 1)]
-                rotated
-                    .find((item) =>
-                        (item.textContent || item.parentElement.textContent)
-                            .trim()
-                            .toLowerCase()
-                            .startsWith(event.key.toLowerCase()),
-                    )
-                    ?.focus()
-            }
-            if (event.key === 'Tab') this.close()
-        },
         destroy() {
             closing++
             clearTimeout(hoverTimer)
@@ -645,127 +540,136 @@ export function popover() {
 
 export function registerTrigger(Alpine) {
     Alpine.directive('ui-trigger', (element, { expression }, { evaluate, cleanup }) => {
-        const control = slotControl(element)
+        let control = slotControl(element)
         if (!control) throw new Error(JSON.parse(element.dataset.uiErrors).control)
         const operation = evaluate(expression)
-        const panelRole = () => evaluate('panel?.role')
-        const bind = (attributes) => cleanup(Alpine.bind(control, attributes))
-        if (operation === 'navigation') {
-            const value = element.dataset.uiNavigationValue
-            const scope = { navigationValue: value }
-            bind({
-                ':aria-controls': () => evaluate('opened ? panel?.id : null'),
-                ':popovertarget': () => evaluate('opened ? panel?.id : null'),
-                ':aria-expanded': () =>
-                    String(evaluate('opened && active === navigationValue', { scope })),
-                ':data-panel-open': () =>
-                    evaluate('opened && active === navigationValue', { scope }) ? '' : null,
-                '@pointerenter': (event) => {
-                    if (event.pointerType !== 'touch')
-                        evaluate('schedule(navigationValue)', { scope })
-                },
-                '@mousemove': () => evaluate('keyboardFocus = false'),
-                '@click': (event) => {
-                    event.preventDefault()
-                    evaluate('toggleItem(navigationValue, navigationKeyboard)', {
-                        scope: { ...scope, navigationKeyboard: event.detail === 0 },
-                    })
-                },
-            })
-            return
-        }
-        if (panelRole() === 'tooltip') {
-            const describedby = control.getAttribute('aria-describedby')
-            bind({
-                ':aria-describedby': () =>
-                    [describedby, evaluate('panel?.id')].filter(Boolean).join(' '),
-            })
-            return
-        }
-        let pointerHandled = false
-        if (!['open', 'close', 'toggle', 'contextmenu'].includes(operation))
-            throw new Error(JSON.parse(element.dataset.uiErrors).operation)
-        const bindings = {
-            ':popovertarget'() {
-                return panelRole() === 'listbox' ? evaluate('panel?.id') : null
-            },
-            '@pointerdown'(event) {
-                pointerHandled = false
-                if (
-                    operation !== 'toggle' ||
-                    event.button !== 0 ||
-                    event.pointerType !== 'mouse' ||
-                    control.matches(':disabled,[aria-disabled="true"]') ||
-                    panelRole() !== 'listbox'
-                )
-                    return
-                pointerHandled = true
-                evaluate('toggle(false)')
-            },
-            '@click'(event) {
-                if (pointerHandled && event.detail > 0) {
-                    pointerHandled = false
-                    event.preventDefault()
-                    return
-                }
-                pointerHandled = false
-                if (control.matches(':disabled,[aria-disabled="true"]')) return
-                event.preventDefault()
-                const pointerMenu = event.detail > 0 && ['menu', 'listbox'].includes(panelRole())
-                evaluate(
-                    `${operation}(${operation === 'close' ? 'true' : pointerMenu ? 'false' : ''})`,
-                )
-            },
-            ':aria-controls'() {
-                evaluate('opened')
-                return operation === 'close' ? null : evaluate('panel?.id')
-            },
-            ':aria-haspopup'() {
-                const role = panelRole()
-                return operation === 'close'
-                    ? null
-                    : ['menu', 'listbox', 'dialog', 'alertdialog'].includes(role)
-                      ? role
-                      : control.getAttribute('aria-haspopup')
-            },
-            ':aria-expanded'() {
-                return operation === 'close' || evaluate('$root.dataset.slot') === 'sidebar'
-                    ? null
-                    : String(evaluate('opened'))
-            },
-            ':data-panel-open'() {
-                return evaluate('opened') ? '' : null
-            },
-            '@keydown'(event) {
-                if (
-                    operation !== 'close' &&
-                    element.closest('[data-ui-submenu]') &&
-                    event.key === 'ArrowRight'
-                ) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    evaluate('open()')
-                    return
-                }
-                if (
-                    operation === 'close' ||
-                    !['ArrowDown', 'ArrowUp'].includes(event.key) ||
-                    control.matches(':disabled,[aria-disabled="true"]')
-                )
-                    return
-                event.preventDefault()
-                evaluate(event.key === 'ArrowUp' ? 'open(true, null, true)' : 'open()')
-            },
-        }
-        if (operation === 'contextmenu') {
-            delete bindings['@pointerdown']
-            delete bindings['@click']
-            delete bindings['@keydown']
-        }
-        bind(bindings)
-        queueMicrotask(() => {
-            const panel = evaluate('panel')
-            if (operation !== 'close' && panel?.id) control.setAttribute('aria-controls', panel.id)
-        })
+        let unbind = bindTrigger(Alpine, element, control, operation, evaluate)
+        cleanup(
+            observeChildren(element, () => {
+                const next = slotControl(element)
+                if (next === control) return
+                unbind?.()
+                control = next
+                unbind = next && bindTrigger(Alpine, element, next, operation, evaluate)
+            }),
+        )
+        cleanup(() => unbind?.())
     })
+}
+
+function bindTrigger(Alpine, element, control, operation, evaluate) {
+    const panelRole = () => evaluate('panel?.role')
+    if (operation === 'navigation') {
+        const value = element.dataset.uiNavigationValue
+        const scope = { navigationValue: value }
+        return Alpine.bind(control, {
+            ':aria-controls': () => evaluate('opened ? panel?.id : null'),
+            ':popovertarget': () => evaluate('opened ? panel?.id : null'),
+            ':aria-expanded': () =>
+                String(evaluate('opened && active === navigationValue', { scope })),
+            ':data-panel-open': () =>
+                evaluate('opened && active === navigationValue', { scope }) ? '' : null,
+            '@pointerenter': (event) => {
+                if (event.pointerType !== 'touch') evaluate('schedule(navigationValue)', { scope })
+            },
+            '@mousemove': () => evaluate('keyboardFocus = false'),
+            '@click': (event) => {
+                event.preventDefault()
+                evaluate('toggleItem(navigationValue, navigationKeyboard)', {
+                    scope: { ...scope, navigationKeyboard: event.detail === 0 },
+                })
+            },
+        })
+    }
+    if (panelRole() === 'tooltip') {
+        const describedby = control.getAttribute('aria-describedby')
+        return Alpine.bind(control, {
+            ':aria-describedby': () =>
+                [describedby, evaluate('panel?.id')].filter(Boolean).join(' '),
+        })
+    }
+    let pointerHandled = false
+    if (!['open', 'close', 'toggle', 'contextmenu'].includes(operation))
+        throw new Error(JSON.parse(element.dataset.uiErrors).operation)
+    const bindings = {
+        ':popovertarget'() {
+            return panelRole() === 'listbox' ? evaluate('panel?.id') : null
+        },
+        '@pointerdown'(event) {
+            pointerHandled = false
+            if (
+                operation !== 'toggle' ||
+                event.button !== 0 ||
+                event.pointerType !== 'mouse' ||
+                control.matches(':disabled,[aria-disabled="true"]') ||
+                panelRole() !== 'listbox'
+            )
+                return
+            pointerHandled = true
+            evaluate('toggle(false)')
+        },
+        '@click'(event) {
+            if (pointerHandled && event.detail > 0) {
+                pointerHandled = false
+                event.preventDefault()
+                return
+            }
+            pointerHandled = false
+            if (control.matches(':disabled,[aria-disabled="true"]')) return
+            event.preventDefault()
+            const pointerMenu = event.detail > 0 && ['menu', 'listbox'].includes(panelRole())
+            evaluate(`${operation}(${operation === 'close' ? 'true' : pointerMenu ? 'false' : ''})`)
+        },
+        ':aria-controls'() {
+            evaluate('opened')
+            return operation === 'close' ? null : evaluate('panel?.id')
+        },
+        ':aria-haspopup'() {
+            const role = panelRole()
+            return operation === 'close'
+                ? null
+                : ['menu', 'listbox', 'dialog', 'alertdialog'].includes(role)
+                  ? role
+                  : control.getAttribute('aria-haspopup')
+        },
+        ':aria-expanded'() {
+            return operation === 'close' || evaluate('$root.dataset.slot') === 'sidebar'
+                ? null
+                : String(evaluate('opened'))
+        },
+        ':data-panel-open'() {
+            return evaluate('opened') ? '' : null
+        },
+        '@keydown'(event) {
+            if (
+                operation !== 'close' &&
+                element.closest('[data-ui-submenu]') &&
+                event.key === 'ArrowRight'
+            ) {
+                event.preventDefault()
+                event.stopPropagation()
+                evaluate('open()')
+                return
+            }
+            if (
+                operation === 'close' ||
+                !['ArrowDown', 'ArrowUp'].includes(event.key) ||
+                control.matches(':disabled,[aria-disabled="true"]')
+            )
+                return
+            event.preventDefault()
+            evaluate(event.key === 'ArrowUp' ? 'open(true, null, true)' : 'open()')
+        },
+    }
+    if (operation === 'contextmenu') {
+        delete bindings['@pointerdown']
+        delete bindings['@click']
+        delete bindings['@keydown']
+    }
+    const unbind = Alpine.bind(control, bindings)
+    queueMicrotask(() => {
+        const panel = evaluate('panel')
+        if (operation !== 'close' && panel?.id) control.setAttribute('aria-controls', panel.id)
+    })
+    return unbind
 }

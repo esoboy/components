@@ -53,6 +53,8 @@ Select、Combobox、Command、Questionnaire、TagsInput、Calendar、DatePicker�
 
 `<button type="reset">` 恢复本次挂载的初值；受控模式只请求父级恢复初值。新 key 或销毁后重新挂载才使用最新 initial-value。禁用字段不参加 FormData；readonly 仍参加。渲染时校验配置与传入值，浏览器限制输入；项目必须在所属 Livewire 保存动作中验证业务数据与权限，客户端 readonly/min/max 不替代服务端验证。
 
+控件可以放在表单外。给控件传入 `form="profile"` 和 `name`，浏览器会将字段提交给 `<form id="profile">`。这同样适用于 Editor、Cropper、Signature、Rating 和选择控件。
+
 NumberInput 允许暂时超出范围的输入。例如，最小值为 10 时可以先键入 `2`，再键入 `5`。失焦或按 Enter 时，仍超出范围的数值会调整到最近的边界。Editor 重置时按 `output-type` 发送挂载时的正文，受控模式下表单继续提交父级接受的值。
 
 ## 稳定身份与属性
@@ -67,6 +69,8 @@ NumberInput 允许暂时超出范围的输入。例如，最小值为 10 时可�
 ```
 
 `id` 与 ARIA 描述传到输入或触发控件，样式等容器属性保留在状态控件容器。`name` 在选择类组件中输出隐藏 input；多值使用 `name[]`，无选择不输出该字段。单独依赖原生表单提交时，项目应明确空值语义。绑定的普通输入若省略 id，会根据 model 属性生成 id；重复呈现同一 model 时仍须手动指定唯一 id。
+
+NumberInput 的 `required`、`placeholder`、`form` 和 ARIA 属性传到原生数字输入框。OTP 和 Slider 有多个输入时，首项沿用显式或由 model 生成的 id，后续项依次加上 `-1`、`-2`。只提供 `name` 时省略输入的 id，仍可提交表单。需要用外部 `<label for="…">` 关联控件时，请显式传入 `id`。
 
 ## 选项与树
 
@@ -99,6 +103,8 @@ Combobox 的 `auto-highlight` 在服务端返回搜索结果后高亮首个可�
 Calendar / DatePicker 接受 `Y-m-d`，`multiple` 为日期列表，`range` 为有序的 [开始日期, 结束日期]（未完成时为单元素列表），与 multiple 互斥；允许同一天起止。`min` / `max` 为可选 ISO 边界。支持 number-of-months=1–12、caption-layout=label/dropdown、week-starts-on=0–6、show-week-number、disabled-dates；区间不能穿过禁用日期。显示月份独立保留，父级修改选中日期不会强行重置用户正在浏览的月份。NumberInput 接受数值或 null，支持 min / max / step。TagsInput 接受去重字符串列表，支持 max / max-length。Transfer 固定接受多值列表，全选只移动未禁用的项目，不提供 multiple / placeholder。Tree、TreeSelect、Cascader 只接收 nodes，不接收 options；Tree 没有 placeholder，TreeSelect / Cascader 仍支持。
 
 原生表单中，Calendar 和 DatePicker 的单日使用 `name`，多选和区间使用 `name[]`。区间只选起点时提交一项，选完后按起止顺序提交两项。仅指定未来的 `min` 或过去的 `max` 时，日历会打开到可浏览范围内，选中值保持原样。
+
+区间还只有起点时，如果父级收紧边界或禁用该日，下次点击的可选日期成为新起点。再次选择终点后提交完整区间。
 
 DatePicker 和 DatetimePicker 的标题默认使用 Calendar 的月份、年份下拉框。切换年月只更新浏览月份，弹层保持打开。Calendar 默认使用 `caption-layout="label"`，显式设置 `dropdown` 可启用相同标题。Select 和 NativeSelect 均支持 `size="default"`（32px）及 `size="sm"`（28px）。
 
@@ -151,7 +157,7 @@ Select 等状态控件的默认 slot 和 `footer` 是控件下方的辅助区域
 <x-ui::pagination :paginator="$invoices" :max-pages="5" jumpable />
 ```
 
-传入 Laravel 分页对象即可生成导航。对于有总页数的分页，`max-pages` 限定可见数字页码数，`jumpable` 打开手动跳页，输入有效页码后可按回车或点击跳转。普通 Blade 页面沿用分页对象的 URL、查询参数和片段，使用 `WithPagination` 的 Livewire 页面按对应页名更新。简单分页与游标分页使用上一页和下一页。手写链接使用 `pagination.content`、`pagination.item` 和 `pagination.link` 组合。[分页调用](components.md#pagination)
+传入 Laravel 分页对象即可生成导航。对于有总页数的分页，`max-pages` 限定可见数字页码数，`jumpable` 打开手动跳页，输入有效页码后可按回车或点击跳转。使用 `WithPagination` 的 Livewire 宿主按对应页名更新。普通 Blade 页面和未提供分页动作的 Livewire 宿主沿用分页对象的 URL、查询参数和片段。DataTable 默认页脚遵循相同规则。简单分页与游标分页使用上一页和下一页。手写链接使用 `pagination.content`、`pagination.item` 和 `pagination.link` 组合。[分页调用](components.md#pagination)
 
 ## 数据表格
 
@@ -175,7 +181,7 @@ Select 等状态控件的默认 slot 和 `footer` 是控件下方的辅助区域
         <x-ui::data-table.column-settings />
     </x-slot:toolbar>
 
-    @foreach ($orders as $order)
+    @foreach ($component->records as $order)
         <x-ui::data-table.cell column="status" :row="$order">
             <x-ui::badge>{{ $order->status_label }}</x-ui::badge>
         </x-ui::data-table.cell>
@@ -195,6 +201,8 @@ Select 等状态控件的默认 slot 和 `footer` 是控件下方的辅助区域
     </x-slot:selection>
 </x-ui::data-table>
 ```
+
+自定义单元格在表格的默认插槽中遍历 `$component->records`。这是表格已读取的当页记录，数组、集合、分页器和只能遍历一次的 Generator 使用相同写法。
 
 | 配置 | 调用约定 |
 | --- | --- |
@@ -248,7 +256,9 @@ Item Group、Attachment Group、Timeline、Trace、Message Scroller 和 Carousel
 
 ## 当前交互模式
 
-Cascader、Tree Select、Select 和 Combobox 的弹层默认贴着触发控件下缘展开，起始边对齐。Combobox 以整个输入组或外部触发按钮定位。父容器移动、滚动或 Livewire 重绘时，打开的弹层继续跟随控件。触发控件完全滚出可见区域后，弹层自动关闭。需要让选中项与触发按钮重合时，可向 Select 传入 `:align-item-with-trigger="true"`。
+Popover 中可以用 Tab 和 Shift+Tab 按页面顺序访问按钮和输入框。焦点移出时关闭弹层，Escape 关闭最内层并把焦点还给其触发控件。菜单和列表框支持方向键导航。
+
+Cascader、Tree Select、Select 和 Combobox 的弹层默认贴着触发控件下缘展开，起始边对齐。Combobox 以整个输入组或外部触发按钮定位。父容器移动、滚动或 Livewire 重绘时，打开的弹层继续跟随控件。触发控件完全滚出可见区域后，弹层自动关闭。给 Select 或 Combobox 传入 `:align-item-with-trigger="true"`，可让选中项与触发控件的垂直中心对齐。Combobox 支持输入框内搜索和弹层内搜索，触摸打开或搜索结果为空时沿用普通弹层定位。
 
 Context Menu 在触发 slot 收到右键时打开，位置取自点击点相对于触发控件的偏移。靠近窗口边缘时菜单向有空间的一侧展开。键盘用户可聚焦触发控件并按 Shift+F10 或菜单键，Escape 关闭后焦点回到该控件。
 
@@ -257,7 +267,7 @@ Sheet / Drawer 的 content 支持 side=top/right/bottom/left，默认分别为 r
 Tabs 支持 orientation=horizontal/vertical，分别使用左右/上下方向键；选项值统一为字符串。ToggleGroup 支持 type=single/multiple，item 分别输出原生 radio/checkbox，绑定写在 item 上；同组共享 name，多值表单使用 name[]。组级 variant=default/outline、size=sm/default/lg 和 disabled 传递到 item；orientation=horizontal/vertical，spacing=0–12（每单位 .25rem）。Tabs.list 支持 variant=default/line。
 
 
-Slider 的值为数字或非空数字列表（最多 20 项），每个值必须在 min/max 内；支持 orientation、inverted 和 step。浏览器拖动/键盘只处理即时坐标与原生输入同步，绑定时由调用方 Livewire 保存权威值，非受控时保留原生输入缓冲；单向受控模式在拖动结束后请求父级接受。
+Slider 的值为数字或非空数字列表（最多 20 项），每个值必须在 min/max 内。支持 orientation、inverted 和 step。绑定时由调用方 Livewire 保存权威值，单向受控模式在拖动结束后请求父级接受。非受控模式下，即使父级传入不同长度的 `initial-value`，同一实例也会保留手柄数量、已编辑的值和表单重置初值。更换 `wire:key` 可按新的初值重新挂载。
 
 InputOtp 使用同一值协议，值为字符串；length=1–12，pattern=numeric/alphanumeric，separator-after=0 表示无分隔符，其他值表示指定格后的分组间隔。支持粘贴过滤、前后方向键、自动移焦、只读/禁用；公开 slot 仍由父级管理。
 

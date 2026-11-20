@@ -32,7 +32,10 @@ function notices(inputs) {
         const match = input.match(/^(.*node_modules\/(?:@[^/]+\/)?[^/]+)\//)
         if (match) packages.add(match[1].replace(/^node_modules\//, ''))
     }
-    const texts = [readFileSync('resources/js/editor/tiptap-ui/LICENSE', 'utf8')]
+    const texts = [
+        'shadcn/ui\n' + readFileSync('resources/css/LICENSE.shadcn', 'utf8'),
+        readFileSync('resources/js/editor/tiptap-ui/LICENSE', 'utf8'),
+    ]
     for (const name of [...packages].sort()) {
         const directory = join('node_modules', name)
         const metadata = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))

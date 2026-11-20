@@ -62,6 +62,19 @@ it('supports controlled navigation and validates all items on final submit', fun
         ->assertNotDispatched('questionnaire-submitted');
 });
 
+it('requests the initial enabled question on reset while the caller owns the displayed item', function (string $initial, string $expected) {
+    Livewire::test(Questionnaire::class, ['items' => questionnaireItems(), 'item' => 'text', 'initialItem' => $initial])
+        ->call('next')->assertSet('invalid', 'text')
+        ->call('resetAnswers')->assertDispatched('item-changed', item: $expected)
+        ->assertDispatched('questionnaire-focus', invalid: false)
+        ->assertSet('position', 2)->assertSet('invalid', null);
+})->with([['multi', 'multi'], ['missing', 'single'], ['omitted', 'single']]);
+
+it('resets a questionnaire with no enabled questions', function () {
+    Livewire::test(Questionnaire::class, ['items' => [['name' => 'gone', 'prompt' => 'Gone', 'disabled' => true]]])
+        ->call('resetAnswers')->assertDispatched('item-changed', item: '')->assertSet('answers', []);
+});
+
 it('filters disabled or unknown answers and rejects duplicate question identifiers', function () {
     Livewire::test(Questionnaire::class, ['items' => questionnaireItems(), 'initialValue' => ['single' => ['choices' => ['b', 'missing']]]])
         ->assertSet('answers.single.status', 'unanswered')->call('skip')->assertSet('position', 0);

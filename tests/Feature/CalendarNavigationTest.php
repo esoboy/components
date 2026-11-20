@@ -39,6 +39,22 @@ it('opens one-sided calendars inside their navigation window', function (string 
     }
 })->with([[Calendar::class, 'label'], [DatePicker::class, 'dropdown']]);
 
+it('starts a fresh range when its first day is no longer selectable', function (string $component, array $limits, string $start, string $day) {
+    $props = ['range' => true, 'name' => 'period', ...$limits];
+    $calendar = Livewire::test($component, [...$props, 'initialValue' => [$start]])
+        ->call('choose', $day)->assertSet('value', [$day])->assertDispatched('value-changed', value: [$day]);
+    $fields = HTMLDocument::createFromString($calendar->html(), LIBXML_NOERROR)->querySelectorAll('input[name="period[]"]');
+    expect($fields->length)->toBe(1)->and($fields->item(0)->getAttribute('value'))->toBe($day);
+    $calendar->call('choose', $day)->assertSet('value', [$day, $day]);
+
+    Livewire::test($component, [...$props, 'mode' => 'controlled', 'externalValue' => [$start]])
+        ->call('choose', $day)->assertDispatched('value-changed', value: [$day])->assertSet('externalValue', [$start]);
+})->with(['calendar' => [Calendar::class], 'date picker' => [DatePicker::class]])->with([
+    'later minimum' => [['min' => '2027-09-10'], '2027-07-12', '2027-09-15'],
+    'earlier maximum' => [['max' => '2027-07-31'], '2027-09-15', '2027-07-12'],
+    'disabled first day' => [['disabledDates' => ['2027-07-12']], '2027-07-12', '2027-07-14'],
+]);
+
 it('uses the same two-month window for the caption and the navigation arrows', function () {
     $calendar = Livewire::test(Calendar::class, [
         'captionLayout' => 'dropdown', 'numberOfMonths' => 2, 'initialMonth' => '2028-01-01',

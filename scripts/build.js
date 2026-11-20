@@ -1,4 +1,5 @@
 import { build } from 'esbuild'
+import { minify } from 'terser'
 import { gzipSync } from 'node:zlib'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { buildIcons } from './icons.js'
@@ -16,7 +17,7 @@ for (const [name, entry, budget] of [
     const result = await build({
         entryPoints: [entry],
         bundle: true,
-        minify: true,
+        minify: name === 'editor',
         format: 'iife',
         target: 'es2022',
         write: false,
@@ -27,14 +28,16 @@ for (const [name, entry, budget] of [
         legalComments: 'inline',
     })
     if (result.outputFiles.length !== 1) throw new Error(`${name} must be a complete single file.`)
-    const file = result.outputFiles[0],
-        gzip = gzipSync(file.contents).length
+    const file = result.outputFiles[0]
+    const contents =
+        name === 'ui' ? Buffer.from((await minify(file.text, { ecma: 2022 })).code) : file.contents
+    const gzip = gzipSync(contents).length
     if (gzip > budget) throw new Error(`${name}: ${gzip} / ${budget} gzip bytes.`)
     if (Object.values(result.metafile.outputs).some((output) => output.imports.length))
         throw new Error('Runtime external imports are forbidden.')
-    writeFileSync(file.path, file.contents)
+    writeFileSync(file.path, contents)
     for (const input of Object.keys(result.metafile.inputs)) inputs.add(input)
-    console.log(JSON.stringify({ module: name, javascript: file.contents.length, gzip, budget }))
+    console.log(JSON.stringify({ module: name, javascript: contents.length, gzip, budget }))
 }
 
 buildIcons()
