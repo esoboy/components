@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0 - 2026-11-23
+## v1.0.3 - 2026-11-23
 
 - `media-preview` 取代 `image-preview`，支持图片、音频和视频。升级时将旧组件改为 `<x-ui::media-preview type="image">`，保留 `src` 和 `alt`，将 `<x-slot:trigger>` 中的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
 - 新增 `icon-select`，可按名称搜索 Lucide 图标，使用分页按钮或键盘浏览，并通过 `wire:model` 或原生表单取得选中的图标名称。

@@ -46,7 +46,7 @@ php artisan vendor:publish --tag=ui-assets --force
 
 静态副本位于 `public/vendor/esoboy/ui/`。升级后，过期副本会自动切换到当前包的路由，再次发布即可更新静态文件。
 
-从 1.x 升级到 2.0 时，将 `<x-ui::image-preview>` 改为 `<x-ui::media-preview type="image">`，保留原来的 `src` 和 `alt`，并将 `<x-slot:trigger>` 的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
+从 `v1.0.2` 或更早版本升级到 `v1.0.3` 时，将 `<x-ui::image-preview>` 改为 `<x-ui::media-preview type="image">`，保留原来的 `src` 和 `alt`，并将 `<x-slot:trigger>` 的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
 
 ### Laravel Boost
 
