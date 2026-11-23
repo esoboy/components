@@ -6,22 +6,107 @@ function searchInput(panel) {
 }
 
 export function combobox() {
+    let pendingSelection
     return Object.assign(popover(), {
         pointingToOption: false,
+        pendingArrow: null,
+        browseChanged: false,
+        chooseIcon(event) {
+            const option = event.target.closest('button[role="option"]:enabled')
+            if (!option) return
+            this.close(true, false)
+            return this.selectIcon(option.value)
+        },
+        editIconQuery(value) {
+            this.browseChanged = true
+            if (pendingSelection) pendingSelection.query = value
+        },
+        displayIcon(value, keepQuery = false) {
+            const { iconCaption, iconField } = this.$refs
+            if (iconCaption) iconCaption.value = value ?? iconCaption.dataset.placeholder
+            else if (!keepQuery) searchInput(this.panel).value = value ?? ''
+            if (iconField) {
+                iconField.value = value ?? ''
+                iconField.disabled = this.$wire.disabled || value === null
+            }
+        },
+        async selectIcon(value) {
+            const wire = this.$wire
+            if (wire.disabled || wire.readonly) return
+            this.browseChanged = false
+            if (wire.mode === 'controlled') {
+                return value === null ? wire.clearSelection() : wire.choose(value)
+            }
+            const root = wire.$el
+            const selection = { value }
+            pendingSelection = selection
+            this.displayIcon(value)
+            if (wire.mode === 'bound') wire.$set('value', value, false)
+            try {
+                await wire.commitIcon(value)
+            } catch {
+                if (
+                    pendingSelection === selection &&
+                    root.isConnected &&
+                    wire.mode === 'bound' &&
+                    wire.value === value
+                ) {
+                    wire.$set('value', root.dataset.confirmedIcon || null, false)
+                }
+            } finally {
+                if (pendingSelection === selection) {
+                    pendingSelection = null
+                    if (
+                        root.isConnected &&
+                        this.opened &&
+                        selection.query !== undefined &&
+                        (!wire.searching || wire.query !== selection.query)
+                    ) {
+                        wire.$set('query', selection.query)
+                    }
+                }
+                if (root.isConnected) {
+                    this.displayIcon(
+                        pendingSelection ? pendingSelection.value : wire.value,
+                        this.opened,
+                    )
+                }
+            }
+        },
+        finishBrowsing() {
+            if (this.browseChanged) {
+                if (pendingSelection) delete pendingSelection.query
+                this.$wire.finishSearch()
+            }
+            this.browseChanged = false
+        },
         selectedOption(panel) {
             return enabled(panel, '[role="option"][aria-selected="true"]').at(-1)
         },
         focusOnOpen(panel, focus, focusLast, wasOpen) {
-            if (!wasOpen) this.highlightOption(this.selectedOption(panel))
+            if (!wasOpen) {
+                this.pendingArrow = null
+                this.highlightOption(this.selectedOption(panel))
+            }
             if (focus) focusInPlace(searchInput(panel))
+        },
+        initializeOptions(list) {
+            if (!this.opened) return
+            if (this.pendingArrow || list.dataset.autoHighlight === 'true') {
+                const options = enabled(list, '[role="option"]')
+                this.highlightOption(options.at(this.pendingArrow === 'ArrowUp' ? -1 : 0))
+            } else this.highlightOption(null)
+            this.pendingArrow = null
         },
         highlightOption(option, pointer = false) {
             if (!this.panel || option?.matches(':disabled,[aria-disabled="true"]')) return
             this.pointingToOption = pointer
             if (!pointer) option?.scrollIntoView({ block: 'nearest' })
-            this.panel
-                .querySelectorAll('[role="option"]')
-                .forEach((item) => item.toggleAttribute('data-highlighted', item === option))
+            const previous = this.panel.querySelector('[role="option"][data-highlighted]')
+            if (previous !== option) {
+                previous?.removeAttribute('data-highlighted')
+                option?.setAttribute('data-highlighted', '')
+            }
             const input = searchInput(this.panel)
             if (option?.id) input?.setAttribute('aria-activedescendant', option.id)
             else input?.removeAttribute('aria-activedescendant')
@@ -87,6 +172,17 @@ export function combobox() {
             if (event.defaultPrevented) return
             const panel = this.panel
             if (this.navigateChips(event)) return
+            if (this.opened && ['PageUp', 'PageDown'].includes(event.key)) {
+                const button = panel.querySelector(`[aria-keyshortcuts="${event.key}"]`)
+                if (button) {
+                    event.preventDefault()
+                    if (!button.disabled) {
+                        this.pendingArrow = event.key === 'PageUp' ? 'ArrowUp' : 'ArrowDown'
+                        button.click()
+                    }
+                }
+                return
+            }
             if (event.key === 'Tab') {
                 this.close()
                 return

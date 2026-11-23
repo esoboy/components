@@ -34,6 +34,7 @@
   "heading": "<x-ui::heading>示例内容</x-ui::heading>",
   "hover-card": "<x-ui::hover-card><x-ui::hover-card.trigger><x-ui::button variant=\"outline\">打开\n            hover-card</x-ui::button></x-ui::hover-card.trigger><x-ui::hover-card.content aria-label=\"示例\">由 Blade\n        渲染的内容。</x-ui::hover-card.content></x-ui::hover-card>",
   "icon": "<x-ui::icon name=\"circle-check\" size=\"md\" />",
+  "icon-select": "<x-ui::icon-select name=\"icon\" initial-value=\"circle-check\" clearable aria-label=\"选择图标\" />",
   "image": "<x-ui::image src=\"/demo-landscape.svg\" alt=\"灰色山景\" />",
   "input-group": "<x-ui::input-group><x-ui::input-group.addon><x-ui::icon\n            name=\"search\" /></x-ui::input-group.addon><x-ui::input-group.input aria-label=\"搜索\"\n        placeholder=\"搜索…\" /></x-ui::input-group>",
   "input-otp": "<x-ui::input-otp id=\"example-otp\" aria-label=\"input-otp\" />",

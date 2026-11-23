@@ -13,6 +13,8 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
+    @elseif(request()->boolean('colors'))
+        <livewire:color-probe />
     @elseif(request()->boolean('state'))
         <livewire:state-probe />
     @elseif(request()->boolean('alignment'))

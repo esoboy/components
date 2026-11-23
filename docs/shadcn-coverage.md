@@ -7,11 +7,11 @@
 | 统计口径 | 数量 |
 | --- | ---: |
 | shadcn Components 目录项 | 66 |
-| 本库公开根组件 | 90 |
+| 本库公开根组件 | 91 |
 | shadcn 有直接对应入口 | 62 |
 | shadcn 部分对应 | 1（Typography） |
 | shadcn 缺失 | 3（Aspect Ratio、Chart、Direction） |
-| 本库扩展根组件 | 24 |
+| 本库扩展根组件 | 25 |
 | 本库基础封装根组件 | 4（heading、text、toaster、icon） |
 
 ## 官网完整对应表
@@ -101,6 +101,7 @@
 | [datetime-picker](../resources/views/components/datetime-picker/index.blade.php) | 本地日期时间选择 |
 | [description-list](../resources/views/components/description-list/index.blade.php) | 属性/描述列表 |
 | [editor](../resources/views/components/editor/index.blade.php) | 富文本编辑器 |
+| [icon-select](../resources/views/components/icon-select.blade.php) | 按名称搜索并选择 Lucide 图标 |
 | [image](../resources/views/components/image.blade.php) | 图片展示 |
 | [media-preview](../resources/views/components/media-preview/index.blade.php) | 图片、音频和视频预览 |
 | [mentions](../resources/views/components/mentions/index.blade.php) | 提及输入 |

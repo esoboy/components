@@ -4,7 +4,7 @@
 
 ## 唯一值来源
 
-Select、Combobox、Command、Questionnaire、TagsInput、Calendar、DatePicker、DatetimePicker、TimePicker、Tree、TreeSelect、Cascader、Transfer、Mentions 等独立状态控件使用以下三种值来源。
+Select、Combobox、IconSelect、Command、Questionnaire、TagsInput、Calendar、DatePicker、DatetimePicker、TimePicker、Tree、TreeSelect、Cascader、Transfer、Mentions 等独立状态控件使用以下三种值来源。
 
 | 调用 | 权威来源 | 交互后的行为 |
 | --- | --- | --- |
@@ -97,6 +97,14 @@ Combobox 在输入框内搜索，多选值显示在同一字段的 chips 中，c
 Combobox 的 `auto-highlight` 在服务端返回搜索结果后高亮首个可用选项。`search-in-popup` 将搜索框放入弹层，`search-placeholder` 设置该搜索框提示。选中后恢复选项标签，关闭搜索时保留已选值。多选标签保持值列表的顺序。方向键在标签间移动，Backspace / Delete 删除标签，Enter 选择后收起列表，列表关闭时 Escape 清空值。禁用与只读限制同样在服务端值变更入口执行。
 
 父级按搜索词替换 `options` 时，Combobox 保留正在输入的搜索词，以及已经取得的已选项标签。首次回填已有值时，将对应选项一并传入即可立即显示标签。多选项移出当前结果页后，用户仍可通过标签移除它。
+
+IconSelect 复用 Combobox 的搜索与单选交互。展开后每页显示最多 32 个图标及其正式名称，可用翻页按钮或 `PageUp`、`PageDown` 浏览整个 Lucide 图标库。输入部分名称会搜索全部图标，并从第一页显示匹配项。再次展开时会定位到已选图标所在页。选择后，`wire:model` 取得名称字符串，例如 `circle-check`。设置 `name` 后，普通表单也会提交该名称。清除选择后，绑定值为 `null`。
+
+```blade
+<x-ui::icon-select wire:model="icon" name="icon" clearable aria-label="选择图标" />
+```
+
+在双向绑定和内部值模式下，选中后即可在输入框和原生表单中读取名称。`wire:model.live` 将父级绑定和本次选择一起提交，父组件在更新钩子中校正的值会回填到控件。使用 `:value` 时，控件在父级接受变更后显示新值。
 
 选项的 `description` 接受字符串或字符串片段列表，适用于选项内的说明行；片段仍逐段由 Blade 转义。菜单导航使用 `dropdown-menu.link`、`context-menu.link` 或 `menubar.link`，它们输出语义化链接，并复用菜单项的样式、键盘导航和关闭行为。
 

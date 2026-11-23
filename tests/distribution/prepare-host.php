@@ -10,7 +10,7 @@ if (! $host || ! $archive || $zip->open($archive) !== true) {
 }
 $package = json_decode($zip->getFromName('composer.json'), true, flags: JSON_THROW_ON_ERROR);
 $zip->close();
-$package['version'] = '1.0.2';
+$package['version'] = '2.0.0';
 $package['dist'] = [
     'type' => 'zip',
     'url' => 'file:///'.ltrim(str_replace('\\', '/', $archive), '/'),
@@ -30,6 +30,7 @@ if (! is_dir($views.'/components')) {
 copy(__DIR__.'/host.blade.php', $views.'/package-test.blade.php');
 copy(__DIR__.'/probe.blade.php', $views.'/components/⚡package-probe.blade.php');
 copy(__DIR__.'/state-probe.blade.php', $views.'/components/⚡state-probe.blade.php');
+copy(__DIR__.'/color-probe.blade.php', $views.'/components/⚡color-probe.blade.php');
 $route = "\\Illuminate\\Support\\Facades\\Route::view('/ui-package-test', 'package-test');";
 if (! str_contains(file_get_contents($host.'/routes/web.php'), $route)) {
     file_put_contents($host.'/routes/web.php', "\n".$route."\n", FILE_APPEND);

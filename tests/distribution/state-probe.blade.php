@@ -10,6 +10,14 @@ new class extends Component {
     public array $defaults = [20, 80];
     public bool $locked = false;
     public string $item = 'single';
+    public ?string $icon = null;
+
+    public function updatedIcon(?string $value): void
+    {
+        if ($value === 'zoom-in') {
+            $this->icon = 'star';
+        }
+    }
 };
 ?>
 <main>
@@ -37,6 +45,13 @@ new class extends Component {
     <button id="defaults" type="button" wire:click="$set('defaults', [5])">Change defaults</button>
     <button id="remount" type="button" wire:click="$set('sliderVersion', 2)">Remount</button>
     <button id="lock" type="button" wire:click="$toggle('locked')">Toggle readonly</button>
+    <button type="button" wire:click="$set('icon', 'circle-check')">Choose an icon</button>
+    @if ($icon !== null)
+        <form id="icon-form">
+            <x-ui::icon-select name="icon" wire:model.live="icon" auto-highlight aria-label="Icon" />
+            <output id="chosen-icon">{{ $icon }}</output>
+        </form>
+    @endif
     <form id="external"></form>
     <x-ui::editor id="external-editor" form="external" name="body" initial-value="First" input-type="markdown" output-type="markdown" />
     <x-ui::cropper form="external" name="crop" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" />

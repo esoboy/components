@@ -240,6 +240,12 @@
 <x-ui::icon name="circle-check" size="md" />
 ```
 
+## icon-select
+
+```blade
+<x-ui::icon-select name="icon" initial-value="circle-check" clearable aria-label="选择图标" />
+```
+
 ## image
 
 ```blade

@@ -140,10 +140,12 @@ export function signature() {
             sizeObserver = new ResizeObserver(() => this.paint())
             sizeObserver.observe(this.canvas)
             themeObserver = new MutationObserver(() => this.paint())
-            themeObserver.observe(document.documentElement, {
-                attributes: true,
-                attributeFilter: ['class', 'style'],
-            })
+            for (let element = this.$root; element; element = element.parentElement) {
+                themeObserver.observe(element, {
+                    attributes: true,
+                    attributeFilter: ['class', 'style', 'data-ui-color'],
+                })
+            }
             this.paint()
         },
         refresh() {
@@ -212,7 +214,7 @@ export function signature() {
             if (!stroke.length) return
             const ctx = this.canvas.getContext('2d'),
                 box = this.canvas.getBoundingClientRect()
-            ctx.strokeStyle = ctx.fillStyle = getComputedStyle(this.$root).color
+            ctx.strokeStyle = ctx.fillStyle = getComputedStyle(this.canvas).color
             ctx.lineWidth = 2
             ctx.lineCap = ctx.lineJoin = 'round'
             ctx.beginPath()

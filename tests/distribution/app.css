@@ -1,3 +1,17 @@
 @import 'tailwindcss' source(none);
 @import '../../vendor/esoboy/ui/resources/css/ui.css';
 @source '../views';
+
+@theme {
+    --color-store-brand: #be123c;
+    --color-campaign-700: #843412;
+    --color-mauve-300: #ab71a0;
+}
+
+@theme inline {
+    --color-local-brand: var(--local-ink);
+}
+
+:root {
+    --local-ink: #aa0000;
+}

@@ -16,6 +16,128 @@ async function openProbe(t, query = '', options = {}) {
     return page
 }
 
+test('component colors paint only the intended parts in both themes', async (t) => {
+    const page = await openProbe(t, '?colors=1')
+    await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important }' })
+    const blue = 'rgb(37, 99, 235)'
+    const green = 'rgb(21, 128, 61)'
+    await page.waitForFunction(() => document.querySelector('[role=tab][aria-selected=true]'))
+    const style = (selector, property, pseudo) =>
+        page
+            .locator(selector)
+            .first()
+            .evaluate(
+                (el, [key, part]) => getComputedStyle(el, part)[key],
+                [property, pseudo ?? null],
+            )
+    for (const dark of [false, true]) {
+        await page.evaluate(
+            (enabled) => document.documentElement.classList.toggle('dark', enabled),
+            dark,
+        )
+        assert.equal(await style('#solid', 'backgroundColor'), blue)
+        assert.equal(await style('#palette', 'backgroundColor'), 'rgb(171, 113, 160)')
+        assert.equal(await style('#brand', 'backgroundColor'), 'rgb(190, 18, 60)')
+        assert.equal(await style('#inline-brand', 'backgroundColor'), 'rgb(0, 126, 81)')
+        const expected = await page.evaluate(() => {
+            const reference = document.createElement('div')
+            document.body.append(reference)
+            reference.style.color = 'var(--color-teal-500)'
+            const teal = getComputedStyle(reference).color
+            reference.style.color = 'color-mix(in oklab, #be123c 50%, transparent)'
+            const translucent = getComputedStyle(reference).color
+            reference.remove()
+            return { teal, translucent }
+        })
+        assert.equal(await style('#family', 'backgroundColor'), expected.teal)
+        assert.equal(await style('#opacity', 'backgroundColor'), expected.translucent)
+        assert.equal(await style('#outline', 'borderTopColor'), green)
+        assert.equal(
+            await style('#slot-button', 'backgroundColor'),
+            await style('#default', 'backgroundColor'),
+        )
+        assert.notEqual(await style('#light', 'color'), await style('#solid', 'color'))
+        for (const [selector, property, pseudo] of [
+            ['[data-slot=alert-title]', 'color'],
+            ['[data-slot=avatar-fallback]', 'backgroundColor'],
+            ['input:indeterminate', 'backgroundColor'],
+            ['input[name=one]', 'backgroundColor'],
+            ['[data-slot=switch]', 'backgroundColor'],
+            ['[data-slot=toggle-group-item] .ui-toggle', 'backgroundColor'],
+            ['[data-slot=progress-track]', 'color'],
+            ['[data-slot=slider-range]', 'backgroundColor'],
+            ['[data-slot=slider-thumb]', 'backgroundColor'],
+            ['.ui-rating-star', 'color'],
+            ['[data-state=complete] [data-slot=steps-indicator]', 'backgroundColor'],
+            ['[data-slot=timeline-item][aria-current]', 'backgroundColor', '::before'],
+            ['[role=tab][aria-selected=true]', 'backgroundColor', '::after'],
+            ['[data-slot=qr-code] path', 'fill'],
+            ['[data-slot=tags-input] [data-slot=badge]', 'color'],
+            ['[data-slot=tree] [aria-pressed=true]', 'color'],
+        ]) {
+            assert.equal(await style(selector, property, pseudo), blue, selector)
+        }
+        assert.equal(await style('input[name=two]', 'backgroundColor'), green)
+        assert.equal(await style('[data-slot=avatar-badge]', 'backgroundColor'), green)
+        assert.equal(
+            await style('[data-slot=timeline-item]:last-child', 'backgroundColor', '::before'),
+            green,
+        )
+    }
+    await page
+        .locator('main')
+        .evaluate((el) => el.style.setProperty('--color-store-brand', '#374151'))
+    assert.equal(await style('#brand', 'backgroundColor'), 'rgb(55, 65, 81)')
+})
+
+test('changing a parent color repaints Livewire selections, popup panels and existing signature strokes', async (t) => {
+    const page = await openProbe(t, '?colors=1')
+    await page.locator('#change-palette').click()
+    await page.waitForFunction(
+        () =>
+            getComputedStyle(document.getElementById('palette')).backgroundColor ===
+            'rgb(132, 52, 18)',
+    )
+    await page.locator('#colored-select').click()
+    await page.getByRole('option', { name: 'Beta' }).click()
+    await page.locator('#colored-select').getByText('Beta').waitFor()
+    await page.locator('#change-color').click()
+    await page.waitForFunction(() => {
+        const option = document.querySelector('[data-slot=select-option][aria-selected=true]')
+        const canvas = document.querySelector('#colored-signature canvas')
+        const pixel = canvas
+            .getContext('2d')
+            .getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data
+        return (
+            option.textContent.includes('Beta') &&
+            getComputedStyle(option).color === 'rgb(192, 38, 211)' &&
+            pixel[0] === 192 &&
+            pixel[1] === 38 &&
+            pixel[2] === 211
+        )
+    })
+    await page.locator('#colored-date').click()
+    const day = page.locator('[data-calendar-day][aria-label="2026-11-10"]')
+    await day.waitFor()
+    assert.equal(
+        await day.evaluate((el) => getComputedStyle(el).backgroundColor),
+        'rgb(192, 38, 211)',
+    )
+    const middle = page.locator('[data-calendar-day][aria-label="2026-11-11"]')
+    assert.notEqual(
+        await middle.evaluate((el) => getComputedStyle(el).backgroundColor),
+        'rgba(0, 0, 0, 0)',
+    )
+    await page.keyboard.press('Escape')
+    await page.locator('#colored-time').click()
+    await page.locator('[data-slot=time-segment][data-value=hour]').click()
+    const hour = page.getByRole('option', { name: '09', exact: true })
+    assert.equal(
+        await hour.evaluate((el) => getComputedStyle(el).backgroundColor),
+        'rgb(21, 128, 61)',
+    )
+})
+
 test('a replaced dialog trigger opens and receives focus on close', async (t) => {
     const page = await openProbe(t, '?state=1')
     await page.locator('#replace-trigger').click()
@@ -142,6 +264,86 @@ test('a readonly questionnaire submits the same answers on each question', async
     await page.locator('#next-item').click()
     await page.getByText('Two', { exact: true }).waitFor()
     assert.deepEqual(await answers(), expected)
+})
+
+test('selecting an icon updates the bound parent and the form with its name', async (t) => {
+    const page = await openProbe(t, '?state=1')
+    await page.getByRole('button', { name: 'Choose an icon' }).click()
+    const form = page.locator('#icon-form')
+    const input = form.getByRole('combobox', { name: 'Icon', exact: true })
+    await input.waitFor()
+    await page.waitForLoadState('networkidle')
+    const requests = []
+    const trackUpdate = (request) => {
+        if (request.method() === 'POST') requests.push(request)
+    }
+    page.on('request', trackUpdate)
+    await input.click()
+    const selected = form.getByRole('option', { name: 'circle-check', exact: true })
+    await selected.waitFor()
+    assert.ok((await form.getByRole('option').count()) <= 48)
+    assert.equal(requests.length, 0)
+    page.off('request', trackUpdate)
+
+    await input.press('PageDown')
+    await selected.waitFor({ state: 'hidden' })
+    const highlighted = form.locator('[role="option"][data-highlighted]')
+    await highlighted.waitFor()
+    assert.equal(
+        await input.getAttribute('aria-activedescendant'),
+        await highlighted.getAttribute('id'),
+    )
+    await form.locator('[aria-keyshortcuts="PageUp"]').click()
+    await selected.waitFor()
+    await input.fill('ZOOM-OU')
+    await form
+        .locator('[role="option"][data-highlighted]')
+        .filter({ hasText: 'zoom-out' })
+        .waitFor()
+    // Hold the response so the input, form and model have to update on the click itself.
+    const hold = Promise.withResolvers()
+    const update = (url) => url.pathname.endsWith('/update')
+    let commits = 0
+    await page.route(update, async (route) => {
+        commits++
+        await hold.promise
+        await route.continue()
+    })
+    try {
+        await input.press('Enter')
+        assert.equal(await input.inputValue(), 'zoom-out')
+        assert.equal(await form.evaluate((el) => new FormData(el).get('icon')), 'zoom-out')
+        assert.equal(
+            await form.evaluate(
+                (el) =>
+                    window.Livewire.find(el.closest('[wire\\:id]').getAttribute('wire:id')).icon,
+            ),
+            'zoom-out',
+        )
+    } finally {
+        hold.resolve()
+    }
+    await page.waitForFunction(() => document.getElementById('chosen-icon').value === 'zoom-out')
+    await page.waitForLoadState('networkidle')
+    await page.unroute(update)
+    assert.equal(commits, 1)
+    assert.equal(await form.evaluate((el) => new FormData(el).get('icon')), 'zoom-out')
+
+    await input.fill('zoom-in')
+    await form.getByRole('option', { name: 'zoom-in', exact: true }).click()
+    await page.waitForFunction(() => document.getElementById('chosen-icon').value === 'star')
+    assert.equal(await input.inputValue(), 'star')
+    assert.equal(await form.evaluate((el) => new FormData(el).get('icon')), 'star')
+
+    await input.fill('ZOOM-OU')
+    const retry = form.getByRole('option', { name: 'zoom-out', exact: true })
+    await retry.waitFor()
+    await page.route(update, (route) => route.abort(), { times: 1 })
+    await retry.click()
+    await page.waitForFunction(
+        () => new FormData(document.getElementById('icon-form')).get('icon') === 'star',
+    )
+    assert.equal(await input.inputValue(), 'star')
 })
 
 test('side menus and their submenus stay inside a narrow viewport', async (t) => {

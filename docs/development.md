@@ -39,6 +39,7 @@ npm run archive
 | `resources/views/`、`lang/`、`resources/content/schema.json` | Blade 渲染、翻译及内容契约 |
 | `resources/boost/skills/esoboy-ui-development/` | Laravel Boost 可安装的组件开发技能及配套示例 |
 | `resources/css/ui.css` | Tailwind 源文件，包含所有组件和编辑器的样式 |
+| `resources/css/palette.cjs` | 在宿主构建时读取 Tailwind 调色板，让运行时传入的色名和自定义主题色可用 |
 | `resources/dist/ui.js`、`resources/dist/editor.js` | 通用组件行为和按需加载的完整编辑器 |
 | `resources/icons/catalog.php` | 正式 Lucide 图标的 SVG 内容 |
 | `README.md`、`LICENSE`、`resources/icons/LICENSE`、`THIRD-PARTY-LICENSES.txt` | 安装说明和随包许可 |

@@ -16,3 +16,5 @@
 @import './components/pagination.css';
 @import './components/data-table.css';
 @import './motion.css';
+@import './components/color.css';
+@plugin './palette.cjs';

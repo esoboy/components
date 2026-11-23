@@ -765,8 +765,8 @@
         opacity: 0.5;
     }
     [data-slot='tabs-tab']:where([data-esoboy-ui]) {
-        @apply aria-selected:bg-background aria-selected:text-foreground ui-dark:aria-selected:border-input ui-dark:aria-selected:bg-input/30 ui-dark:aria-selected:text-foreground;
-        @apply after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:aria-selected:after:opacity-100;
+        @apply aria-selected:bg-background aria-selected:text-[color:var(--ui-tab-color,var(--color-foreground))] ui-dark:aria-selected:border-input ui-dark:aria-selected:bg-input/30 ui-dark:aria-selected:text-[color:var(--ui-tab-color,var(--color-foreground))];
+        @apply after:absolute after:bg-[color:var(--ui-tab-color,var(--color-foreground))] after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:aria-selected:after:opacity-100;
     }
     [data-slot='tabs-list']:where([data-esoboy-ui])[data-variant='default']
         [data-slot='tabs-tab']:where([data-esoboy-ui])[aria-selected='true'] {
@@ -1028,10 +1028,15 @@
         [data-slot='item-description']:where([data-esoboy-ui]) {
         white-space: normal;
     }
-    [data-slot='menu-item']:where([data-esoboy-ui]):not([data-variant='destructive']):focus * {
+    [data-slot='menu-item']:where([data-esoboy-ui]):not(
+            [data-variant='destructive'],
+            [data-ui-color='menu']
+        ):focus
+        * {
         color: var(--color-accent-foreground);
     }
-    [data-slot='menu-item']:where([data-esoboy-ui])[data-variant='destructive'] > svg {
+    [data-slot='menu-item']:where([data-esoboy-ui])[data-variant='destructive']
+        > svg:not(:where([data-ui-color])) {
         color: var(--color-destructive);
     }
     [data-slot='menu-label']:where([data-esoboy-ui]) {

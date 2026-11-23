@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.0 - 2026-11-23
+
+- `media-preview` 取代 `image-preview`，支持图片、音频和视频。升级时将旧组件改为 `<x-ui::media-preview type="image">`，保留 `src` 和 `alt`，将 `<x-slot:trigger>` 中的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
+- 新增 `icon-select`，可按名称搜索 Lucide 图标，使用分页按钮或键盘浏览，并通过 `wire:model` 或原生表单取得选中的图标名称。
+- 按钮、徽标、选择控件、签名和二维码等组件支持通过 `color` 单独设色。可传入运行时的 Tailwind 色名、宿主自定义主题色或 CSS 颜色值。[组件配色说明](README.md#设置单个组件的颜色)
+
 ## v1.0.2 - 2026-11-20
 
 - 恢复随 Laravel Boost 安装的 `esoboy-ui-development` 技能。Composer 包包含当前组件 API 的说明，以及从公共渲染测试用例同步的 90 个 Blade 组件示例。

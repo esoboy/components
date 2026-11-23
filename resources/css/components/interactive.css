@@ -141,6 +141,9 @@
     .ui-list-scroll[data-overflow] > [data-slot='scroll-area-viewport']:where([data-esoboy-ui]) {
         overscroll-behavior-y: contain;
     }
+    [data-slot='icon-select-pagination']:where([data-esoboy-ui]) {
+        @apply flex shrink-0 items-center justify-between gap-2 border-t border-border px-1 pt-1 text-xs text-muted-foreground tabular-nums;
+    }
     [data-slot='scroll-area']:where([data-esoboy-ui]):not([data-overflow])
         > [data-slot='scroll-area-scrollbar']:where([data-esoboy-ui]) {
         display: none;

@@ -315,7 +315,7 @@ export function popover() {
             }
             activeItem?.scrollIntoView({ block: 'nearest' })
         },
-        close(restoreFocus = false) {
+        close(restoreFocus = false, animate = true) {
             clearTimeout(hoverTimer)
             const panel = this.panel
             this.opened = false
@@ -323,12 +323,14 @@ export function popover() {
             if (restoreFocus) focusInPlace(this.trigger)
             if (panel.hasAttribute('data-ending')) return
             const attempt = ++closing
-            afterExit(panel, () => {
+            const finish = () => {
                 if (attempt !== closing || this.opened || !panel.isConnected) return
                 panel.hidePopover()
                 delete panel.dataset.ending
                 this.untrack()
-            })
+            }
+            if (animate) afterExit(panel, finish)
+            else finish()
         },
         toggle(focus = true) {
             this.opened ? this.close() : this.open(focus)
