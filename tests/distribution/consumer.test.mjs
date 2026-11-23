@@ -156,6 +156,7 @@ test('a replaced dialog trigger opens and receives focus on close', async (t) =>
 test('a media preview pauses playback and adopts its replacement trigger and source', async (t) => {
     const page = await openProbe(t, '?state=1')
     const preview = page.locator('#state-preview')
+    const focused = page.locator(':focus')
     const listen = preview.getByRole('button', { name: 'Listen' })
     await listen.press('Space')
     const dialog = preview.getByRole('dialog')
@@ -167,7 +168,8 @@ test('a media preview pauses playback and adopts its replacement trigger and sou
     await dialog.getByRole('button', { name: 'Close' }).click()
     await dialog.waitFor({ state: 'hidden' })
     assert.ok(await preview.locator('audio').evaluate((audio) => audio.paused))
-    assert.ok(await listen.evaluate((button) => button === document.activeElement))
+    // The native close event restores focus after the dialog becomes hidden.
+    await listen.and(focused).waitFor()
 
     await listen.press('Enter')
     await dialog.waitFor()
@@ -182,9 +184,8 @@ test('a media preview pauses playback and adopts its replacement trigger and sou
     await page.keyboard.press('Escape')
     await dialog.waitFor({ state: 'hidden' })
     const picture = preview.getByRole('button', { name: 'View picture', exact: true })
-    await picture.waitFor()
+    await picture.and(focused).waitFor()
     assert.equal(await preview.getByRole('button').count(), 1)
-    assert.ok(await picture.evaluate((button) => button === document.activeElement))
     assert.equal(
         await picture.getAttribute('aria-controls'),
         await preview.locator('dialog').getAttribute('id'),
@@ -193,7 +194,7 @@ test('a media preview pauses playback and adopts its replacement trigger and sou
     await dialog.locator('img').evaluate((image) => image.decode())
     await page.keyboard.press('Escape')
     await dialog.waitFor({ state: 'hidden' })
-    assert.ok(await picture.evaluate((button) => button === document.activeElement))
+    await picture.and(focused).waitFor()
 })
 
 test('removing an open dialog panel releases its scroll lock', async (t) => {
