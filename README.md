@@ -46,6 +46,8 @@ php artisan vendor:publish --tag=ui-assets --force
 
 静态副本位于 `public/vendor/esoboy/ui/`。升级后，过期副本会自动切换到当前包的路由，再次发布即可更新静态文件。
 
+从 `v1.0.3` 升级到 `v1.0.4` 时，原先通过 `color` 设置的自定义颜色需要移到组件的 `class`。例如，描边按钮可以用 `class="[--ui-button-border:var(--color-violet-600)]"` 设置边框色。依赖旧 DOM 选择器的样式可按[迁移对照](docs/component-color-design.md)更新。
+
 从 `v1.0.2` 或更早版本升级到 `v1.0.3` 时，将 `<x-ui::image-preview>` 改为 `<x-ui::media-preview type="image">`，保留原来的 `src` 和 `alt`，并将 `<x-slot:trigger>` 的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
 
 ### Laravel Boost
