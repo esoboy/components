@@ -53,6 +53,15 @@ export function focusInPlace(element) {
 
 export function slotControl(element) {
     let control = element?.firstElementChild
+    if (
+        element?.hasAttribute('data-ui-media-trigger') &&
+        (!control ||
+            control.nextElementSibling ||
+            [...element.childNodes].some(
+                (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
+            ))
+    )
+        return element
     if (!control || control.nextElementSibling) return null
     while (control?.matches('[data-ui-trigger],[data-slot="tooltip"]')) {
         if (control.dataset.slot === 'tooltip') control = control.querySelector('[data-ui-trigger]')
@@ -127,10 +136,11 @@ export function dialog(initial = false, modal = true) {
             if (this.panel?.open) return
             releasePanel()
             this.opened = false
-            const trigger = this.returnFocus?.isConnected
-                ? this.returnFocus
-                : slotControl(owned(this.$root, '[data-ui-trigger]'))
-            focusInPlace(trigger)
+            if (this.returnFocus?.isConnected) {
+                focusInPlace(this.returnFocus)
+                if (document.activeElement === this.returnFocus) return
+            }
+            focusInPlace(slotControl(owned(this.$root, '[data-ui-trigger]')))
         },
         backdrop(event) {
             if (event.target !== this.panel || this.panel.role === 'alertdialog') return
@@ -666,10 +676,37 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
         delete bindings['@click']
         delete bindings['@keydown']
     }
+    if (element.hasAttribute('data-ui-media-trigger'))
+        return bindMediaTrigger(Alpine, control, bindings, evaluate)
     const unbind = Alpine.bind(control, bindings)
     queueMicrotask(() => {
         const panel = evaluate('panel')
         if (operation !== 'close' && panel?.id) control.setAttribute('aria-controls', panel.id)
     })
     return unbind
+}
+
+function bindMediaTrigger(Alpine, control, bindings, evaluate) {
+    bindings[':aria-controls'] = () => evaluate("$id('ui-dialog')")
+    if (!control.matches('button, a[href], input, select, textarea, summary')) {
+        if (!control.hasAttribute('role')) bindings.role = 'button'
+        if (!control.hasAttribute('tabindex')) bindings.tabindex = '0'
+        const activate = () =>
+            control.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+        bindings['@keydown.enter.self.prevent'] = activate
+        bindings['@keydown.space.self.prevent'] = activate
+    }
+    // The slot wrapper can stay in the DOM when a Livewire update gives it a new button.
+    const attributes = Object.keys(bindings)
+        .filter((name) => !name.startsWith('@'))
+        .map((name) => name.replace(/^:/, ''))
+        .map((name) => [name, control.getAttribute(name)])
+    const unbind = Alpine.bind(control, bindings)
+    return () => {
+        unbind()
+        for (const [name, value] of attributes) {
+            if (value === null) control.removeAttribute(name)
+            else control.setAttribute(name, value)
+        }
+    }
 }

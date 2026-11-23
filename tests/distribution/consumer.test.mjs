@@ -31,6 +31,49 @@ test('a replaced dialog trigger opens and receives focus on close', async (t) =>
     assert.equal(await replacement.getAttribute('aria-expanded'), 'false')
 })
 
+test('a media preview pauses playback and adopts its replacement trigger and source', async (t) => {
+    const page = await openProbe(t, '?state=1')
+    const preview = page.locator('#state-preview')
+    const listen = preview.getByRole('button', { name: 'Listen' })
+    await listen.press('Space')
+    const dialog = preview.getByRole('dialog')
+    const player = dialog.locator('audio')
+    await player.evaluate(async (audio) => {
+        audio.loop = true
+        await audio.play()
+    })
+    await dialog.getByRole('button', { name: 'Close' }).click()
+    await dialog.waitFor({ state: 'hidden' })
+    assert.ok(await preview.locator('audio').evaluate((audio) => audio.paused))
+    assert.ok(await listen.evaluate((button) => button === document.activeElement))
+
+    await listen.press('Enter')
+    await dialog.waitFor()
+    await preview.evaluate((el) =>
+        window.Livewire.find(el.closest('[wire\\:id]').getAttribute('wire:id')).$set(
+            'buttonVersion',
+            1,
+        ),
+    )
+    await dialog.locator('img').evaluate((image) => image.decode())
+    assert.equal(await preview.locator('audio').count(), 0)
+    await page.keyboard.press('Escape')
+    await dialog.waitFor({ state: 'hidden' })
+    const picture = preview.getByRole('button', { name: 'View picture', exact: true })
+    await picture.waitFor()
+    assert.equal(await preview.getByRole('button').count(), 1)
+    assert.ok(await picture.evaluate((button) => button === document.activeElement))
+    assert.equal(
+        await picture.getAttribute('aria-controls'),
+        await preview.locator('dialog').getAttribute('id'),
+    )
+    await picture.press('Enter')
+    await dialog.locator('img').evaluate((image) => image.decode())
+    await page.keyboard.press('Escape')
+    await dialog.waitFor({ state: 'hidden' })
+    assert.ok(await picture.evaluate((button) => button === document.activeElement))
+})
+
 test('removing an open dialog panel releases its scroll lock', async (t) => {
     const page = await openProbe(t, '?state=1')
     await page.evaluate(() => (document.documentElement.style.overflow = 'auto'))

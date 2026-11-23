@@ -14,6 +14,14 @@ new class extends Component {
 ?>
 <main>
     <button id="replace-trigger" wire:click="$set('buttonVersion', 1)" type="button">Replace trigger</button>
+    <x-ui::media-preview id="state-preview" :type="$buttonVersion ? 'image' : 'audio'"
+        :src="$buttonVersion ? 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==' : 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA'">
+        @if ($buttonVersion)
+            <x-ui::button><x-ui::icon name="image" />View picture</x-ui::button>
+        @else
+            Listen
+        @endif
+    </x-ui::media-preview>
     <x-ui::dialog id="state-dialog">
         <x-ui::dialog.trigger><x-ui::button wire:key="trigger-{{ $buttonVersion }}" id="trigger-{{ $buttonVersion }}">Open</x-ui::button></x-ui::dialog.trigger>
         @if ($hasPanel)

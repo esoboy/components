@@ -2,7 +2,7 @@ import { dialog, popover, registerTrigger } from './behaviors/overlay.js'
 import { combobox } from './behaviors/combobox.js'
 import { options, tabs, menubar, accordion, choiceGroup } from './behaviors/navigation.js'
 import { disclosure, carousel, resizable, registerStep } from './behaviors/layout.js'
-import { toast, toaster, code, messageScroller, tour } from './behaviors/content.js'
+import { toast, toaster, code, messageScroller, previewImage, tour } from './behaviors/content.js'
 import { cropper, signature } from './behaviors/drawing.js'
 import { slider } from './behaviors/slider.js'
 import { rating } from './behaviors/rating.js'
@@ -40,7 +40,7 @@ export function registerUi(Alpine) {
     Alpine.data('uiCode', code)
     Alpine.data('uiMessageScroller', messageScroller)
     Alpine.data('uiTour', tour)
-    Alpine.data('uiImage', () => ({ zoom: 1, rotation: 0 }))
+    Alpine.data('uiImage', previewImage)
     Alpine.data('uiCropper', cropper)
     Alpine.data('uiSignature', signature)
     Alpine.data('uiSlider', slider)

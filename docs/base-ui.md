@@ -76,7 +76,7 @@
 公开根组件的数量和归类见[组件覆盖统计](shadcn-coverage.md#统计)。
 
 - 已明确保留：editor、rich-text；按共享内容契约实现。
-- 建议保留：image、image-preview、number-input、password-input、time-picker、datetime-picker、tree、tree-select、tags-input、color-picker、qr-code、cropper、steps、timeline、description-list、statistic。
+- 建议保留：image、media-preview、number-input、password-input、time-picker、datetime-picker、tree、tree-select、tags-input、color-picker、qr-code、cropper、steps、timeline、description-list、statistic。
 - 继续保留、由业务决定是否收敛：cascader、transfer、mentions、signature、rating、tour。
 
 移除 verification-code-button、link、float-button、back-to-top、aspect-ratio、emoji-picker、confirm、anchor、countdown、watermark、result。原 confirm 调用迁移为 AlertDialog。button/text 通过 link 属性提供链接。独立 mentions 的保留不代表 Editor 支持 Mention 节点。

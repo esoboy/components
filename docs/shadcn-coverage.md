@@ -102,7 +102,7 @@
 | [description-list](../resources/views/components/description-list/index.blade.php) | 属性/描述列表 |
 | [editor](../resources/views/components/editor/index.blade.php) | 富文本编辑器 |
 | [image](../resources/views/components/image.blade.php) | 图片展示 |
-| [image-preview](../resources/views/components/image-preview/index.blade.php) | 图片预览 |
+| [media-preview](../resources/views/components/media-preview/index.blade.php) | 图片、音频和视频预览 |
 | [mentions](../resources/views/components/mentions/index.blade.php) | 提及输入 |
 | [number-input](../resources/views/components/number-input/index.blade.php) | 数字输入 |
 | [password-input](../resources/views/components/password-input.blade.php) | 密码输入与显隐 |

@@ -4,6 +4,7 @@ return [
     'binding_sources' => 'Choose one value source: wire:model, value, or initial-value.',
     'binding_identity' => 'An unbound :component inside Livewire needs a stable id or wire:key.',
     'heading_level' => 'Heading level must be 1 through 6.',
+    'media_preview_type' => 'Media preview type must be image, audio or video.',
     'progress_value' => 'Invalid progress value or maximum.',
     'scroll_orientation' => 'Invalid scroll area orientation.',
     'sidebar_mode' => 'Invalid sidebar mode, variant or side.',

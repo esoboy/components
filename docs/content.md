@@ -157,13 +157,16 @@ resolve([{
 
 | 组件 | 数据与能力 |
 | --- | --- |
-| Image / ImagePreview | src / alt；原生 dialog 预览、缩放、旋转、视口约束；不代理请求 |
+| Image | 用 `src` 和 `alt` 展示图片 |
+| MediaPreview | `src` 指定文件地址，`type` 取 `image`、`audio` 或 `video`。默认插槽的内容触发预览，可直接放文字、缩略图或按钮组件。图片可缩放和旋转，音频和视频使用原生播放控件，关闭时暂停。 |
 | Cropper | src 与归一化 {x,y,width,height}；拖动、缩放、键盘微调，项目执行实际裁剪 |
 | Signature | 归一化笔画列表；所有笔画由浏览器 canvas 绘制；不上传或生成文件 |
 | CodeBlock | 转义代码、语言标签、复制，无着色引擎 |
 | QrCode | PHP 编码、Blade SVG，不访问外部服务 |
 | Mentions | 文本末尾 @query 匹配 options，选择后插入 @value；不是 Tiptap Mention |
 | Attachment | 已有附件信息与动作的展示容器 |
+
+旧版 `<x-ui::image-preview>` 调用改为 `<x-ui::media-preview type="image">`，保留 `src` 和可选的 `alt`。将原 `<x-slot:trigger>` 中的内容直接放入默认插槽。[三种媒体的调用示例](components.md#media-preview)
 
 Toast / Toaster 内容由调用方提供，计时仅控制显示。Tour 步骤由 Blade 提供，Alpine 控制定位和焦点。弹层使用原生 Popover / Dialog API，本次验收浏览器为 Chromium。
 

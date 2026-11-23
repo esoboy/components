@@ -1,6 +1,34 @@
 <?php
 
+use Dom\HTMLDocument;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\View\ViewException;
+
+it('uses the default slot as the trigger and previews the specified media type', function (string $type, string $tag) {
+    $src = '/media/42?version=2&size=full';
+    $html = Blade::render(<<<'BLADE'
+        <x-ui::media-preview :src="$src" :type="$type" aria-label="Sample">
+            <x-ui::button id="open-preview"><x-ui::icon name="play" />Open file</x-ui::button>
+        </x-ui::media-preview>
+        BLADE, compact('src', 'type'));
+    $document = HTMLDocument::createFromString($html, LIBXML_NOERROR, 'UTF-8');
+    $dialog = $document->querySelector('dialog');
+    $media = $dialog->querySelector($tag);
+
+    expect($document->querySelector('[data-ui-trigger] > #open-preview')->textContent)->toContain('Open file')
+        ->and($dialog->querySelector('#open-preview'))->toBeNull()
+        ->and($dialog->getAttribute('aria-label'))->toBe('Sample')
+        ->and($dialog->querySelectorAll('img, audio, video')->length)->toBe(1)
+        ->and($media->getAttribute('src'))->toBe($src)
+        ->and($media->hasAttribute('controls'))->toBe($type !== 'image')
+        ->and($media->hasAttribute('playsinline'))->toBe($type === 'video')
+        ->and($dialog->querySelector('[aria-label="Zoom in"]') !== null)->toBe($type === 'image');
+})->with([['image', 'img'], ['audio', 'audio'], ['video', 'video']]);
+
+it('rejects an unsupported media preview type', function () {
+    expect(fn () => Blade::render('<x-ui::media-preview src="/file" type="pdf">Preview</x-ui::media-preview>'))
+        ->toThrow(ViewException::class, __('ui::errors.media_preview_type'));
+});
 
 it('formats statistics from the original decimal digits and distinguishes empty and loading values', function () {
     $view = '<x-ui::statistic title="Balance" :value="$value" :precision="$precision" group-separator="." decimal-separator="," suffix="€" />';
