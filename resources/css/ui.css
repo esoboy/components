@@ -1,6 +1,8 @@
 @import './tokens.css';
 @import './nova-utilities.css';
+@import './components/part-colors.css';
 @import './base.css';
+@import './components/status.css';
 @import './rich-content.css' layer(components);
 @import './components/editor.css' layer(components);
 @import './components/controls.css';
@@ -16,5 +18,3 @@
 @import './components/pagination.css';
 @import './components/data-table.css';
 @import './motion.css';
-@import './components/color.css';
-@plugin './palette.cjs';

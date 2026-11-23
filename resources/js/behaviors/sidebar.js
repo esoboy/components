@@ -12,7 +12,7 @@ export function sidebar(initial = true, collapsible = 'offcanvas') {
         mobile: false,
         returnFocus: null,
         get panel() {
-            return this.$root.querySelector('[data-slot="sidebar-content"]')
+            return this.$root.querySelector('.ui-sidebar-content')
         },
         init() {
             media = matchMedia('(max-width: 767px)')

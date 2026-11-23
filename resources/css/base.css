@@ -3,60 +3,88 @@
         display: contents;
     }
     [data-ui-overlay]:is(
-        [data-slot='popover']:where([data-esoboy-ui]),
-        [data-slot='tooltip']:where([data-esoboy-ui]),
-        [data-slot='hover-card']:where([data-esoboy-ui]),
-        [data-slot='dropdown-menu']:where([data-esoboy-ui]),
-        [data-slot='context-menu']:where([data-esoboy-ui]),
-        [data-slot='dialog']:where([data-esoboy-ui]),
-        [data-slot='alert-dialog']:where([data-esoboy-ui]),
-        [data-slot='sheet']:where([data-esoboy-ui]),
-        [data-slot='drawer']:where([data-esoboy-ui])
+        .ui-popover,
+        .ui-tooltip,
+        .ui-hover-card,
+        .ui-dropdown-menu,
+        .ui-context-menu,
+        .ui-dialog,
+        .ui-alert-dialog,
+        .ui-sheet,
+        .ui-drawer
     ) {
         display: contents;
     }
-    [data-slot='icon']:where([data-esoboy-ui]) {
+    .ui-icon {
+        color: var(--ui-icon-fg, inherit);
         flex: none;
         vertical-align: middle;
     }
-    :where([data-esoboy-ui][data-slot]) {
-        border-color: var(--color-border);
-        outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent);
+    :where(
+        .ui-button,
+        .ui-input,
+        .ui-textarea,
+        .ui-select-control,
+        .ui-checkbox,
+        .ui-radio,
+        .ui-slider-thumb,
+        .ui-input-otp-slot,
+        .ui-switch,
+        .ui-native-select-control,
+        .ui-color-picker-control,
+        .ui-menu-item,
+        .ui-select-option,
+        .ui-toggle,
+        .ui-sidebar-menu-button
+    )[aria-invalid='true'] {
+        border-color: var(--ui-control-invalid-border, var(--color-destructive));
+        outline-color: var(--ui-control-invalid-outline, var(--color-destructive));
     }
-    :where([data-esoboy-ui][data-slot])[aria-invalid='true'] {
-        border-color: var(--color-destructive);
-        outline-color: var(--color-destructive);
-    }
-    :where(button, input, textarea, select)[data-slot]:where([data-esoboy-ui]):disabled,
-    a[data-slot]:where([data-esoboy-ui])[aria-disabled='true'] {
+    :where(
+        .ui-button,
+        .ui-input,
+        .ui-textarea,
+        .ui-select-control,
+        .ui-checkbox,
+        .ui-radio,
+        .ui-slider-thumb,
+        .ui-input-otp-slot,
+        .ui-switch,
+        .ui-native-select-control,
+        .ui-color-picker-control,
+        .ui-menu-item,
+        .ui-select-option,
+        .ui-toggle,
+        .ui-sidebar-menu-button
+    ):is(:disabled, [aria-disabled='true']) {
         opacity: 0.5;
         cursor: not-allowed;
     }
-    a[data-slot]:where([data-esoboy-ui])[aria-disabled='true'] {
+    a.ui-button[aria-disabled='true'] {
         pointer-events: none;
     }
-    [data-slot='field-error']:where([data-esoboy-ui]) {
-        color: var(--color-destructive);
+    .ui-field-error {
+        color: var(--ui-field-error-fg, var(--color-destructive));
         font-size: 0.875rem;
     }
-    [data-slot='separator']:where([data-esoboy-ui]) {
+    .ui-separator {
         height: 1px;
         width: 100%;
-        background: var(--color-border);
+        background: var(--ui-separator-bg, var(--color-border));
     }
-    [data-slot='separator']:where([data-esoboy-ui])[aria-orientation='vertical'] {
+    .ui-separator[aria-orientation='vertical'] {
         height: auto;
         min-height: 1rem;
         width: 1px;
         align-self: stretch;
     }
-    [data-slot='skeleton']:where([data-esoboy-ui]) {
-        background: var(--color-accent);
+    .ui-skeleton {
+        background: var(--ui-skeleton-bg, var(--color-accent));
         border-radius: var(--radius-ui-md);
         min-height: 1rem;
         animation: ui-pulse 2s ease-in-out infinite;
     }
-    [data-slot='spinner']:where([data-esoboy-ui]) {
+    .ui-spinner {
         animation: ui-spin 1s linear infinite;
     }
     @keyframes ui-spin {
@@ -70,8 +98,8 @@
         }
     }
     @media (prefers-reduced-motion: reduce) {
-        [data-slot='spinner']:where([data-esoboy-ui]),
-        [data-slot='skeleton']:where([data-esoboy-ui]) {
+        .ui-spinner,
+        .ui-skeleton {
             animation: none;
         }
     }

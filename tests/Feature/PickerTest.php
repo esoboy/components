@@ -44,7 +44,7 @@ it('gives unbound pickers on a plain Blade page independent popup content', func
     $html = Blade::render('<x-ui::date-picker /><x-ui::date-picker /><x-ui::time-picker /><x-ui::time-picker><x-slot:extra></x-slot:extra></x-ui::time-picker><x-ui::datetime-picker />');
     preg_match_all('/x-teleport="#(ui-picker-[a-f0-9]+)"/', $html, $targets);
     expect(array_unique($targets[1]))->toHaveCount(5);
-    expect($html)->not->toContain('data-slot="picker-extra"');
+    expect($html)->not->toContain('class="ui-picker-extra"');
     foreach ($targets[1] as $target) {
         expect($html)->toContain('id="'.$target.'"');
     }

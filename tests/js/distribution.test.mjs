@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { compile, optimize } from '@tailwindcss/node'
 import postcss from 'postcss'
-import colors from 'tailwindcss/colors'
 
 test('the distribution ships one Tailwind source and two standalone scripts', () => {
     const entries = (path) => readdirSync('dist/' + path).sort()
@@ -18,7 +17,7 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
         'src',
     ])
     assert.deepEqual(entries('resources'), ['boost', 'content', 'css', 'dist', 'icons', 'views'])
-    assert.deepEqual(entries('resources/css'), ['palette.cjs', 'ui.css'])
+    assert.deepEqual(entries('resources/css'), ['ui.css'])
     assert.deepEqual(entries('resources/dist'), ['editor.js', 'ui.js'])
     assert.deepEqual(entries('resources/icons'), ['LICENSE', 'catalog.php'])
     const notices = readFileSync('dist/THIRD-PARTY-LICENSES.txt', 'utf8')
@@ -36,10 +35,6 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
     for (const node of postcss.parse(sourceCss).nodes) {
         if (node.type === 'comment') continue
         assert.equal(node.type, 'atrule')
-        if (node.name === 'plugin') {
-            assert.match(node.params, /^['"]\.\/palette\.cjs['"]$/)
-            continue
-        }
         if (node.name === 'theme' || node.name === 'custom-variant') continue
         assert.equal(node.name, 'layer')
         assert.equal(node.params, 'components')
@@ -79,7 +74,7 @@ test('a host with source detection disabled still builds every component default
         while (layer && layer.name !== 'layer') layer = layer.parent
         if (layer?.params === 'utilities') utilities.add(rule.selector)
         if (
-            rule.selector.includes('[data-slot') ||
+            rule.selector.includes('.ui-') ||
             rule.selector.includes('esoboy-editor') ||
             rule.selector.includes('.ui-rich-content')
         ) {
@@ -114,30 +109,4 @@ test('the distributed names and SVGs match the pinned Lucide release', () => {
             .replace(/\s+\/>/g, '/>')
         assert.equal(markup.replace(/\\(['\\])/g, '$1'), contents, name)
     }
-})
-
-test('the host palette includes every Tailwind shade and custom colors without scanning templates', async () => {
-    const compiler = await compile(
-        '@import "tailwindcss" source(none); @import "./dist/resources/css/ui.css"; @theme { --color-brand: #123456; --color-brand-500: #abcdef; } @theme inline { --color-local-brand: var(--local-ink); }',
-        { base: process.cwd(), onDependency() {} },
-    )
-    const output = compiler.build([])
-    const tokens = new Map()
-    postcss.parse(output).walkRules((rule) => {
-        if (!rule.selector.includes('data-ui-palette=')) return
-        rule.walkDecls('--ui-palette-color', (decl) => {
-            for (const [, name] of rule.selector.matchAll(/\[data-ui-palette="([^"]+)"\]/g))
-                tokens.set(name, decl.value)
-        })
-    })
-    for (const [family, shades] of Object.entries(colors)) {
-        if (typeof shades !== 'object') continue
-        for (const shade of Object.keys(shades)) {
-            assert.ok(tokens.get(`${family}-${shade}`)?.includes(`--color-${family}-${shade},`))
-        }
-        assert.ok(tokens.get(family).includes(tokens.get(family + '-500')))
-    }
-    assert.match(tokens.get('brand'), /--color-brand, #123456/)
-    assert.match(tokens.get('brand-500'), /--color-brand-500, #abcdef/)
-    assert.match(tokens.get('local-brand'), /^var\(--local-ink[,)]/)
 })

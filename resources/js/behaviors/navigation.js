@@ -98,11 +98,9 @@ export function tabs(initial = null, orientation = 'horizontal') {
 export function accordion() {
     return {
         navigate(event) {
-            if (!event.target.matches('[data-slot="accordion-summary"]')) return
-            const nodes = [
-                ...this.$root.querySelectorAll('[data-slot="accordion-summary"]'),
-            ].filter(
-                (node) => !node.inert && node.closest('[data-slot="accordion"]') === this.$root,
+            if (!event.target.matches('.ui-accordion-summary')) return
+            const nodes = [...this.$root.querySelectorAll('.ui-accordion-summary')].filter(
+                (node) => !node.inert && node.closest('.ui-accordion') === this.$root,
             )
             moveFocus(event, nodes)
         },

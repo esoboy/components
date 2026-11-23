@@ -16,9 +16,9 @@ it('applies native number input attributes to the field and keeps the binding on
         <x-ui::number-input id="quantity" name="units" required placeholder="Units" form="invoice" invalid
             aria-describedby="unit-help" autocomplete="off" wire:model.live="quantity" class="compact" />
         BLADE);
-    $root = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelector('[data-slot="number-input"]');
+    $root = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelector('.ui-number-input');
     $input = $root->querySelector('input[type="number"]');
-    expect($root->getAttribute('wire:model.live'))->toBe('quantity')
+    expect($root->querySelector('.ui-number-input-body')->getAttribute('wire:model.live'))->toBe('quantity')
         ->and($root->classList->contains('compact'))->toBeTrue()
         ->and($input->getAttribute('id'))->toBe('quantity')
         ->and($input->getAttribute('aria-invalid'))->toBe('true')

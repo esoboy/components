@@ -23,7 +23,7 @@ composer test
 
 `docs/examples.json` 是公共调用样例的来源。新增根组件时，在覆盖表中填写对应关系或归类，再运行 `npm run docs` 同步[组件目录](components.md)、Boost skill 的组件示例和[覆盖统计](shadcn-coverage.md#统计)。Pest 逐项渲染这些调用。包构建和 CI 都可以从单独检出的开发仓库运行。
 
-组件模板在自己输出的 `data-slot` 元素上添加 `data-esoboy-ui`。组件 CSS 用 `:where([data-esoboy-ui])` 限定对应的 slot 选择器，保持原有 CSS 优先级。宿主可继续用 `data-slot` 定位元素，也可在 Blade 插槽里使用自己的同名标记。
+组件模板把稳定的根类和应用的 `class` 合并到同一节点。变体在 Blade 中选择 DOM 与外观类。按钮、徽标、开关、提示和通知仅在显式收到有效 `status` 时添加状态类。每个独立部位使用颜色变量，样式放在 Tailwind 的 `components` 层，应用的 `utilities` 层可覆盖它们。修改部位变量时同步维护实例作用域。[样式接口与迁移对照](component-color-design.md) · [部位变量清单](../resources/css/components/part-colors.css)
 
 ## 生产包
 
@@ -39,7 +39,6 @@ npm run archive
 | `resources/views/`、`lang/`、`resources/content/schema.json` | Blade 渲染、翻译及内容契约 |
 | `resources/boost/skills/esoboy-ui-development/` | Laravel Boost 可安装的组件开发技能及配套示例 |
 | `resources/css/ui.css` | Tailwind 源文件，包含所有组件和编辑器的样式 |
-| `resources/css/palette.cjs` | 在宿主构建时读取 Tailwind 调色板，让运行时传入的色名和自定义主题色可用 |
 | `resources/dist/ui.js`、`resources/dist/editor.js` | 通用组件行为和按需加载的完整编辑器 |
 | `resources/icons/catalog.php` | 正式 Lucide 图标的 SVG 内容 |
 | `README.md`、`LICENSE`、`resources/icons/LICENSE`、`THIRD-PARTY-LICENSES.txt` | 安装说明和随包许可 |

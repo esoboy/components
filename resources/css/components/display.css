@@ -1,201 +1,228 @@
 @layer components {
-    :where(
-        [data-slot='card-header']:where([data-esoboy-ui]),
-        [data-slot='card-content']:where([data-esoboy-ui]),
-        [data-slot='card-footer']:where([data-esoboy-ui])
-    ) {
+    :where(.ui-card-header, .ui-card-content, .ui-card-footer) {
         padding-inline: 1.25rem;
     }
-    [data-slot='card-header']:where([data-esoboy-ui]):has(
-            [data-slot='card-action']:where([data-esoboy-ui])
-        ) {
+    .ui-card-header:has(.ui-card-action) {
         grid-template-columns: minmax(0, 1fr) auto;
     }
-    [data-slot='card-title']:where([data-esoboy-ui]) {
+    .ui-card-title {
         font-weight: 600;
         line-height: 1.25;
     }
-    [data-slot='card-description']:where([data-esoboy-ui]),
-    [data-slot='statistic-description']:where([data-esoboy-ui]) {
-        color: var(--color-muted-foreground);
+    .ui-card-description {
+        color: var(--ui-card-description-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
-    [data-slot='badge']:where([data-esoboy-ui])[data-variant='outline'] {
-        background: transparent;
-        color: inherit;
-        border-color: var(--color-border);
+    .ui-statistic-description {
+        color: var(--ui-statistic-description-fg, var(--color-muted-foreground));
+        font-size: 0.875rem;
     }
-    [data-slot='badge']:where([data-esoboy-ui])[data-variant='secondary'] {
-        background: var(--color-secondary);
-        color: inherit;
+    .ui-badge.ui-badge-variant-outline {
+        background: var(--ui-badge-bg, transparent);
+        color: var(--ui-badge-fg, var(--ui-status-ink, inherit));
+        border-color: var(--ui-badge-border, var(--ui-status-ink, var(--color-border)));
     }
-    [data-slot='badge']:where([data-esoboy-ui])[data-variant='destructive'] {
-        background: var(--color-destructive);
-        color: white;
+    .ui-badge.ui-badge-variant-secondary {
+        background: var(--ui-badge-bg, var(--ui-status-soft-bg, var(--color-secondary)));
+        color: var(--ui-badge-fg, var(--ui-status-ink, inherit));
+    }
+    .ui-badge.ui-badge-variant-destructive {
+        background: var(--ui-badge-bg, var(--ui-status-soft-bg, var(--color-destructive)));
+        color: var(--ui-badge-fg, var(--ui-status-ink, white));
     }
     .ui-avatar-pending {
         position: absolute;
         inset: 0;
         opacity: 0;
     }
-    [data-slot='message-actions']:where([data-esoboy-ui]) {
+    .ui-message-actions {
         display: flex;
         gap: 0.5rem;
     }
-    [data-slot='breadcrumb-page']:where([data-esoboy-ui]) {
-        color: var(--color-foreground);
+    .ui-breadcrumb-page {
+        color: var(--ui-breadcrumb-page-fg, var(--color-foreground));
     }
-    [data-slot='statistic']:where([data-esoboy-ui]) {
+    .ui-statistic {
         @apply grid min-w-0 content-start gap-1;
     }
-    [data-slot='statistic-value']:where([data-esoboy-ui]) {
-        @apply flex flex-wrap items-baseline gap-x-1.5 leading-tight text-foreground;
+    .ui-statistic-value {
+        color: var(--ui-statistic-value-fg, var(--color-foreground));
+        @apply flex flex-wrap items-baseline gap-x-1.5 leading-tight;
         overflow-wrap: anywhere;
         font-size: 2rem;
         font-weight: 600;
         letter-spacing: -0.04em;
         font-variant-numeric: tabular-nums;
     }
-    [data-slot='statistic-label']:where([data-esoboy-ui]) {
-        color: var(--color-muted-foreground);
+    .ui-statistic-label {
+        color: var(--ui-statistic-label-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
-    :is(
-        [data-slot='statistic-prefix']:where([data-esoboy-ui]),
-        [data-slot='statistic-suffix']:where([data-esoboy-ui])
-    ) {
+    :is(.ui-statistic-prefix, .ui-statistic-suffix) {
         @apply text-base font-medium tracking-normal;
     }
-    [data-slot='statistic-description']:where([data-esoboy-ui]) {
+    .ui-statistic-description {
         @apply mt-1 flex items-center gap-1.5 text-xs;
     }
-    [data-slot='description-list']:where([data-esoboy-ui]) {
-        @apply grid overflow-hidden rounded-ui-xl border bg-card text-sm text-card-foreground;
+    .ui-description-list {
+        background-color: var(--ui-description-list-bg, var(--color-card));
+        color: var(--ui-description-list-fg, var(--color-card-foreground));
+        @apply grid overflow-hidden rounded-ui-xl border text-sm;
         grid-template-columns: minmax(6rem, 1fr) minmax(0, 3fr);
     }
-    [data-slot='description-list']:where([data-esoboy-ui]) > :is(dt, dd) {
+    .ui-description-list > :is(dt, dd) {
         @apply min-w-0 px-4 py-3;
         overflow-wrap: anywhere;
     }
-    [data-slot='description-list']:where([data-esoboy-ui]) > :where(:nth-child(n + 3)) {
+    .ui-description-list > :where(:nth-child(n + 3)) {
         @apply border-t;
     }
-    [data-slot='description-list-term']:where([data-esoboy-ui]) {
-        @apply bg-muted/40 font-medium text-muted-foreground;
+    .ui-description-list-term {
+        background-color: var(
+            --ui-description-list-term-bg,
+            color-mix(in oklab, var(--color-muted) 40%, transparent)
+        );
+        color: var(--ui-description-list-term-fg, var(--color-muted-foreground));
+        @apply font-medium;
     }
-    [data-slot='timeline']:where([data-esoboy-ui]) {
+    .ui-timeline {
         @apply grid list-none;
     }
-    [data-slot='timeline-item']:where([data-esoboy-ui]) {
+    .ui-timeline-item {
         @apply relative grid min-w-0 content-start gap-1 ps-7;
     }
-    [data-slot='timeline-item']:where([data-esoboy-ui]):not(:last-child) {
+    .ui-timeline-item:not(:last-child) {
         @apply pb-6;
     }
-    [data-slot='timeline-item']:where([data-esoboy-ui])::before {
+    .ui-timeline-item::before {
         content: '';
-        @apply absolute start-0 top-1.5 size-2.5 rounded-full border-2 border-muted-foreground bg-background;
+        border-color: var(--ui-timeline-item-before-border, var(--color-muted-foreground));
+        background-color: var(--ui-timeline-item-before-bg, var(--color-background));
+        @apply absolute start-0 top-1.5 size-2.5 rounded-full border-2;
     }
-    [data-slot='timeline-item']:where([data-esoboy-ui]):not(:last-child)::after {
+    .ui-timeline-item:not(:last-child)::after {
         content: '';
-        @apply absolute start-[4.5px] top-4 -bottom-1.5 w-px bg-border;
+        background-color: var(--ui-timeline-item-after-bg, var(--color-border));
+        @apply absolute start-[4.5px] top-4 -bottom-1.5 w-px;
     }
-    [data-slot='timeline-item']:where([data-esoboy-ui])[aria-current]::before {
-        @apply border-primary bg-primary ring-3 ring-primary/10;
+    .ui-timeline-item[aria-current]::before {
+        border-color: var(--ui-timeline-item-before-border, var(--color-primary));
+        background-color: var(--ui-timeline-item-before-bg, var(--color-primary));
+        --tw-ring-color: var(
+            --ui-timeline-item-before-ring,
+            color-mix(in oklab, var(--color-primary) 10%, transparent)
+        );
+        @apply ring-3;
     }
-    [data-slot='timeline-time']:where([data-esoboy-ui]) {
-        @apply text-xs leading-5 tabular-nums text-muted-foreground;
+    .ui-timeline-time {
+        color: var(--ui-timeline-time-fg, var(--color-muted-foreground));
+        @apply text-xs leading-5 tabular-nums;
     }
-    [data-slot='timeline-title']:where([data-esoboy-ui]) {
+    .ui-timeline-title {
         @apply text-sm font-medium leading-5;
     }
-    [data-slot='timeline-content']:where([data-esoboy-ui]) {
-        @apply text-sm leading-relaxed text-muted-foreground;
+    .ui-timeline-content {
+        color: var(--ui-timeline-content-fg, var(--color-muted-foreground));
+        @apply text-sm leading-relaxed;
         overflow-wrap: anywhere;
     }
-    [data-slot='steps']:where([data-esoboy-ui]) {
+    .ui-steps {
         @apply flex w-full list-none gap-3;
     }
-    [data-slot='steps-item']:where([data-esoboy-ui]) {
+    .ui-steps-item {
         @apply relative flex min-w-0 flex-1 flex-col items-start gap-2;
     }
-    [data-slot='steps-indicator']:where([data-esoboy-ui]) {
-        @apply inline-flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-xs font-medium tabular-nums text-muted-foreground;
+    .ui-steps-indicator {
+        background-color: var(--ui-steps-indicator-bg, var(--color-background));
+        color: var(--ui-steps-indicator-fg, var(--color-muted-foreground));
+        @apply inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium tabular-nums;
     }
-    [data-state='current'] > [data-slot='steps-indicator']:where([data-esoboy-ui]) {
-        @apply border-primary bg-primary text-primary-foreground ring-3 ring-primary/15;
+    [data-state='current'] > .ui-steps-indicator {
+        border-color: var(--ui-steps-indicator-border, var(--color-primary));
+        background-color: var(--ui-steps-indicator-bg, var(--color-primary));
+        color: var(--ui-steps-indicator-fg, var(--color-primary-foreground));
+        --tw-ring-color: var(
+            --ui-steps-indicator-ring,
+            color-mix(in oklab, var(--color-primary) 15%, transparent)
+        );
+        @apply ring-3;
     }
-    [data-state='complete'] > [data-slot='steps-indicator']:where([data-esoboy-ui]) {
-        @apply border-primary bg-primary text-primary-foreground;
+    [data-state='complete'] > .ui-steps-indicator {
+        border-color: var(--ui-steps-indicator-border, var(--color-primary));
+        background-color: var(--ui-steps-indicator-bg, var(--color-primary));
+        color: var(--ui-steps-indicator-fg, var(--color-primary-foreground));
     }
-    [data-state='error'] > [data-slot='steps-indicator']:where([data-esoboy-ui]) {
-        @apply border-destructive text-destructive;
+    [data-state='error'] > .ui-steps-indicator {
+        border-color: var(--ui-steps-indicator-error-border, var(--color-destructive));
+        color: var(--ui-steps-indicator-error-fg, var(--color-destructive));
     }
-    [data-slot='steps-item']:where([data-esoboy-ui]):not(:last-child)::after {
+    .ui-steps-item:not(:last-child)::after {
         content: '';
-        @apply absolute top-3.5 end-0 start-9 h-px bg-border;
+        background-color: var(--ui-steps-item-after-bg, var(--color-border));
+        @apply absolute top-3.5 end-0 start-9 h-px;
     }
-    [data-slot='steps-item']:where([data-esoboy-ui])[data-state='complete']::after {
-        @apply bg-primary;
+    .ui-steps-item[data-state='complete']::after {
+        background-color: var(--ui-steps-item-after-bg, var(--color-primary));
     }
-    [data-slot='steps-label']:where([data-esoboy-ui]) {
+    .ui-steps-label {
         @apply grid min-w-0 gap-1;
         overflow-wrap: anywhere;
     }
-    [data-slot='steps-title']:where([data-esoboy-ui]) {
+    .ui-steps-title {
         @apply text-sm font-medium leading-5;
     }
-    [data-state='upcoming'] > [data-slot='steps-label']:where([data-esoboy-ui]),
-    [data-slot='steps-description']:where([data-esoboy-ui]) {
-        @apply text-muted-foreground;
+    [data-state='upcoming'] > .ui-steps-label {
+        color: var(--ui-steps-label-fg, var(--color-muted-foreground));
     }
-    [data-slot='steps-description']:where([data-esoboy-ui]) {
+    .ui-steps-description {
+        color: var(--ui-steps-description-fg, var(--color-muted-foreground));
+    }
+    .ui-steps-description {
         @apply text-xs leading-5;
     }
-    [data-slot='steps']:where([data-esoboy-ui])[data-orientation='vertical'] {
+    .ui-steps[data-orientation='vertical'] {
         @apply flex-col gap-0;
     }
-    [data-orientation='vertical'] > [data-slot='steps-item']:where([data-esoboy-ui]) {
+    [data-orientation='vertical'] > .ui-steps-item {
         @apply flex-row gap-3;
     }
-    [data-orientation='vertical']
-        > [data-slot='steps-item']:where([data-esoboy-ui]):not(:last-child) {
+    [data-orientation='vertical'] > .ui-steps-item:not(:last-child) {
         @apply pb-5;
     }
-    [data-orientation='vertical']
-        > [data-slot='steps-item']:where([data-esoboy-ui]):not(:last-child)::after {
+    [data-orientation='vertical'] > .ui-steps-item:not(:last-child)::after {
         @apply top-8 bottom-1 start-3.5 h-auto w-px;
     }
     @media (max-width: 32rem) {
-        [data-slot='description-list']:where([data-esoboy-ui]) {
+        .ui-description-list {
             @apply grid-cols-1;
         }
-        [data-slot='description-list']:where([data-esoboy-ui]) > dt {
-            @apply bg-transparent pb-0 text-xs;
+        .ui-description-list > dt {
+            background-color: var(--ui-description-list-bg, transparent);
+            @apply pb-0 text-xs;
         }
-        [data-slot='description-list']:where([data-esoboy-ui]) > dd {
+        .ui-description-list > dd {
             @apply border-t-0 pt-1;
         }
     }
-    h1[data-slot='heading']:where([data-esoboy-ui]) {
+    h1.ui-heading {
         font-size: 2.25rem;
         font-weight: 700;
         letter-spacing: -0.04em;
     }
-    h2[data-slot='heading']:where([data-esoboy-ui]) {
+    h2.ui-heading {
         font-size: 1.5rem;
         font-weight: 600;
         letter-spacing: -0.03em;
     }
-    h3[data-slot='heading']:where([data-esoboy-ui]) {
+    h3.ui-heading {
         font-size: 1.125rem;
         font-weight: 600;
     }
-    [data-slot='text']:where([data-esoboy-ui]) {
+    .ui-text {
         line-height: 1.65;
     }
     .ui-text-link {
-        color: var(--color-primary);
+        color: var(--ui-text-link-fg, var(--color-primary));
         text-decoration: underline;
         text-underline-offset: 4px;
     }

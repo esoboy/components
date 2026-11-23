@@ -1,21 +1,21 @@
 @layer components {
-    [data-slot='pagination']:where([data-esoboy-ui])[data-paginated] {
+    .ui-pagination[data-paginated] {
         @apply flex-wrap items-center gap-3;
     }
-    [data-slot='pagination-jump']:where([data-esoboy-ui]) {
+    .ui-pagination-jump {
         @apply flex items-center gap-2 text-sm;
     }
-    [data-slot='pagination-jump']:where([data-esoboy-ui]) > span {
-        @apply whitespace-nowrap text-muted-foreground;
+    .ui-pagination-jump > span {
+        color: var(--ui-pagination-jump-fg, var(--color-muted-foreground));
+        @apply whitespace-nowrap;
     }
-    [data-slot='pagination-jump']:where([data-esoboy-ui]) > .ui-input-group {
+    .ui-pagination-jump > .ui-input-group {
         @apply w-20;
     }
-    [data-slot='pagination-jump']:where([data-esoboy-ui]) input[type='number'] {
+    .ui-pagination-jump input[type='number'] {
         @apply tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none;
     }
-    [data-slot='pagination']:where([data-esoboy-ui])[data-paginated]
-        > [data-slot='pagination-content']:where([data-esoboy-ui]) {
+    .ui-pagination[data-paginated] > .ui-pagination-content {
         @apply flex-wrap justify-center;
     }
     .ui-button.ui-pagination-previous:has([data-icon]) {
@@ -30,7 +30,7 @@
     .ui-pagination-label {
         @apply hidden sm:block;
     }
-    [data-slot='pagination']:where([data-esoboy-ui])[data-paginated] .ui-pagination-label {
+    .ui-pagination[data-paginated] .ui-pagination-label {
         @apply @max-xl:hidden;
     }
 }

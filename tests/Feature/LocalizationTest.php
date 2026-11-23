@@ -32,8 +32,8 @@ it('renders public components and their accessible names in the app locale', fun
         BLADE);
     $dom = HTMLDocument::createFromString($html, LIBXML_NOERROR, 'UTF-8');
     expect($dom->querySelector('nav')->getAttribute('aria-label'))->toBe($breadcrumb)
-        ->and($dom->querySelector('[data-slot="breadcrumb-ellipsis"]')->textContent)->toContain($more)
-        ->and($dom->querySelector('[data-slot="carousel"]')->getAttribute('aria-roledescription'))->toBe($carousel)
+        ->and($dom->querySelector('.ui-breadcrumb-ellipsis')->textContent)->toContain($more)
+        ->and($dom->querySelector('.ui-carousel')->getAttribute('aria-roledescription'))->toBe($carousel)
         ->and($dom->querySelector('[role="grid"]')->getAttribute('aria-label'))->toBe($month)
         ->and($dom->querySelector('iframe')->getAttribute('title'))->toBe($embed)
         ->and($dom->querySelector('esoboy-editor')->getAttribute('aria-label'))->toBe('Acme draft')

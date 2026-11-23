@@ -9,9 +9,9 @@ export function questionnaire() {
         navigate(event) {
             const input = event.target.matches('input:not([type=radio],[type=checkbox]),textarea'),
                 action = this.$root.querySelector(
-                    '[data-slot="questionnaire-next"] button, [data-slot="questionnaire-submit"] button',
+                    '.ui-questionnaire-next button, .ui-questionnaire-submit button',
                 ),
-                previous = this.$root.querySelector('[data-slot="questionnaire-previous"] button')
+                previous = this.$root.querySelector('.ui-questionnaire-previous button')
             if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
                 event.preventDefault()
                 // Commit any edited freeform control before the following action is bundled.

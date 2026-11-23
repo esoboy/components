@@ -114,8 +114,8 @@ export function combobox() {
         navigateChips(event) {
             const input = this.$root.querySelector('.ui-combobox-multiple input[role="combobox"]')
             if (!input || input.disabled || input.readOnly) return false
-            const chips = [...this.$root.querySelectorAll('[data-slot="combobox-chip"]')]
-            const current = chips.indexOf(event.target.closest('[data-slot="combobox-chip"]'))
+            const chips = [...this.$root.querySelectorAll('.ui-combobox-chip')]
+            const current = chips.indexOf(event.target.closest('.ui-combobox-chip'))
             const previous =
                 getComputedStyle(input).direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
             const next = previous === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft'
@@ -147,7 +147,7 @@ export function combobox() {
                 this.highlightOption(null)
                 const index = Math.min(current, chips.length - 2)
                 this.$wire.choose(JSON.parse(chips[current].dataset.value)).then(() => {
-                    const remaining = this.$root.querySelectorAll('[data-slot="combobox-chip"]')
+                    const remaining = this.$root.querySelectorAll('.ui-combobox-chip')
                     focusInPlace(remaining[index] ?? input)
                 })
                 return true

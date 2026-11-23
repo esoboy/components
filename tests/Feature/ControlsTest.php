@@ -22,7 +22,7 @@ it('forwards native input group attributes to the input', function () {
     expect($input->getAttribute('id'))->toBe('email')
         ->and($input->getAttribute('wire:model'))->toBe('email')
         ->and($input->getAttribute('aria-describedby'))->toBe('email-hint')
-        ->and($input->getAttribute('data-slot'))->toBe('input-group-control');
+        ->and(explode(' ', $input->getAttribute('class')))->toContain('ui-input-group-control');
 });
 
 it('keeps the selection while editing a combobox and restores its label when editing ends', function () {

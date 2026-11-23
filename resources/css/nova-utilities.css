@@ -89,7 +89,7 @@
             --scroll-fade-e: 0px;
         }
     }
-    [data-slot='code-block-content']:where([data-esoboy-ui])[data-wrap] {
+    .ui-code-block-content[data-wrap] {
         --_scroll-fade-size-t: var(
             --scroll-fade-t-size,
             var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
@@ -128,8 +128,8 @@
             --scroll-fade-b: var(--_scroll-fade-size-b);
         }
     }
-    [data-slot='attachment-group']:where([data-esoboy-ui]),
-    [data-slot='code-block-content']:where([data-esoboy-ui]):not([data-wrap]) {
+    .ui-attachment-group,
+    .ui-code-block-content:not([data-wrap]) {
         --_scroll-fade-size-s: var(
             --scroll-fade-s-size,
             var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
@@ -177,7 +177,7 @@
             --scroll-fade-e: var(--_scroll-fade-size-e);
         }
     }
-    [data-slot='message-scroller-viewport']:where([data-esoboy-ui]) {
+    .ui-message-scroller-viewport {
         --_scroll-fade-size-b: var(
             --scroll-fade-b-size,
             var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
@@ -227,13 +227,8 @@
             background-position: 0 0;
         }
     }
-    [data-slot='attachment']:where([data-esoboy-ui]):is(
-            [data-state='processing'],
-            [data-state='uploading']
-        )
-        [data-slot='attachment-name']:where([data-esoboy-ui]),
-    [data-slot='trace-line']:where([data-esoboy-ui])[data-status='running']
-        > [data-slot='trace-title']:where([data-esoboy-ui]) {
+    .ui-attachment:is([data-state='processing'], [data-state='uploading']) .ui-attachment-name,
+    .ui-trace-line[data-status='running'] > .ui-trace-title {
         --_spread: var(--shimmer-spread, calc(3ch + 40px));
         --_base: currentColor;
         --_highlight: var(--shimmer-color, oklch(from currentColor l c h / calc(alpha * 0.2)));

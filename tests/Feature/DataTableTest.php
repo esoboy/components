@@ -36,13 +36,13 @@ class LivePaginationExample extends EmbeddedPaginationExample
 it('uses paginator URLs inside a host without pagination actions and the named page on a paginating host', function () {
     $ordinary = HTMLDocument::createFromString(Livewire::test(EmbeddedPaginationExample::class)->html(), LIBXML_NOERROR);
     expect($ordinary->querySelector('.ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
-        ->and($ordinary->querySelector('[data-slot="data-table"] .ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
+        ->and($ordinary->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
         ->and($ordinary->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('location.assign');
 
     $live = Livewire::test(LivePaginationExample::class);
     $document = HTMLDocument::createFromString($live->html(), LIBXML_NOERROR);
     expect($document->querySelector('.ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
-        ->and($document->querySelector('[data-slot="data-table"] .ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
+        ->and($document->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
         ->and($document->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('gotoPage');
     $live->call('gotoPage', 4, 'ordersPage')->assertSet('paginators.ordersPage', 4);
 });
@@ -114,7 +114,7 @@ it('renders a hand-authored table with native sections, spans and row attributes
         ->and($xpath->evaluate('string(//tbody/tr[@data-state="selected"]/td[@rowspan=2])'))->toBe('A')
         ->and(trim($xpath->evaluate('string(//tbody/tr[last()]/td[@colspan=2])')))->toBe('End')
         ->and($xpath->evaluate('string(//tfoot/tr/td[@colspan=2])'))->toBe('Total')
-        ->and($xpath->evaluate('count(//input | //button | //*[@data-slot="data-table"])'))->toBe(0.0);
+        ->and($xpath->evaluate('count(//input | //button | //*[contains(concat(" ", normalize-space(@class), " "), " ui-data-table ")])'))->toBe(0.0);
 });
 
 it('renders cells only for real rows and authorized visible columns in the caller', function () {
@@ -125,7 +125,7 @@ it('renders cells only for real rows and authorized visible columns in the calle
     $dom = new DOMDocument;
     @$dom->loadHTML($host->html());
     $xpath = new DOMXPath($dom);
-    expect($xpath->evaluate('count(//*[@data-slot="table-container"]/table[@data-slot="table"])'))->toBe(1.0)
+    expect($xpath->evaluate('count(//*[contains(concat(" ", normalize-space(@class), " "), " ui-table-container ")]/table[contains(concat(" ", normalize-space(@class), " "), " ui-table-element ")])'))->toBe(1.0)
         ->and($xpath->evaluate('count(//td[@data-column="cost"])'))->toBe(2.0)
         ->and(trim($xpath->evaluate('string(//td[@data-column="cost"])')))->toBe('');
     $host->set('status', 'Updated')->assertSee('Updated');
@@ -200,7 +200,7 @@ it('uses one current-page window and never mistakes a cursor or simple page slic
     expect(substr_count($form, '<form'))->toBe(1)->and($form)->toContain('form=""');
     foreach ([new Paginator($models, 1), new CursorPaginator($models, 1, options: ['parameters' => ['id']])] as $rows) {
         $html = Blade::render($markup, compact('rows', 'columns'));
-        expect($html)->toContain('Next')->not->toContain('data-slot="data-table-total"', 'name="pageNumber"');
+        expect($html)->toContain('Next')->not->toContain('class="ui-data-table-total"', 'name="pageNumber"');
     }
 });
 
@@ -208,14 +208,14 @@ it('renders optional jump controls in a standalone Pagination and preserves its 
     $pager = (new LengthAwarePaginator([], 90, 10, 3, ['path' => '/orders', 'pageName' => 'invoices']))
         ->appends(['status' => 'open'])->fragment('list');
     $without = Blade::render('<x-ui::pagination :paginator="$pager" />', compact('pager'));
-    expect($without)->toContain('aria-current="page"')->not->toContain('data-slot="pagination-jump"');
+    expect($without)->toContain('aria-current="page"')->not->toContain('class="ui-pagination-jump"');
 
     $with = Blade::render('<x-ui::pagination :paginator="$pager" :max-pages="3" jumpable />', compact('pager'));
-    expect($with)->toContain('data-page-name="invoices"', 'status=open&amp;invoices=1#list', 'max="9"', 'data-slot="pagination-jump"')
-        ->not->toContain('data-slot="data-table"');
+    expect($with)->toContain('data-page-name="invoices"', 'status=open&amp;invoices=1#list', 'max="9"', 'class="ui-pagination-jump"')
+        ->not->toContain('class="ui-data-table"');
 
     $custom = Blade::render('<x-ui::pagination :paginator="$pager" jumpable><x-ui::pagination.content><x-ui::pagination.item>Custom links</x-ui::pagination.item></x-ui::pagination.content></x-ui::pagination>', compact('pager'));
-    expect($custom)->toContain('Custom links', 'data-slot="pagination-jump"')->not->toContain('data-slot="pagination-button"');
+    expect($custom)->toContain('Custom links', 'class="ui-pagination-jump"')->not->toContain('class="ui-pagination-button"');
 });
 
 it('resolves stale layouts, preserves locked positions, and keeps a business column visible', function () {

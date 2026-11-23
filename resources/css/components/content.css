@@ -1,5 +1,5 @@
 @layer components {
-    [data-slot='toaster']:where([data-esoboy-ui]) {
+    .ui-toaster {
         position: fixed;
         z-index: 90;
         inset: auto 1rem 1rem auto;
@@ -8,71 +8,87 @@
         gap: 0.75rem;
         pointer-events: none;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])[data-position='top-right'] {
+    .ui-toaster[data-position='top-right'] {
         inset: 1rem 1rem auto auto;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])[data-position='top-left'] {
+    .ui-toaster[data-position='top-left'] {
         inset: 1rem auto auto 1rem;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])[data-position='bottom-left'] {
+    .ui-toaster[data-position='bottom-left'] {
         inset: auto auto 1rem 1rem;
     }
-    [data-slot='toast']:where([data-esoboy-ui]) {
+    .ui-toast {
+        color: var(--ui-toast-fg, inherit);
         will-change: transform;
         pointer-events: auto;
-        background: var(--color-popover);
-        border: 1px solid var(--color-border);
+        background: var(--ui-toast-bg, var(--color-popover));
+        border: 1px solid var(--ui-toast-border, var(--ui-status-ink, var(--color-border)));
         @apply rounded-ui-2xl shadow-lg outline-none;
     }
-    [data-slot='toast-content']:where([data-esoboy-ui]) {
+    .ui-toast-content {
         @apply flex h-full items-center gap-3 overflow-hidden p-4;
     }
-    [data-slot='toast-title']:where([data-esoboy-ui]) {
+    .ui-toast > .ui-icon,
+    .ui-toast-content > .ui-icon {
+        color: var(--ui-toast-icon, var(--ui-status-ink, currentColor));
+    }
+    .ui-toast-title {
+        color: var(--ui-toast-title-fg, inherit);
         @apply text-sm font-medium;
     }
-    [data-slot='toast-description']:where([data-esoboy-ui]) {
-        @apply text-sm text-muted-foreground;
+    .ui-toast-description {
+        color: var(--ui-toast-description-fg, var(--color-muted-foreground));
+        @apply text-sm;
     }
-    [data-slot='toast-actions']:where([data-esoboy-ui]) {
+    .ui-toast-actions {
         display: flex;
         gap: 0.5rem;
         justify-content: flex-end;
     }
-    [data-slot='toast-close']:where([data-esoboy-ui]) > .ui-button-variant-ghost {
-        @apply relative shrink-0 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:text-foreground;
+    .ui-toast-close > .ui-button-variant-ghost {
+        color: var(--ui-toast-close-fg, var(--color-muted-foreground));
+        @apply relative shrink-0 after:absolute after:-inset-2 after:content-[''];
+        @variant hover {
+            color: var(--ui-toast-close-hover-fg, var(--color-foreground));
+        }
     }
-    [data-slot='toast']:where([data-esoboy-ui])[data-variant='destructive'] {
-        border-color: var(--color-destructive);
+    .ui-toast.ui-toast-variant-destructive {
+        border-color: var(--ui-toast-border, var(--ui-status-ink, var(--color-destructive)));
     }
-    [data-slot='mentions']:where([data-esoboy-ui]) {
+    .ui-mentions-body {
         position: relative;
     }
-    [data-slot='mentions-suggestions']:where([data-esoboy-ui]) {
-        @apply mt-1 rounded-ui-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10;
+    .ui-mentions-suggestions {
+        background-color: var(--ui-mentions-suggestions-bg, var(--color-popover));
+        color: var(--ui-mentions-suggestions-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(
+            --ui-mentions-suggestions-ring,
+            color-mix(in oklab, var(--color-foreground) 10%, transparent)
+        );
+        @apply mt-1 rounded-ui-lg p-1 shadow-md ring-1;
     }
-    [data-slot='signature']:where([data-esoboy-ui]) {
+    .ui-signature-body {
         display: grid;
         gap: 0.5rem;
         justify-items: start;
     }
-    [data-ui-signature-surface] {
+    .ui-signature-surface {
         position: relative;
         width: 100%;
         height: 12rem;
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--ui-signature-surface-border, var(--color-border));
         border-radius: var(--radius-ui-lg);
-        background: var(--color-background);
+        background: var(--ui-signature-surface-bg, var(--color-background));
     }
-    [data-ui-signature-surface] canvas {
+    .ui-signature-surface canvas {
+        color: var(--ui-signature-ink, inherit);
         position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
-    }
-    [data-ui-signature-surface] canvas {
         touch-action: none;
     }
-    [data-ui-crop-surface] {
+    .ui-cropper-surface {
         position: relative;
         width: 100%;
         max-width: 100%;
@@ -80,43 +96,43 @@
         touch-action: none;
         user-select: none;
     }
-    [data-ui-crop-surface] > img {
+    .ui-cropper-surface > img {
         display: block;
         width: 100%;
         height: auto;
         max-width: 100%;
     }
-    [data-ui-crop-frame] {
+    .ui-cropper-frame {
         position: absolute;
-        border: 2px solid white;
-        box-shadow: 0 0 0 9999px #0006;
+        border: 2px solid var(--ui-cropper-frame-border, white);
+        box-shadow: 0 0 0 9999px var(--ui-cropper-mask-bg, #0006);
         cursor: move;
     }
-    [data-ui-crop-resize] {
+    .ui-cropper-resize {
         position: absolute;
         right: -5px;
         bottom: -5px;
         width: 10px;
         height: 10px;
-        background: white;
-        border: 1px solid black;
+        background: var(--ui-cropper-resize-bg, white);
+        border: 1px solid var(--ui-cropper-resize-border, black);
         cursor: nwse-resize;
     }
     [data-ui-media-trigger][role='button'] {
         display: inline-block;
     }
-    [data-slot='media-preview']:where([data-esoboy-ui]):not([data-type='audio']) {
+    .ui-media-preview-panel:not([data-type='audio']) {
         width: min(60rem, calc(100vw - 2rem));
         max-width: min(60rem, calc(100vw - 2rem));
     }
-    [data-slot='media-preview-canvas']:where([data-esoboy-ui]) {
+    .ui-media-preview-canvas {
         min-width: 0;
         overflow: hidden;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         place-items: center;
     }
-    [data-slot='media-preview-canvas']:where([data-esoboy-ui]) > :is(img, video) {
+    .ui-media-preview-canvas > :is(img, video) {
         width: auto;
         height: auto;
         min-height: 0;
@@ -124,32 +140,34 @@
         max-width: 100%;
         object-fit: contain;
     }
-    [data-slot='media-preview-canvas']:where([data-esoboy-ui]) > audio {
+    .ui-media-preview-canvas > audio {
         width: 100%;
         min-width: 0;
     }
-    [data-slot='media-preview-toolbar']:where([data-esoboy-ui]) {
+    .ui-media-preview-toolbar {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
         padding-top: 1rem;
     }
-    [data-slot='tour-content']:where([data-esoboy-ui]) {
+    .ui-tour-content {
         position: fixed;
         width: min(22rem, calc(100vw - 2rem));
-        @apply rounded-ui-xl border bg-popover p-4 text-sm text-popover-foreground shadow-lg;
+        background-color: var(--ui-tour-content-bg, var(--color-popover));
+        color: var(--ui-tour-content-fg, var(--color-popover-foreground));
+        @apply rounded-ui-xl border p-4 text-sm shadow-lg;
     }
-    [data-slot='tour-content']:where([data-esoboy-ui])::backdrop {
-        background: #0003;
+    .ui-tour-content::backdrop {
+        background: var(--ui-tour-content-backdrop-bg, #0003);
     }
-    [data-slot='tour-title']:where([data-esoboy-ui]) {
+    .ui-tour-title {
         @apply mb-1 text-base font-medium leading-none;
     }
-    [data-slot='tour-description']:where([data-esoboy-ui]) {
+    .ui-tour-description {
         font-size: 0.875rem;
-        color: var(--color-muted-foreground);
+        color: var(--ui-tour-description-fg, var(--color-muted-foreground));
     }
-    [data-slot='tour-footer']:where([data-esoboy-ui]) {
+    .ui-tour-footer {
         display: flex;
         justify-content: flex-end;
         gap: 0.5rem;
@@ -157,12 +175,12 @@
     }
 }
 @layer components {
-    [data-slot='toaster']:where([data-esoboy-ui]) {
+    .ui-toaster {
         z-index: 50;
         display: block;
         outline: none;
     }
-    [data-slot='toaster']:where([data-esoboy-ui]) [data-slot='toast']:where([data-esoboy-ui]) {
+    .ui-toaster .ui-toast {
         --toast-swipe-movement-x: 0px;
         --toast-swipe-movement-y: 0px;
         --toast-scale: max(0, calc(1 - var(--toast-index, 0) * 0.1));
@@ -197,11 +215,17 @@
             height 150ms;
         user-select: none;
         touch-action: none;
-        color: var(--color-popover-foreground);
-        @apply focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50;
+        color: var(--ui-toast-fg, var(--color-popover-foreground));
+        @apply focus-visible:ring-3;
+        @variant focus-visible {
+            border-color: var(--ui-toast-focus-border, var(--color-ring));
+            --tw-ring-color: var(
+                --ui-toast-focus-ring,
+                color-mix(in oklab, var(--color-ring) 50%, transparent)
+            );
+        }
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])::after {
+    .ui-toaster .ui-toast::after {
         content: '';
         position: absolute;
         top: 100%;
@@ -209,63 +233,52 @@
         width: 100%;
         height: calc(0.75rem + 1px);
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-expanded] {
+    .ui-toaster .ui-toast[data-expanded] {
         height: var(--toast-height);
         transform: translateX(var(--toast-swipe-movement-x)) translateY(var(--toast-offset));
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-limited] {
+    .ui-toaster .ui-toast[data-limited] {
         opacity: 0;
         pointer-events: none;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui]):is(
+    .ui-toaster
+        .ui-toast:is(
             [data-starting],
             [data-ending]:not([data-limited]):not([data-swipe-direction])
         ) {
         transform: translateY(150%);
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-swiping] {
+    .ui-toaster .ui-toast[data-swiping] {
         transition: none;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-ending][data-swipe-direction='down'] {
+    .ui-toaster .ui-toast[data-ending][data-swipe-direction='down'] {
         transform: translateY(calc(var(--toast-swipe-movement-y) + 150%));
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-ending][data-swipe-direction='up'] {
+    .ui-toaster .ui-toast[data-ending][data-swipe-direction='up'] {
         transform: translateY(calc(var(--toast-swipe-movement-y) - 150%));
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-ending][data-swipe-direction='left'] {
+    .ui-toaster .ui-toast[data-ending][data-swipe-direction='left'] {
         transform: translateX(calc(var(--toast-swipe-movement-x) - 150%))
             translateY(var(--toast-offset));
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-ending][data-swipe-direction='right'] {
+    .ui-toaster .ui-toast[data-ending][data-swipe-direction='right'] {
         transform: translateX(calc(var(--toast-swipe-movement-x) + 150%))
             translateY(var(--toast-offset));
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast-content']:where([data-esoboy-ui]) {
+    .ui-toaster .ui-toast-content {
         transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1);
     }
-    [data-slot='toaster']:where([data-esoboy-ui])
-        [data-slot='toast']:where([data-esoboy-ui])[data-behind]:not([data-expanded])
-        [data-slot='toast-content']:where([data-esoboy-ui]) {
+    .ui-toaster .ui-toast[data-behind]:not([data-expanded]) .ui-toast-content {
         opacity: 0;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])[data-position^='top']
-        [data-slot='toast']:where([data-esoboy-ui]) {
+    .ui-toaster[data-position^='top'] .ui-toast {
         --toast-direction: -1;
         top: 0;
         bottom: auto;
         transform-origin: top;
     }
-    [data-slot='toaster']:where([data-esoboy-ui])[data-position^='top']
-        [data-slot='toast']:where([data-esoboy-ui]):is(
+    .ui-toaster[data-position^='top']
+        .ui-toast:is(
             [data-starting],
             [data-ending]:not([data-limited]):not([data-swipe-direction])
         ) {

@@ -10,83 +10,115 @@
         white-space: nowrap;
         border: 0;
     }
-    [data-slot='slider']:where([data-esoboy-ui]) {
+    .ui-slider-body {
         width: 100%;
         height: 1.25rem;
-        accent-color: var(--color-primary);
+        accent-color: var(--ui-slider-accent, var(--color-primary));
         cursor: pointer;
     }
     .ui-color-picker-field {
         @apply relative inline-flex w-18 min-w-18 align-middle;
     }
-    [data-slot='color-picker']:where([data-esoboy-ui]) {
-        @apply h-8 w-full cursor-pointer appearance-none rounded-ui-lg border border-input bg-background py-1.5 ps-1.5 pe-8 outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive disabled:cursor-not-allowed;
+    .ui-color-picker-control {
+        border-color: var(--ui-color-picker-border, var(--color-input));
+        background-color: var(--ui-color-picker-bg, var(--color-background));
+        @apply h-8 w-full cursor-pointer appearance-none rounded-ui-lg border py-1.5 ps-1.5 pe-8 outline-none transition-colors focus-visible:ring-3 disabled:cursor-not-allowed;
+        @variant hover {
+            background-color: var(--ui-color-picker-hover-bg, var(--color-muted));
+        }
+        @variant focus-visible {
+            border-color: var(--ui-color-picker-focus-border, var(--color-ring));
+            --tw-ring-color: var(
+                --ui-color-picker-focus-ring,
+                color-mix(in oklab, var(--color-ring) 50%, transparent)
+            );
+        }
+        @variant aria-invalid {
+            border-color: var(--ui-color-picker-invalid-border, var(--color-destructive));
+        }
     }
-    [data-slot='color-picker']:where([data-esoboy-ui])::-webkit-color-swatch-wrapper {
+    .ui-color-picker-control::-webkit-color-swatch-wrapper {
         padding: 0;
     }
-    [data-slot='color-picker']:where([data-esoboy-ui])::-webkit-color-swatch {
-        @apply rounded-ui-sm border border-black/15;
+    .ui-color-picker-control::-webkit-color-swatch {
+        border-color: var(
+            --ui-color-picker-border,
+            color-mix(in oklab, var(--color-black) 15%, transparent)
+        );
+        @apply rounded-ui-sm border;
     }
-    [data-slot='color-picker']:where([data-esoboy-ui])::-moz-color-swatch {
-        @apply rounded-ui-sm border border-black/15;
+    .ui-color-picker-control::-moz-color-swatch {
+        border-color: var(
+            --ui-color-picker-border,
+            color-mix(in oklab, var(--color-black) 15%, transparent)
+        );
+        @apply rounded-ui-sm border;
     }
-    [data-slot='color-picker-field']:where([data-esoboy-ui]):has(:disabled) {
+    .ui-color-picker-field:has(:disabled) {
         opacity: 0.5;
     }
-    [data-slot='input-otp']:where([data-esoboy-ui]) {
+    .ui-input-otp-body {
         max-width: 16rem;
         letter-spacing: 1em;
         font-variant-numeric: tabular-nums;
         text-align: center;
     }
-    [data-slot='toggle']:where([data-esoboy-ui]) {
+    .ui-toggle {
         position: relative;
         display: inline-flex;
         cursor: pointer;
     }
-    [data-slot='toggle']:where([data-esoboy-ui]):has(:checked) > span,
-    [data-slot='toggle-group-item']:where([data-esoboy-ui]):has(:checked) > span {
-        background: var(--color-accent);
+    .ui-toggle:has(:checked) > span {
+        background: var(--ui-toggle-checked-bg, var(--color-accent));
     }
-    [data-slot='toggle']:where([data-esoboy-ui]):has(:focus-visible) > span,
-    [data-slot='toggle-group-item']:where([data-esoboy-ui]):has(:focus-visible) > span {
-        outline: 2px solid var(--color-ring);
+    .ui-toggle-group-item:has(:checked) > span {
+        background: var(--ui-toggle-group-item-checked-bg, var(--color-accent));
+    }
+    .ui-toggle:has(:focus-visible) > span {
+        outline: 2px solid var(--ui-toggle-focus-outline, var(--color-ring));
         outline-offset: 2px;
     }
-    [data-slot='toggle']:where([data-esoboy-ui]):has(:disabled),
-    [data-slot='toggle-group-item']:where([data-esoboy-ui]):has(:disabled) {
+    .ui-toggle-group-item:has(:focus-visible) > span {
+        outline: 2px solid var(--ui-toggle-group-item-focus-outline, var(--color-ring));
+        outline-offset: 2px;
+    }
+    .ui-toggle:has(:disabled),
+    .ui-toggle-group-item:has(:disabled) {
         opacity: 0.5;
         pointer-events: none;
     }
-    [data-slot='rating']:where([data-esoboy-ui]) {
+    .ui-rating {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 0.25rem;
     }
-    [data-slot='rating']:where([data-esoboy-ui]) label {
+    .ui-rating label {
         position: relative;
         cursor: pointer;
-        @apply inline-flex size-8 items-center justify-center rounded-ui-lg text-muted-foreground transition-colors hover:bg-muted has-disabled:pointer-events-none has-disabled:opacity-50;
+        color: var(--ui-rating-fg, var(--color-muted-foreground));
+        @apply inline-flex size-8 items-center justify-center rounded-ui-lg transition-colors has-disabled:pointer-events-none has-disabled:opacity-50;
+        @variant hover {
+            background-color: var(--ui-rating-hover-bg, var(--color-muted));
+        }
     }
-    [data-slot='rating']:where([data-esoboy-ui])
-        label:is(:has(:checked), :has(~ label :checked))
-        .ui-rating-star {
-        color: var(--color-primary);
+    .ui-rating label:is(:has(:checked), :has(~ label :checked)) .ui-rating-star {
+        color: var(--ui-rating-star-checked-fg, var(--color-primary));
     }
-    [data-slot='rating']:where([data-esoboy-ui])
-        label:is(:has(:checked), :has(~ label :checked))
-        svg {
+    .ui-rating label:is(:has(:checked), :has(~ label :checked)) svg {
         fill: currentColor;
     }
-    [data-slot='rating']:where([data-esoboy-ui]) label:has(:focus-visible) {
-        @apply outline-none ring-3 ring-ring/50;
+    .ui-rating label:has(:focus-visible) {
+        --tw-ring-color: var(
+            --ui-rating-focus-ring,
+            color-mix(in oklab, var(--color-ring) 50%, transparent)
+        );
+        @apply outline-none ring-3;
     }
-    [data-slot='accordion-item']:where([data-esoboy-ui]):not(:last-child) {
-        border-bottom: 1px solid var(--color-border);
+    .ui-accordion-item:not(:last-child) {
+        border-bottom: 1px solid var(--ui-accordion-item-border, var(--color-border));
     }
-    [data-slot='accordion-summary']:where([data-esoboy-ui]) {
+    .ui-accordion-summary {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -96,34 +128,32 @@
         font-weight: 500;
         list-style: none;
     }
-    [data-slot='accordion-item']:where([data-esoboy-ui])[open] > summary > [data-state='closed'],
-    [data-slot='accordion-item']:where([data-esoboy-ui]):not([open])
-        > summary
-        > [data-state='open'] {
+    .ui-accordion-item[open] > summary > [data-state='closed'],
+    .ui-accordion-item:not([open]) > summary > [data-state='open'] {
         display: none;
     }
-    [data-slot='accordion-content']:where([data-esoboy-ui]) {
+    .ui-accordion-content {
         padding: 0 0 1rem;
         font-size: 0.875rem;
     }
-    [data-slot='scroll-area']:where([data-esoboy-ui]) {
+    .ui-scroll-area {
         position: relative;
         display: flex;
         flex-direction: column;
         min-height: 0;
         min-width: 0;
     }
-    [data-slot='scroll-area-viewport']:where([data-esoboy-ui]) {
+    .ui-scroll-area-viewport {
         min-height: 0;
         overflow: auto;
         scrollbar-width: none;
     }
-    [data-slot='scroll-area-content']:where([data-esoboy-ui]) {
+    .ui-scroll-area-content {
         display: flow-root;
     }
-    [data-slot='scroll-area']:where([data-esoboy-ui])[data-orientation='horizontal']
-        > [data-slot='scroll-area-viewport']:where([data-esoboy-ui])
-        > [data-slot='scroll-area-content']:where([data-esoboy-ui]) {
+    .ui-scroll-area[data-orientation='horizontal']
+        > .ui-scroll-area-viewport
+        > .ui-scroll-area-content {
         width: max-content;
         min-width: 100%;
     }
@@ -133,31 +163,35 @@
             var(--available-height, calc(100dvh - 10px))
         );
     }
-    .ui-list-scroll > [data-slot='scroll-area-viewport']:where([data-esoboy-ui]) {
+    .ui-list-scroll > .ui-scroll-area-viewport {
         height: auto;
         overflow-x: hidden;
         scroll-padding-block: 0.25rem;
     }
-    .ui-list-scroll[data-overflow] > [data-slot='scroll-area-viewport']:where([data-esoboy-ui]) {
+    .ui-list-scroll[data-overflow] > .ui-scroll-area-viewport {
         overscroll-behavior-y: contain;
     }
-    [data-slot='icon-select-pagination']:where([data-esoboy-ui]) {
-        @apply flex shrink-0 items-center justify-between gap-2 border-t border-border px-1 pt-1 text-xs text-muted-foreground tabular-nums;
+    .ui-icon-select-pagination {
+        border-color: var(--ui-icon-select-pagination-border, var(--color-border));
+        color: var(--ui-icon-select-pagination-fg, var(--color-muted-foreground));
+        @apply flex shrink-0 items-center justify-between gap-2 border-t px-1 pt-1 text-xs tabular-nums;
     }
-    [data-slot='scroll-area']:where([data-esoboy-ui]):not([data-overflow])
-        > [data-slot='scroll-area-scrollbar']:where([data-esoboy-ui]) {
+    .ui-scroll-area:not([data-overflow]) > .ui-scroll-area-scrollbar {
         display: none;
     }
-    [data-slot='scroll-area-scrollbar']:where([data-esoboy-ui])[data-orientation='vertical'] {
-        @apply absolute inset-y-0 right-0 flex h-full w-2.5 touch-none border-l border-l-transparent p-px select-none;
+    .ui-scroll-area-scrollbar[data-orientation='vertical'] {
+        border-left-color: var(--ui-scroll-area-scrollbar-border, transparent);
+        @apply absolute inset-y-0 right-0 flex h-full w-2.5 touch-none border-l p-px select-none;
     }
-    [data-slot='scroll-area-scrollbar']:where([data-esoboy-ui])[data-orientation='horizontal'] {
-        @apply absolute inset-x-0 bottom-0 flex h-2.5 flex-col touch-none border-t border-t-transparent p-px select-none;
+    .ui-scroll-area-scrollbar[data-orientation='horizontal'] {
+        border-top-color: var(--ui-scroll-area-scrollbar-border, transparent);
+        @apply absolute inset-x-0 bottom-0 flex h-2.5 flex-col touch-none border-t p-px select-none;
     }
-    [data-slot='scroll-area-thumb']:where([data-esoboy-ui]) {
-        @apply relative h-full w-full rounded-full bg-border;
+    .ui-scroll-area-thumb {
+        background-color: var(--ui-scroll-area-thumb-bg, var(--color-border));
+        @apply relative h-full w-full rounded-full;
     }
-    [data-slot='tags-input']:where([data-esoboy-ui]) {
+    .ui-tags-input-body {
         display: grid;
         gap: 0.5rem;
     }
@@ -166,50 +200,56 @@
         flex-wrap: wrap;
         gap: 0.25rem;
     }
-    [data-node-row]:where([data-esoboy-ui]) {
+    :is(.ui-cascader-row, .ui-tree-row) {
         @apply flex min-w-0 items-center gap-0.5;
     }
-    [data-slot='tree-row']:where([data-esoboy-ui]) {
+    .ui-tree-row {
         padding-inline-start: calc((var(--ui-level) - 1) * 1rem);
     }
-    [data-select-parents] > [data-slot='tree-row']:where([data-esoboy-ui]) {
+    [data-select-parents] > .ui-tree-row {
         display: grid;
         grid-template-columns: calc(var(--spacing) * 8) minmax(0, 1fr);
     }
-    [data-select-parents]
-        > [data-slot='tree-row']:where([data-esoboy-ui])
-        > [data-node-action]:where([data-esoboy-ui]) {
+    [data-select-parents] > .ui-tree-row > .ui-tree-action {
         grid-column: 2;
     }
-    [data-slot='node-selector']:where([data-esoboy-ui]) > span {
-        @apply grid size-4 place-items-center rounded-ui-sm border border-input;
+    .ui-node-selector > span {
+        border-color: var(--ui-node-selector-border, var(--color-input));
+        @apply grid size-4 place-items-center rounded-ui-sm border;
     }
-    [data-slot='node-selector']:where([data-esoboy-ui])[role='radio'] > span {
+    .ui-node-selector[role='radio'] > span {
         @apply rounded-full;
     }
-    [data-slot='node-selector']:where([data-esoboy-ui])[aria-checked='true'] > span {
-        @apply border-primary bg-primary text-primary-foreground;
+    .ui-node-selector[aria-checked='true'] > span {
+        border-color: var(--ui-node-selector-checked-border, var(--color-primary));
+        background-color: var(--ui-node-selector-checked-bg, var(--color-primary));
+        color: var(--ui-node-selector-checked-fg, var(--color-primary-foreground));
     }
-    [data-slot='node-selector']:where([data-esoboy-ui])[role='radio'][aria-checked='true']
-        > span::before {
+    .ui-node-selector[role='radio'][aria-checked='true'] > span::before {
         content: '';
-        @apply size-1.5 rounded-full bg-current;
+        background-color: var(--ui-node-selector-indicator, currentColor);
+        @apply size-1.5 rounded-full;
     }
-    [data-slot='node-selector']:where([data-esoboy-ui]) svg {
+    .ui-node-selector svg {
         @apply size-3;
     }
-    [data-node-row]:where([data-esoboy-ui]) > [data-node-action]:where([data-esoboy-ui]) {
+    :is(.ui-cascader-row, .ui-tree-row) > .ui-tree-action {
         @apply min-w-0 flex-1 justify-between;
     }
-    [data-node-action]:where([data-esoboy-ui]) > span {
+    .ui-tree-action > span {
         @apply truncate;
     }
-    [data-node-action]:where([data-esoboy-ui]) > svg {
-        @apply size-4 shrink-0 text-muted-foreground;
+    .ui-tree-action > svg {
+        color: var(--ui-tree-action-icon, var(--color-muted-foreground));
+        @apply size-4 shrink-0;
     }
-    [data-node-action]:where([data-esoboy-ui])[aria-pressed='true'],
-    .ui-cascader-column [data-node-action]:where([data-esoboy-ui])[aria-expanded='true'] {
-        @apply bg-accent text-accent-foreground;
+    .ui-tree-action[aria-pressed='true'] {
+        background-color: var(--ui-tree-action-selected-bg, var(--color-accent));
+        color: var(--ui-tree-action-selected-fg, var(--color-accent-foreground));
+    }
+    .ui-cascader-column .ui-tree-action[aria-expanded='true'] {
+        background-color: var(--ui-cascader-column-expanded-bg, var(--color-accent));
+        color: var(--ui-cascader-column-expanded-fg, var(--color-accent-foreground));
     }
     .ui-transfer-columns {
         display: grid;
@@ -228,7 +268,7 @@
     .ui-cascader-scroll {
         max-width: calc(100vw - 2rem);
     }
-    .ui-cascader-scroll > [data-slot='scroll-area-viewport']:where([data-esoboy-ui]) {
+    .ui-cascader-scroll > .ui-scroll-area-viewport {
         height: auto;
         overflow-y: hidden;
     }
@@ -245,60 +285,72 @@
         padding: 0.25rem;
     }
     .ui-cascader-column:not(:last-child) {
-        border-inline-end: 1px solid var(--color-border);
+        border-inline-end: 1px solid var(--ui-cascader-column-border, var(--color-border));
     }
-    [data-slot='picker-control']:where([data-esoboy-ui]) {
+    .ui-picker-control {
         @apply relative inline-flex max-w-full items-center;
     }
-    [data-picker-trigger]:where([data-esoboy-ui]) {
+    .ui-picker-trigger {
         @apply max-w-full justify-start gap-2 font-normal tabular-nums;
     }
-    [data-picker-trigger]:where([data-esoboy-ui]) span {
+    .ui-picker-trigger span {
         @apply truncate;
     }
-    [data-picker-trigger]:where([data-esoboy-ui]) svg {
-        @apply size-4 shrink-0 text-muted-foreground;
+    .ui-picker-trigger svg {
+        color: var(--ui-picker-trigger-icon, var(--color-muted-foreground));
+        @apply size-4 shrink-0;
     }
-    [data-picker-trigger]:where([data-esoboy-ui]) svg:last-child {
+    .ui-picker-trigger svg:last-child {
         @apply ms-auto size-3.5;
     }
-    [data-picker-trigger]:where([data-esoboy-ui])[data-placeholder] {
-        @apply text-muted-foreground;
+    .ui-picker-trigger[data-placeholder] {
+        color: var(--ui-picker-trigger-placeholder-fg, var(--color-muted-foreground));
     }
-    [data-slot='picker-control']:where([data-esoboy-ui])[data-clearable]
-        [data-picker-trigger]:where([data-esoboy-ui]) {
+    .ui-picker-control[data-clearable] .ui-picker-trigger {
         @apply pe-9;
     }
-    [data-slot='picker-clear']:where([data-esoboy-ui]) {
-        @apply absolute end-1 text-muted-foreground;
+    .ui-picker-clear {
+        color: var(--ui-picker-clear-fg, var(--color-muted-foreground));
+        @apply absolute end-1;
     }
     .ui-time-popup {
         width: 18rem;
     }
-    [data-slot='time-panel']:where([data-esoboy-ui]) {
+    .ui-time-panel {
         --ui-time-cell: 2.25rem;
         @apply flex min-h-0 flex-col;
     }
-    [data-slot='calendar']:where([data-esoboy-ui])
-        + [data-slot='time-panel']:where([data-esoboy-ui]) {
+    .ui-calendar-body + .ui-time-panel {
         @apply border-t;
     }
-    [data-slot='time-segments']:where([data-esoboy-ui]) {
+    .ui-time-segments {
         @apply flex shrink-0 items-center justify-center gap-1 px-3 py-2;
     }
-    [data-slot='time-segment']:where([data-esoboy-ui]) {
-        @apply flex min-w-14 cursor-pointer flex-col items-center rounded-ui-lg border border-input px-2 py-1 text-xs font-medium text-muted-foreground outline-none enabled:hover:border-ring enabled:hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-50;
+    .ui-time-segment {
+        border-color: var(--ui-time-segment-border, var(--color-input));
+        color: var(--ui-time-segment-fg, var(--color-muted-foreground));
+        @apply flex min-w-14 cursor-pointer flex-col items-center rounded-ui-lg border px-2 py-1 text-xs font-medium outline-none focus-visible:ring-2 disabled:cursor-default disabled:opacity-50;
+        @variant enabled:hover {
+            border-color: var(--ui-time-segment-hover-border, var(--color-ring));
+            background-color: var(--ui-time-segment-hover-bg, var(--color-muted));
+        }
+        @variant focus-visible {
+            --tw-ring-color: var(--ui-time-segment-focus-ring, var(--color-ring));
+        }
     }
-    [data-slot='time-segment']:where([data-esoboy-ui])[aria-expanded='true'] {
-        @apply bg-accent text-accent-foreground;
+    .ui-time-segment[aria-expanded='true'] {
+        background-color: var(--ui-time-segment-expanded-bg, var(--color-accent));
+        color: var(--ui-time-segment-expanded-fg, var(--color-accent-foreground));
     }
     .ui-time-digits {
-        @apply text-2xl leading-7 font-semibold tracking-tight text-foreground tabular-nums;
+        color: var(--ui-time-digits-fg, var(--color-foreground));
+        @apply text-2xl leading-7 font-semibold tracking-tight tabular-nums;
     }
     .ui-time-colon {
-        @apply self-start pt-1 text-lg leading-7 text-muted-foreground;
+        color: var(--ui-time-colon-fg, var(--color-muted-foreground));
+        @apply self-start pt-1 text-lg leading-7;
     }
-    [data-slot='time-unit']:where([data-esoboy-ui]) {
+    .ui-time-unit {
         @apply flex min-h-0 flex-col border-t py-2 outline-none;
     }
     .ui-time-list {
@@ -307,22 +359,33 @@
     .ui-datetime-body {
         --ui-list-max-height: calc(100dvh - 10px);
     }
-    [data-time-grid]:where([data-esoboy-ui]) {
+    .ui-time-picker-grid {
         @apply grid grid-cols-5 gap-0.5 ps-2 pe-3;
     }
-    [data-time-grid]:where([data-esoboy-ui]) button {
+    .ui-time-picker-grid button {
         height: var(--ui-time-cell);
-        @apply cursor-pointer rounded-ui-md text-sm font-medium tabular-nums outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-selected:bg-primary aria-selected:text-primary-foreground disabled:cursor-default disabled:opacity-50;
+        @apply cursor-pointer rounded-ui-md text-sm font-medium tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-default disabled:opacity-50;
+        @variant hover {
+            background-color: var(--ui-time-picker-grid-hover-bg, var(--color-accent));
+        }
+        @variant focus-visible {
+            --tw-ring-color: var(--ui-time-picker-grid-focus-ring, var(--color-ring));
+        }
+        @variant aria-selected {
+            background-color: var(--ui-time-picker-grid-selected-bg, var(--color-primary));
+            color: var(--ui-time-picker-grid-selected-fg, var(--color-primary-foreground));
+        }
     }
     @media (pointer: coarse) {
-        [data-slot='time-panel']:where([data-esoboy-ui]) {
+        .ui-time-panel {
             --ui-time-cell: 2.75rem;
         }
     }
-    [data-slot='time-hint']:where([data-esoboy-ui]) {
-        @apply px-3 pb-2 text-xs text-muted-foreground;
+    .ui-time-hint {
+        color: var(--ui-time-hint-fg, var(--color-muted-foreground));
+        @apply px-3 pb-2 text-xs;
     }
-    [data-slot='picker-extra']:where([data-esoboy-ui]) {
+    .ui-picker-extra {
         @apply flex shrink-0 flex-wrap items-center gap-2 border-t px-2 py-1.5;
     }
     @media (max-width: 480px) {

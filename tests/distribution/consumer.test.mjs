@@ -16,126 +16,192 @@ async function openProbe(t, query = '', options = {}) {
     return page
 }
 
-test('component colors paint only the intended parts in both themes', async (t) => {
-    const page = await openProbe(t, '?colors=1')
+test('explicit statuses recolor existing variants and root utilities reach their parts', async (t) => {
+    const page = await openProbe(t, '?status=1')
     await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important }' })
-    const blue = 'rgb(37, 99, 235)'
-    const green = 'rgb(21, 128, 61)'
-    await page.waitForFunction(() => document.querySelector('[role=tab][aria-selected=true]'))
-    const style = (selector, property, pseudo) =>
-        page
-            .locator(selector)
-            .first()
-            .evaluate(
-                (el, [key, part]) => getComputedStyle(el, part)[key],
-                [property, pseudo ?? null],
-            )
     for (const dark of [false, true]) {
-        await page.evaluate(
-            (enabled) => document.documentElement.classList.toggle('dark', enabled),
-            dark,
-        )
-        assert.equal(await style('#solid', 'backgroundColor'), blue)
-        assert.equal(await style('#palette', 'backgroundColor'), 'rgb(171, 113, 160)')
-        assert.equal(await style('#brand', 'backgroundColor'), 'rgb(190, 18, 60)')
-        assert.equal(await style('#inline-brand', 'backgroundColor'), 'rgb(0, 126, 81)')
-        const expected = await page.evaluate(() => {
-            const reference = document.createElement('div')
-            document.body.append(reference)
-            reference.style.color = 'var(--color-teal-500)'
-            const teal = getComputedStyle(reference).color
-            reference.style.color = 'color-mix(in oklab, #be123c 50%, transparent)'
-            const translucent = getComputedStyle(reference).color
-            reference.remove()
-            return { teal, translucent }
-        })
-        assert.equal(await style('#family', 'backgroundColor'), expected.teal)
-        assert.equal(await style('#opacity', 'backgroundColor'), expected.translucent)
-        assert.equal(await style('#outline', 'borderTopColor'), green)
-        assert.equal(
-            await style('#slot-button', 'backgroundColor'),
-            await style('#default', 'backgroundColor'),
-        )
-        assert.notEqual(await style('#light', 'color'), await style('#solid', 'color'))
-        for (const [selector, property, pseudo] of [
-            ['[data-slot=alert-title]', 'color'],
-            ['[data-slot=avatar-fallback]', 'backgroundColor'],
-            ['input:indeterminate', 'backgroundColor'],
-            ['input[name=one]', 'backgroundColor'],
-            ['[data-slot=switch]', 'backgroundColor'],
-            ['[data-slot=toggle-group-item] .ui-toggle', 'backgroundColor'],
-            ['[data-slot=progress-track]', 'color'],
-            ['[data-slot=slider-range]', 'backgroundColor'],
-            ['[data-slot=slider-thumb]', 'backgroundColor'],
-            ['.ui-rating-star', 'color'],
-            ['[data-state=complete] [data-slot=steps-indicator]', 'backgroundColor'],
-            ['[data-slot=timeline-item][aria-current]', 'backgroundColor', '::before'],
-            ['[role=tab][aria-selected=true]', 'backgroundColor', '::after'],
-            ['[data-slot=qr-code] path', 'fill'],
-            ['[data-slot=tags-input] [data-slot=badge]', 'color'],
-            ['[data-slot=tree] [aria-pressed=true]', 'color'],
-        ]) {
-            assert.equal(await style(selector, property, pseudo), blue, selector)
+        const paint = await page.evaluate((dark) => {
+            document.documentElement.classList.toggle('dark', dark)
+            const style = (selector) => getComputedStyle(document.querySelector(selector))
+            const pair = (s) => [s.backgroundColor, s.color]
+            const swatch = document.createElement('span')
+            document.body.append(swatch)
+            const palette = (name) => {
+                swatch.style.backgroundColor = 'var(--color-' + name + ')'
+                swatch.style.color = 'var(--color-' + name + '-foreground)'
+                return pair(getComputedStyle(swatch))
+            }
+            const primary = palette('primary')
+            const fieldWidth = (id, root) => {
+                const trigger = document.getElementById(id)
+                return [trigger.offsetWidth, trigger.closest(root).offsetWidth]
+            }
+            const ink = (name) => {
+                swatch.style.color = 'var(--color-' + name + ')'
+                return getComputedStyle(swatch).color
+            }
+            const statuses = ['neutral', 'info', 'success', 'warning', 'error'].map((name) => {
+                const token = name === 'neutral' ? 'secondary' : name
+                const expected = palette(token)
+                swatch.style.color =
+                    'var(--color-' + token + (name === 'neutral' ? '-foreground)' : '-ink)')
+                const ink = getComputedStyle(swatch).color
+                const track = document.getElementById('switch-' + name).closest('.ui-switch')
+                return {
+                    name,
+                    expected,
+                    ink,
+                    solid: pair(style('#solid-' + name)),
+                    softText: style('#soft-' + name).color,
+                    outline: [
+                        style('#outline-' + name).color,
+                        style('#outline-' + name).borderTopColor,
+                    ],
+                    switchColors: [
+                        getComputedStyle(track).backgroundColor,
+                        getComputedStyle(track.querySelector('.ui-switch-thumb')).backgroundColor,
+                    ],
+                }
+            })
+            const alert = [
+                style('#colored-alert').borderTopColor,
+                style('#colored-alert .ui-icon').color,
+                style('#colored-alert .ui-alert-title').color,
+                style('#colored-alert .ui-alert-description').color,
+            ]
+            const expectedAlert = [
+                ink('success-ink'),
+                ink('success-ink'),
+                ink('card-foreground'),
+                ink('muted-foreground'),
+            ]
+            const toast = [
+                style('#colored-toast').borderTopColor,
+                style('#colored-toast .ui-icon').color,
+            ]
+            const warningInk = ink('warning-ink')
+            swatch.remove()
+            return {
+                statuses,
+                primary,
+                alert,
+                expectedAlert,
+                toast,
+                warningInk,
+                off: ['plain-switch', 'info-switch-off'].map(
+                    (id) =>
+                        getComputedStyle(document.getElementById(id).closest('.ui-switch'))
+                            .backgroundColor,
+                ),
+                widths: [
+                    fieldWidth('theme-select', '.ui-select'),
+                    fieldWidth('theme-picker', '.ui-date-picker'),
+                ],
+                base: pair(style('#base-button')),
+                secondary: pair(style('#secondary-button')),
+                neutralSoft: pair(style('#soft-neutral')),
+                nested: pair(style('#nested-badge')),
+                inner: pair(style('#inner-badge')),
+                customBorder: style('#custom-outline').borderTopColor,
+                customText: style('#custom-outline').color,
+                infoText: style('#outline-info').color,
+                progress: [style('progress').backgroundColor, style('progress').color],
+                select: [
+                    style('#theme-select').backgroundColor,
+                    style('#theme-select').color,
+                    style('.ui-select-content').backgroundColor,
+                    style('.ui-select-option[aria-selected="true"]').color,
+                ],
+                picker: [
+                    style('#theme-picker').backgroundColor,
+                    style('.ui-date-picker-panel').backgroundColor,
+                ],
+                fields: [
+                    style('#theme-password').color,
+                    getComputedStyle(document.getElementById('theme-password'), '::placeholder')
+                        .color,
+                    style('#theme-menu-item').color,
+                    style('.ui-transfer .ui-card').backgroundColor,
+                    style('.ui-tags-input .ui-badge').backgroundColor,
+                ],
+            }
+        }, dark)
+        for (const status of paint.statuses) {
+            assert.deepEqual(status.solid, status.expected, status.name)
+            assert.deepEqual(status.switchColors, status.expected, status.name)
+            assert.deepEqual(status.outline, [status.ink, status.ink], status.name)
+            assert.equal(status.softText, status.ink, status.name)
         }
-        assert.equal(await style('input[name=two]', 'backgroundColor'), green)
-        assert.equal(await style('[data-slot=avatar-badge]', 'backgroundColor'), green)
-        assert.equal(
-            await style('[data-slot=timeline-item]:last-child', 'backgroundColor', '::before'),
-            green,
-        )
+        assert.deepEqual(paint.base, paint.primary)
+        assert.deepEqual(paint.nested, paint.primary)
+        assert.deepEqual(paint.inner, paint.primary)
+        assert.deepEqual(paint.alert, paint.expectedAlert)
+        assert.deepEqual(paint.toast, [paint.warningInk, paint.warningInk])
+        assert.equal(paint.off[0], paint.off[1])
+        for (const [trigger, root] of paint.widths) assert.equal(trigger, root)
+        assert.deepEqual(paint.neutralSoft, paint.secondary)
+        assert.equal(paint.customBorder, 'rgb(18, 52, 86)')
+        assert.equal(paint.customText, paint.infoText)
+        assert.deepEqual(paint.progress, ['rgb(237, 237, 237)', 'rgb(35, 69, 103)'])
+        assert.deepEqual(paint.select, [
+            'rgb(239, 222, 219)',
+            'rgb(54, 84, 98)',
+            'rgb(239, 241, 252)',
+            'rgb(86, 52, 18)',
+        ])
+        assert.deepEqual(paint.picker, ['rgb(236, 237, 239)', 'rgb(218, 241, 239)'])
+        assert.deepEqual(paint.fields, [
+            'rgb(33, 53, 72)',
+            'rgb(86, 124, 152)',
+            'rgb(80, 36, 52)',
+            'rgb(239, 246, 251)',
+            'rgb(239, 234, 188)',
+        ])
     }
-    await page
-        .locator('main')
-        .evaluate((el) => el.style.setProperty('--color-store-brand', '#374151'))
-    assert.equal(await style('#brand', 'backgroundColor'), 'rgb(55, 65, 81)')
-})
-
-test('changing a parent color repaints Livewire selections, popup panels and existing signature strokes', async (t) => {
-    const page = await openProbe(t, '?colors=1')
-    await page.locator('#change-palette').click()
+    await page.locator('#theme-menu-trigger').click()
+    const item = page.locator('#theme-menu-item')
+    await item.hover()
+    assert.deepEqual(
+        await item.evaluate((el) => [
+            getComputedStyle(el).backgroundColor,
+            getComputedStyle(el).color,
+        ]),
+        ['rgb(242, 235, 206)', 'rgb(89, 67, 18)'],
+    )
+    const overrides = await page.evaluate(() => {
+        const colors = document.documentElement.style
+        const bg = (id) => getComputedStyle(document.getElementById(id)).backgroundColor
+        const destructiveBefore = bg('destructive-button')
+        colors.setProperty('--color-secondary', '#253647')
+        colors.setProperty('--color-error', '#710627')
+        const result = [
+            bg('solid-neutral'),
+            bg('secondary-button'),
+            bg('solid-error'),
+            bg('destructive-button') === destructiveBefore,
+        ]
+        colors.setProperty('--color-destructive', '#203244')
+        return [...result, bg('solid-error'), bg('destructive-button') !== destructiveBefore]
+    })
+    const drawing = page.locator('#theme-signature canvas')
+    const readInk = (canvas) => canvas.getContext('2d').strokeStyle
+    assert.equal(await drawing.evaluate(readInk), '#24795c')
+    await drawing.evaluate((canvas) => {
+        canvas.closest('.ui-signature').style.setProperty('--ui-signature-ink', '#453682')
+    })
     await page.waitForFunction(
         () =>
-            getComputedStyle(document.getElementById('palette')).backgroundColor ===
-            'rgb(132, 52, 18)',
+            document.querySelector('#theme-signature canvas').getContext('2d').strokeStyle ===
+            '#453682',
     )
-    await page.locator('#colored-select').click()
-    await page.getByRole('option', { name: 'Beta' }).click()
-    await page.locator('#colored-select').getByText('Beta').waitFor()
-    await page.locator('#change-color').click()
-    await page.waitForFunction(() => {
-        const option = document.querySelector('[data-slot=select-option][aria-selected=true]')
-        const canvas = document.querySelector('#colored-signature canvas')
-        const pixel = canvas
-            .getContext('2d')
-            .getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data
-        return (
-            option.textContent.includes('Beta') &&
-            getComputedStyle(option).color === 'rgb(192, 38, 211)' &&
-            pixel[0] === 192 &&
-            pixel[1] === 38 &&
-            pixel[2] === 211
-        )
-    })
-    await page.locator('#colored-date').click()
-    const day = page.locator('[data-calendar-day][aria-label="2026-11-10"]')
-    await day.waitFor()
-    assert.equal(
-        await day.evaluate((el) => getComputedStyle(el).backgroundColor),
-        'rgb(192, 38, 211)',
-    )
-    const middle = page.locator('[data-calendar-day][aria-label="2026-11-11"]')
-    assert.notEqual(
-        await middle.evaluate((el) => getComputedStyle(el).backgroundColor),
-        'rgba(0, 0, 0, 0)',
-    )
-    await page.keyboard.press('Escape')
-    await page.locator('#colored-time').click()
-    await page.locator('[data-slot=time-segment][data-value=hour]').click()
-    const hour = page.getByRole('option', { name: '09', exact: true })
-    assert.equal(
-        await hour.evaluate((el) => getComputedStyle(el).backgroundColor),
-        'rgb(21, 128, 61)',
-    )
+    assert.deepEqual(overrides, [
+        'rgb(37, 54, 71)',
+        'rgb(37, 54, 71)',
+        'rgb(113, 6, 39)',
+        true,
+        'rgb(113, 6, 39)',
+        true,
+    ])
 })
 
 test('a replaced dialog trigger opens and receives focus on close', async (t) => {
@@ -373,7 +439,7 @@ test('slot styles apply only to package elements, including inside caller slots'
                 (nodes, key) => nodes.map((node) => getComputedStyle(node).getPropertyValue(key)),
                 property,
             )
-    const separators = await styles('[data-slot="separator"]', 'height')
+    const separators = await styles('[data-slot="separator"], .ui-separator', 'height')
     assert.equal(separators.length, 4)
     assert.ok(parseFloat(separators[0]) > 1)
     assert.equal(separators[1], '1px')
@@ -381,7 +447,10 @@ test('slot styles apply only to package elements, including inside caller slots'
     assert.equal(separators[3], '1px')
     assert.deepEqual(await styles('[data-slot="host-action"]', 'pointer-events'), ['auto'])
     assert.deepEqual(await styles('[data-slot="host-action"]', 'opacity'), ['1'])
-    const [caller, component] = await styles('[data-slot="bubble-content"]', 'background-color')
+    const [caller, component] = await styles(
+        '[data-slot="bubble-content"], .ui-bubble-content',
+        'background-color',
+    )
     assert.equal(caller, 'rgba(0, 0, 0, 0)')
     assert.notEqual(component, caller)
 })
@@ -390,7 +459,7 @@ test('combobox aligns the selected option to either trigger and handles an empty
     const page = await openProbe(t, '?alignment=1')
     for (const id of ['inline-search', 'popup-search', 'multi-search']) {
         const trigger = page.locator('#' + id)
-        const root = page.locator('[data-slot=combobox]').filter({ has: trigger })
+        const root = page.locator('.ui-combobox-body').filter({ has: trigger })
         const panel = root.locator('[popover]')
         const anchor = root.locator('[data-ui-anchor-box]').first()
         await trigger.click()
@@ -413,7 +482,7 @@ test('combobox aligns the selected option to either trigger and handles an empty
 test('touch opens the combobox below its trigger and keyboard reopening aligns the row', async (t) => {
     const page = await openProbe(t, '?alignment=1', { hasTouch: true })
     const trigger = page.locator('#popup-search')
-    const panel = page.locator('[data-slot=combobox]').filter({ has: trigger }).locator('[popover]')
+    const panel = page.locator('.ui-combobox-body').filter({ has: trigger }).locator('[popover]')
     await trigger.tap()
     await panel.waitFor()
     const box = await trigger.boundingBox()
@@ -432,7 +501,7 @@ test('a border variant keeps the same control and group dimensions', async (t) =
     const dimensions = (variant) =>
         page
             .locator(`#sizing-${variant}`)
-            .locator('.ui-button, .ui-toggle, [data-slot="toggle-group"], .ui-sidebar-menu-button')
+            .locator('.ui-button, .ui-toggle-control, .ui-toggle-group, .ui-sidebar-menu-button')
             .evaluateAll((controls) =>
                 controls.map((control) => {
                     const { width, height } = control.getBoundingClientRect()
@@ -480,12 +549,12 @@ for (const id of ['single-choice', 'multi-choice']) {
         await page.waitForFunction(() => document.querySelector('#filtered').value === 'bet')
         const other = id === 'single-choice' ? 'multi-choice' : 'single-choice'
         await page.waitForFunction((id) => {
-            const root = document.getElementById(id).closest('[data-slot="combobox"]')
+            const root = document.getElementById(id).closest('.ui-combobox-body')
             return root.querySelectorAll('[role="option"]').length === 1
         }, other)
         assert.equal(await input.inputValue(), 'bet')
         if (id === 'multi-choice') {
-            const chip = page.locator('[data-slot="combobox-chip"]')
+            const chip = page.locator('.ui-combobox-chip')
             assert.equal((await chip.textContent()).trim(), 'Alpha')
             assert.deepEqual(
                 await page.locator('#controls').evaluate((f) => new FormData(f).getAll('multi[]')),
@@ -574,7 +643,7 @@ test('native fields participate in labeling, validation, submission and form res
     await cells.first().fill('38')
     assert.equal(await form.evaluate((el) => new FormData(el).get('code')), '38')
     await cells.first().evaluate((el) => {
-        const root = el.closest('[data-slot="input-otp"]')
+        const root = el.closest('.ui-input-otp')
         for (const input of root.querySelectorAll('input')) input.setAttribute('form', 'controls')
     })
     await form.evaluate(async (el) => {
@@ -648,7 +717,7 @@ test('a controlled questionnaire waits for its parent to accept reset navigation
     const page = await openProbe(t)
     await page.locator('#start-questions').click()
     const form = page.locator('#controlled-questions form')
-    const title = form.locator('[data-slot="questionnaire-title"]')
+    const title = form.locator('.ui-questionnaire-title')
     await title.waitFor({ timeout: 30000 })
     assert.equal((await title.textContent()).trim(), 'Second question')
     await form.evaluate((el) => el.reset())
@@ -680,7 +749,10 @@ test('combobox chips and listbox options retain their own keyboard navigation', 
     const page = await openProbe(t)
     const input = page.locator('#multi-choice')
     await input.press('ArrowLeft')
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.slot), 'combobox-chip')
+    assert.equal(
+        await page.evaluate(() => document.activeElement.matches('.ui-combobox-chip')),
+        true,
+    )
     await page.keyboard.press('Delete')
     await page.waitForFunction(() => document.querySelector('#chosen').value === '')
     await page.waitForFunction(() => document.activeElement.id === 'multi-choice')
@@ -758,10 +830,7 @@ test('the host stylesheet styles components and the first editor loads one share
         assert.equal(response.status(), 200)
         await page.waitForFunction(() => window.Livewire?.all().length > 0)
         assert.deepEqual(assets, [['ui.js', 200]])
-        assert.equal(
-            await page.locator('svg[data-slot="icon"] circle').first().getAttribute('r'),
-            '10',
-        )
+        assert.equal(await page.locator('svg.ui-icon circle').first().getAttribute('r'), '10')
         assert.equal(
             await page.locator('#rename').evaluate((el) => getComputedStyle(el).display),
             'inline-flex',

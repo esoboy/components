@@ -29,7 +29,7 @@ it('keeps the rendered list bounded while browsing every packaged icon with a pr
         }
 
         expect($labels)->toBe($names)
-            ->and($document->querySelectorAll('[data-slot="option-text"] svg')->length)->toBe(count($names));
+            ->and($document->querySelectorAll('.ui-option-text svg')->length)->toBe(count($names));
     }
 
     $picker->call('choose', 'zoom-out')->assertSet('value', 'zoom-out')->assertSet('browsePage', null);

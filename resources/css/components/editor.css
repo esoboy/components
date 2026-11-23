@@ -8,18 +8,24 @@ esoboy-editor {
     display: block;
     min-width: 0;
     container-type: inline-size;
-    color: var(--color-foreground, #22242b);
+    color: var(--ui-editor-fg, var(--color-foreground, #22242b));
     font-family: inherit;
-    --paper: var(--color-background, white);
-    --panel: var(--color-popover, white);
-    --line: var(--color-border, #e2e3e8);
-    --muted: var(--color-muted-foreground, #666a76);
-    --wash: var(--color-muted, #f3f4f6);
-    --selection: #6554bf;
-    --selected: color-mix(in srgb, var(--selection) 13%, var(--panel));
-    --tool-active-ink: color-mix(in srgb, var(--selection) 82%, var(--color-foreground, #22242b));
-    --tool-active-wash: color-mix(in srgb, var(--selection) 7%, var(--panel));
-    --shadow: 0 3px 10px #12132712, 0 8px 24px #1213270b;
+    --paper: var(--ui-editor-paper, var(--color-background, white));
+    --panel: var(--ui-editor-panel, var(--color-popover, white));
+    --line: var(--ui-editor-line, var(--color-border, #e2e3e8));
+    --muted: var(--ui-editor-muted, var(--color-muted-foreground, #666a76));
+    --wash: var(--ui-editor-wash, var(--color-muted, #f3f4f6));
+    --selection: var(--ui-editor-selection, #6554bf);
+    --selected: var(--ui-editor-selected, color-mix(in srgb, var(--selection) 13%, var(--panel)));
+    --tool-active-ink: var(
+        --ui-editor-tool-active-ink,
+        color-mix(in srgb, var(--selection) 82%, var(--color-foreground, #22242b))
+    );
+    --tool-active-wash: var(
+        --ui-editor-tool-active-wash,
+        color-mix(in srgb, var(--selection) 7%, var(--panel))
+    );
+    --shadow: var(--ui-editor-shadow, 0 3px 10px #12132712, 0 8px 24px #1213270b);
 
     .document [contenteditable='false'] {
         white-space: normal;
@@ -28,11 +34,11 @@ esoboy-editor {
         content: attr(data-placeholder);
         float: left;
         height: 0;
-        color: var(--color-muted-foreground, #71717a);
+        color: var(--ui-editor-placeholder-fg, var(--color-muted-foreground, #71717a));
         pointer-events: none;
     }
     .document .ProseMirror-selectednode {
-        outline: 2px solid var(--color-ring, #a1a1aa);
+        outline: 2px solid var(--ui-editor-selected-node-outline, var(--color-ring, #a1a1aa));
     }
     .document .ProseMirror-gapcursor {
         display: none;
@@ -45,20 +51,26 @@ esoboy-editor {
         position: absolute;
         top: -2px;
         width: 20px;
-        border-top: 1px solid currentColor;
+        border-top: 1px solid var(--ui-editor-gap-cursor-border, currentColor);
         animation: ui-editor-caret-blink 1s steps(2, start) infinite;
     }
     .document.ProseMirror-focused .ProseMirror-gapcursor {
         display: block;
     }
     .document .selection {
-        background: color-mix(in srgb, var(--color-primary, #18181b) 15%, transparent);
+        background: var(
+            --ui-editor-selection-bg,
+            color-mix(in srgb, var(--color-primary, #18181b) 15%, transparent)
+        );
     }
     .document .selectedCell::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: color-mix(in srgb, var(--color-primary, #18181b) 12%, transparent);
+        background: var(
+            --ui-editor-selected-cell-bg,
+            color-mix(in srgb, var(--color-primary, #18181b) 12%, transparent)
+        );
         pointer-events: none;
     }
     .document .column-resize-handle {
@@ -67,7 +79,7 @@ esoboy-editor {
         top: 0;
         bottom: 0;
         width: 4px;
-        background: var(--color-primary, #18181b);
+        background: var(--ui-editor-column-resize-handle-bg, var(--color-primary, #18181b));
         pointer-events: none;
     }
     .document.resize-cursor {
@@ -98,7 +110,7 @@ esoboy-editor {
     }
 
     &:where(.dark, .dark *) {
-        --selection: #b3a4ff;
+        --selection: var(--ui-editor-selection, #b3a4ff);
     }
     *,
     *::before,
@@ -107,30 +119,39 @@ esoboy-editor {
     }
     .editor {
         position: relative;
-        border: 1px solid var(--line);
+        border: 1px solid var(--ui-editor-surface-border, var(--line));
         border-radius: 12px;
-        background: var(--paper);
+        background: var(--ui-editor-surface-bg, var(--paper));
         font-size: 14px;
         line-height: 1.5;
     }
     .editor:focus-within {
-        border-color: color-mix(in srgb, var(--selection) 48%, var(--line));
+        border-color: var(
+            --ui-editor-surface-focus-border,
+            color-mix(in srgb, var(--selection) 48%, var(--line))
+        );
     }
     button,
     input,
     select,
     summary {
         font: inherit;
-        color: inherit;
+        color: var(--ui-editor-fg, inherit);
     }
     button,
-    select,
-    .field input {
+    select {
         min-height: 32px;
-        border: 1px solid var(--line);
+        border: 1px solid var(--ui-editor-border, var(--line));
         border-radius: 6px;
         padding: 4px 9px;
-        background: var(--panel);
+        background: var(--ui-editor-bg, var(--panel));
+    }
+    .field input {
+        min-height: 32px;
+        border: 1px solid var(--ui-editor-field-border, var(--line));
+        border-radius: 6px;
+        padding: 4px 9px;
+        background: var(--ui-editor-field-bg, var(--panel));
     }
     button {
         display: inline-flex;
@@ -144,7 +165,7 @@ esoboy-editor {
     }
     button:not(:disabled):hover,
     select:not(:disabled):hover {
-        background: var(--wash);
+        background: var(--ui-editor-control-hover-bg, var(--wash));
     }
     button:disabled,
     select:disabled {
@@ -152,7 +173,7 @@ esoboy-editor {
         cursor: default;
     }
     :is(button, select, input, summary):focus-visible {
-        outline: 2px solid var(--selection);
+        outline: 2px solid var(--ui-editor-control-focus-outline, var(--selection));
         outline-offset: 1px;
     }
     .tiptap-toolbar,
@@ -170,9 +191,9 @@ esoboy-editor {
         display: grid;
         gap: 0;
         padding: 2px 10px;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--ui-editor-toolbar-border, var(--line));
         border-radius: 12px 12px 0 0;
-        background: color-mix(in srgb, var(--wash) 24%, var(--paper));
+        background: var(--ui-editor-toolbar-bg, color-mix(in srgb, var(--wash) 24%, var(--paper)));
     }
     .toolbar-row {
         display: flex;
@@ -183,11 +204,11 @@ esoboy-editor {
         min-width: 0;
     }
     .toolbar-row + .toolbar-row {
-        border-top: 1px solid var(--line);
+        border-top: 1px solid var(--ui-editor-toolbar-row-border, var(--line));
     }
     .toolbar-row > .tiptap-toolbar-group + .tiptap-toolbar-group {
         padding-inline-start: 6px;
-        border-inline-start: 1px solid var(--line);
+        border-inline-start: 1px solid var(--ui-editor-toolbar-group-border, var(--line));
     }
     .toolbar-row > .document-tools {
         margin-inline-start: auto;
@@ -200,17 +221,30 @@ esoboy-editor {
         width: 1px;
         height: 18px;
         margin: 0 3px;
-        background: var(--line);
+        background: var(--ui-editor-separator-bg, var(--line));
     }
 
-    .tiptap-button,
+    .tiptap-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        background: var(--ui-editor-button-bg, transparent);
+        border: 0;
+        border-radius: 5px;
+        padding: 4px 7px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
     .toolbar select {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         min-width: 32px;
         height: 32px;
-        background: transparent;
+        background: var(--ui-editor-toolbar-bg, transparent);
         border: 0;
         border-radius: 5px;
         padding: 4px 7px;
@@ -227,11 +261,11 @@ esoboy-editor {
         width: 10px;
     }
     .tiptap-button[aria-expanded='true'] {
-        background-color: var(--wash);
+        background-color: var(--ui-editor-button-expanded-bg, var(--wash));
     }
     .toolbar-row select {
         padding-inline: 7px 2px;
-        color: inherit;
+        color: var(--ui-editor-toolbar-row-fg, inherit);
         cursor: pointer;
         font-size: 12px;
     }
@@ -258,17 +292,17 @@ esoboy-editor {
         width: 15px;
         height: 3px;
         border-radius: 2px;
-        background: var(--swatch);
+        background: var(--ui-editor-swatch-bg, var(--swatch));
     }
     .color-tool:has(input:disabled) {
         opacity: 0.36;
         cursor: default;
     }
     .color-tool:hover {
-        background: var(--wash);
+        background: var(--ui-editor-color-tool-hover-bg, var(--wash));
     }
     .color-tool:focus-within {
-        outline: 2px solid var(--selection);
+        outline: 2px solid var(--ui-editor-color-tool-focus-outline, var(--selection));
     }
     .color-tool input {
         position: absolute;
@@ -307,13 +341,13 @@ esoboy-editor {
     .editor-outline {
         flex: 0 0 min(28%, 12rem);
         padding: 14px 9px;
-        border-inline-end: 1px solid var(--line);
+        border-inline-end: 1px solid var(--ui-editor-outline-panel-border, var(--line));
     }
     .editor-outline strong {
         display: flex;
         align-items: center;
         gap: 6px;
-        color: var(--muted);
+        color: var(--ui-editor-outline-panel-fg, var(--muted));
         margin: 0 0 8px 4px;
         font-size: 12px;
     }
@@ -324,24 +358,29 @@ esoboy-editor {
         font-size: 12px;
         overflow-wrap: anywhere;
         border: 0;
-        background: transparent;
+        background: var(--ui-editor-outline-item-bg, transparent);
     }
     .editor-outline p {
-        color: var(--muted);
+        color: var(--ui-editor-outline-description-fg, var(--muted));
         font-size: 12px;
     }
     .context-bar {
         z-index: 41;
         max-width: calc(100vw - 16px);
     }
-    .tiptap-toolbar[data-variant='floating'],
-    .popover {
-        background: var(--panel);
-        border: 1px solid var(--line);
+    .tiptap-toolbar-variant-floating {
+        background: var(--ui-editor-floating-toolbar-bg, var(--panel));
+        border: 1px solid var(--ui-editor-floating-toolbar-border, var(--line));
         border-radius: 9px;
-        box-shadow: var(--shadow);
+        box-shadow: var(--ui-editor-floating-toolbar-shadow, var(--shadow));
     }
-    .tiptap-toolbar[data-variant='floating'] {
+    .popover {
+        background: var(--ui-editor-popover-bg, var(--panel));
+        border: 1px solid var(--ui-editor-popover-border, var(--line));
+        border-radius: 9px;
+        box-shadow: var(--ui-editor-popover-shadow, var(--shadow));
+    }
+    .tiptap-toolbar-variant-floating {
         padding: 4px;
     }
     .popover {
@@ -404,7 +443,7 @@ esoboy-editor {
         padding-inline: 4px;
         font-size: 12px;
         font-variant-numeric: tabular-nums;
-        color: var(--muted);
+        color: var(--ui-editor-find-navigation-fg, var(--muted));
     }
     .find-panel .actions > :first-child {
         margin-inline-end: auto;
@@ -413,7 +452,7 @@ esoboy-editor {
         justify-content: flex-start;
         padding-inline: 9px;
         border: 0;
-        background: transparent;
+        background: var(--ui-editor-action-menu-bg, transparent);
         font-size: 13px;
     }
     .media-size-menu > button {
@@ -424,13 +463,13 @@ esoboy-editor {
         text-align: start;
     }
     .media-size-menu .size-hint {
-        color: var(--muted);
+        color: var(--ui-editor-size-hint-fg, var(--muted));
         font-size: 12px;
         font-variant-numeric: tabular-nums;
     }
     .tiptap-toolbar :is([data-active-state='on'], button[aria-pressed='true']) {
-        color: var(--tool-active-ink);
-        background-color: var(--tool-active-wash);
+        color: var(--ui-editor-toolbar-active-fg, var(--tool-active-ink));
+        background-color: var(--ui-editor-toolbar-active-bg, var(--tool-active-wash));
     }
     .panel-heading {
         display: flex;
@@ -441,7 +480,7 @@ esoboy-editor {
         font-size: 13px;
     }
     .panel-heading output {
-        color: var(--muted);
+        color: var(--ui-editor-panel-heading-fg, var(--muted));
         font-variant-numeric: tabular-nums;
     }
     .options label {
@@ -465,13 +504,16 @@ esoboy-editor {
         aspect-ratio: 1;
     }
     .table-grid button[data-filled='true'] {
-        background: var(--selected);
-        border-color: color-mix(in srgb, var(--selection) 55%, var(--line));
+        background: var(--ui-editor-table-grid-bg, var(--selected));
+        border-color: var(
+            --ui-editor-table-grid-border,
+            color-mix(in srgb, var(--selection) 55%, var(--line))
+        );
     }
     .custom-size {
         margin-top: 10px;
         font-size: 12px;
-        color: var(--muted);
+        color: var(--ui-editor-custom-size-fg, var(--muted));
     }
     .custom-size summary {
         padding: 3px 0;
@@ -487,8 +529,8 @@ esoboy-editor {
         align-items: center;
         justify-content: space-between;
         padding: 5px 12px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
+        border-top: 1px solid var(--ui-editor-footer-border, var(--line));
+        color: var(--ui-editor-footer-fg, var(--muted));
         font-size: 11px;
         font-variant-numeric: tabular-nums;
     }
@@ -496,7 +538,7 @@ esoboy-editor {
         min-height: 24px;
         padding: 1px 3px;
         border: 0;
-        background: transparent;
+        background: var(--ui-editor-footer-control-bg, transparent);
     }
     dialog {
         width: min(400px, calc(100vw - 24px));
@@ -504,14 +546,14 @@ esoboy-editor {
         margin: auto;
         padding: 18px;
         overflow-y: auto;
-        border: 1px solid var(--line);
+        border: 1px solid var(--ui-editor-dialog-border, var(--line));
         border-radius: 12px;
-        background: var(--panel);
-        color: inherit;
-        box-shadow: 0 12px 48px #0002;
+        background: var(--ui-editor-dialog-bg, var(--panel));
+        color: var(--ui-editor-dialog-fg, inherit);
+        box-shadow: var(--ui-editor-dialog-shadow, 0 12px 48px #0002);
     }
     dialog::backdrop {
-        background: #10122245;
+        background: var(--ui-editor-dialog-backdrop-bg, #10122245);
     }
     dialog header {
         display: flex;
@@ -541,10 +583,10 @@ esoboy-editor {
     .field textarea {
         resize: vertical;
         padding: 8px 9px;
-        border: 1px solid var(--line);
+        border: 1px solid var(--ui-editor-field-border, var(--line));
         border-radius: 6px;
-        background: var(--panel);
-        color: inherit;
+        background: var(--ui-editor-field-bg, var(--panel));
+        color: var(--ui-editor-field-fg, inherit);
         font: inherit;
     }
     .field > span {
@@ -571,21 +613,21 @@ esoboy-editor {
         box-sizing: content-box;
         padding: 8px;
         border-radius: 7px;
-        background: var(--wash);
+        background: var(--ui-editor-media-sources-bg, var(--wash));
     }
     .media-sources button > svg:last-child {
         margin-inline-start: auto;
-        color: var(--muted);
+        color: var(--ui-editor-media-sources-fg, var(--muted));
     }
     .media-sources button:hover {
-        border-color: var(--selection);
+        border-color: var(--ui-editor-media-sources-hover-border, var(--selection));
     }
     .source-back {
         padding: 0;
         min-height: 24px;
         justify-self: start;
         border: 0;
-        color: var(--muted);
+        color: var(--ui-editor-source-back-fg, var(--muted));
         font-size: 12px;
     }
     .source-toolbar .toolbar-row {
@@ -596,7 +638,7 @@ esoboy-editor {
         align-items: center;
         gap: 8px;
         padding-inline: 7px;
-        color: var(--muted);
+        color: var(--ui-editor-source-mode-label-fg, var(--muted));
         font-size: 12px;
         font-weight: 600;
     }
@@ -609,8 +651,11 @@ esoboy-editor {
         height: clamp(18rem, 45dvh, 32rem);
         border: 0;
         padding: clamp(1rem, 3cqi, 2rem);
-        background: color-mix(in srgb, var(--wash) 45%, var(--paper));
-        color: inherit;
+        background: var(
+            --ui-editor-source-input-bg,
+            color-mix(in srgb, var(--wash) 45%, var(--paper))
+        );
+        color: var(--ui-editor-source-input-fg, inherit);
         font:
             calc(13px * var(--editor-zoom, 1)) / 1.75 var(--font-mono, ui-monospace),
             monospace;
@@ -619,7 +664,7 @@ esoboy-editor {
     }
     .source-input:focus-visible,
     .field textarea:focus-visible {
-        outline: 2px solid var(--selection);
+        outline: 2px solid var(--ui-editor-control-focus-outline, var(--selection));
         outline-offset: -2px;
     }
     .embed-node {
@@ -635,7 +680,7 @@ esoboy-editor {
         padding: 4px 9px;
         border-radius: 6px 6px 0 0;
         font-size: 12px;
-        color: var(--muted);
+        color: var(--ui-editor-embed-caption-fg, var(--muted));
         text-align: start;
         overflow-wrap: anywhere;
     }
@@ -654,18 +699,18 @@ esoboy-editor {
         justify-content: flex-end;
         padding-top: 12px;
         margin-top: 2px;
-        border-top: 1px solid var(--line);
+        border-top: 1px solid var(--ui-editor-actions-border, var(--line));
     }
     .primary,
     .primary:not(:disabled):hover {
-        background: var(--color-primary, #24252b);
-        color: var(--color-primary-foreground, white);
-        border-color: transparent;
+        background: var(--ui-editor-primary-bg, var(--color-primary, #24252b));
+        color: var(--ui-editor-primary-fg, var(--color-primary-foreground, white));
+        border-color: var(--ui-editor-primary-border, transparent);
     }
     .error {
         margin: 0;
         padding: 8px 12px;
-        color: var(--color-destructive, #be303c);
+        color: var(--ui-editor-error-fg, var(--color-destructive, #be303c));
         font-size: 13px;
     }
     .drag-handle {
@@ -673,8 +718,8 @@ esoboy-editor {
         width: 20px;
         padding: 0;
         border: 0;
-        color: var(--muted);
-        background: var(--paper);
+        color: var(--ui-editor-drag-handle-fg, var(--muted));
+        background: var(--ui-editor-drag-handle-bg, var(--paper));
         cursor: grab;
     }
     &:is([readonly], [disabled], [toolbar-preset='basic']) .drag-handle {
@@ -720,10 +765,8 @@ esoboy-editor {
         transform: translate(-50%, -50%);
         width: 5px;
         height: 32px;
-        background: white;
-        box-shadow:
-            0 0 0 1px #1115,
-            0 1px 5px #1115;
+        background: var(--ui-editor-resize-handle-bg, white);
+        box-shadow: var(--ui-editor-resize-handle-shadow, 0 0 0 1px #1115, 0 1px 5px #1115);
         border-radius: 4px;
     }
     .document
@@ -736,19 +779,19 @@ esoboy-editor {
         outline: 0;
     }
     .document [data-resize-container].ProseMirror-selectednode [data-resize-wrapper] {
-        outline: 2px solid var(--selection);
+        outline: 2px solid var(--ui-editor-selected-node-outline, var(--selection));
         outline-offset: 2px;
     }
     .document[contenteditable='false'] [data-resize-handle] {
         display: none;
     }
     .document .search-result {
-        background: #ffed9a;
-        color: #282318;
+        background: var(--ui-editor-search-result-bg, #ffed9a);
+        color: var(--ui-editor-search-result-fg, #282318);
     }
     .document .search-result-current {
-        background: #ffc572;
-        color: #282318;
+        background: var(--ui-editor-search-result-current-bg, #ffc572);
+        color: var(--ui-editor-search-result-current-fg, #282318);
     }
     @container (max-width: 550px) {
         .toolbar {

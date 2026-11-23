@@ -110,8 +110,7 @@ export function Toolbar({
         <div
             ref={ref}
             role="toolbar"
-            data-variant={variant}
-            className={`tiptap-toolbar ${className}`}
+            className={`tiptap-toolbar tiptap-toolbar-variant-${variant} ${className}`}
             {...props}
         >
             {children}

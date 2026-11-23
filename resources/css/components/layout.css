@@ -1,50 +1,66 @@
 @layer components {
-    [data-slot='carousel']:where([data-esoboy-ui]) {
+    .ui-carousel {
         position: relative;
     }
-    [data-slot='carousel-content']:where([data-esoboy-ui]) {
+    .ui-carousel-content {
         overflow: hidden;
     }
-    [data-slot='carousel-track']:where([data-esoboy-ui]) {
+    .ui-carousel-track {
         display: flex;
         margin-left: -1rem;
         touch-action: pan-y pinch-zoom;
     }
-    [data-slot='carousel-item']:where([data-esoboy-ui]) {
+    .ui-carousel-item {
         flex: 0 0 100%;
         min-width: 0;
         padding-left: 1rem;
     }
-    [data-slot='carousel-controls']:where([data-esoboy-ui]) {
+    .ui-carousel-controls {
         @apply mt-3 flex flex-wrap items-center justify-center gap-3;
     }
-    [data-slot='carousel-pagination']:where([data-esoboy-ui]) {
+    .ui-carousel-pagination {
         @apply flex min-w-0 flex-wrap items-center justify-center;
     }
-    [data-slot='carousel-page']:where([data-esoboy-ui]) {
-        @apply inline-flex size-7 items-center justify-center rounded-ui-md text-xs font-medium text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50;
+    .ui-carousel-page {
+        color: var(--ui-carousel-page-fg, var(--color-muted-foreground));
+        @apply inline-flex size-7 items-center justify-center rounded-ui-md text-xs font-medium outline-none focus-visible:ring-3;
+        @variant hover {
+            background-color: var(--ui-carousel-page-hover-bg, var(--color-muted));
+        }
+        @variant focus-visible {
+            --tw-ring-color: var(
+                --ui-carousel-page-focus-ring,
+                color-mix(in oklab, var(--color-ring) 50%, transparent)
+            );
+        }
     }
-    [data-mode='numbers'] > [data-slot='carousel-page']:where([data-esoboy-ui])[aria-current] {
-        @apply bg-secondary text-secondary-foreground;
+    [data-mode='numbers'] > .ui-carousel-page[aria-current] {
+        background-color: var(--ui-carousel-page-bg, var(--color-secondary));
+        color: var(--ui-carousel-page-fg, var(--color-secondary-foreground));
     }
     .ui-carousel-dot {
-        @apply size-1.5 rounded-full bg-muted-foreground/40;
+        background-color: var(
+            --ui-carousel-dot-bg,
+            color-mix(in oklab, var(--color-muted-foreground) 40%, transparent)
+        );
+        @apply size-1.5 rounded-full;
     }
     [aria-current='page'] > .ui-carousel-dot {
-        @apply bg-primary;
+        background-color: var(--ui-carousel-dot-bg, var(--color-primary));
     }
-    [data-slot='carousel-fraction']:where([data-esoboy-ui]) {
-        @apply inline-flex gap-1.5 text-sm tabular-nums text-muted-foreground;
+    .ui-carousel-fraction {
+        color: var(--ui-carousel-fraction-fg, var(--color-muted-foreground));
+        @apply inline-flex gap-1.5 text-sm tabular-nums;
     }
-    [data-slot='resizable']:where([data-esoboy-ui]) {
+    .ui-resizable {
         display: flex;
         width: 100%;
         overflow: hidden;
     }
-    [data-slot='resizable']:where([data-esoboy-ui])[data-direction='vertical'] {
+    .ui-resizable[data-direction='vertical'] {
         flex-direction: column;
     }
-    [data-slot='resizable-panel']:where([data-esoboy-ui]) {
+    .ui-resizable-panel {
         display: flex;
         flex-direction: column;
         flex: var(--ui-panel-size, 1) 1 0px;
@@ -52,27 +68,27 @@
         min-height: 0;
         overflow: hidden;
     }
-    [data-slot='resizable-handle']:where([data-esoboy-ui])::after {
+    .ui-resizable-handle::after {
         content: '';
         position: absolute;
         inset: 0 -5px;
     }
-    [data-direction='vertical'] > [data-slot='resizable-handle']:where([data-esoboy-ui]) {
+    [data-direction='vertical'] > .ui-resizable-handle {
         cursor: row-resize;
     }
-    [data-direction='vertical'] > [data-slot='resizable-handle']:where([data-esoboy-ui])::after {
+    [data-direction='vertical'] > .ui-resizable-handle::after {
         inset: -5px 0;
     }
-    [data-slot='sidebar-content']:where([data-esoboy-ui]) {
+    .ui-sidebar-content {
         width: 16rem;
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        background: var(--color-secondary);
+        background: var(--ui-sidebar-content-bg, var(--color-secondary));
         padding: 0.75rem;
-        border-inline-end: 1px solid var(--color-border);
+        border-inline-end: 1px solid var(--ui-sidebar-content-border, var(--color-border));
     }
-    [data-slot='sidebar-menu-link']:where([data-esoboy-ui]) {
+    .ui-sidebar-menu-link {
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -81,20 +97,22 @@
         border-radius: var(--radius-ui-md);
         font-size: 0.875rem;
     }
-    [data-slot='sidebar-menu-button']:where([data-esoboy-ui]):hover,
-    [data-slot='sidebar-menu-link']:where([data-esoboy-ui]):hover {
-        background: var(--color-background);
+    .ui-sidebar-menu-button:hover {
+        background: var(--ui-sidebar-menu-button-hover-bg, var(--color-background));
     }
-    [data-slot='navigation-menu-link']:where([data-esoboy-ui]) {
+    .ui-sidebar-menu-link:hover {
+        background: var(--ui-sidebar-menu-link-hover-bg, var(--color-background));
+    }
+    .ui-navigation-menu-link {
         display: inline-flex;
         padding: 0.5rem 0.75rem;
         border-radius: var(--radius-ui-md);
         font-size: 0.875rem;
     }
-    [data-slot='navigation-menu-link']:where([data-esoboy-ui]):hover {
-        background: var(--color-accent);
+    .ui-navigation-menu-link:hover {
+        background: var(--ui-navigation-menu-link-hover-bg, var(--color-accent));
     }
-    [data-slot='progress-track']:where([data-esoboy-ui]) {
+    .ui-progress-track {
         display: block;
         appearance: none;
         width: 100%;
@@ -102,18 +120,18 @@
         overflow: hidden;
         border: 0;
         border-radius: 999px;
-        background: var(--color-secondary);
-        color: var(--color-primary);
+        background: var(--ui-progress-track, var(--color-secondary));
+        color: var(--ui-progress-fill, var(--color-primary));
     }
-    [data-slot='progress-track']:where([data-esoboy-ui])::-webkit-progress-bar {
-        background: var(--color-secondary);
+    .ui-progress-track::-webkit-progress-bar {
+        background: var(--ui-progress-track, var(--color-secondary));
     }
-    [data-slot='progress-track']:where([data-esoboy-ui])::-webkit-progress-value {
-        background: var(--color-primary);
+    .ui-progress-track::-webkit-progress-value {
+        background: var(--ui-progress-fill, var(--color-primary));
         border-radius: inherit;
     }
-    [data-slot='progress-track']:where([data-esoboy-ui])::-moz-progress-bar {
-        background: var(--color-primary);
+    .ui-progress-track::-moz-progress-bar {
+        background: var(--ui-progress-fill, var(--color-primary));
         border-radius: inherit;
     }
 }

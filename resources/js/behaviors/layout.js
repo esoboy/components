@@ -12,7 +12,7 @@ export function disclosure(initial = false) {
                 delete panel.dataset.settled
                 if (!value) {
                     delete panel.dataset.startingStyle
-                    if (panel.dataset.slot === 'trace-collapsible-content') {
+                    if (panel.classList.contains('ui-trace-collapsible-content')) {
                         this.$nextTick(() => {
                             if (attempt !== transition) return
                             panel.style.display = 'block'
@@ -34,7 +34,7 @@ export function disclosure(initial = false) {
                 panel.dataset.startingStyle = ''
                 this.$nextTick(() => {
                     if (attempt !== transition || !this.opened) return
-                    if (panel.dataset.slot === 'trace-collapsible-content')
+                    if (panel.classList.contains('ui-trace-collapsible-content'))
                         panel.style.setProperty('--ui-panel-height', `${panel.scrollHeight}px`)
                     getComputedStyle(panel).height
                     requestAnimationFrame(() => {
@@ -52,13 +52,9 @@ export function disclosure(initial = false) {
         get panel() {
             return [
                 ...this.$root.querySelectorAll(
-                    '[data-slot="collapsible-content"],[data-slot="trace-collapsible-content"]',
+                    '.ui-collapsible-content,.ui-trace-collapsible-content',
                 ),
-            ].find(
-                (panel) =>
-                    panel.closest('[data-slot="collapsible"],[data-slot="trace-collapsible"]') ===
-                    this.$root,
-            )
+            ].find((panel) => panel.closest('.ui-collapsible,.ui-trace-collapsible') === this.$root)
         },
         open() {
             this.opened = true
@@ -133,8 +129,8 @@ export function resizable(direction = 'horizontal') {
         drag: null,
         init() {
             this.$nextTick(() =>
-                this.$root.querySelectorAll('[data-slot="resizable-handle"]').forEach((handle) => {
-                    if (handle.closest('[data-slot="resizable"]') !== this.$root) return
+                this.$root.querySelectorAll('.ui-resizable-handle').forEach((handle) => {
+                    if (handle.closest('.ui-resizable') !== this.$root) return
                     const first = Number(getComputedStyle(handle.previousElementSibling).flexGrow),
                         second = Number(getComputedStyle(handle.nextElementSibling).flexGrow)
                     handle.setAttribute(
@@ -216,7 +212,7 @@ export function registerStep(Alpine) {
             ':disabled'() {
                 return (
                     initiallyDisabled ||
-                    (element.closest('[data-slot="carousel"]')
+                    (element.closest('.ui-carousel')
                         ? evaluate(direction < 0 ? '!canPrevious' : '!canNext')
                         : false)
                 )

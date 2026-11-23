@@ -13,10 +13,48 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
-    @elseif(request()->boolean('colors'))
-        <livewire:color-probe />
     @elseif(request()->boolean('state'))
         <livewire:state-probe />
+    @elseif(request()->boolean('status'))
+        <x-ui::button id="base-button">Action</x-ui::button>
+        <x-ui::button id="secondary-button" variant="secondary">Action</x-ui::button>
+        <x-ui::button id="destructive-button" variant="destructive">Action</x-ui::button>
+        @foreach (['neutral', 'info', 'success', 'warning', 'error'] as $status)
+            <x-ui::button id="solid-{{ $status }}" :status="$status">Action</x-ui::button>
+            <x-ui::button id="outline-{{ $status }}" variant="outline" :status="$status">Action</x-ui::button>
+            <x-ui::badge id="soft-{{ $status }}" variant="secondary" :status="$status">Label</x-ui::badge>
+            <x-ui::switch id="switch-{{ $status }}" checked :status="$status" aria-label="Enabled" />
+        @endforeach
+        <x-ui::alert status="info">
+            <x-ui::badge id="nested-badge">Label</x-ui::badge>
+        </x-ui::alert>
+        <x-ui::alert id="colored-alert" variant="destructive" status="success">
+            <x-ui::icon name="check" /><x-ui::alert.title>Done</x-ui::alert.title>
+            <x-ui::alert.description>Saved.</x-ui::alert.description>
+        </x-ui::alert>
+        <x-ui::toast id="colored-toast" variant="destructive" status="warning" :duration="0">
+            <x-ui::toast.content><x-ui::icon name="info" /><x-ui::toast.title>Pending</x-ui::toast.title></x-ui::toast.content>
+        </x-ui::toast>
+        <x-ui::switch id="plain-switch" aria-label="Off" />
+        <x-ui::switch id="info-switch-off" status="info" aria-label="Off" />
+        <x-ui::badge id="outer-badge" status="warning" class="[--ui-badge-fg:#142536]">
+            <x-ui::badge id="inner-badge">Label</x-ui::badge>
+        </x-ui::badge>
+        <x-ui::button id="custom-outline" variant="outline" status="info" class="[--ui-button-border:#123456]">Action</x-ui::button>
+        <x-ui::progress :value="32" aria-label="Progress" class="[--ui-progress-track:#ededed] [--ui-progress-fill:#234567]" />
+        <x-ui::select id="theme-select" :options="[['value' => 'one', 'label' => 'One']]" initial-value="one"
+            class="w-48 [--ui-select-trigger-bg:#efdedb] [--ui-select-trigger-fg:#365462] [--ui-select-panel-bg:#eff1fc] [--ui-select-option-selected-fg:#563412]" />
+        <x-ui::date-picker id="theme-picker" class="w-48 [--ui-date-picker-trigger-bg:#ecedef] [--ui-date-picker-panel-bg:#daf1ef]" />
+        <x-ui::password-input id="theme-password" placeholder="Password"
+            class="[--ui-password-input-value-fg:#213548] [--ui-password-input-placeholder-fg:#567c98]" />
+        <x-ui::dropdown-menu class="[--ui-dropdown-menu-item-fg:#502434] [--ui-dropdown-menu-item-hover-bg:#f2ebce] [--ui-dropdown-menu-item-hover-fg:#594312]">
+            <x-ui::dropdown-menu.trigger><x-ui::button id="theme-menu-trigger">Menu</x-ui::button></x-ui::dropdown-menu.trigger>
+            <x-ui::dropdown-menu.content><x-ui::dropdown-menu.item id="theme-menu-item">Item</x-ui::dropdown-menu.item></x-ui::dropdown-menu.content>
+        </x-ui::dropdown-menu>
+        <x-ui::transfer :options="[['value' => 'one', 'label' => 'One']]" class="[--ui-transfer-panel-bg:#eff6fb]" />
+        <x-ui::tags-input :initial-value="['One']" class="[--ui-tags-input-tag-bg:#efeabc]" />
+        <x-ui::signature id="theme-signature" :initial-value="[[['x' => 0.25, 'y' => 0.5], ['x' => 0.75, 'y' => 0.5]]]"
+            class="[--ui-signature-ink:#24795c]" />
     @elseif(request()->boolean('alignment'))
         @php($choices = array_map(fn ($i) => ['value' => $i, 'label' => 'Choice '.$i], range(1, 24)))
         <main class="mx-auto grid w-72 gap-12 py-[25vh]">

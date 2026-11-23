@@ -1,10 +1,16 @@
 # Changelog
 
+## 未发布
+
+- 所有组件使用稳定的根 class 和可通过 Tailwind 覆盖的部位颜色变量。按钮、徽标、开关、提示和通知支持五种可选状态色。依赖旧 DOM 选择器的应用可按[迁移对照](docs/component-color-design.md)更新。
+
+- 移除 v1.0.3 引入的组件实例 `color` 属性。应用可以通过组件的 `class` 使用 Tailwind 工具类或覆盖主题颜色变量。
+
 ## v1.0.3 - 2026-11-23
 
 - `media-preview` 取代 `image-preview`，支持图片、音频和视频。升级时将旧组件改为 `<x-ui::media-preview type="image">`，保留 `src` 和 `alt`，将 `<x-slot:trigger>` 中的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
 - 新增 `icon-select`，可按名称搜索 Lucide 图标，使用分页按钮或键盘浏览，并通过 `wire:model` 或原生表单取得选中的图标名称。
-- 按钮、徽标、选择控件、签名和二维码等组件支持通过 `color` 单独设色。可传入运行时的 Tailwind 色名、宿主自定义主题色或 CSS 颜色值。[组件配色说明](README.md#设置单个组件的颜色)
+- 按钮、徽标、选择控件、签名和二维码等组件支持通过 `color` 单独设色。可传入运行时的 Tailwind 色名、宿主自定义主题色或 CSS 颜色值。[v1.0.3 组件配色说明](https://github.com/esoboy/components/blob/v1.0.3/README.md#设置单个组件的颜色)
 
 ## v1.0.2 - 2026-11-20
 

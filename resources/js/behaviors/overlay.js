@@ -15,7 +15,7 @@ function handlePopoverKey(event) {
     if (!top || event.key !== 'Escape' || event.defaultPrevented) return
     event.preventDefault()
     event.stopImmediatePropagation()
-    if (topPanel.dataset.slot === 'navigation-menu-positioner') top.keyboardFocus = true
+    if (topPanel.classList.contains('ui-navigation-menu-positioner')) top.keyboardFocus = true
     top.close(topPanel.contains(document.activeElement))
 }
 
@@ -63,8 +63,9 @@ export function slotControl(element) {
     )
         return element
     if (!control || control.nextElementSibling) return null
-    while (control?.matches('[data-ui-trigger],[data-slot="tooltip"]')) {
-        if (control.dataset.slot === 'tooltip') control = control.querySelector('[data-ui-trigger]')
+    while (control?.matches('[data-ui-trigger],.ui-tooltip')) {
+        if (control.classList.contains('ui-tooltip'))
+            control = control.querySelector('[data-ui-trigger]')
         control = control?.firstElementChild
     }
     return control
@@ -420,7 +421,7 @@ export function popover() {
                     horizontal ? innerHeight - 10 : Math.max(0, space.top, space.bottom),
                 )
             style.minWidth = choicePanel
-                ? `${Math.max(dataset.slot === 'combobox-content' ? 0 : 144, Math.min(anchorWidth, innerWidth - 10))}px`
+                ? `${Math.max(floating.classList.contains('ui-combobox-content') ? 0 : 144, Math.min(anchorWidth, innerWidth - 10))}px`
                 : ''
             const computed = getComputedStyle(floating)
             const panel = { width: parseFloat(computed.width), height: parseFloat(computed.height) }
@@ -467,7 +468,7 @@ export function popover() {
                 )
             }
             if (alignedItem) {
-                const viewport = alignedItem.closest('[data-slot="scroll-area-viewport"]')
+                const viewport = alignedItem.closest('.ui-scroll-area-viewport')
                 const popupBox = floating.getBoundingClientRect()
                 const row = alignedItem.getBoundingClientRect()
                 const center = anchor.top + anchor.height / 2
@@ -487,8 +488,8 @@ export function popover() {
                     viewport.scrollTop = scroll
                 alignedViewport = viewport
                 alignmentScroll = scroll
-                const value = trigger.querySelector('[data-slot="select-value"]')
-                const text = alignedItem.querySelector('[data-slot="option-text"]')
+                const value = trigger.querySelector('.ui-select-value')
+                const text = alignedItem.querySelector('.ui-option-text')
                 if (value && text) {
                     const edge = rtl ? 'right' : 'left'
                     left =
@@ -501,12 +502,13 @@ export function popover() {
             dataset.side = placedSide
             const clampedLeft = clamp(left, 5, innerWidth - panel.width - 5)
             const clampedTop = clamp(top, 5, innerHeight - panel.height - 5)
-            const preserveFraction = alignedItem || dataset.slot === 'navigation-menu-positioner'
+            const preserveFraction =
+                alignedItem || floating.classList.contains('ui-navigation-menu-positioner')
             Object.assign(style, {
                 left: `${preserveFraction ? clampedLeft : Math.round(clampedLeft * ratio) / ratio}px`,
                 top: `${preserveFraction ? clampedTop : Math.round(clampedTop * ratio) / ratio}px`,
             })
-            const arrow = floating.querySelector('[data-slot="tooltip-arrow"]')
+            const arrow = floating.querySelector('.ui-tooltip-arrow')
             const arrowPadding = 5 + (arrow?.offsetWidth ?? 0) / 2
             const arrowWidth = arrow ? floating.clientWidth : panel.width
             const arrowHeight = arrow ? floating.clientHeight : panel.height
@@ -645,7 +647,7 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
                   : control.getAttribute('aria-haspopup')
         },
         ':aria-expanded'() {
-            return operation === 'close' || evaluate('$root.dataset.slot') === 'sidebar'
+            return operation === 'close' || evaluate("$root.classList.contains('ui-sidebar')")
                 ? null
                 : String(evaluate('opened'))
         },

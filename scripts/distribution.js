@@ -19,7 +19,6 @@ const runtime = [
     'lang',
     'resources/boost',
     'resources/views',
-    'resources/css/palette.cjs',
     'resources/content/schema.json',
     'resources/icons/catalog.php',
     'resources/icons/LICENSE',

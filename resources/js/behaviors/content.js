@@ -32,7 +32,7 @@ export function toaster(limit = 3) {
         windowActive: true,
         previousFocus: null,
         get items() {
-            return [...this.$root.querySelectorAll('[data-slot="toast"]')].filter(
+            return [...this.$root.querySelectorAll('.ui-toast')].filter(
                 (e) => !e.hidden && e.style.display !== 'none' && !e.hasAttribute('data-ending'),
             )
         },
@@ -69,7 +69,7 @@ export function toaster(limit = 3) {
                 event.target.contains(document.activeElement) &&
                 document.activeElement.matches(':focus-visible')
             ) {
-                const all = [...this.$root.querySelectorAll('[data-slot="toast"]')],
+                const all = [...this.$root.querySelectorAll('.ui-toast')],
                     index = all.indexOf(event.target)
                 const next =
                     this.items.find((e) => all.indexOf(e) > index) ??
@@ -141,7 +141,7 @@ export function toaster(limit = 3) {
             const value = this.hovering || this.focused
             if (
                 !value &&
-                [...this.$root.querySelectorAll('[data-slot="toast"][data-ending]')].some(
+                [...this.$root.querySelectorAll('.ui-toast[data-ending]')].some(
                     (e) => e.style.display !== 'none',
                 )
             )
@@ -188,7 +188,7 @@ export function toast(duration = 5000) {
                     duration,
                     remaining: previous.duration === duration ? previous.remaining : duration,
                 })
-            viewport = this.$root.closest('[data-slot="toaster"]')
+            viewport = this.$root.closest('.ui-toaster')
             pauseStack = (event) => {
                 this.stackPaused = event.detail
                 this.stackPaused ? this.pause() : this.resume()
@@ -338,7 +338,7 @@ export function code() {
         timer: null,
         async copy(value = null) {
             const content = this.$root.querySelector('[data-ui-code]')
-            const lines = [...content.querySelectorAll('[data-slot="code-block-line-content"]')]
+            const lines = [...content.querySelectorAll('.ui-code-block-line-content')]
             await navigator.clipboard.writeText(
                 value ??
                     (lines.length
@@ -363,7 +363,7 @@ export function messageScroller() {
         atStart: true,
         observer: null,
         get viewport() {
-            return this.$root.querySelector('[data-slot="message-scroller-viewport"]')
+            return this.$root.querySelector('.ui-message-scroller-viewport')
         },
         step(direction) {
             this.viewport.scrollTo({
@@ -412,7 +412,7 @@ export function tour(initial = false) {
             })
         },
         step(direction) {
-            const count = this.$root.querySelectorAll('[data-slot="tour-step"]').length
+            const count = this.$root.querySelectorAll('.ui-tour-step').length
             const next = this.index + direction
             if (next >= count) {
                 this.close()
@@ -424,9 +424,7 @@ export function tour(initial = false) {
         position() {
             if (!this.opened || !this.panel) return
             this.clearHighlight()
-            const step = this.$root.querySelector(
-                `[data-slot="tour-step"][data-index="${this.index}"]`,
-            )
+            const step = this.$root.querySelector(`.ui-tour-step[data-index="${this.index}"]`)
             let target
             try {
                 target = document.querySelector(step?.dataset.target)

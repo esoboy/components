@@ -8,7 +8,13 @@
         min-width: 10rem;
         overflow: auto;
         padding: 0.25rem;
-        @apply rounded-ui-lg border-0 bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10;
+        background-color: var(--ui-popup-bg, var(--color-popover));
+        color: var(--ui-popup-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(
+            --ui-popup-ring,
+            color-mix(in oklab, var(--color-foreground) 10%, transparent)
+        );
+        @apply rounded-ui-lg border-0 shadow-md ring-1;
     }
     .ui-list-popup {
         overflow: clip;
@@ -17,7 +23,7 @@
         display: flex;
         flex-direction: column;
     }
-    :where(.ui-dialog-content, [data-slot='alert-dialog-content']:where([data-esoboy-ui])) {
+    :where(.ui-dialog-content) {
         position: fixed;
         inset: 0;
         margin: auto;
@@ -25,29 +31,41 @@
         max-height: calc(100dvh - 2rem);
         overflow: auto;
         overscroll-behavior: contain;
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--ui-dialog-content-border, var(--color-border));
         border-radius: var(--radius-ui-xl);
         padding: 1.5rem;
-        background: var(--color-background);
-        color: var(--color-foreground);
-        box-shadow: 0 16px 48px #0003;
+        background: var(--ui-dialog-content-bg, var(--color-background));
+        color: var(--ui-dialog-content-fg, var(--color-foreground));
+        box-shadow: var(--ui-dialog-content-shadow, 0 16px 48px #0003);
     }
-    :where(dialog)[data-slot]:where([data-esoboy-ui])::backdrop {
-        background: #0008;
+    :where(.ui-alert-dialog-content) {
+        position: fixed;
+        inset: 0;
+        margin: auto;
+        width: min(32rem, calc(100vw - 2rem));
+        max-height: calc(100dvh - 2rem);
+        overflow: auto;
+        overscroll-behavior: contain;
+        border: 1px solid var(--ui-alert-dialog-content-border, var(--color-border));
+        border-radius: var(--radius-ui-xl);
+        padding: 1.5rem;
+        background: var(--ui-alert-dialog-content-bg, var(--color-background));
+        color: var(--ui-alert-dialog-content-fg, var(--color-foreground));
+        box-shadow: var(--ui-alert-dialog-content-shadow, 0 16px 48px #0003);
     }
-    [data-slot='dialog-title']:where([data-esoboy-ui]) {
+    dialog[data-ui-panel]::backdrop {
+        background: var(--ui-dialog-backdrop-bg, #0008);
+    }
+    .ui-dialog-title {
         font-size: 1.125rem;
         font-weight: 600;
         letter-spacing: -0.02em;
     }
-    [data-slot='dialog-description']:where([data-esoboy-ui]) {
-        color: var(--color-muted-foreground);
+    .ui-dialog-description {
+        color: var(--ui-dialog-description-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
-    :is(
-        [data-slot='sheet-content']:where([data-esoboy-ui]),
-        [data-slot='drawer-content']:where([data-esoboy-ui])
-    ) {
+    .ui-sheet-content {
         position: fixed;
         inset: 0;
         margin: 0 0 0 auto;
@@ -58,54 +76,58 @@
         padding: 1.5rem;
         overflow: auto;
         overscroll-behavior: contain;
-        border: 1px solid var(--color-border);
-        background: var(--color-background);
-        color: var(--color-foreground);
-        box-shadow: 0 16px 48px #0003;
+        border: 1px solid var(--ui-sheet-content-border, var(--color-border));
+        background: var(--ui-sheet-content-bg, var(--color-background));
+        color: var(--ui-sheet-content-fg, var(--color-foreground));
+        box-shadow: var(--ui-sheet-content-shadow, 0 16px 48px #0003);
     }
-    :is(
-        [data-slot='sheet-content']:where([data-esoboy-ui]),
-        [data-slot='drawer-content']:where([data-esoboy-ui])
-    )[data-side='left'] {
+    .ui-drawer-content {
+        position: fixed;
+        inset: 0;
+        margin: 0 0 0 auto;
+        height: 100dvh;
+        max-height: 100dvh;
+        width: min(26rem, 90vw);
+        max-width: 100vw;
+        padding: 1.5rem;
+        overflow: auto;
+        overscroll-behavior: contain;
+        border: 1px solid var(--ui-drawer-content-border, var(--color-border));
+        background: var(--ui-drawer-content-bg, var(--color-background));
+        color: var(--ui-drawer-content-fg, var(--color-foreground));
+        box-shadow: var(--ui-drawer-content-shadow, 0 16px 48px #0003);
+    }
+    :is(.ui-sheet-content, .ui-drawer-content)[data-side='left'] {
         margin: 0 auto 0 0;
     }
-    :is(
-        [data-slot='sheet-content']:where([data-esoboy-ui]),
-        [data-slot='drawer-content']:where([data-esoboy-ui])
-    ):is([data-side='top'], [data-side='bottom']) {
+    :is(.ui-sheet-content, .ui-drawer-content):is([data-side='top'], [data-side='bottom']) {
         width: 100vw;
         height: auto;
         max-height: 90dvh;
     }
-    :is(
-        [data-slot='sheet-content']:where([data-esoboy-ui]),
-        [data-slot='drawer-content']:where([data-esoboy-ui])
-    )[data-side='bottom'] {
+    :is(.ui-sheet-content, .ui-drawer-content)[data-side='bottom'] {
         margin: auto 0 0;
     }
-    :is(
-        [data-slot='sheet-content']:where([data-esoboy-ui]),
-        [data-slot='drawer-content']:where([data-esoboy-ui])
-    )[data-side='top'] {
+    :is(.ui-sheet-content, .ui-drawer-content)[data-side='top'] {
         margin: 0 0 auto;
     }
-    [data-slot='drawer-content']:where([data-esoboy-ui])[data-side='bottom'] {
+    .ui-drawer-content[data-side='bottom'] {
         border-radius: var(--radius-ui-xl) var(--radius-ui-xl) 0 0;
     }
-    [data-slot='drawer-content']:where([data-esoboy-ui])[data-side='top'] {
+    .ui-drawer-content[data-side='top'] {
         border-radius: 0 0 var(--radius-ui-xl) var(--radius-ui-xl);
     }
-    [data-slot='drawer-content']:where([data-esoboy-ui])[data-side='left'] {
+    .ui-drawer-content[data-side='left'] {
         border-radius: 0 var(--radius-ui-xl) var(--radius-ui-xl) 0;
     }
-    [data-slot='drawer-content']:where([data-esoboy-ui])[data-side='right'] {
+    .ui-drawer-content[data-side='right'] {
         border-radius: var(--radius-ui-xl) 0 0 var(--radius-ui-xl);
     }
-    [data-slot='tooltip-content']:where([data-esoboy-ui]) {
+    .ui-tooltip-content {
         min-width: 0;
         padding: 0.375rem 0.625rem;
-        background: var(--color-foreground);
-        color: var(--color-background);
+        background: var(--ui-tooltip-content-bg, var(--color-foreground));
+        color: var(--ui-tooltip-content-fg, var(--color-background));
         font-size: 0.75rem;
     }
 }

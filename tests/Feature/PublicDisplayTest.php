@@ -45,7 +45,7 @@ it('formats statistics from the original decimal digits and distinguishes empty 
     ] as [$value, $precision, $expected]) {
         expect(Blade::render($view, compact('value', 'precision')))->toContain('>'.$expected.'</span>', '€');
     }
-    expect(Blade::render('<x-ui::statistic title="Balance" value="123" loading />'))->toContain('aria-busy="true"', 'data-slot="skeleton"')->not->toContain('>123<');
+    expect(Blade::render('<x-ui::statistic title="Balance" value="123" loading />'))->toContain('aria-busy="true"', 'class="ui-skeleton"')->not->toContain('>123<');
 });
 
 it('lets the caller format the original statistic value', function () {
@@ -70,7 +70,7 @@ it('registers Blade slides separately for nested carousels and skips controls fo
             </x-ui::carousel.content>
         </x-ui::carousel>
     BLADE);
-    expect(substr_count($html, 'data-slot="carousel-controls"'))->toBe(1)
-        ->and(substr_count($html, 'data-slot="carousel-page"'))->toBe(2)
-        ->and(substr_count($html, 'data-slot="carousel-item"'))->toBe(3);
+    expect(substr_count($html, 'class="ui-carousel-controls"'))->toBe(1)
+        ->and(substr_count($html, 'class="ui-carousel-page"'))->toBe(2)
+        ->and(substr_count($html, 'class="ui-carousel-item"'))->toBe(3);
 });

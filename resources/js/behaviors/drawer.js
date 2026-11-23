@@ -108,11 +108,11 @@ export function drawer(
                 if (event.pointerType === 'touch' && !event.nativeTouch) return
                 if (event.button !== 0 || this.drag || this.panel.hasAttribute('data-nested-open'))
                     return
-                if (event.target.closest('[data-slot="drawer-content"]') !== this.panel) return
-                const content = event.target.closest('[data-slot="drawer-body"]')
+                if (event.target.closest('.ui-drawer-content') !== this.panel) return
+                const content = event.target.closest('.ui-drawer-viewport')
                 if (
                     event.pointerType !== 'touch' &&
-                    content?.closest('[data-slot="drawer-content"]') === this.panel
+                    content?.closest('.ui-drawer-content') === this.panel
                 )
                     return
                 if (event.target.closest('button,a,input,textarea,select,[contenteditable=true]'))

@@ -143,7 +143,7 @@ export function signature() {
             for (let element = this.$root; element; element = element.parentElement) {
                 themeObserver.observe(element, {
                     attributes: true,
-                    attributeFilter: ['class', 'style', 'data-ui-color'],
+                    attributeFilter: ['class', 'style'],
                 })
             }
             this.paint()

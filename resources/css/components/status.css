@@ -1,0 +1,58 @@
+@layer components {
+    :where(.ui-button, .ui-badge, .ui-switch, .ui-alert, .ui-toast) {
+        --ui-status-fill: initial;
+        --ui-status-on-fill: initial;
+        --ui-status-ink: initial;
+        --ui-status-body-fg: initial;
+        --ui-status-description-fg: initial;
+        --ui-status-soft-bg: color-mix(in oklch, var(--ui-status-fill) 12%, transparent);
+        --ui-status-hover-bg: color-mix(in oklch, var(--ui-status-fill) 20%, transparent);
+    }
+
+    .ui-alert:is(
+        .ui-status-neutral,
+        .ui-status-info,
+        .ui-status-success,
+        .ui-status-warning,
+        .ui-status-error
+    ) {
+        --ui-status-body-fg: var(--color-card-foreground);
+        --ui-status-description-fg: var(--color-muted-foreground);
+    }
+
+    .ui-status-neutral {
+        --ui-status-fill: var(--color-secondary);
+        --ui-status-on-fill: var(--color-secondary-foreground);
+        --ui-status-ink: var(--color-secondary-foreground);
+        --ui-status-soft-bg: var(--color-secondary);
+        --ui-status-hover-bg: color-mix(
+            in oklch,
+            var(--color-secondary),
+            var(--color-foreground) 5%
+        );
+    }
+
+    .ui-status-info {
+        --ui-status-fill: var(--color-info);
+        --ui-status-on-fill: var(--color-info-foreground);
+        --ui-status-ink: var(--color-info-ink);
+    }
+
+    .ui-status-success {
+        --ui-status-fill: var(--color-success);
+        --ui-status-on-fill: var(--color-success-foreground);
+        --ui-status-ink: var(--color-success-ink);
+    }
+
+    .ui-status-warning {
+        --ui-status-fill: var(--color-warning);
+        --ui-status-on-fill: var(--color-warning-foreground);
+        --ui-status-ink: var(--color-warning-ink);
+    }
+
+    .ui-status-error {
+        --ui-status-fill: var(--color-error);
+        --ui-status-on-fill: var(--color-error-foreground);
+        --ui-status-ink: var(--color-error-ink);
+    }
+}

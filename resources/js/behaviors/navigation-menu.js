@@ -14,16 +14,16 @@ export function navigationMenu(openDelay = 150, closeDelay = 150) {
             pinned: false,
             keyboardFocus: false,
             get popup() {
-                return this.panel.querySelector('[data-slot="navigation-menu-popup"]')
+                return this.panel.querySelector('.ui-navigation-menu-popup')
             },
             get contents() {
-                return [
-                    ...this.panel.querySelectorAll('[data-slot="navigation-menu-content"]'),
-                ].filter((e) => e.closest('[data-slot="navigation-menu"]') === this.$root)
+                return [...this.panel.querySelectorAll('.ui-navigation-menu-content')].filter(
+                    (e) => e.closest('.ui-navigation-menu') === this.$root,
+                )
             },
             get triggers() {
                 return [...this.$root.querySelectorAll('[data-ui-navigation-value]')].filter(
-                    (e) => e.closest('[data-slot="navigation-menu"]') === this.$root,
+                    (e) => e.closest('.ui-navigation-menu') === this.$root,
                 )
             },
             get trigger() {
@@ -151,7 +151,7 @@ export function navigationMenu(openDelay = 150, closeDelay = 150) {
                 const controls = [...this.$root.querySelectorAll('button,a[href]')].filter(
                     (e) =>
                         !this.panel.contains(e) &&
-                        e.closest('[data-slot="navigation-menu"]') === this.$root &&
+                        e.closest('.ui-navigation-menu') === this.$root &&
                         !e.matches(':disabled,[aria-disabled="true"]'),
                 )
                 const index = controls.indexOf(document.activeElement)
@@ -172,7 +172,7 @@ export function navigationMenu(openDelay = 150, closeDelay = 150) {
             },
             navigate(event) {
                 if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(event.key)) return
-                const content = event.target.closest('[data-slot="navigation-menu-content"]')
+                const content = event.target.closest('.ui-navigation-menu-content')
                 if (
                     !this.contents.includes(content) ||
                     event.target.matches('input,textarea,select')
