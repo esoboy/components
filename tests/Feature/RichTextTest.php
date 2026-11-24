@@ -1,8 +1,23 @@
 <?php
 
 use Dom\HTMLDocument;
+use Esoboy\Ui\Support\RichContent;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\ViewException;
+
+it('renders the last paragraph when valid Markdown expands past the source byte limit', function () {
+    $value = str_repeat(str_repeat('Design & QA ', 1000)."\n\n", 64).'End of the document';
+    expect(strlen($value))->toBeLessThan(1_000_000);
+    $html = Blade::render('<x-ui::rich-text :value="$value" input-type="markdown" />', compact('value'));
+    expect(strlen($html))->toBeGreaterThan(1_000_000)
+        ->and($html)->toContain('<p>End of the document</p>');
+});
+
+it('checks the source byte limit before converting or sanitizing', function (string $type) {
+    $value = str_repeat('字', 333_334);
+    expect(fn () => RichContent::render($value, $type))
+        ->toThrow(InvalidArgumentException::class, __('ui::errors.rich_text_length'));
+})->with(['html', 'markdown']);
 
 it('renders HTML and Markdown strings through the public rich text entry', function (string $content, string $type) {
     $html = Blade::render('<x-ui::rich-text :value="$content" :input-type="$type" />', compact('content', 'type'));

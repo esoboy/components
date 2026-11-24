@@ -6,3 +6,6 @@
 .ui-icon-size-explicit {
     @apply size-(--icon-size);
 }
+.ui-icon[class*='ui-status-'] {
+    color: var(--fg, var(--status-ink));
+}

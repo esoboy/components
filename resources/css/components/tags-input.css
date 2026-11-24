@@ -29,3 +29,9 @@
     --fg: var(--field-fg);
     --border: var(--field-border);
 }
+.ui-tags > .ui-badge[data-size='sm'] .ui-button {
+    @apply size-3 [&>svg]:size-2.5;
+}
+.ui-tags > .ui-badge[data-size='lg'] .ui-button {
+    @apply size-5 [&>svg]:size-3.5;
+}

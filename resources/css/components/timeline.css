@@ -12,8 +12,8 @@
     @apply pb-6;
 }
 .ui-timeline-item::before {
-    @apply [content:''] border-[color:var(--item-before-border,var(--color-muted-foreground))]
-        bg-[color:var(--item-before-bg,var(--color-background))] absolute start-0 top-1.5 size-2.5
+    @apply [content:''] border-[color:var(--item-before-border,var(--status-ink,var(--color-muted-foreground)))]
+        bg-[color:var(--item-before-bg,var(--status-fill,var(--color-background)))] absolute start-0 top-1.5 size-2.5
         rounded-full border-2;
 }
 .ui-timeline-item:not(:last-child)::after {
@@ -21,9 +21,9 @@
         -bottom-1.5 w-px;
 }
 .ui-timeline-item[aria-current]::before {
-    @apply border-[color:var(--item-before-border,var(--color-primary))]
-        bg-[color:var(--item-before-bg,var(--color-primary))]
-        ring-[color:var(--part-ring,color-mix(in_oklab,var(--color-primary)_10%,transparent))] ring-3;
+    @apply border-[color:var(--item-before-border,var(--status-ink,var(--color-primary)))]
+        bg-[color:var(--item-before-bg,var(--status-fill,var(--color-primary)))]
+        ring-[color:var(--part-ring,color-mix(in_oklab,var(--status-fill,var(--color-primary))_10%,transparent))] ring-3;
 }
 .ui-timeline-time {
     @apply text-[color:var(--part-fg,var(--color-muted-foreground))] text-caption/5 tabular-nums;

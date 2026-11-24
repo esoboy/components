@@ -20,6 +20,30 @@ async function openProbe(t, query = '', options = {}) {
     return page
 }
 
+test('panel widths and time option heights increase with size on a touch screen', async (t) => {
+    const page = await openProbe(t, '?sizes=1', { hasTouch: true })
+    await page.addStyleTag({ content: 'dialog { transition: none !important }' })
+    for (const width of [375, 900]) {
+        await page.setViewportSize({ width, height: 812 })
+        const sizes = await page.locator('[data-control-size]').evaluateAll((groups) =>
+            groups.map((group) => {
+                const widths = Array.from(group.querySelectorAll('dialog'), (panel) => {
+                    panel.open = true
+                    return panel.offsetWidth
+                })
+                const option = document.querySelector(
+                    `.ui-time-panel[data-size="${group.dataset.controlSize}"] [role="option"]`,
+                )
+                return [...widths, parseFloat(getComputedStyle(option).height)]
+            }),
+        )
+        const [small, normal, large] = sizes
+        for (const [i, part] of ['dialog', 'sheet', 'drawer', 'time option'].entries()) {
+            assert.ok(small[i] < normal[i] && normal[i] < large[i], `${part} at ${width}px`)
+        }
+    }
+})
+
 test('explicit statuses recolor existing variants and root utilities reach their parts', async (t) => {
     const page = await openProbe(t, '?status=1')
     await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important }' })
@@ -1458,4 +1482,180 @@ test('a late-mounted bound editor loads the current draft without recording its 
     await page.waitForFunction(
         () => document.querySelector('#deferred-editor .document')?.textContent === 'First',
     )
+})
+
+for (const [binding, id, submit] of [
+    ['native', '#native-role', 'Send native'],
+    ['wire:model', '#deferred-role', 'Save deferred role'],
+    ['wire:model.live', '#role', 'Save role'],
+]) {
+    test(`Select submits the latest choice before a delayed response with ${binding}`, async (t) => {
+        const page = await openProbe(t, '?forms=1')
+        const native = binding === 'native'
+        const response = Promise.withResolvers()
+        await page.route(
+            '**/update',
+            async (route) => {
+                const result = await route.fetch()
+                await response.promise
+                await route.fulfill({ response: result })
+            },
+            { times: 1 },
+        )
+        try {
+            await page.locator(id).click()
+            const pending = page.waitForRequest('**/update')
+            await page.getByRole('option', { name: 'Beta' }).click()
+            await pending
+            if (native) {
+                await page.route('**/ui-form-result?*', (route) => route.fulfill({ body: 'Saved' }))
+                const posted = page.waitForRequest(
+                    (request) => new URL(request.url()).pathname === '/ui-form-result',
+                )
+                await page.getByRole('button', { name: submit }).click()
+                assert.equal(new URL((await posted).url()).searchParams.get('role'), 'b')
+            } else {
+                await page.getByRole('button', { name: submit }).click()
+            }
+        } finally {
+            response.resolve()
+        }
+        if (!native)
+            await page.waitForFunction(
+                () => document.querySelector('#saved-role').textContent === 'b',
+            )
+        await page.waitForFunction(
+            (id) => document.querySelector(id).textContent.includes('Beta'),
+            id,
+        )
+    })
+}
+
+test('Select shares its required, reset and removed-option state with the owning form', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    const values = (form, name) =>
+        page.locator(form).evaluate((el, key) => new FormData(el).getAll(key), name)
+    await page.locator('#role').click()
+    await page.getByRole('option', { name: 'Beta' }).click()
+    await page.waitForFunction(() => document.querySelector('#role-value').textContent === 'b')
+    assert.deepEqual(await values('#live-form', 'role'), ['b'])
+    await page.getByRole('button', { name: 'Reset role' }).click()
+    await page.waitForFunction(() => document.querySelector('#role-value').textContent === 'a')
+    assert.deepEqual(await values('#live-form', 'role'), ['a'])
+    await page.getByRole('button', { name: 'Remove Alpha' }).click()
+    await page.waitForFunction(() =>
+        document.querySelector('#role').textContent.includes('Pick a role'),
+    )
+    assert.deepEqual(await values('#live-form', 'role'), [])
+    await page.waitForFunction(() => document.querySelector('#role-value').textContent === '')
+    assert.equal(await page.locator('#live-form').evaluate((form) => form.reportValidity()), false)
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'role')
+    await page.getByRole('button', { name: 'Reset role' }).click()
+    assert.deepEqual(await values('#live-form', 'role'), [])
+})
+
+test('Select preserves typed multiple selection order, controlled ownership and external form reset', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    const form = page.locator('#native-form')
+    const multi = page.locator('#multi-role')
+    await multi.click()
+    await page.getByRole('option', { name: 'Beta' }).click()
+    await page.getByRole('option', { name: 'Empty string' }).click()
+    await page.waitForFunction(() =>
+        document.querySelector('#multi-role').textContent.includes('Empty string'),
+    )
+    const multipleValues = () => form.evaluate((el) => new FormData(el).getAll('roles[]'))
+    assert.deepEqual(await multipleValues(), ['0', 'b', ''])
+    await page.keyboard.press('Escape')
+    await page.locator('#controlled-role').click()
+    await page.getByRole('option', { name: 'Beta' }).click()
+    assert.equal(await page.locator('#requested').getAttribute('data-requested'), '"b"')
+    assert.equal(await form.evaluate((el) => new FormData(el).get('controlled')), 'a')
+    await form.evaluate((el) => {
+        el.addEventListener('reset', (event) => event.preventDefault(), { once: true })
+        el.reset()
+    })
+    assert.deepEqual(await multipleValues(), ['0', 'b', ''])
+    assert.deepEqual(
+        await form.evaluate((el) => {
+            el.reset()
+            return new FormData(el).getAll('roles[]')
+        }),
+        ['0'],
+    )
+    await page.waitForFunction(
+        () => document.querySelector('#multi-role').textContent.trim() === 'Zero',
+    )
+    assert.deepEqual(await multipleValues(), ['0'])
+})
+
+test('Slider uses native step values for its thumbs, model and submitted values', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    await page.waitForFunction(() => window.Livewire.first().amount === 8)
+    for (const [id, name, expected] of [
+        ['ui-amount', 'amount', '8'],
+        ['decimal-slider', 'fraction', '0.3'],
+    ]) {
+        const thumb = page.locator('#' + id)
+        await thumb.press('End')
+        assert.equal(await thumb.inputValue(), expected)
+        assert.equal(
+            await thumb.evaluate((el, key) => new FormData(el.form).get(key), name),
+            expected,
+        )
+        const endOffset = await thumb.evaluate((el) => {
+            const root = el.closest('.ui-slider-body')
+            const fill = root.querySelector('.ui-slider-range').getBoundingClientRect()
+            const thumb = el.getBoundingClientRect()
+            return root.dataset.orientation === 'vertical'
+                ? fill.bottom - (thumb.top + thumb.height / 2)
+                : fill.right - (thumb.left + thumb.width / 2)
+        })
+        assert.ok(Math.abs(endOffset) < 1)
+    }
+    assert.deepEqual(
+        await page.locator('#slider-form').evaluate((form) => new FormData(form).getAll('span[]')),
+        ['4', '8'],
+    )
+    assert.equal(await page.evaluate(() => window.Livewire.first().amount), 8)
+})
+
+test('Tabs activates an available panel after removal and keeps it when the first tab returns', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    const toggle = page.getByRole('button', { name: 'Toggle first tab' })
+    await toggle.click()
+    await page.getByRole('tabpanel', { name: 'Second tab' }).waitFor()
+    assert.equal(await page.getByRole('tab', { name: 'Second tab' }).getAttribute('tabindex'), '0')
+    await toggle.click()
+    await page.getByRole('tab', { name: 'First tab' }).waitFor()
+    assert.equal(
+        await page.getByRole('tab', { name: 'Second tab' }).getAttribute('aria-selected'),
+        'true',
+    )
+    await page.getByRole('tab', { name: 'Second tab' }).evaluate((tab) => {
+        tab.disabled = true
+    })
+    await page.getByRole('tabpanel', { name: 'First tab' }).waitFor()
+    assert.equal(await page.getByRole('tab', { name: 'First tab' }).getAttribute('tabindex'), '0')
+})
+
+test('Questionnaire accepts its shortcut letter as the first character of a freeform answer', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    const input = page.getByRole('textbox', { name: 'Free text' })
+    assert.equal(
+        await input.evaluate((el) =>
+            el.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    isComposing: true,
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            ),
+        ),
+        true,
+    )
+    await input.pressSequentially('apple')
+    assert.equal(await input.inputValue(), 'apple')
+    assert.equal(await page.getByRole('radio', { name: 'Option A A' }).isChecked(), false)
 })

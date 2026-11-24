@@ -21,3 +21,9 @@
 .ui-rating label:has(:focus-visible) {
     @apply ring-[color:var(--focus-ring,var(--ring-50))] outline-none ring-3;
 }
+.ui-rating[data-size='sm'] {
+    @apply gap-0.5 [&>label]:size-6 [&_.ui-rating-star>svg]:size-3.5;
+}
+.ui-rating[data-size='lg'] {
+    @apply gap-1.5 [&>label]:size-10 [&_.ui-rating-star>svg]:size-5;
+}

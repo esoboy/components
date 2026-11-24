@@ -1,14 +1,23 @@
 h1.ui-heading {
-    font-size: var(--text-title-4xl);
+    --heading-font-size: var(--text-title-4xl);
+    font-size: var(--heading-font-size);
     font-weight: 700;
     letter-spacing: -0.04em;
 }
 h2.ui-heading {
-    font-size: var(--text-title-2xl);
+    --heading-font-size: var(--text-title-2xl);
+    font-size: var(--heading-font-size);
     font-weight: 600;
     letter-spacing: -0.03em;
 }
 h3.ui-heading {
-    font-size: var(--text-title-lg);
+    --heading-font-size: var(--text-title-lg);
+    font-size: var(--heading-font-size);
     font-weight: 600;
+}
+.ui-heading[data-size='sm'] {
+    font-size: calc(var(--heading-font-size, 1em) * 0.85);
+}
+.ui-heading[data-size='lg'] {
+    font-size: calc(var(--heading-font-size, 1em) * 1.25);
 }

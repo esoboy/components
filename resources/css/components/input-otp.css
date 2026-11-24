@@ -104,3 +104,9 @@
         opacity: 0;
     }
 }
+.ui-input-otp[data-size='sm'] {
+    @apply [&_.ui-input-otp-slot]:size-7 [&_.ui-input-otp-slot]:text-compact;
+}
+.ui-input-otp[data-size='lg'] {
+    @apply [&_.ui-input-otp-slot]:size-10 [&_.ui-input-otp-slot]:text-title;
+}

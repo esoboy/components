@@ -1,5 +1,8 @@
 :where(.ui-table) {
     --columns-fg: initial;
+    --table-head-height: --spacing(10);
+    --table-cell-py: --spacing(2);
+    --table-cell-px: --spacing(2);
     --header-border: initial;
     --row-border: initial;
 }
@@ -40,11 +43,11 @@
     @apply font-medium bg-[color:var(--footer-bg,var(--muted-50))] border-t [&>tr]:last:border-b-0;
 }
 .ui-table-head {
-    @apply font-medium text-[color:var(--part-fg,var(--color-foreground))] h-10 px-2 text-left align-middle
+    @apply font-medium text-[color:var(--part-fg,var(--color-foreground))] h-(--table-head-height) px-(--table-cell-px) text-left align-middle
         whitespace-nowrap [&:has([role=checkbox])]:pr-0;
 }
 .ui-table-cell {
-    @apply p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply px-(--table-cell-px) py-(--table-cell-py) align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
 }
 .ui-table-empty > .ui-table-cell {
     @apply whitespace-normal;
@@ -54,4 +57,10 @@
 }
 .ui-table-caption {
     @apply text-body text-[color:var(--part-fg,var(--color-muted-foreground))] mt-4;
+}
+.ui-table[data-size='sm'] {
+    @apply [--table-head-height:--spacing(8)] [--table-cell-py:--spacing(1)] [--table-cell-px:--spacing(1.5)];
+}
+.ui-table[data-size='lg'] {
+    @apply [--table-head-height:--spacing(12)] [--table-cell-py:--spacing(3)] [--table-cell-px:--spacing(3)];
 }

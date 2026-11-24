@@ -19,8 +19,8 @@
 }
 .ui-radio:checked::before {
     content: '';
-    width: 0.5rem;
-    height: 0.5rem;
+    width: calc(var(--radio-size, 1rem) / 2);
+    height: calc(var(--radio-size, 1rem) / 2);
     background: var(--part-bg, var(--color-primary-foreground));
     border-radius: 50%;
 }
@@ -31,7 +31,7 @@
 }
 .ui-radio-group-item {
     @apply focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0 flex
-        size-4 items-center justify-center border border-[color:var(--item-border,var(--color-input))]
+        size-[var(--radio-size,--spacing(4))] items-center justify-center border border-[color:var(--item-border,var(--color-input))]
         relative aspect-square shrink-0 outline-none disabled:cursor-not-allowed disabled:opacity-50
         rounded-full;
     @variant ui-dark {
@@ -68,5 +68,11 @@
     }
 }
 .ui-radio-group {
-    @apply w-full grid gap-2;
+    @apply w-full grid gap-2 [--radio-size:--spacing(4)];
+}
+.ui-radio-group[data-size='sm'] {
+    @apply gap-1.5 [--radio-size:--spacing(3.5)];
+}
+.ui-radio-group[data-size='lg'] {
+    @apply gap-3 [--radio-size:--spacing(5)];
 }

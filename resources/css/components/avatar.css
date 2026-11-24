@@ -31,8 +31,8 @@
     }
 }
 .ui-avatar-badge {
-    @apply bg-[color:var(--part-bg,var(--color-primary))]
-        text-[color:var(--part-fg,var(--color-primary-foreground))]
+    @apply bg-[color:var(--part-bg,var(--status-fill,var(--color-primary)))]
+        text-[color:var(--part-fg,var(--status-on-fill,var(--color-primary-foreground)))]
         ring-[color:var(--part-ring,var(--color-background))] absolute bottom-0 right-0 z-10 inline-flex
         size-2.5 items-center justify-center rounded-full ring-2 bg-blend-color select-none;
 }

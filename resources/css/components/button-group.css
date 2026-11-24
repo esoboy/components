@@ -103,3 +103,9 @@
         @apply h-auto my-px;
     }
 }
+.ui-button-group[data-size='sm'] {
+    @apply [&>.ui-button-group-text]:px-2 [&>.ui-button-group-text]:text-compact;
+}
+.ui-button-group[data-size='lg'] {
+    @apply [&>.ui-button-group-text]:px-3 [&>.ui-button-group-text]:text-title;
+}

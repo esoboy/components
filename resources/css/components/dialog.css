@@ -49,3 +49,9 @@
 .ui-dialog-dismiss {
     @apply absolute top-2 right-2;
 }
+.ui-dialog-content[data-size='sm'] {
+    @apply w-full max-w-[min(20rem,calc(100%_-_3rem))];
+}
+.ui-dialog-content[data-size='lg'] {
+    @apply w-full max-w-[min(40rem,calc(100%_-_1rem))];
+}

@@ -7,7 +7,7 @@
 }
 .ui-statistic-value {
     @apply flex flex-wrap items-baseline gap-x-1.5 leading-tight
-        text-[color:var(--value-fg,var(--color-foreground))] [overflow-wrap:anywhere]
+        text-[color:var(--value-fg,var(--status-ink,var(--color-foreground)))] [overflow-wrap:anywhere]
         text-[length:var(--text-display)] [font-weight:600] [letter-spacing:-0.04em]
         [font-variant-numeric:tabular-nums];
 }
@@ -20,4 +20,10 @@
 }
 .ui-statistic > .ui-skeleton {
     @apply my-1 h-7 w-24;
+}
+.ui-statistic[data-size='sm'] {
+    @apply [&>.ui-statistic-value]:text-title-2xl [&_.ui-statistic-prefix]:text-body [&_.ui-statistic-suffix]:text-body [&>.ui-skeleton]:h-5;
+}
+.ui-statistic[data-size='lg'] {
+    @apply [&>.ui-statistic-value]:text-title-4xl [&_.ui-statistic-prefix]:text-title-lg [&_.ui-statistic-suffix]:text-title-lg [&>.ui-skeleton]:h-9;
 }

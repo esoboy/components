@@ -7,27 +7,20 @@ export function questionnaire() {
             })
         },
         navigate(event) {
+            if (event.isComposing) return
             const input = event.target.matches('input:not([type=radio],[type=checkbox]),textarea'),
                 action = this.$root.querySelector(
                     '.ui-questionnaire-next button, .ui-questionnaire-submit button',
                 ),
                 previous = this.$root.querySelector('.ui-questionnaire-previous button')
-            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            if (event.key === 'Enter' && (input || event.ctrlKey || event.metaKey)) {
                 event.preventDefault()
                 // Commit any edited freeform control before the following action is bundled.
                 if (input) event.target.dispatchEvent(new Event('change', { bubbles: true }))
                 action?.click()
                 return
             }
-            if (input && event.target.value !== '') {
-                if (event.key === 'Enter') {
-                    event.preventDefault()
-                    event.target.dispatchEvent(new Event('change', { bubbles: true }))
-                    action?.click()
-                }
-                return
-            }
-            if (event.altKey || event.ctrlKey || event.metaKey) return
+            if (input || event.altKey || event.ctrlKey || event.metaKey) return
             const choice = [
                 ...this.$root.querySelectorAll('input[data-shortcut]:not(:disabled)'),
             ].find((element) => element.dataset.shortcut.toLowerCase() === event.key.toLowerCase())

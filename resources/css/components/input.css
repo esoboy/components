@@ -11,3 +11,9 @@
         color: var(--file-fg, var(--color-foreground));
     }
 }
+.ui-input[data-size='sm'] {
+    @apply h-7 px-2 md:text-compact file:h-5;
+}
+.ui-input[data-size='lg'] {
+    @apply h-9 px-3 md:text-title file:h-7;
+}

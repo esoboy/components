@@ -1,5 +1,7 @@
 :where(.ui-slider) {
     --accent: initial;
+    --slider-thumb-size: 0.75rem;
+    --slider-track-size: 0.25rem;
     --thumb-border: initial;
     --thumb-hover-shadow: initial;
     --thumb-ring: initial;
@@ -14,7 +16,7 @@
     display: flex;
     align-items: center;
     width: 100%;
-    height: 0.25rem;
+    height: var(--slider-track-size);
     touch-action: none;
     user-select: none;
     @variant data-[orientation=vertical] {
@@ -25,26 +27,21 @@
     background-color: var(--track, var(--color-muted));
     position: relative;
     width: 100%;
-    height: 0.25rem;
+    height: var(--slider-track-size);
     background: var(--track, var(--color-muted));
     border-radius: 999px;
     overflow: hidden;
-    @variant data-[orientation=horizontal] {
-        @apply h-1 w-full;
-    }
-    @variant data-[orientation=vertical] {
-        @apply h-full w-1;
-    }
 }
 .ui-slider-range {
     background-color: var(--fill, var(--color-primary));
     position: absolute;
     height: 100%;
+    width: calc(var(--ui-slider-end) - var(--ui-slider-position));
     background: var(--fill, var(--color-primary));
 }
 .ui-slider-thumb {
     @apply ring-[color:var(--thumb-ring,var(--ring-50))] transition-[color,box-shadow] appearance-none
-        absolute top-[calc(50%-6px)] size-[0.75rem] rounded-[50%]
+        absolute top-[calc(50%-var(--slider-thumb-size)/2)] size-(--slider-thumb-size) rounded-[50%]
         [border:1px_solid_var(--thumb-border,var(--color-ring))] [background:var(--thumb,white)] p-0 m-0
         cursor-grab [outline:none];
     @variant after {
@@ -59,6 +56,22 @@
 }
 .ui-slider-field:has(> [data-orientation='horizontal']) {
     width: 100%;
+}
+.ui-slider-body[data-orientation='horizontal'][data-inverted='false']
+    :is(.ui-slider-range, .ui-slider-thumb) {
+    left: var(--ui-slider-position);
+}
+.ui-slider-body[data-orientation='horizontal'][data-inverted='true']
+    :is(.ui-slider-range, .ui-slider-thumb) {
+    right: var(--ui-slider-position);
+}
+.ui-slider-body[data-orientation='vertical'][data-inverted='false']
+    :is(.ui-slider-range, .ui-slider-thumb) {
+    bottom: var(--ui-slider-position);
+}
+.ui-slider-body[data-orientation='vertical'][data-inverted='true']
+    :is(.ui-slider-range, .ui-slider-thumb) {
+    top: var(--ui-slider-position);
 }
 .ui-slider-thumb::-webkit-slider-runnable-track {
     background: none;
@@ -91,12 +104,21 @@
 }
 .ui-slider-body[data-orientation='vertical'] .ui-slider-track {
     height: 100%;
-    width: 0.25rem;
+    width: var(--slider-track-size);
 }
 .ui-slider-body[data-orientation='vertical'] .ui-slider-range {
     width: 100%;
+    height: calc(var(--ui-slider-end) - var(--ui-slider-position));
 }
 .ui-slider-body[data-orientation='vertical'] .ui-slider-thumb {
     top: auto;
-    left: calc(50% - 6px);
+    left: calc(50% - var(--slider-thumb-size) / 2);
+}
+.ui-slider[data-size='sm'] {
+    --slider-thumb-size: 0.625rem;
+    --slider-track-size: 0.125rem;
+}
+.ui-slider[data-size='lg'] {
+    --slider-thumb-size: 1rem;
+    --slider-track-size: 0.375rem;
 }

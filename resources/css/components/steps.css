@@ -14,7 +14,7 @@
 }
 .ui-steps-indicator {
     @apply bg-[color:var(--indicator-bg,var(--color-background))]
-        text-[color:var(--indicator-fg,var(--color-muted-foreground))] inline-flex size-7 shrink-0
+        text-[color:var(--indicator-fg,var(--color-muted-foreground))] inline-flex size-[var(--step-size,--spacing(7))] shrink-0
         items-center justify-center rounded-full border text-caption font-medium tabular-nums;
 }
 [data-state='current'] > .ui-steps-indicator {
@@ -33,7 +33,7 @@
     color: var(--part-fg, var(--color-destructive));
 }
 .ui-steps-item:not(:last-child)::after {
-    @apply [content:''] bg-[color:var(--item-after-bg,var(--color-border))] absolute top-3.5 end-0 start-9
+    @apply [content:''] bg-[color:var(--item-after-bg,var(--color-border))] absolute top-[calc(var(--step-size,--spacing(7))/2)] end-0 start-[calc(var(--step-size,--spacing(7))+--spacing(2))]
         h-px;
 }
 .ui-steps-item[data-state='complete']::after {
@@ -61,8 +61,14 @@
     @apply pb-5;
 }
 [data-orientation='vertical'] > .ui-steps-item:not(:last-child)::after {
-    @apply top-8 bottom-1 start-3.5 h-auto w-px;
+    @apply top-[calc(var(--step-size,--spacing(7))+--spacing(1))] bottom-1 start-[calc(var(--step-size,--spacing(7))/2)] h-auto w-px;
 }
 .ui-steps > li[role='presentation'] {
     @apply w-full;
+}
+.ui-steps[data-size='sm'] {
+    @apply [--step-size:--spacing(6)] [&_.ui-steps-title]:text-compact;
+}
+.ui-steps[data-size='lg'] {
+    @apply [--step-size:--spacing(9)] [&_.ui-steps-title]:text-title;
 }

@@ -34,4 +34,12 @@ it('only adds a color class for an explicit supported status', function (string 
     ['switch', 'checked', 'span'],
     ['alert', 'variant="destructive"', 'div'],
     ['toast', 'variant="destructive"', 'div'],
+    ['text', '', 'p'],
+    ['text', 'link="/details"', 'a'],
+    ['icon', 'name="check"', 'svg'],
+    ['statistic', 'title="Orders" value="5"', 'div'],
+    ['progress', ':value="60"', 'div'],
+    ['timeline.item', '', 'li'],
+    ['avatar.badge', '', 'span'],
+    ['alert-dialog.content', '', 'dialog'],
 ]);

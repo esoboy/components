@@ -45,7 +45,7 @@
     @apply relative inline-flex items-center;
 }
 .ui-calendar-dropdowns select {
-    @apply bg-[color:var(--dropdowns-bg,transparent)] h-7 cursor-pointer appearance-none rounded-md
+    @apply bg-[color:var(--dropdowns-bg,transparent)] h-(--cell-size) cursor-pointer appearance-none rounded-md
         border-0 ps-1 pe-5 text-body font-medium outline-none focus-visible:ring-2
         disabled:cursor-default field-sizing-content;
     @variant hover {
@@ -135,9 +135,15 @@
     @apply rounded-md;
 }
 .ui-calendar-week-number {
-    @apply flex size-7 shrink-0 items-center justify-center;
+    @apply flex size-(--cell-size) shrink-0 items-center justify-center;
 }
 .ui-calendar-grid :is(.ui-calendar-week-number, .ui-calendar-week-number-header) {
     flex: 0 0 var(--cell-size);
     width: var(--cell-size);
+}
+.ui-calendar-body[data-size='sm'] {
+    @apply [--cell-size:--spacing(6)];
+}
+.ui-calendar-body[data-size='lg'] {
+    @apply [--cell-size:--spacing(9)];
 }

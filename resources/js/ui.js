@@ -31,6 +31,7 @@ import { rating } from './components/rating.js'
 import { scrollArea } from './components/scroll-area.js'
 import { sidebar } from './components/sidebar.js'
 import { slider } from './components/slider.js'
+import { select } from './components/select.js'
 
 const registered = new WeakSet()
 
@@ -40,6 +41,7 @@ export function registerUi(Alpine) {
     Alpine.data('uiDialog', dialog)
     Alpine.data('uiDrawer', drawer)
     Alpine.data('uiPopover', popover)
+    Alpine.data('uiSelect', select)
     Alpine.data('uiCombobox', combobox)
     Alpine.data('uiIconSelect', iconSelect)
     Alpine.data('uiNavigationMenu', navigationMenu)

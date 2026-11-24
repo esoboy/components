@@ -93,3 +93,24 @@ dialog[data-ui-panel][open]::backdrop {
 dialog[data-ui-panel][data-ending]::backdrop {
     opacity: 0;
 }
+.ui-side-panel[data-size='sm'] {
+    --panel-extent: 20rem;
+    --panel-width-limit: 65vw;
+}
+.ui-side-panel[data-size='lg'] {
+    --panel-extent: 36rem;
+    --panel-width-limit: 90vw;
+}
+.ui-side-panel:is([data-size='sm'], [data-size='lg']):is([data-side='left'], [data-side='right']) {
+    width: min(
+        var(--drawer-content-width, min(var(--panel-extent), var(--panel-width-limit))),
+        100vw
+    );
+    max-width: 100vw;
+}
+.ui-side-panel:is([data-size='sm'], [data-size='lg']):is(
+        [data-side='top'],
+        [data-side='bottom']
+    ):not([data-snap-points]) {
+    height: min(var(--panel-extent), 90dvh);
+}

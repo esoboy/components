@@ -13,7 +13,7 @@ if ($zip->getFromName('LICENSE') !== file_get_contents(__DIR__.'/../../resources
     throw new RuntimeException('The Composer archive must include the package license at its root.');
 }
 $zip->close();
-$package['version'] = '1.0.5';
+$package['version'] = '1.0.6';
 $checksum = sha1_file($archive);
 $package['dist'] = [
     'type' => 'zip',
@@ -37,6 +37,7 @@ copy(__DIR__.'/probe.blade.php', $views.'/components/⚡package-probe.blade.php'
 copy(__DIR__.'/state-probe.blade.php', $views.'/components/⚡state-probe.blade.php');
 copy(__DIR__.'/composition-probe.blade.php', $views.'/components/⚡composition-probe.blade.php');
 copy(__DIR__.'/interaction-probe.blade.php', $views.'/components/⚡interaction-probe.blade.php');
+copy(__DIR__.'/form-probe.blade.php', $views.'/components/⚡form-probe.blade.php');
 $route = "\\Illuminate\\Support\\Facades\\Route::view('/ui-package-test', 'package-test');";
 if (! str_contains(file_get_contents($host.'/routes/web.php'), $route)) {
     file_put_contents($host.'/routes/web.php', "\n".$route."\n", FILE_APPEND);

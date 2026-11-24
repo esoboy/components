@@ -1,19 +1,20 @@
 import { control } from '../behaviors/control.js'
 
 export function slider() {
-    let min, max, step, orientation, inverted
+    let min, max, step, orientation, inverted, range
     const thumbAttributes = new WeakMap()
     let active = null,
         dragSource
-    const clamp = (number) =>
-        Math.max(
-            min,
-            Math.min(max, Number((min + Math.round((number - min) / step) * step).toFixed(12))),
-        )
+    const snap = (number) => {
+        range.value = number
+        return range.valueAsNumber
+    }
     return {
         positions: [],
         ...control(),
         init() {
+            // Use the browser's range sanitization, including decimal steps and uneven endpoints.
+            range = this.$root.querySelector('input[type=range]').cloneNode(false)
             this.initControl()
             this.refresh()
         },
@@ -22,9 +23,16 @@ export function slider() {
             min = Number(min)
             max = Number(max)
             step = Number(step)
-            this.positions = Array.isArray(this.value)
-                ? [...this.value].map(Number).sort((a, b) => a - b)
-                : [Number(this.value ?? min)]
+            Object.assign(range, { min, max, step })
+            const values = Array.isArray(this.value) ? this.value : [this.value ?? min]
+            this.positions = values.map(snap).sort((a, b) => a - b)
+            if (
+                this.config.mode !== 'controlled' &&
+                values.some((n, i) => Number(n) !== this.positions[i])
+            ) {
+                this.value = Array.isArray(this.value) ? this.positions : this.positions[0]
+                this.signal('input')
+            }
         },
         syncThumb(input, index) {
             // Internal handles live for the mount, while their native attributes follow Blade.
@@ -42,28 +50,13 @@ export function slider() {
             }
             thumbAttributes.set(input, Object.keys(attributes))
         },
-        percent(index) {
-            return ((this.positions[index] - min) / (max - min)) * 100
-        },
-        rangeStyle() {
-            const first = this.positions.length > 1 ? this.percent(0) : 0,
-                last = this.percent(this.positions.length - 1)
-            const start =
-                    this.positions.length > 1 ? `calc(${first}% + ${6 - first * 0.12}px)` : '0%',
-                length =
-                    this.positions.length > 1
-                        ? `calc(${last - first}% - ${(last - first) * 0.12}px)`
-                        : `calc(${last}% + ${6 - last * 0.12}px)`
-            return orientation === 'vertical'
-                ? `${inverted ? 'top' : 'bottom'}:${start};height:${length}`
-                : `${inverted ? 'right' : 'left'}:${start};width:${length}`
-        },
-        thumbStyle(index) {
-            return `${orientation === 'vertical' ? (inverted ? 'top' : 'bottom') : inverted ? 'right' : 'left'}:calc(${this.percent(index)}% - ${this.percent(index) * 0.12}px)`
+        offset(index, center = false) {
+            const fraction = (this.positions[index] - min) / (max - min)
+            return `calc(${fraction * 100}% + ${(center ? 0.5 : 0) - fraction} * var(--slider-thumb-size))`
         },
         change(index, number) {
             if (this.config.disabled || this.config.readonly) return
-            const next = clamp(Number(number))
+            const next = snap(number)
             this.positions[index] = Math.max(
                 this.positions[index - 1] ?? min,
                 Math.min(this.positions[index + 1] ?? max, next),
@@ -77,10 +70,14 @@ export function slider() {
         },
         coordinate(event) {
             const box = this.$root.getBoundingClientRect()
+            const thumb = this.$root.querySelector('[data-slider-index]').getBoundingClientRect()
             const fraction =
                 orientation === 'vertical'
-                    ? 1 - (event.clientY - box.top - 6) / Math.max(1, box.height - 12)
-                    : (event.clientX - box.left - 6) / Math.max(1, box.width - 12)
+                    ? 1 -
+                      (event.clientY - box.top - thumb.height / 2) /
+                          Math.max(1, box.height - thumb.height)
+                    : (event.clientX - box.left - thumb.width / 2) /
+                      Math.max(1, box.width - thumb.width)
             return min + (inverted ? 1 - fraction : fraction) * (max - min)
         },
         start(event) {

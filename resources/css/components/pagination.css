@@ -56,3 +56,9 @@
 .ui-button.ui-pagination-next:has([data-icon]) {
     @apply pr-1.5;
 }
+.ui-pagination[data-size='sm'] {
+    @apply [&_.ui-pagination-ellipsis]:size-7;
+}
+.ui-pagination[data-size='lg'] {
+    @apply [&_.ui-pagination-ellipsis]:size-9;
+}

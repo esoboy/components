@@ -1,8 +1,15 @@
 .ui-text {
     line-height: 1.65;
+    color: var(--fg, var(--status-ink, inherit));
 }
 .ui-text-link {
-    color: var(--link-fg, var(--color-primary));
+    color: var(--link-fg, var(--status-ink, var(--color-primary)));
     text-decoration: underline;
     text-underline-offset: 4px;
+}
+.ui-text[data-size='sm'] {
+    @apply text-caption;
+}
+.ui-text[data-size='lg'] {
+    @apply text-title-lg;
 }

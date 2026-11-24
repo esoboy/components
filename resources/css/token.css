@@ -260,7 +260,19 @@
     }
 
     /* Status colors for each component variant. */
-    :where(.ui-button, .ui-badge, .ui-switch, .ui-alert, .ui-toast) {
+    :where(
+        .ui-button,
+        .ui-badge,
+        .ui-switch,
+        .ui-alert,
+        .ui-toast,
+        .ui-text,
+        .ui-statistic,
+        .ui-progress,
+        .ui-timeline-item,
+        .ui-avatar-badge,
+        .ui-alert-dialog-content
+    ) {
         --status-fill: initial;
         --status-on-fill: initial;
         --status-ink: initial;

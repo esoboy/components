@@ -48,3 +48,6 @@
 .ui-native-select-control:disabled {
     opacity: 1;
 }
+.ui-native-select-control[data-size='lg']:not([multiple]) {
+    @apply h-9 px-3 pe-8 text-title;
+}

@@ -34,3 +34,9 @@
     @apply text-[color:var(--field-fg,var(--color-muted-foreground))] pointer-events-none absolute end-2
         top-1/2 -translate-y-1/2;
 }
+.ui-color-picker[data-size='sm'] {
+    @apply w-16 min-w-16 [&>input]:h-7 [&>input]:py-1 [&>svg]:size-3;
+}
+.ui-color-picker[data-size='lg'] {
+    @apply w-22 min-w-22 [&>input]:h-9 [&>input]:py-2 [&>svg]:size-4;
+}

@@ -5,7 +5,7 @@
     width: 18rem;
 }
 .ui-time-panel {
-    @apply flex min-h-0 flex-col [--time-cell:2.25rem];
+    @apply flex min-h-0 flex-col [--time-cell-base:2.25rem] [--time-cell:var(--time-cell-base)];
 }
 .ui-time-segments {
     @apply flex shrink-0 items-center justify-center gap-1 px-3 py-2;
@@ -42,9 +42,15 @@
 }
 @media (pointer: coarse) {
     .ui-time-panel {
-        --time-cell: 2.75rem;
+        --time-cell-base: 2.75rem;
     }
 }
 .ui-time-hint {
     @apply text-[color:var(--part-fg,var(--color-muted-foreground))] px-3 pb-2 text-caption;
+}
+.ui-time-panel[data-size='sm'] {
+    --time-cell: calc(var(--time-cell-base) - 0.25rem);
+}
+.ui-time-panel[data-size='lg'] {
+    --time-cell: calc(var(--time-cell-base) + 0.5rem);
 }

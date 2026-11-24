@@ -3,7 +3,7 @@
 }
 [data-select-parents] > .ui-tree-row {
     display: grid;
-    grid-template-columns: calc(var(--spacing) * 8) minmax(0, 1fr);
+    grid-template-columns: var(--tree-selector-width, --spacing(8)) minmax(0, 1fr);
 }
 [data-select-parents] > .ui-tree-row > .ui-tree-action {
     grid-column: 2;
@@ -17,4 +17,10 @@
 .ui-tree-action[aria-pressed='true'] {
     background-color: var(--part-bg, var(--color-accent));
     color: var(--part-fg, var(--color-accent-foreground));
+}
+.ui-tree-body[data-size='sm'] {
+    @apply [--tree-selector-width:--spacing(7)];
+}
+.ui-tree-body[data-size='lg'] {
+    @apply [--tree-selector-width:--spacing(9)];
 }

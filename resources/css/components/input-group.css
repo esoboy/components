@@ -1,5 +1,10 @@
 :where(.ui-input-group) {
     --textarea-bg: initial;
+    --group-control-height: --spacing(8);
+    --group-button-height: --spacing(6);
+    --group-icon-size: --spacing(4);
+    --group-font-size: var(--text-body);
+    --group-textarea-height: --spacing(16);
 }
 .ui-input-group-text {
     @apply text-body [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none
@@ -7,7 +12,7 @@
 }
 .ui-input-group {
     @apply transition-colors relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto
-        border-[color:var(--border,var(--color-input))] h-8 rounded-lg border
+        border-[color:var(--border,var(--color-input))] h-(--group-control-height) rounded-lg border
         in-[.ui-combobox-content]:focus-within:ring-0 has-disabled:opacity-50
         has-[.ui-input-group-control:focus-visible]:ring-3 has-[[aria-invalid=true]]:ring-3
         has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col
@@ -68,13 +73,13 @@
     @apply text-body flex items-center shadow-none gap-2;
 }
 .ui-input-group-button[data-size='xs'] {
-    @apply h-6 gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5;
+    @apply h-[var(--group-button-height,--spacing(6))] gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5;
 }
 .ui-input-group-button[data-size='icon-xs'] {
-    @apply size-6 rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0;
+    @apply size-[var(--group-button-height,--spacing(6))] rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0;
 }
 .ui-input-group-button[data-size='icon-sm'] {
-    @apply size-8 p-0 has-[>svg]:p-0;
+    @apply size-[var(--group-control-height,--spacing(8))] p-0 has-[>svg]:p-0;
 }
 .ui-input-group-input {
     @apply bg-[color:var(--input-bg,transparent)] flex-1 rounded-none border-0 shadow-none ring-0
@@ -111,4 +116,39 @@
         > [data-ui-overlay] > [data-ui-trigger] > button
     ) {
     margin-right: -0.3rem;
+}
+.ui-input-group[data-size='sm'] {
+    --group-control-height: --spacing(7);
+    --group-button-height: --spacing(5);
+    --group-icon-size: --spacing(3.5);
+    --group-font-size: var(--text-compact);
+    --group-textarea-height: --spacing(12);
+}
+.ui-input-group[data-size='lg'] {
+    --group-control-height: --spacing(9);
+    --group-button-height: --spacing(7);
+    --group-icon-size: --spacing(4.5);
+    --group-font-size: var(--text-title);
+    --group-textarea-height: --spacing(20);
+}
+.ui-input-group:is([data-size='sm'], [data-size='lg'])
+    :is(.ui-input-group-addon, .ui-input-group-text, .ui-input-group-button) {
+    font-size: var(--group-font-size);
+}
+.ui-input-group:is([data-size='sm'], [data-size='lg'])
+    :is(.ui-input-group-addon, .ui-input-group-text, .ui-input-group-button)
+    > .ui-icon:not(.ui-icon-size-explicit) {
+    width: var(--group-icon-size);
+    height: var(--group-icon-size);
+}
+.ui-input-group-input[data-size='default'] {
+    height: var(--group-control-height, --spacing(8));
+}
+.ui-input-group-textarea[data-size='default'] {
+    min-height: var(--group-textarea-height, --spacing(16));
+}
+@media (width >= 48rem) {
+    .ui-input-group-control[data-size='default'] {
+        font-size: var(--group-font-size, var(--text-body));
+    }
 }

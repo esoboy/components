@@ -13,6 +13,8 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
+    @elseif(request()->boolean('forms'))
+        <livewire:form-probe />
     @elseif(request()->boolean('interactions'))
         <livewire:interaction-probe />
     @elseif(request()->boolean('composition'))
@@ -21,6 +23,15 @@
         <livewire:composition-probe />
     @elseif(request()->boolean('state'))
         <livewire:state-probe />
+    @elseif(request()->boolean('sizes'))
+        @foreach (['sm', 'default', 'lg'] as $size)
+            <section data-control-size="{{ $size }}">
+                <x-ui::dialog><x-ui::dialog.content :size="$size">Dialog</x-ui::dialog.content></x-ui::dialog>
+                <x-ui::sheet><x-ui::sheet.content side="right" :size="$size">Sheet</x-ui::sheet.content></x-ui::sheet>
+                <x-ui::drawer><x-ui::drawer.content side="left" :size="$size">Drawer</x-ui::drawer.content></x-ui::drawer>
+                <x-ui::time-picker :id="'time-'.$size" :size="$size" />
+            </section>
+        @endforeach
     @elseif(request()->boolean('status'))
         <x-ui::button id="base-button">Action</x-ui::button>
         <x-ui::button id="secondary-button" variant="secondary">Action</x-ui::button>

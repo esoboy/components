@@ -1,6 +1,6 @@
-export function observeChildren(root, update) {
+export function observeChildren(root, update, attributeFilter) {
     const observer = new MutationObserver(update)
-    observer.observe(root, { childList: true, subtree: true })
+    observer.observe(root, { childList: true, subtree: true, attributeFilter })
     return () => observer.disconnect()
 }
 
