@@ -13,7 +13,7 @@ if ($zip->getFromName('LICENSE') !== file_get_contents(__DIR__.'/../../resources
     throw new RuntimeException('The Composer archive must include the package license at its root.');
 }
 $zip->close();
-$package['version'] = '1.0.4';
+$package['version'] = '1.0.5';
 $checksum = sha1_file($archive);
 $package['dist'] = [
     'type' => 'zip',
