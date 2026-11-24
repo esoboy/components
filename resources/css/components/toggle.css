@@ -1,0 +1,59 @@
+:where(.ui-toggle) {
+    --control-hover-bg: initial;
+    --focus-outline: initial;
+    --focus-shadow: initial;
+}
+.ui-toggle {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+}
+.ui-toggle:has(:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.ui-toggle-control {
+    @apply disabled:opacity-50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0
+        focus-visible:ring-[3px] outline-none border-[color:var(--control-border,transparent)]
+        inline-flex items-center justify-center whitespace-nowrap gap-1 rounded-lg border text-body
+        font-medium transition-all;
+    @variant hover {
+        background-color: var(--control-hover-bg, var(--color-muted));
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-toggle.ui-toggle-variant-default > span {
+    background-color: var(--bg, transparent);
+    @variant hover {
+        background-color: var(--hover-bg, var(--color-muted));
+    }
+}
+.ui-toggle.ui-toggle-variant-outline > span {
+    border-color: var(--border, var(--color-input));
+    background-color: var(--bg, transparent);
+    @variant hover {
+        background-color: var(--hover-bg, var(--color-muted));
+    }
+}
+.ui-toggle:has(:checked) > span {
+    background: var(--checked-bg, var(--color-muted));
+}
+.ui-toggle:has(:focus-visible) > span {
+    outline-offset: 2px;
+    outline: 0;
+    border-color: var(--focus-border, var(--color-ring));
+    box-shadow: var(
+        --focus-shadow,
+        0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
+    );
+}
+:is(.ui-toggle, .ui-toggle-group-item)[data-size='default'] > span {
+    @apply h-8 min-w-8 px-2.5;
+}
+:is(.ui-toggle, .ui-toggle-group-item)[data-size='sm'] > span {
+    @apply h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-(length:--text-compact)
+        [&_svg:not([class*='size-'])]:size-3.5 [line-height:1.5];
+}
+:is(.ui-toggle, .ui-toggle-group-item)[data-size='lg'] > span {
+    @apply h-9 min-w-9 px-2.5;
+}

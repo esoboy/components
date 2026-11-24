@@ -5,9 +5,6 @@ import * as React from 'react'
 // --- Lib ---
 import { parseShortcutKeys } from './helpers'
 
-// --- Hooks ---
-import { useTiptapEditor } from './helpers'
-
 // --- Tiptap UI ---
 import type { TextAlign, UseTextAlignConfig } from './use-text-align'
 import { TEXT_ALIGN_SHORTCUT_KEYS, useTextAlign } from './use-text-align'
@@ -54,7 +51,7 @@ export function TextAlignShortcutBadge({
 export const TextAlignButton = React.forwardRef<HTMLButtonElement, TextAlignButtonProps>(
     (
         {
-            editor: providedEditor,
+            editor,
             align,
             text,
             hideWhenUnavailable = false,
@@ -67,7 +64,6 @@ export const TextAlignButton = React.forwardRef<HTMLButtonElement, TextAlignButt
         },
         ref,
     ) => {
-        const { editor } = useTiptapEditor(providedEditor)
         const { isVisible, handleTextAlign, label, canAlign, isActive, Icon, shortcutKeys } =
             useTextAlign({
                 editor,

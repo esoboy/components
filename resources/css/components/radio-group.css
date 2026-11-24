@@ -1,0 +1,72 @@
+:where(.ui-radio-group) {
+    --item-invalid-border: initial;
+    --item-invalid-ring: initial;
+}
+.ui-radio {
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--part-border, var(--color-input));
+    background: var(--part-bg, transparent);
+    cursor: pointer;
+    border-radius: 50%;
+}
+.ui-radio:checked {
+    border-color: var(--part-border, var(--color-primary));
+}
+.ui-radio:checked::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--part-bg, var(--color-primary-foreground));
+    border-radius: 50%;
+}
+@media (forced-colors: active) {
+    .ui-radio {
+        appearance: auto;
+    }
+}
+.ui-radio-group-item {
+    @apply focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0 flex
+        size-4 items-center justify-center border border-[color:var(--item-border,var(--color-input))]
+        relative aspect-square shrink-0 outline-none disabled:cursor-not-allowed disabled:opacity-50
+        rounded-full;
+    @variant ui-dark {
+        background-color: var(--item-bg, var(--input-30));
+    }
+    @variant checked {
+        background-color: var(--item-checked-bg, var(--color-primary));
+        color: var(--part-fg, var(--color-primary-foreground));
+        border-color: var(--part-border, var(--color-primary));
+    }
+    @variant ui-dark:checked {
+        background-color: var(--item-checked-bg, var(--color-primary));
+    }
+    @variant aria-invalid:checked {
+        border-color: var(--item-invalid-border, var(--color-primary));
+    }
+    @variant aria-invalid {
+        border-color: var(--item-invalid-border, var(--color-destructive));
+        --tw-ring-color: var(--item-invalid-ring, var(--destructive-20));
+    }
+    @variant focus-visible {
+        border-color: var(--item-focus-border, var(--color-ring));
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+    @variant ui-dark:aria-invalid {
+        --tw-ring-color: var(--item-invalid-ring, var(--destructive-40));
+        border-color: var(--item-invalid-border, var(--destructive-50));
+    }
+    @variant group-has-[:focus-visible]/field-label:not-checked {
+        border-color: var(--item-focus-border, var(--color-input));
+    }
+    @variant group-has-[:focus-visible]/field-label:checked {
+        border-color: var(--item-focus-border, var(--color-primary));
+    }
+}
+.ui-radio-group {
+    @apply w-full grid gap-2;
+}

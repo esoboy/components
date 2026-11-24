@@ -1,0 +1,8 @@
+.ui-icon {
+    color: var(--fg, inherit);
+    flex: none;
+    vertical-align: middle;
+}
+.ui-icon-size-explicit {
+    @apply size-(--icon-size);
+}

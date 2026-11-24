@@ -1,0 +1,22 @@
+.ui-breadcrumb-list {
+    @apply text-body flex flex-wrap items-center wrap-break-word
+        text-[color:var(--list-fg,var(--color-muted-foreground))] gap-1.5;
+}
+.ui-breadcrumb-item {
+    @apply inline-flex items-center gap-1;
+}
+.ui-breadcrumb-link {
+    @apply transition-colors;
+    @variant hover {
+        color: var(--link-hover-fg, var(--color-foreground));
+    }
+}
+.ui-breadcrumb-page {
+    @apply text-[color:var(--page-fg,var(--color-foreground))] font-normal;
+}
+.ui-breadcrumb-separator {
+    @apply [&>svg]:size-3.5;
+}
+.ui-breadcrumb-ellipsis {
+    @apply flex size-5 items-center justify-center [&>svg]:size-4;
+}

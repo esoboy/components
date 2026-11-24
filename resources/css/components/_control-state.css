@@ -1,0 +1,54 @@
+:where(
+    .ui-button,
+    .ui-input,
+    .ui-textarea,
+    .ui-select-control,
+    .ui-checkbox,
+    .ui-radio,
+    .ui-slider-thumb,
+    .ui-input-otp-slot,
+    .ui-switch,
+    .ui-native-select-control,
+    .ui-color-picker-control,
+    .ui-menu-item,
+    .ui-select-option,
+    .ui-toggle,
+    .ui-sidebar-menu-button
+)[aria-invalid='true'] {
+    border-color: var(--invalid-border, var(--color-destructive));
+    outline-color: var(--invalid-outline, var(--color-destructive));
+}
+:where(
+    .ui-button,
+    .ui-input,
+    .ui-textarea,
+    .ui-select-control,
+    .ui-checkbox,
+    .ui-radio,
+    .ui-slider-thumb,
+    .ui-input-otp-slot,
+    .ui-switch,
+    .ui-native-select-control,
+    .ui-color-picker-control,
+    .ui-menu-item,
+    .ui-select-option,
+    .ui-toggle,
+    .ui-sidebar-menu-button
+):is(:disabled, [aria-disabled='true']) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+:is(.ui-button, .ui-input, .ui-native-select-control, .ui-textarea, .ui-switch) {
+    @variant focus-visible {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+    @variant aria-invalid {
+        --tw-ring-color: var(--invalid-ring, var(--destructive-20));
+        border-color: var(--invalid-border, var(--color-destructive));
+    }
+    @variant ui-dark:aria-invalid {
+        --tw-ring-color: var(--invalid-ring, var(--destructive-40));
+        border-color: var(--invalid-border, var(--destructive-50));
+    }
+}

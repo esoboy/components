@@ -1,0 +1,21 @@
+@import './_document.css';
+:where(.ui-rich-text) {
+    --blockquote-border: initial;
+    --blockquote-fg: initial;
+    --cell-border: initial;
+    --code-bg: initial;
+    --code-block-bg: initial;
+    --details-border: initial;
+    --embed-bg: initial;
+    --file-action-bg: initial;
+    --file-border: initial;
+    --file-description-fg: initial;
+    --file-focus-bg: initial;
+    --file-focus-border: initial;
+    --file-icon-bg: initial;
+    --file-icon-fg: initial;
+    --head-bg: initial;
+    --head-border: initial;
+    --media-border: initial;
+    --separator-border: initial;
+}

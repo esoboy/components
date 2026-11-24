@@ -35,9 +35,15 @@ new class extends Component {
 };
 ?>
 <main>
+    @if (request()->boolean('deferredEditor'))
+        <form id="deferred-draft" x-data="{ mounted: false }">
+            <button type="button" x-on:click="$wire.$set('controlledBody', 'Updated draft', false); mounted = true">Mount draft</button>
+            <template x-if="mounted"><div><x-ui::editor id="deferred-editor" wire:model="controlledBody" output-type="markdown" /></div></template>
+        </form>
+    @endif
     <x-ui::icon name="circle-question-mark" />
     <x-ui::button id="rename" wire:click="$set('label', 'Updated')">Rename</x-ui::button>
-    <x-ui::button id="custom-button" class="block rounded-lg px-[31px]"><x-ui::icon name="check" data-icon="inline-start" />Save</x-ui::button>
+    <x-ui::button id="custom-button" class="block rounded-md px-[31px]"><x-ui::icon name="check" data-icon="inline-start" />Save</x-ui::button>
     <x-ui::button id="disabled-button" disabled>Save</x-ui::button>
     <x-ui::button id="disabled-link" link="/orders" disabled>Orders</x-ui::button>
     <x-ui::popover.title id="custom-title" class="font-normal">Details</x-ui::popover.title>

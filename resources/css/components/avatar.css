@@ -1,0 +1,82 @@
+:where(.ui-avatar) {
+    --group-count-ring: initial;
+    --avatar-shadow: initial;
+    border-color: var(--border, var(--color-border));
+}
+.ui-avatar-pending {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+}
+.ui-avatar {
+    @apply after:absolute after:border after:inset-0 after:mix-blend-darken ui-dark:after:mix-blend-lighten
+        flex relative select-none shrink-0 size-8 rounded-full after:rounded-full data-[size=lg]:size-10
+        data-[size=sm]:size-6 overflow-visible;
+    @variant after {
+        border-color: var(--border, var(--color-border));
+    }
+}
+.ui-avatar-image {
+    @apply aspect-square object-cover size-full rounded-full;
+}
+.ui-avatar-fallback {
+    @apply flex group-data-[size=sm]/avatar:text-caption items-center justify-center size-full text-body
+        bg-[color:var(--part-bg,var(--color-muted))]
+        text-[color:var(--part-fg,var(--color-muted-foreground))] rounded-full;
+}
+.ui-avatar-group {
+    @apply *:[.ui-avatar]:ring-2 -space-x-2 flex;
+    @variant *:[.ui-avatar] {
+        --tw-ring-color: var(--part-ring, var(--color-background));
+    }
+}
+.ui-avatar-badge {
+    @apply bg-[color:var(--part-bg,var(--color-primary))]
+        text-[color:var(--part-fg,var(--color-primary-foreground))]
+        ring-[color:var(--part-ring,var(--color-background))] absolute bottom-0 right-0 z-10 inline-flex
+        size-2.5 items-center justify-center rounded-full ring-2 bg-blend-color select-none;
+}
+.ui-avatar[data-size='sm'] .ui-avatar-badge {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+.ui-avatar[data-size='sm'] .ui-avatar-badge svg {
+    display: none;
+}
+.ui-avatar[data-size='lg'] .ui-avatar-badge {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+.ui-avatar-badge svg {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+.ui-avatar-group-count {
+    @apply bg-[color:var(--part-bg,var(--color-muted))]
+        text-[color:var(--part-fg,var(--color-muted-foreground))]
+        ring-[color:var(--group-count-ring,var(--color-background))] relative flex size-8 shrink-0
+        items-center justify-center rounded-full text-body ring-2;
+}
+.ui-avatar-group:has([data-size='lg']) .ui-avatar-group-count {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+.ui-avatar-group:has([data-size='sm']) .ui-avatar-group-count {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.ui-avatar-group-count > svg {
+    width: 1rem;
+    height: 1rem;
+}
+.ui-avatar-group:has([data-size='lg']) .ui-avatar-group-count > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+.ui-avatar-group:has([data-size='sm']) .ui-avatar-group-count > svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+.ui-avatar-group > .ui-avatar {
+    box-shadow: var(--avatar-shadow, 0 0 0 2px var(--color-background));
+}

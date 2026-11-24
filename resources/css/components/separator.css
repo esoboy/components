@@ -1,0 +1,10 @@
+.ui-separator {
+    @apply shrink-0 [height:1px] w-full [background:var(--bg,var(--color-border))]
+        bg-[color:var(--bg,var(--color-border))];
+}
+.ui-separator[aria-orientation='vertical'] {
+    height: auto;
+    min-height: 1rem;
+    width: 1px;
+    align-self: stretch;
+}

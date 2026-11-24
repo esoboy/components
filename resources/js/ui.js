@@ -1,19 +1,36 @@
 import { dialog, popover, registerTrigger } from './behaviors/overlay.js'
-import { combobox } from './behaviors/combobox.js'
-import { options, tabs, menubar, accordion, choiceGroup } from './behaviors/navigation.js'
-import { disclosure, carousel, resizable, registerStep } from './behaviors/layout.js'
-import { toast, toaster, code, messageScroller, previewImage, tour } from './behaviors/content.js'
-import { cropper, signature } from './behaviors/drawing.js'
-import { slider } from './behaviors/slider.js'
-import { rating } from './behaviors/rating.js'
-import { number } from './behaviors/number.js'
-import { otp } from './behaviors/otp.js'
-import { sidebar } from './behaviors/sidebar.js'
-import { drawer } from './behaviors/drawer.js'
-import { mentions } from './behaviors/mentions.js'
-import { questionnaire } from './behaviors/questionnaire.js'
-import { scrollArea } from './behaviors/scroll-area.js'
-import { navigationMenu } from './behaviors/navigation-menu.js'
+import { options } from './behaviors/keyboard.js'
+import { registerStep } from './behaviors/step.js'
+import { disclosure } from './behaviors/disclosure.js'
+import { traceDisclosure } from './components/trace.js'
+import { choiceGroup } from './components/toggle-group.js'
+import { dataTable, dataTableColumns } from './components/data-table.js'
+import { timePanel } from './components/time-panel.js'
+import { pagination } from './components/pagination.js'
+import { toast, toaster } from './components/toast.js'
+import { code } from './components/code-block.js'
+import { previewImage } from './components/media-preview.js'
+import { iconSelect } from './components/icon-select.js'
+import { otp } from './components/input-otp.js'
+import { number } from './components/number-input.js'
+import { accordion } from './components/accordion.js'
+import { tabs } from './components/tabs.js'
+import { menubar } from './components/menubar.js'
+import { carousel } from './components/carousel.js'
+import { resizable } from './components/resizable.js'
+import { messageScroller } from './components/message-scroller.js'
+import { tour } from './components/tour.js'
+import { cropper } from './components/cropper.js'
+import { signature } from './components/signature.js'
+import { combobox } from './components/combobox.js'
+import { drawer } from './components/drawer.js'
+import { mentions } from './components/mentions.js'
+import { navigationMenu } from './components/navigation-menu.js'
+import { questionnaire } from './components/questionnaire.js'
+import { rating } from './components/rating.js'
+import { scrollArea } from './components/scroll-area.js'
+import { sidebar } from './components/sidebar.js'
+import { slider } from './components/slider.js'
 
 const registered = new WeakSet()
 
@@ -24,7 +41,13 @@ export function registerUi(Alpine) {
     Alpine.data('uiDrawer', drawer)
     Alpine.data('uiPopover', popover)
     Alpine.data('uiCombobox', combobox)
+    Alpine.data('uiIconSelect', iconSelect)
     Alpine.data('uiNavigationMenu', navigationMenu)
+    Alpine.data('uiTraceDisclosure', traceDisclosure)
+    Alpine.data('uiDataTable', dataTable)
+    Alpine.data('uiDataTableColumns', dataTableColumns)
+    Alpine.data('uiPagination', pagination)
+    Alpine.data('uiTimePanel', timePanel)
     registerTrigger(Alpine)
     Alpine.data('uiOptions', options)
     Alpine.data('uiAccordion', accordion)

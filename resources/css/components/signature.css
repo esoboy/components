@@ -1,0 +1,26 @@
+:where(.ui-signature) {
+    --canvas-bg: initial;
+    --canvas-border: initial;
+    --ink: initial;
+}
+.ui-signature-body {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+}
+.ui-signature-surface {
+    position: relative;
+    width: 100%;
+    height: 12rem;
+    border: 1px solid var(--canvas-border, var(--color-border));
+    border-radius: var(--radius-lg);
+    background: var(--canvas-bg, var(--color-background));
+}
+.ui-signature-surface canvas {
+    color: var(--ink, inherit);
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}

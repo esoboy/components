@@ -1,0 +1,38 @@
+:is(.ui-cascader-row, .ui-tree-row) {
+    @apply flex min-w-0 items-center gap-0.5;
+}
+:is(.ui-cascader-row, .ui-tree-row) > .ui-tree-action {
+    @apply min-w-0 flex-1 justify-between;
+}
+.ui-cascader-column .ui-tree-action[aria-expanded='true'] {
+    background-color: var(--part-bg, var(--color-accent));
+    color: var(--part-fg, var(--color-accent-foreground));
+}
+.ui-cascader-scroll {
+    max-width: calc(100vw - 2rem);
+}
+.ui-cascader-scroll > .ui-scroll-area-viewport {
+    height: auto;
+    overflow-y: hidden;
+}
+.ui-cascader-columns {
+    display: flex;
+    align-items: flex-start;
+    width: max-content;
+    min-width: 100%;
+}
+.ui-cascader-column {
+    min-width: 10rem;
+}
+.ui-cascader-column [role='group'] {
+    padding: 0.25rem;
+}
+.ui-cascader-column:not(:last-child) {
+    border-inline-end: 1px solid var(--part-border, var(--color-border));
+}
+.ui-cascader-body > .ui-list-popup {
+    @apply w-auto p-0;
+}
+.ui-cascader-body > .ui-select-trigger > .ui-select-control {
+    --trigger-placeholder-fg: var(--placeholder-fg);
+}

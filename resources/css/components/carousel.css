@@ -1,0 +1,69 @@
+:where(.ui-carousel) {
+    --dot-bg: initial;
+}
+.ui-carousel {
+    position: relative;
+}
+.ui-carousel-content {
+    overflow: hidden;
+}
+.ui-carousel-track {
+    display: flex;
+    margin-left: -1rem;
+    touch-action: pan-y pinch-zoom;
+}
+.ui-carousel-item {
+    flex: 0 0 100%;
+    min-width: 0;
+    padding-left: 1rem;
+}
+.ui-carousel-controls {
+    @apply mt-3 flex flex-wrap items-center justify-center gap-3;
+}
+.ui-carousel-pagination {
+    @apply flex min-w-0 flex-wrap items-center justify-center;
+}
+.ui-carousel-page {
+    @apply text-[color:var(--page-fg,var(--color-muted-foreground))] inline-flex size-7 items-center
+        justify-center rounded-md text-caption font-medium outline-none focus-visible:ring-3;
+    @variant hover {
+        background-color: var(--page-hover-bg, var(--color-muted));
+    }
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+}
+[data-mode='numbers'] > .ui-carousel-page[aria-current] {
+    background-color: var(--part-bg, var(--color-secondary));
+    color: var(--page-fg, var(--color-secondary-foreground));
+}
+.ui-carousel-dot {
+    @apply size-1.5 rounded-full
+        bg-[color:var(--dot-bg,color-mix(in_oklab,var(--color-muted-foreground)_40%,transparent))];
+}
+[aria-current='page'] > .ui-carousel-dot {
+    background-color: var(--dot-bg, var(--color-primary));
+}
+.ui-carousel-fraction {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] inline-flex gap-1.5 text-body
+        tabular-nums;
+}
+.ui-carousel[data-orientation='vertical'] .ui-carousel-content {
+    overflow: hidden;
+}
+.ui-carousel[data-orientation='vertical'] .ui-carousel-track {
+    touch-action: pan-x pinch-zoom;
+    height: calc(100% + 1rem);
+    flex-direction: column;
+    margin-left: 0;
+    margin-top: -1rem;
+}
+.ui-carousel[data-orientation='vertical'] .ui-carousel-item {
+    min-height: 0;
+    flex-basis: 100%;
+    padding-top: 1rem;
+    padding-left: 0;
+}
+.ui-carousel-arrow {
+    @apply rounded-full;
+}

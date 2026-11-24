@@ -1,4 +1,6 @@
-import { enabled, navigatePopupList } from './navigation.js'
+import { clamp } from './clamp.js'
+import { enabled, navigatePopupList } from './keyboard.js'
+import { bindSlotControl, observeChildren, slotControl } from './slot.js'
 
 const modals = new Set()
 const popovers = new Map()
@@ -7,6 +9,7 @@ let previousOverflow = ''
 function handlePopoverKey(event) {
     let top, topPanel
     for (const [panel, behavior] of popovers) {
+        if (!panel.matches(':popover-open')) continue
         behavior.pointerFocus = false
         delete panel.dataset.pointerFocus
         top = behavior
@@ -15,7 +18,7 @@ function handlePopoverKey(event) {
     if (!top || event.key !== 'Escape' || event.defaultPrevented) return
     event.preventDefault()
     event.stopImmediatePropagation()
-    if (topPanel.classList.contains('ui-navigation-menu-positioner')) top.keyboardFocus = true
+    top.onEscape?.()
     top.close(topPanel.contains(document.activeElement))
 }
 
@@ -36,12 +39,6 @@ function owned(root, selector) {
     )
 }
 
-function observeChildren(root, update) {
-    const observer = new MutationObserver(update)
-    observer.observe(root, { childList: true, subtree: true })
-    return () => observer.disconnect()
-}
-
 function afterExit(panel, callback) {
     panel.dataset.ending = ''
     Promise.allSettled(panel.getAnimations().map((animation) => animation.finished)).then(callback)
@@ -49,26 +46,6 @@ function afterExit(panel, callback) {
 
 export function focusInPlace(element) {
     element?.focus({ preventScroll: true })
-}
-
-export function slotControl(element) {
-    let control = element?.firstElementChild
-    if (
-        element?.hasAttribute('data-ui-media-trigger') &&
-        (!control ||
-            control.nextElementSibling ||
-            [...element.childNodes].some(
-                (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim(),
-            ))
-    )
-        return element
-    if (!control || control.nextElementSibling) return null
-    while (control?.matches('[data-ui-trigger],.ui-tooltip')) {
-        if (control.classList.contains('ui-tooltip'))
-            control = control.querySelector('[data-ui-trigger]')
-        control = control?.firstElementChild
-    }
-    return control
 }
 
 export function dialog(initial = false, modal = true) {
@@ -172,15 +149,13 @@ function alignedPosition(start, end, size, align, offset, limit) {
     return overflow(alternate) < overflow(preferred) ? alternate : preferred
 }
 
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(value, max))
-}
-
-export function popover() {
+export function popover(onViewportResize) {
     let overlay,
         observer,
         visibilityObserver,
+        stopObserving,
         reposition,
+        viewportResize,
         frame,
         referenceElement,
         referenceBounds,
@@ -204,12 +179,22 @@ export function popover() {
         init() {
             overlay = this.$el
             reposition = () => this.position()
+            viewportResize = onViewportResize?.bind(this) ?? reposition
         },
         track() {
-            if (observer) return
-            trackedPanel = this.panel
+            const panel = this.panel
+            if (!panel || trackedPanel === panel) return
+            if (trackedPanel) this.untrack()
+            trackedPanel = panel
             if (!popovers.size) document.addEventListener('keydown', handlePopoverKey, true)
             popovers.set(trackedPanel, this)
+            // Livewire can remove the panel before its queued native toggle event is handled.
+            stopObserving = observeChildren(overlay, () => {
+                if (panel.closest('[data-ui-overlay]') === overlay) return
+                this.untrack()
+                this.opened = !!this.panel?.matches(':popover-open')
+                if (this.opened) this.track()
+            })
             observer = new ResizeObserver(reposition)
             observer.observe(trackedPanel)
             visibilityObserver = new IntersectionObserver((entries) => {
@@ -235,9 +220,11 @@ export function popover() {
             morphListeners = ['morphed', 'island.morphed'].map((event) =>
                 window.Livewire?.hook(event, reposition),
             )
-            window.addEventListener('resize', reposition)
+            window.addEventListener('resize', viewportResize)
         },
         untrack() {
+            stopObserving?.()
+            stopObserving = null
             if (popovers.delete(trackedPanel) && !popovers.size)
                 document.removeEventListener('keydown', handlePopoverKey, true)
             trackedPanel = null
@@ -249,7 +236,7 @@ export function popover() {
             cancelAnimationFrame(frame)
             morphListeners.forEach((release) => release?.())
             morphListeners = []
-            window.removeEventListener('resize', reposition)
+            window.removeEventListener('resize', viewportResize)
         },
         toggled(event) {
             if (event.target !== this.panel) return
@@ -421,7 +408,7 @@ export function popover() {
                     horizontal ? innerHeight - 10 : Math.max(0, space.top, space.bottom),
                 )
             style.minWidth = choicePanel
-                ? `${Math.max(floating.classList.contains('ui-combobox-content') ? 0 : 144, Math.min(anchorWidth, innerWidth - 10))}px`
+                ? `${Math.max(Number(dataset.matchTrigger || 144), Math.min(anchorWidth, innerWidth - 10))}px`
                 : ''
             const computed = getComputedStyle(floating)
             const panel = { width: parseFloat(computed.width), height: parseFloat(computed.height) }
@@ -502,13 +489,12 @@ export function popover() {
             dataset.side = placedSide
             const clampedLeft = clamp(left, 5, innerWidth - panel.width - 5)
             const clampedTop = clamp(top, 5, innerHeight - panel.height - 5)
-            const preserveFraction =
-                alignedItem || floating.classList.contains('ui-navigation-menu-positioner')
+            const preserveFraction = alignedItem || this.preservePositionFraction
             Object.assign(style, {
                 left: `${preserveFraction ? clampedLeft : Math.round(clampedLeft * ratio) / ratio}px`,
                 top: `${preserveFraction ? clampedTop : Math.round(clampedTop * ratio) / ratio}px`,
             })
-            const arrow = floating.querySelector('.ui-tooltip-arrow')
+            const arrow = floating.querySelector('[data-ui-arrow]')
             const arrowPadding = 5 + (arrow?.offsetWidth ?? 0) / 2
             const arrowWidth = arrow ? floating.clientWidth : panel.width
             const arrowHeight = arrow ? floating.clientHeight : panel.height
@@ -523,7 +509,7 @@ export function popover() {
                 arrowHeight - arrowPadding,
             )
             setPixels(
-                '--ui-origin-x',
+                '--origin-x',
                 placedSide === 'left'
                     ? panel.width + sideOffset
                     : placedSide === 'right'
@@ -531,7 +517,7 @@ export function popover() {
                       : arrowX,
             )
             setPixels(
-                '--ui-origin-y',
+                '--origin-y',
                 pointerOffset
                     ? 0
                     : placedSide === 'top'
@@ -540,8 +526,8 @@ export function popover() {
                         ? -sideOffset
                         : arrowY,
             )
-            setPixels('--ui-arrow-x', arrowX)
-            setPixels('--ui-arrow-y', arrowY)
+            setPixels('--arrow-x', arrowX)
+            setPixels('--arrow-y', arrowY)
         },
         destroy() {
             closing++
@@ -554,20 +540,14 @@ export function popover() {
 
 export function registerTrigger(Alpine) {
     Alpine.directive('ui-trigger', (element, { expression }, { evaluate, cleanup }) => {
-        let control = slotControl(element)
-        if (!control) throw new Error(JSON.parse(element.dataset.uiErrors).control)
         const operation = evaluate(expression)
-        let unbind = bindTrigger(Alpine, element, control, operation, evaluate)
         cleanup(
-            observeChildren(element, () => {
-                const next = slotControl(element)
-                if (next === control) return
-                unbind?.()
-                control = next
-                unbind = next && bindTrigger(Alpine, element, next, operation, evaluate)
-            }),
+            bindSlotControl(
+                element,
+                (control) => bindTrigger(Alpine, element, control, operation, evaluate),
+                () => JSON.parse(element.dataset.uiErrors).control,
+            ),
         )
-        cleanup(() => unbind?.())
     })
 }
 
@@ -647,7 +627,8 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
                   : control.getAttribute('aria-haspopup')
         },
         ':aria-expanded'() {
-            return operation === 'close' || evaluate("$root.classList.contains('ui-sidebar')")
+            return operation === 'close' ||
+                evaluate("$root.hasAttribute('data-ui-static-expanded')")
                 ? null
                 : String(evaluate('opened'))
         },

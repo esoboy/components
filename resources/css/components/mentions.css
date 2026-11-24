@@ -1,0 +1,9 @@
+.ui-mentions-body {
+    position: relative;
+}
+.ui-mentions-suggestions {
+    @apply mt-1 rounded-lg p-1 bg-[color:var(--part-bg,var(--color-popover))]
+        text-[color:var(--part-fg,var(--color-popover-foreground))]
+        ring-[color:var(--part-ring,var(--foreground-10))] [outline:1px_solid_var(--tw-ring-color)]
+        [box-shadow:var(--panel-shadow,var(--shadow-popover))];
+}

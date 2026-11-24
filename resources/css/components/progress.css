@@ -1,0 +1,24 @@
+.ui-progress-label {
+    @apply font-medium text-body;
+}
+.ui-progress-track {
+    @apply relative flex h-1 w-full items-center overflow-hidden appearance-none rounded-full [border:0]
+        bg-[color:var(--track,var(--color-muted))] text-[color:var(--fill,var(--color-primary))];
+}
+.ui-progress-track::-webkit-progress-bar {
+    background: var(--track, var(--color-secondary));
+}
+.ui-progress-track::-webkit-progress-value {
+    background: var(--fill, var(--color-primary));
+    border-radius: inherit;
+}
+.ui-progress-track::-moz-progress-bar {
+    background: var(--fill, var(--color-primary));
+    border-radius: inherit;
+}
+.ui-progress {
+    @apply flex flex-wrap gap-3;
+}
+.ui-progress-value {
+    @apply text-body text-[color:var(--value-fg,var(--color-muted-foreground))] ml-auto tabular-nums;
+}

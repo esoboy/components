@@ -1,0 +1,34 @@
+.ui-tooltip-content {
+    @apply text-caption min-w-0 [background:var(--panel-bg,var(--color-foreground))]
+        text-[color:var(--panel-fg,var(--color-background))] origin-(--transform-origin) z-50 max-w-xs
+        w-fit font-normal [border-width:0] overflow-visible [box-shadow:none] [outline:none] inline-flex
+        items-center gap-1.5 rounded-md px-3 py-1.5 [--motion-duration:150ms];
+    @variant has-[.ui-kbd] {
+        @apply pr-1.5;
+    }
+    @variant **:[.ui-kbd] {
+        @apply relative isolate z-50 rounded-sm;
+    }
+}
+.ui-tooltip-arrow {
+    @apply bg-[color:var(--part-bg,var(--color-foreground))] pointer-events-none absolute z-50 size-2.5
+        rotate-45 rounded-[2px] [translate:0_calc(-50%_-_2px)];
+}
+.ui-tooltip-content[data-side='bottom'] .ui-tooltip-arrow {
+    top: 4px;
+    left: calc(var(--arrow-x, 50%) - 5px);
+}
+.ui-tooltip-content[data-side='top'] .ui-tooltip-arrow {
+    bottom: -10px;
+    left: calc(var(--arrow-x, 50%) - 5px);
+}
+.ui-tooltip-content[data-side='left'] .ui-tooltip-arrow {
+    right: -4px;
+    top: 50%;
+    translate: 0 -50%;
+}
+.ui-tooltip-content[data-side='right'] .ui-tooltip-arrow {
+    left: -4px;
+    top: 50%;
+    translate: 0 -50%;
+}

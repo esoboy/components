@@ -1,0 +1,114 @@
+:where(.ui-input-group) {
+    --textarea-bg: initial;
+}
+.ui-input-group-text {
+    @apply text-body [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none
+        text-[color:var(--part-fg,var(--color-muted-foreground))] gap-2;
+}
+.ui-input-group {
+    @apply transition-colors relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto
+        border-[color:var(--border,var(--color-input))] h-8 rounded-lg border
+        in-[.ui-combobox-content]:focus-within:ring-0 has-disabled:opacity-50
+        has-[.ui-input-group-control:focus-visible]:ring-3 has-[[aria-invalid=true]]:ring-3
+        has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col
+        has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col
+        has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3
+        has-[>[data-align=inline-end]]:[&>input]:pr-1.5
+        has-[>[data-align=inline-start]]:[&>input]:pl-1.5;
+    @variant ui-dark {
+        background-color: var(--bg, var(--input-30));
+    }
+    @variant has-[.ui-input-group-control:focus-visible] {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+    @variant has-[[aria-invalid=true]] {
+        --tw-ring-color: var(--invalid-ring, var(--destructive-20));
+        border-color: var(--invalid-border, var(--color-destructive));
+    }
+    @variant ui-dark:has-[[aria-invalid=true]] {
+        --tw-ring-color: var(--invalid-ring, var(--destructive-40));
+    }
+    @variant has-disabled {
+        background-color: var(--disabled-bg, var(--input-50));
+    }
+    @variant ui-dark:has-disabled {
+        background-color: var(--disabled-bg, var(--input-80));
+    }
+    @variant in-[.ui-combobox-content]:focus-within {
+        border-color: var(--focus-border, inherit);
+    }
+}
+.ui-input-group:has(> [data-ui-overlay] > [data-ui-trigger] > [data-align='inline-end']) > input {
+    padding-right: 0.375rem;
+}
+.ui-input-group:has(> [data-ui-overlay] > [data-ui-trigger] > [data-align='inline-start']) > input {
+    padding-left: 0.375rem;
+}
+.ui-input-group-addon {
+    @apply font-medium text-body flex cursor-text items-center justify-center select-none
+        text-[color:var(--part-fg,var(--color-muted-foreground))] h-auto gap-2 py-1.5
+        group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)]
+        [&>svg:not([class*='size-'])]:size-4;
+}
+.ui-input-group-addon[data-align='inline-start'] {
+    @apply order-first pl-2 has-[>button]:ml-[-0.3rem] has-[>kbd]:ml-[-0.15rem];
+}
+.ui-input-group-addon[data-align='inline-end'] {
+    @apply order-last pr-2 has-[>button]:mr-[-0.3rem] has-[>kbd]:mr-[-0.15rem];
+}
+.ui-input-group-addon[data-align='block-start'] {
+    @apply order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2
+        [.border-b]:pb-2;
+}
+.ui-input-group-addon[data-align='block-end'] {
+    @apply order-last w-full justify-start px-2.5 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2;
+}
+.ui-input-group-button {
+    @apply text-body flex items-center shadow-none gap-2;
+}
+.ui-input-group-button[data-size='xs'] {
+    @apply h-6 gap-1 rounded-[calc(var(--radius)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5;
+}
+.ui-input-group-button[data-size='icon-xs'] {
+    @apply size-6 rounded-[calc(var(--radius)-3px)] p-0 has-[>svg]:p-0;
+}
+.ui-input-group-button[data-size='icon-sm'] {
+    @apply size-8 p-0 has-[>svg]:p-0;
+}
+.ui-input-group-input {
+    @apply bg-[color:var(--input-bg,transparent)] flex-1 rounded-none border-0 shadow-none ring-0
+        focus-visible:ring-0 aria-invalid:ring-0;
+    @variant ui-dark:disabled {
+        background-color: var(--part-bg, transparent);
+    }
+    @variant disabled {
+        background-color: var(--input-bg, transparent);
+    }
+    @variant ui-dark {
+        background-color: var(--input-bg, transparent);
+    }
+}
+.ui-input-group-textarea {
+    @apply flex-1 resize-none bg-[color:var(--textarea-bg,transparent)] rounded-none border-0 py-2
+        shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0;
+    @variant ui-dark:disabled {
+        background-color: var(--part-bg, transparent);
+    }
+    @variant disabled {
+        background-color: var(--textarea-bg, transparent);
+    }
+    @variant ui-dark {
+        background-color: var(--textarea-bg, transparent);
+    }
+}
+.ui-input-group-addon[data-align='inline-start']:has(
+        > [data-ui-overlay] > [data-ui-trigger] > button
+    ) {
+    margin-left: -0.3rem;
+}
+.ui-input-group-addon[data-align='inline-end']:has(
+        > [data-ui-overlay] > [data-ui-trigger] > button
+    ) {
+    margin-right: -0.3rem;
+}

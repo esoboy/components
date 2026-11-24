@@ -1,0 +1,72 @@
+:where(.ui-toggle-group-item) {
+    border-color: var(--item-border, var(--color-border));
+}
+.ui-toggle-group-item:has(:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.ui-toggle-group {
+    @apply flex flex-row items-center w-fit rounded-lg data-[size=sm]:rounded-[min(var(--radius-md),10px)]
+        [gap:var(--toggle-spacing,0)];
+}
+.ui-toggle-group-item {
+    @apply focus-visible:z-10 focus:z-10 shrink-0;
+}
+.ui-toggle-group-item.ui-toggle-group-item-variant-default > span {
+    background-color: var(--item-bg, transparent);
+    @variant hover {
+        background-color: var(--item-hover-bg, var(--color-muted));
+    }
+}
+.ui-toggle-group-item.ui-toggle-group-item-variant-outline > span {
+    border-color: var(--item-border, var(--color-input));
+    background-color: var(--item-bg, transparent);
+    @variant hover {
+        background-color: var(--item-hover-bg, var(--color-muted));
+    }
+}
+.ui-toggle-group-item:has(:checked) > span {
+    background: var(--item-checked-bg, var(--color-muted));
+}
+.ui-toggle-group-item:has(:focus-visible) > span {
+    outline-offset: 2px;
+    outline: 0;
+    border-color: var(--item-focus-border, var(--color-ring));
+    box-shadow: var(
+        --part-shadow,
+        0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
+    );
+}
+.ui-toggle-group[data-orientation='vertical'] {
+    flex-direction: column;
+    align-items: stretch;
+}
+.ui-toggle-group[data-orientation='vertical'] > .ui-toggle-group-item > span {
+    width: 100%;
+}
+.ui-toggle-group[data-spacing='0'] > .ui-toggle-group-item > span {
+    border-radius: 0;
+    padding-inline: 0.5rem;
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='horizontal'] > :first-child > span {
+    border-start-start-radius: var(--radius-lg);
+    border-end-start-radius: var(--radius-lg);
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='horizontal'] > :last-child > span {
+    border-start-end-radius: var(--radius-lg);
+    border-end-end-radius: var(--radius-lg);
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='vertical'] > :first-child > span {
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='vertical'] > :last-child > span {
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='horizontal'] > :not(:first-child) > span {
+    border-inline-start-width: 0;
+}
+.ui-toggle-group[data-spacing='0'][data-orientation='vertical'] > :not(:first-child) > span {
+    border-top-width: 0;
+}

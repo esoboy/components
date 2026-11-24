@@ -1,0 +1,16 @@
+[data-ui-trigger] {
+    display: contents;
+}
+[data-ui-overlay]:is(
+    .ui-popover,
+    .ui-tooltip,
+    .ui-hover-card,
+    .ui-dropdown-menu,
+    .ui-context-menu,
+    .ui-dialog,
+    .ui-alert-dialog,
+    .ui-sheet,
+    .ui-drawer
+) {
+    display: contents;
+}

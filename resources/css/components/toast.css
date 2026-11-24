@@ -1,0 +1,36 @@
+.ui-toast {
+    @apply outline-none rounded-2xl text-[color:var(--fg,inherit)] [will-change:transform]
+        [pointer-events:auto] [background:var(--bg,var(--color-popover))]
+        [border:1px_solid_var(--border,var(--status-ink,var(--color-border)))]
+        [box-shadow:var(--shadow-popover)];
+}
+.ui-toast-content {
+    @apply flex h-full items-center gap-3 overflow-hidden p-4;
+}
+.ui-toast > .ui-icon,
+.ui-toast-content > .ui-icon {
+    color: var(--icon-fg, var(--status-ink, currentColor));
+}
+.ui-toast-title {
+    @apply text-[color:var(--title-fg,inherit)] text-body font-medium;
+}
+.ui-toast-description {
+    @apply text-[color:var(--description-fg,var(--color-muted-foreground))] text-body;
+}
+.ui-toast-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+.ui-toast-close > .ui-button-variant-ghost {
+    @apply relative shrink-0 text-[color:var(--part-fg,var(--color-muted-foreground))];
+    @variant after {
+        @apply absolute -inset-2 content-[''];
+    }
+    @variant hover {
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-toast.ui-toast-variant-destructive {
+    border-color: var(--border, var(--status-ink, var(--color-destructive)));
+}

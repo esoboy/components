@@ -107,8 +107,12 @@ function parseContent(editor, value, type, t) {
     return createDocument(sanitizeHTML(html), editor.schema)
 }
 
-export function setContent(editor, value, type, t) {
-    editor.commands.setContent(parseContent(editor, value, type, t), { emitUpdate: false })
+export function setContent(editor, value, type, t, addToHistory) {
+    editor
+        .chain()
+        .setContent(parseContent(editor, value, type, t), { emitUpdate: false })
+        .setMeta('addToHistory', addToHistory)
+        .run()
 }
 
 // Separate blocks for reading without changing whitespace inside paragraphs or code.

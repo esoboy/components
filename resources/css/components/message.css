@@ -1,0 +1,28 @@
+.ui-message-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.ui-message-group {
+    @apply flex flex-col gap-2 min-w-0;
+}
+.ui-message {
+    @apply text-body data-[align=end]:flex-row-reverse flex min-w-0 relative w-full gap-2;
+}
+.ui-message-avatar {
+    @apply bg-[color:var(--part-bg,var(--color-muted))] flex items-center justify-center overflow-hidden
+        rounded-full self-end shrink-0 w-fit min-w-8
+        group-has-[.ui-message-footer]/message:-translate-y-8;
+}
+.ui-message-content {
+    @apply flex flex-col min-w-0 w-full wrap-break-word gap-2.5 group-data-[align=end]/message:*:self-end;
+}
+.ui-message-header {
+    @apply font-medium flex items-center max-w-full min-w-0
+        text-[color:var(--header-fg,var(--color-muted-foreground))] text-caption px-3
+        group-has-[.ui-bubble-variant-ghost]/message:px-0;
+}
+.ui-message-footer {
+    @apply font-medium text-caption flex group-data-[align=end]/message:justify-end items-center max-w-full
+        min-w-0 text-[color:var(--footer-fg,var(--color-muted-foreground))] px-3
+        group-has-[.ui-bubble-variant-ghost]/message:px-0;
+}

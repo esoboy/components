@@ -1,0 +1,63 @@
+:where(.ui-accordion) {
+    --summary-focus-border: initial;
+}
+:where(.ui-accordion-item) {
+    border-color: var(--item-border, var(--color-border));
+}
+.ui-accordion-item:not(:last-child) {
+    border-bottom: 1px solid var(--item-border, var(--color-border));
+}
+.ui-accordion-summary {
+    @apply font-medium text-body focus-visible:ring-3 px-0 [list-style:none] transition-all
+        border-[color:var(--part-border,transparent)] aria-disabled:opacity-50
+        aria-disabled:pointer-events-none border flex flex-1 items-start justify-between outline-none
+        relative rounded-lg py-2.5 text-left hover:underline **:[.ui-accordion-trigger-icon]:ml-auto
+        **:[.ui-accordion-trigger-icon]:size-4 cursor-pointer;
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+        border-color: var(--summary-focus-border, var(--color-ring));
+    }
+    @variant focus-visible:after {
+        border-color: var(--summary-focus-border, var(--color-ring));
+    }
+    @variant **:[.ui-accordion-trigger-icon] {
+        color: var(--part-fg, var(--color-muted-foreground));
+    }
+}
+.ui-accordion-item[open] > summary > [data-state='closed'],
+.ui-accordion-item:not([open]) > summary > [data-state='open'] {
+    display: none;
+}
+.ui-accordion-content {
+    @apply text-body px-0 overflow-hidden [&_a]:underline [&_a]:underline-offset-3
+        [&_p:not(:last-child)]:mb-4 pt-0 pb-2.5;
+    @variant [&_a]:hover {
+        color: var(--content-hover-fg, var(--color-foreground));
+    }
+}
+.ui-accordion {
+    @apply flex flex-col w-full;
+}
+.ui-accordion-item {
+    @apply not-last:border-b;
+}
+.ui-accordion-trigger-icon {
+    flex-shrink: 0;
+}
+.ui-accordion-item[data-disabled='true'] {
+    opacity: 1;
+}
+.ui-accordion-item[data-disabled='true'] > .ui-accordion-summary {
+    opacity: 0.5;
+}
+.ui-accordion-item::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    overflow: hidden;
+    transition:
+        block-size 200ms ease-out,
+        content-visibility 200ms allow-discrete;
+}
+.ui-accordion-item[open]::details-content {
+    block-size: auto;
+}

@@ -1,0 +1,145 @@
+:where(.ui-field) {
+    --label-border: initial;
+    --label-checked-bg: initial;
+    --label-checked-border: initial;
+    --separator-content-bg: initial;
+}
+:where(.ui-field-label) {
+    border-color: var(--label-border, var(--color-border));
+}
+.ui-field-error {
+    @apply text-body font-normal text-[color:var(--error-fg,var(--color-destructive))];
+}
+.ui-field-set {
+    @apply flex flex-col gap-4 has-[>:is(.ui-checkbox-group,.ui-radio-group)]:gap-3;
+}
+.ui-field-group {
+    @apply @container/field-group flex flex-col w-full gap-5 *:[.ui-field-group]:gap-4
+        [.ui-checkbox-group]:gap-3;
+}
+.ui-field {
+    @apply flex w-full gap-2;
+    @variant data-[invalid=true] {
+        color: var(--fg, var(--color-destructive));
+    }
+}
+.ui-field[data-orientation='vertical'] {
+    @apply *:w-full [&>.sr-only]:w-auto flex-col;
+}
+.ui-field[data-orientation='horizontal'] {
+    @apply flex-row items-center;
+    @variant has-[>.ui-field-content]:[&>[role=checkbox],[role=radio]] {
+        @apply mt-px;
+    }
+    @variant has-[>.ui-field-content] {
+        @apply items-start;
+    }
+}
+.ui-field[data-orientation='responsive'] {
+    @apply *:w-full @md/field-group:*:[.ui-field-label]:flex-auto @md/field-group:*:w-auto
+        @md/field-group:flex-row
+        @md/field-group:has-[>.ui-field-content]:[&>[role=checkbox],[role=radio]]:mt-px
+        @md/field-group:has-[>.ui-field-content]:items-start @md/field-group:items-center
+        [&>.sr-only]:w-auto flex-col;
+}
+.ui-field-label {
+    @apply flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50
+        has-[>.ui-field]:rounded-lg has-[>.ui-field]:border has-[>.ui-field]:has-[:focus-visible]:ring-3
+        *:[.ui-field]:p-2.5;
+    @variant has-checked {
+        background-color: var(
+            --label-checked-bg,
+            color-mix(in oklab, var(--color-primary) 5%, transparent)
+        );
+        border-color: var(
+            --label-checked-border,
+            color-mix(in oklab, var(--color-primary) 30%, transparent)
+        );
+    }
+    @variant ui-dark:has-checked {
+        border-color: var(
+            --label-checked-border,
+            color-mix(in oklab, var(--color-primary) 20%, transparent)
+        );
+        background-color: var(
+            --label-checked-bg,
+            color-mix(in oklab, var(--color-primary) 10%, transparent)
+        );
+    }
+    @variant has-[>.ui-field]:not-has-[:disabled,[data-disabled]]:hover {
+        background-color: var(--part-bg, var(--muted-50));
+    }
+    @variant has-[>.ui-field]:has-[:focus-visible] {
+        border-color: var(--part-border, var(--color-ring));
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+}
+.ui-field-title {
+    @apply text-body font-medium flex items-center w-fit gap-2 group-data-[disabled=true]/field:opacity-50;
+}
+.ui-field-description {
+    @apply text-body/normal font-normal group-data-[orientation=horizontal]/field:text-balance
+        text-[color:var(--description-fg,var(--color-muted-foreground))] text-left
+        [.ui-field-legend-variant-legend+&]:-mt-1.5 last:mt-0 nth-last-2:-mt-1 [&>a]:underline
+        [&>a]:underline-offset-4;
+    @variant [&>a:hover] {
+        color: var(--description-hover-fg, var(--color-primary));
+    }
+}
+.ui-field-separator {
+    @apply text-body relative -my-2 h-5 block;
+}
+.ui-field-separator-content {
+    position: relative;
+    display: block;
+    width: fit-content;
+    margin-inline: auto;
+    padding-inline: --spacing(2);
+    background: var(--separator-content-bg, var(--color-background));
+    color: var(--part-fg, var(--color-muted-foreground));
+}
+.ui-field-legend {
+    @apply font-medium mb-1.5 [&.ui-field-legend-variant-label]:text-body
+        [&.ui-field-legend-variant-legend]:text-title;
+}
+.ui-field-description:nth-last-child(2):has(+ :is(.ui-select-field, .ui-input-otp-field)) {
+    margin-top: 0;
+}
+.ui-field-label:has(> .ui-field) {
+    width: 100%;
+    flex-direction: column;
+}
+.ui-field:has(:disabled) .ui-checkbox {
+    opacity: 0.5;
+}
+.ui-field[data-orientation='horizontal'] > .ui-field-label {
+    flex: 1 1 auto;
+}
+.ui-field[data-orientation='vertical'] > .ui-select-field > .ui-select-body,
+.ui-field[data-orientation='vertical'] > .ui-select-field .ui-select-control {
+    width: 100%;
+}
+.ui-field[data-orientation='responsive'] > .ui-select-field > .ui-select-body,
+.ui-field[data-orientation='responsive'] > .ui-select-field .ui-select-control {
+    width: 100%;
+}
+@container field-group (min-width: 28rem) {
+    .ui-field[data-orientation='responsive'] > .ui-select-field > .ui-select-body,
+    .ui-field[data-orientation='responsive'] > .ui-select-field .ui-select-control {
+        width: auto;
+    }
+    .ui-field[data-orientation='responsive']:has(> .ui-field-content)
+        > :is(.ui-checkbox, .ui-radio-group-item) {
+        margin-top: 1px;
+    }
+}
+.ui-field[data-orientation='horizontal']:has(> .ui-field-content)
+    > :is(.ui-checkbox, .ui-radio-group-item) {
+    margin-top: 1px;
+}
+.ui-field-content {
+    @apply flex flex-1 flex-col gap-0.5 leading-snug;
+}
+.ui-field-separator > .ui-separator {
+    @apply absolute inset-0 top-1/2;
+}

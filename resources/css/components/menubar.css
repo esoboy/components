@@ -1,0 +1,35 @@
+.ui-menubar-sub-content {
+    @apply min-w-32;
+}
+.ui-menubar-checkbox-item {
+    @apply pr-1.5 pl-7;
+}
+:where(.ui-menubar) {
+    border-color: var(--border, var(--color-border));
+}
+.ui-menubar {
+    @apply flex items-center h-8 gap-0.5 rounded-lg border p-[3px];
+}
+.ui-menubar-shortcut {
+    @apply ml-auto;
+    @variant group-focus/menubar-item {
+        color: var(--shortcut-focus-fg, var(--color-accent-foreground));
+    }
+}
+.ui-menubar-content {
+    @apply min-w-36 [width:var(--anchor-width)];
+}
+:is(.ui-menubar-content, .ui-menubar-sub-content) {
+    overflow-x: hidden;
+    scrollbar-width: none;
+}
+.ui-menubar-label {
+    @apply font-medium text-body text-[color:var(--label-fg,var(--color-muted-foreground))] px-1.5 py-1
+        data-inset:pl-7;
+}
+.ui-menubar-radio-item {
+    @apply pr-1.5 pl-7 ui-disabled:opacity-50;
+}
+:is(.ui-menubar-checkbox-item, .ui-menubar-radio-item) > .ui-menu-choice-indicator {
+    @apply right-auto left-1.5;
+}

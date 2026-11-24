@@ -1,0 +1,79 @@
+.ui-message-scroller-viewport {
+    contain: content;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+    @variant data-autoscrolling {
+        scrollbar-color: transparent transparent;
+    }
+    @variant data-pending-scroll {
+        visibility: hidden;
+    }
+    --_scroll-fade-size-b: var(
+        --scroll-fade-b-size,
+        var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
+    );
+    --scroll-fade-mask: linear-gradient(
+        to bottom,
+        #000 0,
+        #000 calc(100% - var(--scroll-fade-b, 0px)),
+        transparent 100%
+    );
+    -webkit-mask-image: var(--scroll-fade-mask);
+    mask-image: var(--scroll-fade-mask);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+
+    @supports (animation-timeline: scroll()) {
+        animation: scroll-fade-reveal-b 1ms ease-in-out;
+        animation-timeline: scroll(self y);
+        animation-range: calc(100% - var(--scroll-fade-reveal, calc(var(--spacing) * 24))) 100%;
+        animation-fill-mode: both;
+    }
+
+    @supports not (animation-timeline: scroll()) {
+        --scroll-fade-b: var(--_scroll-fade-size-b);
+    }
+}
+:where(.ui-message-scroller) {
+    --button-bg: initial;
+}
+.ui-message-scroller {
+    @apply flex flex-col overflow-hidden relative size-full min-h-0;
+}
+.ui-message-scroller-content {
+    @apply flex flex-col h-max min-h-full gap-6;
+}
+.ui-message-scroller-item {
+    @apply [contain-intrinsic-size:auto_10rem] [content-visibility:auto] shrink-0 min-w-0;
+}
+.ui-message-scroller-button {
+    @apply border-[color:var(--part-border,var(--color-border))]
+        text-[color:var(--part-fg,var(--color-foreground))] -translate-x-1/2 absolute
+        data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)]
+        data-[active=false]:opacity-0 data-[active=false]:pointer-events-none
+        data-[active=false]:scale-95 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)]
+        data-[active=true]:opacity-100 data-[active=true]:scale-100 data-[active=true]:translate-y-0
+        data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full
+        data-[direction=start]:data-[active=false]:-translate-y-full data-[direction=start]:top-4
+        duration-200 rtl:translate-x-1/2 transition-[translate,scale,opacity] start-1/2
+        [background:var(--button-bg,transparent)];
+    @variant hover {
+        background-color: var(--part-bg, var(--color-muted));
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-message-scroller-button[data-direction='start'] {
+    top: 1rem;
+}
+.ui-message-scroller-button[data-direction='end'] {
+    bottom: 1rem;
+}

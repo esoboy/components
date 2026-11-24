@@ -1,0 +1,48 @@
+:where(.ui-switch) {
+    --thumb-off: initial;
+    --thumb-on: initial;
+    --track-off: initial;
+    --track-on: initial;
+}
+.ui-switch {
+    @apply focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0
+        transition-all after:-inset-x-3 after:-inset-y-2 after:absolute ui-disabled:cursor-not-allowed
+        ui-disabled:opacity-50 inline-flex items-center outline-none relative
+        border-[color:var(--border,transparent)] shrink-0 rounded-full border
+        data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px]
+        data-[size=sm]:w-[24px] has-disabled:cursor-not-allowed has-disabled:opacity-50
+        has-focus-visible:ring-3;
+    @variant has-checked {
+        background-color: var(--track-on, var(--status-fill, var(--color-primary)));
+    }
+    @variant not-has-checked {
+        background-color: var(--track-off, var(--color-input));
+    }
+    @variant ui-dark:not-has-checked {
+        background-color: var(--track-off, var(--input-80));
+    }
+    @variant group-has-[:focus-visible]/field-label {
+        border-color: var(--focus-border, transparent);
+    }
+    @variant has-focus-visible {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-switch > input {
+    @apply absolute inset-0 z-10 m-0 h-full w-full cursor-pointer opacity-0;
+}
+.ui-switch:has(> input:checked) > .ui-switch-thumb {
+    background-color: var(--thumb-on, var(--status-on-fill, var(--color-background)));
+    @variant ui-dark {
+        background-color: var(--thumb-on, var(--status-on-fill, var(--color-primary-foreground)));
+    }
+}
+.ui-switch-thumb {
+    @apply bg-[color:var(--thumb-off,var(--color-background))] pointer-events-none block rounded-full
+        transition-transform ring-0 group-data-[size=default]/switch:size-4
+        group-data-[size=sm]/switch:size-3 group-has-checked/switch:translate-x-[calc(100%-2px)];
+    @variant ui-dark {
+        background-color: var(--thumb-off, var(--color-foreground));
+    }
+}

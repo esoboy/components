@@ -1,0 +1,23 @@
+.ui-statistic-description {
+    @apply text-[color:var(--description-fg,var(--color-muted-foreground))] mt-1 flex items-center gap-1.5
+        text-caption;
+}
+.ui-statistic {
+    @apply grid min-w-0 content-start gap-1;
+}
+.ui-statistic-value {
+    @apply flex flex-wrap items-baseline gap-x-1.5 leading-tight
+        text-[color:var(--value-fg,var(--color-foreground))] [overflow-wrap:anywhere]
+        text-[length:var(--text-display)] [font-weight:600] [letter-spacing:-0.04em]
+        [font-variant-numeric:tabular-nums];
+}
+.ui-statistic-label {
+    color: var(--label-fg, var(--color-muted-foreground));
+    font-size: var(--text-body);
+}
+:is(.ui-statistic-prefix, .ui-statistic-suffix) {
+    @apply text-title font-medium tracking-normal;
+}
+.ui-statistic > .ui-skeleton {
+    @apply my-1 h-7 w-24;
+}

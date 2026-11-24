@@ -1,0 +1,17 @@
+.ui-popover-content {
+    @apply text-body p-2.5 duration-100 origin-(--transform-origin) z-50 w-72 font-normal overflow-visible
+        flex flex-col gap-2.5;
+}
+.ui-popover-header {
+    @apply flex flex-col gap-0.5 text-body;
+}
+.ui-popover-title {
+    @apply font-medium;
+}
+.ui-popover-description {
+    color: var(--description-fg, var(--color-muted-foreground));
+}
+.ui-popover-trigger > .ui-picker-trigger {
+    width: inherit;
+    max-width: 100%;
+}

@@ -10,7 +10,7 @@ import { assembleDistribution } from './distribution.js'
 const editorTypography = {
     name: 'editor-document',
     setup(build) {
-        build.onLoad({ filter: /[/\\]rich-content\.css$/ }, ({ path }) => ({
+        build.onLoad({ filter: /[/\\]_document\.css$/ }, ({ path }) => ({
             contents: readFileSync(path, 'utf8').replaceAll(
                 '.ui-rich-text',
                 ':where(esoboy-editor) .document',
@@ -25,14 +25,15 @@ mkdirSync('resources/dist', { recursive: true })
 rmSync('resources/dist/ui.css', { force: true })
 
 for (const [name, entry, budget] of [
-    // Nova's carousel uses the same bundled Embla engine; retain one regular JS entry.
-    ['ui', 'resources/js/bootstrap.js', 24 * 1024],
+    // Regular components share one entry, including the carousel engine.
+    ['ui', 'resources/js/bootstrap.js', 25 * 1024],
     ['editor', 'resources/js/editor/editor.jsx', 600 * 1024],
 ]) {
     const result = await build({
         entryPoints: [entry],
         bundle: true,
         minify: name === 'editor',
+        minifySyntax: true,
         format: 'iife',
         target: 'es2022',
         write: false,
@@ -48,8 +49,9 @@ for (const [name, entry, budget] of [
     const stylesheet = files.get('editor.css')
     if (!file || (name === 'editor' && !stylesheet) || files.size !== (name === 'editor' ? 2 : 1))
         throw new Error(`Unexpected output for ${name}.`)
-    const contents =
-        name === 'ui' ? Buffer.from((await minify(file.text, { ecma: 2022 })).code) : file.contents
+    const contents = Buffer.from(
+        (await minify(file.text, { ecma: 2022, module: true, compress: { passes: 2 } })).code,
+    )
     const gzip = gzipSync(contents).length
     if (gzip > budget) throw new Error(`${name}: ${gzip} / ${budget} gzip bytes.`)
     const imports = Object.values(result.metafile.outputs).flatMap((output) => output.imports)

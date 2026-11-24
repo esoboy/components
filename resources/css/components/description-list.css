@@ -1,0 +1,29 @@
+:where(.ui-description-list) {
+    border-color: var(--border, var(--color-border));
+}
+.ui-description-list {
+    @apply bg-[color:var(--bg,var(--color-card))] text-[color:var(--fg,var(--color-card-foreground))] grid
+        overflow-hidden rounded-xl border text-body
+        [grid-template-columns:minmax(6rem,1fr)_minmax(0,3fr)];
+}
+.ui-description-list > :is(dt, dd) {
+    @apply min-w-0 px-4 py-3 [overflow-wrap:anywhere];
+}
+.ui-description-list > :where(:nth-child(n + 3)) {
+    @apply border-t;
+}
+.ui-description-list-term {
+    @apply bg-[color:var(--part-bg,color-mix(in_oklab,var(--color-muted)_40%,transparent))]
+        text-[color:var(--part-fg,var(--color-muted-foreground))] font-medium;
+}
+@media (max-width: 32rem) {
+    .ui-description-list {
+        @apply grid-cols-1;
+    }
+    .ui-description-list > dt {
+        @apply bg-[color:var(--bg,transparent)] pb-0 text-caption;
+    }
+    .ui-description-list > dd {
+        @apply border-t-0 pt-1;
+    }
+}

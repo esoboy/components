@@ -1,0 +1,105 @@
+:where(.ui-button-group) {
+    --text-border: initial;
+}
+:where(.ui-button-group-text) {
+    border-color: var(--text-border, var(--color-border));
+}
+.ui-button-group {
+    @apply flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 [&>input]:flex-1
+        has-[>.ui-button-group]:gap-2 data-[orientation=vertical]:flex-col
+        [&>.ui-select-trigger:not([class*='w-'])]:w-fit
+        has-[select[aria-hidden=true]:last-child]:[&>.ui-select-trigger:last-of-type]:rounded-e-lg;
+}
+
+/* Members can be direct controls or wrappers around the painted control. */
+:is(
+    .ui-button,
+    .ui-input,
+    .ui-input-group,
+    .ui-separator,
+    .ui-button-group-text,
+    .ui-button-group-separator,
+    .ui-button-group,
+    .ui-native-select-wrapper,
+    .ui-select-field,
+    [data-ui-overlay]
+) {
+    .ui-button-group[data-orientation='horizontal'] > &:has(~ &),
+    .ui-button-group[data-orientation='horizontal']
+        > [data-ui-overlay]:has(~ &)
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='horizontal']
+        > .ui-select-field:has(~ &)
+        > .ui-select-body
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='horizontal']
+        > .ui-native-select-wrapper:has(~ &)
+        > .ui-native-select-control {
+        @apply rounded-e-none;
+    }
+    .ui-button-group[data-orientation='horizontal'] > & ~ &,
+    .ui-button-group[data-orientation='horizontal'] > & ~ [data-ui-overlay] > [data-ui-trigger] > &,
+    .ui-button-group[data-orientation='horizontal']
+        > &
+        ~ .ui-select-field
+        > .ui-select-body
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='horizontal']
+        > &
+        ~ .ui-native-select-wrapper
+        > .ui-native-select-control {
+        @apply rounded-s-none border-s-0;
+    }
+    .ui-button-group[data-orientation='vertical'] > &:has(~ &),
+    .ui-button-group[data-orientation='vertical']
+        > [data-ui-overlay]:has(~ &)
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='vertical']
+        > .ui-select-field:has(~ &)
+        > .ui-select-body
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='vertical']
+        > .ui-native-select-wrapper:has(~ &)
+        > .ui-native-select-control {
+        @apply rounded-b-none;
+    }
+    .ui-button-group[data-orientation='vertical'] > & ~ &,
+    .ui-button-group[data-orientation='vertical'] > & ~ [data-ui-overlay] > [data-ui-trigger] > &,
+    .ui-button-group[data-orientation='vertical']
+        > &
+        ~ .ui-select-field
+        > .ui-select-body
+        > [data-ui-trigger]
+        > &,
+    .ui-button-group[data-orientation='vertical']
+        > &
+        ~ .ui-native-select-wrapper
+        > .ui-native-select-control {
+        @apply rounded-t-none border-t-0;
+    }
+    .ui-button-group[data-orientation='horizontal'] > &:not(:has(~ &)) {
+        @apply rounded-e-lg;
+    }
+    .ui-button-group[data-orientation='vertical'] > &:not(:has(~ &)) {
+        @apply rounded-b-lg;
+    }
+}
+.ui-button-group-text {
+    @apply font-medium text-body flex items-center gap-2 rounded-lg border px-2.5
+        [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4
+        bg-[color:var(--part-bg,var(--color-muted))];
+}
+.ui-button-group-separator {
+    @apply relative self-stretch bg-[color:var(--separator-bg,var(--color-input))];
+    @variant data-[orientation=horizontal] {
+        @apply mx-px w-auto;
+    }
+    @variant data-[orientation=vertical] {
+        @apply h-auto my-px;
+    }
+}

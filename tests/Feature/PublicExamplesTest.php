@@ -19,7 +19,7 @@ it('renders the documented component with its public root class', function (stri
     expect($document->querySelector('body > .ui-'.$name.'.application-instance'))->not->toBeNull()
         ->and($document->querySelector('[data-esoboy-ui], [data-slot]'))->toBeNull();
 })->with(function () {
-    foreach (json_decode(file_get_contents(__DIR__.'/../../docs/examples.json'), true, flags: JSON_THROW_ON_ERROR) as $name => $example) {
+    foreach ((require __DIR__.'/../../scripts/component-examples.php') as $name => $example) {
         yield $name => [$name, $example];
     }
 });

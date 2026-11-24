@@ -132,25 +132,9 @@ export function useList(config: UseListConfig) {
     const { editor: providedEditor, type, hideWhenUnavailable = false, onToggled } = config
 
     const { editor } = useTiptapEditor(providedEditor)
-    const [isVisible, setIsVisible] = React.useState<boolean>(true)
+    const isVisible = shouldShowButton({ editor, type, hideWhenUnavailable })
     const canToggle = canToggleList(editor, type)
     const isActive = isListActive(editor, type)
-
-    React.useEffect(() => {
-        if (!editor) return
-
-        const handleSelectionUpdate = () => {
-            setIsVisible(shouldShowButton({ editor, type, hideWhenUnavailable }))
-        }
-
-        handleSelectionUpdate()
-
-        editor.on('selectionUpdate', handleSelectionUpdate)
-
-        return () => {
-            editor.off('selectionUpdate', handleSelectionUpdate)
-        }
-    }, [editor, type, hideWhenUnavailable])
 
     const handleToggle = React.useCallback(() => {
         if (!editor) return false

@@ -5,9 +5,6 @@ import * as React from 'react'
 // --- Lib ---
 import { parseShortcutKeys } from './helpers'
 
-// --- Hooks ---
-import { useTiptapEditor } from './helpers'
-
 // --- Tiptap UI ---
 import type { Mark, UseMarkConfig } from './use-mark'
 import { MARK_SHORTCUT_KEYS, useMark } from './use-mark'
@@ -47,7 +44,7 @@ export function MarkShortcutBadge({
 export const MarkButton = React.forwardRef<HTMLButtonElement, MarkButtonProps>(
     (
         {
-            editor: providedEditor,
+            editor,
             type,
             text,
             hideWhenUnavailable = false,
@@ -59,7 +56,6 @@ export const MarkButton = React.forwardRef<HTMLButtonElement, MarkButtonProps>(
         },
         ref,
     ) => {
-        const { editor } = useTiptapEditor(providedEditor)
         const { isVisible, handleMark, label, canToggle, isActive, Icon, shortcutKeys } = useMark({
             editor,
             type,

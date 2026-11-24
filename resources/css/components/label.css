@@ -1,0 +1,8 @@
+.ui-label {
+    @apply font-medium text-body/none flex group-data-[disabled=true]:pointer-events-none items-center
+        peer-disabled:cursor-not-allowed select-none gap-2 group-data-[disabled=true]:opacity-50
+        peer-disabled:opacity-50;
+}
+.ui-label.ui-field-label {
+    @apply leading-snug;
+}

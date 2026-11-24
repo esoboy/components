@@ -1,0 +1,106 @@
+:where(.ui-input-otp) {
+    --group-invalid-ring: initial;
+    --slot-bg: initial;
+    --slot-invalid-ring: initial;
+}
+.ui-input-otp-body {
+    text-align: center;
+    display: inline-flex;
+    font-variant-numeric: normal;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    gap: 0;
+    letter-spacing: normal;
+}
+.ui-input-otp-separator {
+    @apply flex items-center [margin-inline:0] [width:1rem];
+}
+.ui-input-otp-slot {
+    @apply relative size-[2rem] min-w-0 p-0 [border-width:1px_1px_1px_0] ml-0 rounded-none text-center
+        text-body transition-colors border-[color:var(--part-border,var(--color-input))]
+        bg-[color:var(--slot-bg,transparent)] [caret-color:var(--part-caret,transparent)];
+    @variant focus-visible {
+        @apply ring-3 outline-none border-[color:var(--part-border,var(--color-ring))]
+            ring-[color:var(--part-ring,var(--ring-50))];
+    }
+    @variant ui-dark {
+        background-color: var(--slot-bg, var(--input-30));
+    }
+    @variant aria-invalid {
+        border-color: var(--part-border, var(--color-destructive));
+        --tw-ring-color: var(--slot-invalid-ring, var(--destructive-20));
+    }
+    @variant ui-dark:aria-invalid {
+        --tw-ring-color: var(--slot-invalid-ring, var(--destructive-40));
+    }
+}
+.ui-input-otp-cell {
+    position: relative;
+    display: flex;
+    width: auto;
+    height: auto;
+}
+.ui-input-otp-cell:focus-within {
+    z-index: 10;
+}
+.ui-input-otp-caret {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    left: 50%;
+    width: 1px;
+    height: 1rem;
+    background: var(--part-bg, var(--color-foreground));
+    animation: ui-otp-caret 1s ease-out infinite;
+}
+.ui-input-otp-cell:focus-within:has(input:placeholder-shown) .ui-input-otp-caret {
+    display: block;
+}
+.ui-input-otp-slot::selection {
+    background: var(--slot-bg, transparent);
+    color: var(--part-fg, inherit);
+}
+.ui-input-otp-slot:focus {
+    z-index: 1;
+}
+.ui-input-otp-body:has(:disabled) {
+    opacity: 0.5;
+}
+.ui-input-otp-slot:disabled {
+    opacity: 1;
+}
+.ui-input-otp-group {
+    @apply flex items-center rounded-lg has-aria-invalid:ring-3;
+    @variant has-aria-invalid {
+        --tw-ring-color: var(--group-invalid-ring, var(--destructive-20));
+        border-color: var(--part-border, var(--color-destructive));
+    }
+    @variant ui-dark:has-aria-invalid {
+        --tw-ring-color: var(--group-invalid-ring, var(--destructive-40));
+    }
+}
+.ui-input-otp-slot[data-start='true'] {
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    border-left-width: 1px;
+    margin-left: 0;
+}
+.ui-input-otp-slot[data-end='true'] {
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+.ui-input-otp-slot[data-start='true'][data-end='true'] {
+    border-radius: var(--radius-lg);
+}
+@keyframes ui-otp-caret {
+    0%,
+    70%,
+    100% {
+        opacity: 1;
+    }
+    20%,
+    50% {
+        opacity: 0;
+    }
+}

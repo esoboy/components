@@ -13,6 +13,12 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
+    @elseif(request()->boolean('interactions'))
+        <livewire:interaction-probe />
+    @elseif(request()->boolean('composition'))
+        @php($pager = (new \Illuminate\Pagination\LengthAwarePaginator([1], 5, 1, 1, ['path' => '/ui-package-test', 'pageName' => 'ordinary']))->appends(['composition' => 1, 'filter' => 'open'])->fragment('results'))
+        <x-ui::pagination id="ordinary-pages" :paginator="$pager" jumpable />
+        <livewire:composition-probe />
     @elseif(request()->boolean('state'))
         <livewire:state-probe />
     @elseif(request()->boolean('status'))
@@ -38,33 +44,33 @@
         </x-ui::toast>
         <x-ui::switch id="plain-switch" aria-label="Off" />
         <x-ui::switch id="info-switch-off" status="info" aria-label="Off" />
-        <x-ui::badge id="outer-badge" status="warning" class="[--ui-fg:#142536]">
+        <x-ui::badge id="outer-badge" status="warning" class="[--fg:#142536]">
             <x-ui::badge id="inner-badge">Label</x-ui::badge>
         </x-ui::badge>
-        <x-ui::button id="custom-outline" variant="outline" status="info" class="[--ui-border:#123456]">Action</x-ui::button>
+        <x-ui::button id="custom-outline" variant="outline" status="info" class="[--border:#123456]">Action</x-ui::button>
         <x-ui::checkbox id="invalid-focus" invalid class="[--color-ring:#216953]" aria-label="Invalid choice" />
         <x-ui::button-group>
             <x-ui::button id="grouped-small" size="sm">First</x-ui::button>
             <x-ui::button size="sm">Last</x-ui::button>
         </x-ui::button-group>
-        <x-ui::avatar class="[--ui-part-bg:#111111] [&_.ui-avatar-badge]:[--ui-part-bg:#245647]">
+        <x-ui::avatar class="[--part-bg:#111111] [&_.ui-avatar-badge]:[--part-bg:#245647]">
             <x-ui::avatar.fallback id="avatar-fallback">A</x-ui::avatar.fallback>
             <x-ui::avatar.badge id="avatar-badge">✓</x-ui::avatar.badge>
         </x-ui::avatar>
-        <x-ui::progress :value="32" aria-label="Progress" class="[--ui-track:#ededed] [--ui-fill:#234567]" />
+        <x-ui::progress :value="32" aria-label="Progress" class="[--track:#ededed] [--fill:#234567]" />
         <x-ui::select id="theme-select" :options="[['value' => 'one', 'label' => 'One']]" initial-value="one"
-            class="w-48 [--ui-trigger-bg:#efdedb] [--ui-trigger-fg:#365462] [--ui-panel-bg:#eff1fc] [--ui-option-selected-fg:#563412]" />
-        <x-ui::date-picker id="theme-picker" class="w-48 [--ui-trigger-bg:#ecedef] [--ui-panel-bg:#daf1ef]" />
+            class="w-48 [--trigger-bg:#efdedb] [--trigger-fg:#365462] [--panel-bg:#eff1fc] [--option-selected-fg:#563412]" />
+        <x-ui::date-picker id="theme-picker" class="w-48 [--trigger-bg:#ecedef] [--panel-bg:#daf1ef]" />
         <x-ui::password-input id="theme-password" placeholder="Password"
-            class="[--ui-value-fg:#213548] [--ui-placeholder-fg:#567c98]" />
-        <x-ui::dropdown-menu class="[--ui-item-fg:#502434] [--ui-item-hover-bg:#f2ebce] [--ui-item-hover-fg:#594312]">
+            class="[--value-fg:#213548] [--placeholder-fg:#567c98]" />
+        <x-ui::dropdown-menu class="[--item-fg:#502434] [--item-hover-bg:#f2ebce] [--item-hover-fg:#594312]">
             <x-ui::dropdown-menu.trigger><x-ui::button id="theme-menu-trigger">Menu</x-ui::button></x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content><x-ui::dropdown-menu.item id="theme-menu-item">Item</x-ui::dropdown-menu.item></x-ui::dropdown-menu.content>
         </x-ui::dropdown-menu>
-        <x-ui::transfer :options="[['value' => 'one', 'label' => 'One']]" class="[--ui-panel-bg:#eff6fb]" />
-        <x-ui::tags-input :initial-value="['One']" class="[--ui-tag-bg:#efeabc]" />
+        <x-ui::transfer :options="[['value' => 'one', 'label' => 'One']]" class="[--panel-bg:#eff6fb]" />
+        <x-ui::tags-input :initial-value="['One']" class="[--tag-bg:#efeabc]" />
         <x-ui::signature id="theme-signature" :initial-value="[[['x' => 0.25, 'y' => 0.5], ['x' => 0.75, 'y' => 0.5]]]"
-            class="[--ui-ink:#24795c]" />
+            class="[--ink:#24795c]" />
     @elseif(request()->boolean('alignment'))
         @php($choices = array_map(fn ($i) => ['value' => $i, 'label' => 'Choice '.$i], range(1, 24)))
         <main class="mx-auto grid w-72 gap-12 py-[25vh]">

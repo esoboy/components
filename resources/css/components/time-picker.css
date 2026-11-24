@@ -1,0 +1,17 @@
+.ui-time-picker-grid {
+    @apply grid grid-cols-5 gap-0.5 ps-2 pe-3;
+}
+.ui-time-picker-grid button {
+    @apply h-(--time-cell) cursor-pointer rounded-md text-body font-medium tabular-nums outline-none
+        focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-default disabled:opacity-50;
+    @variant hover {
+        background-color: var(--part-bg, var(--color-accent));
+    }
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--color-ring));
+    }
+    @variant aria-selected {
+        background-color: var(--part-bg, var(--color-primary));
+        color: var(--part-fg, var(--color-primary-foreground));
+    }
+}

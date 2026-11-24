@@ -1,0 +1,16 @@
+.ui-text-control {
+    @apply outline-none transition-colors border-[color:var(--border,var(--color-input))]
+        bg-[color:var(--bg,transparent)] rounded-lg border;
+    @variant placeholder {
+        color: var(--placeholder-fg, var(--color-muted-foreground));
+    }
+    @variant ui-dark {
+        background-color: var(--bg, var(--input-30));
+    }
+    @variant disabled {
+        background-color: var(--bg, var(--input-50));
+    }
+    @variant ui-dark:disabled {
+        background-color: var(--disabled-bg, var(--input-80));
+    }
+}

@@ -1,4 +1,5 @@
 import {
+    copyFileSync,
     cpSync,
     existsSync,
     mkdirSync,
@@ -13,6 +14,7 @@ import { dirname, join, resolve } from 'node:path'
 import postcss from 'postcss'
 import postcssImport from 'postcss-import'
 
+const materials = 'resources/distribution'
 const runtime = [
     'src',
     'routes',
@@ -25,33 +27,31 @@ const runtime = [
     'resources/dist/ui.js',
     'resources/dist/editor.js',
     'resources/dist/editor.css',
-    'LICENSE',
 ]
 
 function notices(inputs) {
-    const packages = new Set(['tailwindcss'])
+    const directories = new Set([resolve('node_modules/tailwindcss')])
     for (const input of inputs) {
-        const match = input.match(/^(.*node_modules\/(?:@[^/]+\/)?[^/]+)\//)
-        if (match) packages.add(match[1].replace(/^node_modules\//, ''))
+        const match = resolve(input)
+            .replaceAll('\\', '/')
+            .match(/^(.*\/node_modules\/(?:@[^/]+\/)?[^/]+)\//)
+        if (match) directories.add(resolve(match[1]))
     }
     const texts = [
-        'shadcn/ui\n' + readFileSync('resources/css/LICENSE.shadcn', 'utf8'),
+        'shadcn/ui\n' + readFileSync(join(materials, 'LICENSE.shadcn'), 'utf8'),
         readFileSync('resources/js/editor/tiptap-ui/LICENSE', 'utf8'),
     ]
-    for (const name of [...packages].sort()) {
-        const directory = join('node_modules', name)
+    const packages = [...directories].map((directory) => {
         const metadata = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
         const files = readdirSync(directory).filter((file) =>
             /^(licen[sc]e|copying|notice)([.-].*)?$/i.test(file),
         )
-        texts.push(
-            [
-                metadata.name + ' ' + metadata.version + ' (' + metadata.license + ')',
-                ...files.sort().map((file) => readFileSync(join(directory, file), 'utf8')),
-            ].join('\n'),
-        )
-    }
-    return texts.join('\n\n') + '\n'
+        return [
+            metadata.name + ' ' + metadata.version + ' (' + metadata.license + ')',
+            ...files.sort().map((file) => readFileSync(join(directory, file), 'utf8')),
+        ].join('\n')
+    })
+    return [...texts, ...new Set(packages.sort())].join('\n\n') + '\n'
 }
 
 export async function assembleDistribution(inputs) {
@@ -59,6 +59,9 @@ export async function assembleDistribution(inputs) {
     const stage = mkdtempSync(resolve('.dist-'))
     const previous = stage + '-previous'
     try {
+        for (const name of ['README.md', 'LICENSE']) {
+            copyFileSync(join(materials, name), join(stage, name))
+        }
         for (const path of runtime) {
             const target = join(stage, path)
             mkdirSync(dirname(target), { recursive: true })
@@ -86,11 +89,6 @@ export async function assembleDistribution(inputs) {
             manifest[key] = development[key]
         }
         writeFileSync(join(stage, 'composer.json'), JSON.stringify(manifest, null, 4) + '\n')
-        const ref = process.env.GITHUB_REF_TYPE === 'tag' ? process.env.GITHUB_REF_NAME : 'HEAD'
-        const docs =
-            'https://github.com/esoboy/components/blob/' + encodeURIComponent(ref) + '/docs/'
-        const readme = readFileSync('README.md', 'utf8').replaceAll('](docs/', '](' + docs)
-        writeFileSync(join(stage, 'README.md'), readme)
         writeFileSync(join(stage, 'THIRD-PARTY-LICENSES.txt'), notices(inputs))
         if (existsSync(destination)) renameSync(destination, previous)
         try {

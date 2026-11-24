@@ -1,0 +1,32 @@
+[data-ui-media-trigger][role='button'] {
+    display: inline-block;
+}
+.ui-media-preview-panel:not([data-type='audio']) {
+    width: min(60rem, calc(100vw - 2rem));
+    max-width: min(60rem, calc(100vw - 2rem));
+}
+.ui-media-preview-canvas {
+    min-width: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+}
+.ui-media-preview-canvas > :is(img, video) {
+    width: auto;
+    height: auto;
+    min-height: 0;
+    max-height: min(65dvh, 38rem);
+    max-width: 100%;
+    object-fit: contain;
+}
+.ui-media-preview-canvas > audio {
+    width: 100%;
+    min-width: 0;
+}
+.ui-media-preview-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding-top: 1rem;
+}

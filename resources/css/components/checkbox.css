@@ -1,0 +1,75 @@
+:where(.ui-checkbox) {
+    --checked-border: initial;
+    --indeterminate-bg: initial;
+    --indeterminate-border: initial;
+    --indeterminate-fg: initial;
+}
+.ui-checkbox {
+    @apply outline-none relative shrink-0 transition-colors flex size-4 items-center justify-center border
+        rounded-[4px] appearance-none place-content-center
+        [background:var(--bg,transparent)]
+        cursor-pointer border-[color:var(--border,var(--color-input))];
+    @variant aria-invalid {
+        @apply ring-3 border-[color:var(--invalid-border,var(--color-destructive))]
+            ring-[color:var(--invalid-ring,var(--destructive-20))];
+    }
+    @variant group-has-[:focus-visible]/field-label {
+        @apply ring-0;
+    }
+    @variant after {
+        @apply -inset-x-3 -inset-y-2 absolute;
+    }
+    @variant group-has-disabled/field {
+        @apply opacity-50;
+    }
+    @variant ui-dark {
+        background-color: var(--bg, var(--input-30));
+    }
+    @variant checked {
+        background-color: var(--checked-bg, var(--color-primary));
+        color: var(--checked-fg, var(--color-primary-foreground));
+        border-color: var(--checked-border, var(--color-primary));
+    }
+    @variant ui-dark:checked {
+        background-color: var(--checked-bg, var(--color-primary));
+    }
+    @variant aria-invalid:aria-checked {
+        border-color: var(--invalid-border, var(--color-primary));
+    }
+    @variant ui-dark:aria-invalid {
+        border-color: var(--invalid-border, var(--destructive-50));
+        --tw-ring-color: var(--invalid-ring, var(--destructive-40));
+    }
+    @variant focus-visible {
+        @apply ring-3 border-[color:var(--focus-border,var(--color-ring))]
+            ring-[color:var(--focus-ring,var(--ring-50))];
+    }
+    @variant group-has-[:focus-visible]/field-label:not-checked {
+        border-color: var(--focus-border, var(--color-input));
+    }
+    @variant group-has-[:focus-visible]/field-label:checked {
+        border-color: var(--focus-border, var(--color-primary));
+    }
+}
+.ui-checkbox:checked:not(:indeterminate) {
+    background: var(--indeterminate-bg, var(--color-primary));
+    border-color: var(--indeterminate-border, var(--color-primary));
+    color: var(--indeterminate-fg, var(--color-primary-foreground));
+}
+.ui-checkbox:is(:checked, :indeterminate)::before {
+    content: '';
+    width: 0.875rem;
+    height: 0.875rem;
+    background: var(--indeterminate-bg, currentColor);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m20 6-11 11-5-5'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+}
+@media (forced-colors: active) {
+    .ui-checkbox {
+        appearance: auto;
+    }
+}
+.ui-checkbox:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+}

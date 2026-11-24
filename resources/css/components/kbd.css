@@ -1,0 +1,15 @@
+.ui-kbd {
+    @apply font-medium text-caption inline-flex items-center justify-center pointer-events-none select-none
+        bg-[color:var(--bg,var(--color-muted))] text-[color:var(--fg,var(--color-muted-foreground))] h-5
+        w-fit min-w-5 gap-1 rounded-sm px-1 font-sans [&_svg:not([class*='size-'])]:size-3;
+    @variant in-[.ui-tooltip-content] {
+        background-color: var(--bg, color-mix(in oklab, var(--color-background) 20%, transparent));
+        color: var(--fg, var(--color-background));
+    }
+    @variant ui-dark:in-[.ui-tooltip-content] {
+        background-color: var(--bg, color-mix(in oklab, var(--color-background) 10%, transparent));
+    }
+}
+.ui-kbd-group {
+    @apply inline-flex items-center gap-1;
+}

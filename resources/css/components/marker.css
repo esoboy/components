@@ -1,0 +1,44 @@
+:where(.ui-marker) {
+    --marker-line: initial;
+}
+.ui-marker {
+    @apply text-body flex items-center relative w-full [&_svg:not([class*='size-'])]:size-4
+        text-[color:var(--fg,var(--color-muted-foreground))] gap-2 [a]:underline-offset-3 [a]:underline
+        min-h-4 text-left [background:var(--bg,transparent)] rounded-none;
+    @variant [a]:hover {
+        color: var(--hover-fg, var(--color-foreground));
+    }
+}
+.ui-marker-icon {
+    @apply shrink-0 size-4 [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-marker-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    @variant group-[.ui-marker-variant-separator]/marker {
+        @apply flex-none text-center;
+    }
+    @variant *:[a] {
+        @apply underline underline-offset-3;
+    }
+    @variant *:[a]:hover {
+        color: var(--content-hover-fg, var(--color-foreground));
+    }
+}
+.ui-marker.ui-marker-variant-separator {
+    @apply before:h-px before:min-w-0 before:flex-1 after:h-px after:min-w-0 after:flex-1 before:mr-1
+        after:ml-1;
+    @variant before {
+        background-color: var(--marker-line, var(--color-border));
+    }
+    @variant after {
+        background-color: var(--marker-line, var(--color-border));
+    }
+}
+.ui-marker.ui-marker-variant-border {
+    @apply border-[color:var(--border,var(--color-border))] border-b pb-2;
+}
+.ui-marker.ui-marker-variant-separator::before,
+.ui-marker.ui-marker-variant-separator::after {
+    content: '';
+}

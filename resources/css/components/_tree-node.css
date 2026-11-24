@@ -1,0 +1,18 @@
+.ui-node-selector > span {
+    @apply border-[color:var(--part-border,var(--color-input))] grid size-4 place-items-center rounded-sm
+        border;
+}
+.ui-node-selector[role='radio'] > span {
+    @apply rounded-full;
+}
+.ui-node-selector[aria-checked='true'] > span {
+    border-color: var(--part-border, var(--color-primary));
+    background-color: var(--part-bg, var(--color-primary));
+    color: var(--part-fg, var(--color-primary-foreground));
+}
+.ui-node-selector[role='radio'][aria-checked='true'] > span::before {
+    @apply [content:''] bg-[color:var(--part-bg,currentColor)] size-1.5 rounded-full;
+}
+.ui-node-selector svg {
+    @apply size-3;
+}

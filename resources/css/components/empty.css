@@ -1,0 +1,42 @@
+.ui-empty-media {
+    @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 flex items-center justify-center shrink-0 mb-2;
+}
+.ui-empty {
+    @apply flex flex-1 flex-col items-center justify-center min-w-0 text-balance text-center w-full
+        wrap-anywhere gap-4 rounded-xl border-dashed p-6;
+}
+.ui-empty-header {
+    @apply flex flex-col items-center max-w-sm gap-2;
+}
+.ui-empty-description {
+    @apply text-body/relaxed text-[color:var(--description-fg,var(--color-muted-foreground))];
+    @variant [&>a] {
+        @apply underline underline-offset-4;
+    }
+    @variant [&>a:hover] {
+        color: var(--description-hover-fg, var(--color-primary));
+    }
+}
+.ui-empty-content {
+    @apply text-body flex flex-col items-center max-w-sm min-w-0 text-balance w-full gap-2.5;
+}
+.ui-empty[data-size='sm'] {
+    @apply min-h-12 gap-1 rounded-none px-3 py-2;
+}
+.ui-empty[data-size='sm'] .ui-empty-header {
+    @apply gap-0.5;
+}
+.ui-empty[data-size='sm'] .ui-empty-description {
+    @apply text-caption/relaxed;
+}
+.ui-empty-media.ui-empty-media-variant-default {
+    background-color: var(--media-bg, transparent);
+}
+.ui-empty-media.ui-empty-media-variant-icon {
+    @apply bg-[color:var(--media-bg,var(--color-muted))]
+        text-[color:var(--media-fg,var(--color-foreground))] flex size-8 shrink-0 items-center
+        justify-center rounded-lg [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-empty-title {
+    @apply font-medium text-body tracking-tight;
+}

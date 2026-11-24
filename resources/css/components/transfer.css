@@ -1,0 +1,45 @@
+:where(.ui-transfer) {
+    --action-bg: initial;
+    --action-border: initial;
+    --action-fg: initial;
+    --search-bg: initial;
+    --search-border: initial;
+    --search-fg: initial;
+}
+.ui-transfer-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+.ui-transfer-list {
+    --list-max-height: 15rem;
+}
+.ui-transfer-item {
+    justify-content: space-between;
+    width: 100%;
+    --fg: var(--item-fg);
+    --hover-bg: var(--item-hover-bg);
+    --hover-fg: var(--item-hover-fg);
+}
+@media (max-width: 480px) {
+    .ui-transfer-columns {
+        grid-template-columns: 1fr;
+    }
+}
+.ui-transfer-body > .ui-input {
+    --bg: var(--search-bg);
+    --fg: var(--search-fg);
+    --border: var(--search-border);
+}
+.ui-transfer-columns > .ui-card {
+    --bg: var(--panel-bg);
+    --fg: var(--panel-fg);
+    --ring: var(--panel-ring);
+    --footer-bg: inherit;
+}
+.ui-transfer-columns > .ui-card > .ui-card-footer > .ui-button {
+    --fg: var(--action-fg);
+    --bg: var(--action-bg);
+    --border: var(--action-border);
+}

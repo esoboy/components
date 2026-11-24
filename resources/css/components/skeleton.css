@@ -1,0 +1,8 @@
+.ui-skeleton {
+    @apply animate-pulse rounded-md [min-height:1rem] [background:var(--bg,var(--color-muted))];
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-skeleton {
+        animation: none;
+    }
+}

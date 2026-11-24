@@ -1,0 +1,267 @@
+.ui-drawer-title {
+    @apply font-medium text-title text-[color:var(--title-fg,var(--color-foreground))];
+}
+:where(.ui-drawer) {
+    --panel-after-bg: initial;
+}
+:where(.ui-drawer-content) {
+    border-color: var(--panel-border, var(--color-border));
+}
+.ui-drawer-content[data-side='bottom'] {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    border-width: 1px 0 0;
+    top: auto;
+    --drawer-y: calc(100% + var(--drawer-inset, 0px) + 2px);
+    --stack-y: calc(
+        var(--snap-offset, 0px) - var(--stack-peek) - var(--stack-shrink) * var(--front-height, 0px)
+    );
+    transform-origin: bottom;
+}
+.ui-drawer-content[data-side='top'] {
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    border-width: 0 0 1px;
+    bottom: auto;
+    --drawer-y: calc(-100% - var(--drawer-inset, 0px) - 2px);
+    --stack-y: calc(
+        var(--snap-offset, 0px) + var(--stack-peek) + var(--stack-shrink) * var(--front-height, 0px)
+    );
+    transform-origin: top;
+}
+.ui-drawer-content[data-side='left'] {
+    border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+    border-width: 0 1px 0 0;
+    right: auto;
+    --drawer-x: calc(-100% - var(--drawer-inset, 0px) - 2px);
+    --stack-x: calc(var(--stack-peek) + var(--stack-shrink) * 100%);
+    transform-origin: left;
+}
+.ui-drawer-content[data-side='right'] {
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    border-width: 0 0 0 1px;
+    left: auto;
+    --drawer-x: calc(100% + var(--drawer-inset, 0px) + 2px);
+    --stack-x: calc(0px - var(--stack-peek) - var(--stack-shrink) * 100%);
+    transform-origin: right;
+}
+.ui-drawer-header {
+    @apply gap-0.5 p-4 flex flex-col pb-0 shrink-0;
+}
+.ui-drawer-content:is([data-side='top'], [data-side='bottom']) .ui-drawer-header {
+    text-align: center;
+}
+.ui-drawer-footer {
+    @apply p-4 flex gap-2 mt-auto flex-col pt-0 shrink-0;
+}
+.ui-drawer-content {
+    max-height: 100dvh;
+    font-size: var(--text-body);
+    line-height: var(--tw-leading, --theme(--text-body--line-height));
+    user-select: none;
+    outline: none;
+    overscroll-behavior: auto;
+    will-change: transform;
+    height: --theme(--height-auto, --theme(--spacing-auto, auto));
+    --stack-progress: 0;
+    --stack-scale: clamp(
+        0,
+        calc(1 - var(--nested-drawers, 0) * 0.05 + var(--stack-progress) * 0.05),
+        1
+    );
+    --stack-peek: max(0px, calc((var(--nested-drawers, 0) - var(--stack-progress)) * 1rem));
+    --stack-shrink: calc(1 - var(--stack-scale));
+    --stack-x: 0px;
+    --stack-y: 0px;
+    --drawer-duration: var(--swipe-duration, 400ms);
+    --drawer-x: 0px;
+    --drawer-y: 0px;
+    transform: translate3d(var(--drawer-x), var(--drawer-y), 0);
+    opacity: 0.9999;
+    margin: var(--drawer-inset, 0px);
+    interpolate-size: allow-keywords;
+    transition:
+        transform var(--drawer-duration) cubic-bezier(0.22, 1, 0.36, 1),
+        opacity var(--drawer-duration) cubic-bezier(0.22, 1, 0.36, 1),
+        height var(--drawer-duration) cubic-bezier(0.22, 1, 0.36, 1),
+        filter var(--drawer-duration) cubic-bezier(0.22, 1, 0.36, 1),
+        display var(--drawer-duration) allow-discrete,
+        overlay var(--drawer-duration) allow-discrete;
+    @variant data-[side=bottom] {
+        @apply rounded-t-xl;
+    }
+    @variant data-[side=left] {
+        @apply rounded-r-xl;
+    }
+    @variant data-[side=right] {
+        @apply rounded-l-xl;
+    }
+    @variant data-[side=top] {
+        @apply rounded-b-xl;
+    }
+}
+.ui-drawer-viewport {
+    @apply flex min-h-0 flex-1 flex-col overflow-hidden overscroll-contain rounded-[inherit] select-text
+        [transition:opacity_300ms_cubic-bezier(0.45,1.005,0,1.005)];
+}
+.ui-drawer-header + .ui-drawer-footer {
+    padding-block-start: 1rem;
+}
+.ui-drawer-content[data-dragging] > .ui-drawer-viewport {
+    user-select: none;
+}
+.ui-drawer-description {
+    @apply text-body text-[color:var(--description-fg,var(--color-muted-foreground))] text-balance;
+}
+.ui-drawer-content:is([data-side='top'], [data-side='bottom']) {
+    max-height: var(--drawer-content-max-height, calc(100dvh - 6rem));
+}
+.ui-drawer[data-swipe-handle='false'] > .ui-drawer-content > .ui-drawer-handle {
+    display: none;
+}
+.ui-drawer-content .ui-drawer-content::backdrop {
+    background: var(--panel-backdrop-bg, transparent);
+    backdrop-filter: none;
+}
+.ui-drawer-handle {
+    display: flex;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 0.75rem;
+    align-items: end;
+    justify-content: center;
+    cursor: grab;
+    flex-shrink: 0;
+    touch-action: none;
+}
+.ui-drawer-handle::after {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 6rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: var(--part-bg, var(--color-muted));
+}
+.ui-drawer-handle:active {
+    cursor: grabbing;
+}
+.ui-drawer-content[data-side='top'] .ui-drawer-handle {
+    order: 99;
+    align-items: start;
+}
+.ui-drawer-content:is([data-side='left'], [data-side='right']) .ui-drawer-handle {
+    width: 0.75rem;
+    height: 100%;
+    align-items: center;
+}
+.ui-drawer-content:is([data-side='left'], [data-side='right']) .ui-drawer-handle::after {
+    width: 0.25rem;
+    height: 6rem;
+}
+.ui-drawer-content[data-side='left'] .ui-drawer-handle {
+    justify-content: start;
+    order: 99;
+}
+.ui-drawer-content[data-side='right'] .ui-drawer-handle {
+    justify-content: end;
+}
+.ui-drawer-content:is([data-side='left'], [data-side='right']) {
+    width: var(--drawer-content-width, 75vw);
+    flex-direction: row;
+}
+@media (min-width: 40rem) {
+    .ui-drawer-content:is([data-side='left'], [data-side='right']) {
+        width: var(--drawer-content-width, 24rem);
+    }
+}
+.ui-drawer-scroll-body {
+    @apply min-h-0 overflow-y-auto overscroll-contain p-4;
+}
+.ui-drawer-content[open] {
+    --drawer-duration: 450ms;
+    transform: translate3d(
+            calc(var(--drag-x, 0px) + var(--stack-x)),
+            calc(var(--drag-y, 0px) + var(--stack-y)),
+            0
+        )
+        scale(var(--stack-scale));
+    opacity: 1;
+}
+.ui-drawer-content[data-snap-points] {
+    height: 100dvh;
+}
+.ui-drawer-content[data-nested-open] {
+    filter: brightness(0.95);
+    overflow: hidden;
+}
+.ui-drawer-content::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    background: var(--panel-after-bg, var(--drawer-bleed-background, var(--color-popover)));
+}
+.ui-drawer-content[data-swipe-axis='y']::after {
+    left: 0;
+    right: 0;
+    height: var(--bleed, 3rem);
+}
+.ui-drawer-content[data-swipe-axis='x']::after {
+    top: 0;
+    bottom: 0;
+    width: var(--bleed, 3rem);
+}
+.ui-drawer-content[data-side='bottom']::after {
+    top: 100%;
+}
+.ui-drawer-content[data-side='top']::after {
+    bottom: 100%;
+}
+.ui-drawer-content[data-side='left']::after {
+    right: 100%;
+}
+.ui-drawer-content[data-side='right']::after {
+    left: 100%;
+}
+.ui-drawer-content[data-nested-open]:is([data-side='top'], [data-side='bottom']) {
+    height: var(--front-height);
+}
+.ui-drawer-content[data-nested-open] > :is(.ui-drawer-viewport, .ui-drawer-handle) {
+    opacity: var(--stack-progress);
+}
+.ui-drawer-content[data-nested-swiping] {
+    transition-duration: 0ms;
+}
+.ui-drawer-content[data-nested-swiping] > :is(.ui-drawer-viewport, .ui-drawer-handle) {
+    opacity: 1;
+}
+dialog.ui-drawer-content::backdrop {
+    --backdrop-duration: var(--swipe-duration, 400ms);
+    --backdrop-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+dialog.ui-drawer-content[open]::backdrop {
+    --backdrop-duration: 450ms;
+    opacity: max(var(--drawer-min-opacity, 0), calc(1 - var(--drawer-progress, 0)));
+}
+dialog.ui-drawer-content[data-snap-points]::backdrop {
+    --drawer-min-opacity: 0.5;
+}
+.ui-drawer-content[data-dragging='true'],
+.ui-drawer-content[data-dragging='true']::backdrop {
+    transition-duration: 0ms;
+}
+@starting-style {
+    .ui-drawer-content[open] {
+        transform: translate3d(var(--drawer-x), var(--drawer-y), 0);
+    }
+    dialog.ui-drawer-content[open]::backdrop {
+        opacity: 0;
+    }
+}
+.ui-drawer-content[data-ending] {
+    --drawer-duration: var(--swipe-duration, 400ms);
+    opacity: 0.9999;
+    transform: translate3d(var(--drawer-x), var(--drawer-y), 0);
+}
+dialog.ui-drawer-content[data-ending]::backdrop {
+    --backdrop-duration: var(--swipe-duration, 400ms);
+}

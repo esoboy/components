@@ -1,36 +1,58 @@
-@layer components {
-    .ui-pagination[data-paginated] {
-        @apply flex-wrap items-center gap-3;
-    }
-    .ui-pagination-jump {
-        @apply flex items-center gap-2 text-sm;
-    }
-    .ui-pagination-jump > span {
-        color: var(--ui-part-fg, var(--color-muted-foreground));
-        @apply whitespace-nowrap;
-    }
-    .ui-pagination-jump > .ui-input-group {
-        @apply w-20;
-    }
-    .ui-pagination-jump input[type='number'] {
-        @apply tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none;
-    }
-    .ui-pagination[data-paginated] > .ui-pagination-content {
-        @apply flex-wrap justify-center;
-    }
-    .ui-button.ui-pagination-previous:has([data-icon]) {
-        @apply pl-1.5;
-    }
-    .ui-button.ui-pagination-next:has([data-icon]) {
-        @apply pr-1.5;
-    }
-    :is(.ui-pagination-previous, .ui-pagination-next) > svg {
-        @apply rtl:rotate-180;
-    }
-    .ui-pagination-label {
-        @apply hidden sm:block;
-    }
-    .ui-pagination[data-paginated] .ui-pagination-label {
-        @apply @max-xl:hidden;
-    }
+:where(.ui-pagination) {
+    --active-bg: initial;
+    --active-border: initial;
+    --active-fg: initial;
+    --page-hover-fg: initial;
+}
+.ui-pagination {
+    @apply flex justify-center mx-auto w-full;
+}
+.ui-pagination-content {
+    @apply flex items-center gap-0.5;
+}
+.ui-pagination-ellipsis {
+    @apply flex [&_svg:not([class*='size-'])]:size-4 size-8 items-center justify-center;
+}
+:is(.ui-pagination-link, .ui-pagination-button) {
+    --fg: var(--page-fg);
+    --hover-bg: var(--page-hover-bg);
+    --hover-fg: var(--page-hover-fg);
+}
+:is(.ui-pagination-link, .ui-pagination-button)[data-active='true'] {
+    --bg: var(--active-bg);
+    --border: var(--active-border);
+    --fg: var(--active-fg);
+}
+.ui-pagination[data-paginated] {
+    @apply flex-wrap items-center gap-3;
+}
+.ui-pagination-jump {
+    @apply flex items-center gap-2 text-body;
+}
+.ui-pagination-jump > span {
+    @apply whitespace-nowrap text-[color:var(--part-fg,var(--color-muted-foreground))];
+}
+.ui-pagination-jump > .ui-input-group {
+    @apply w-20;
+}
+.ui-pagination-jump input[type='number'] {
+    @apply tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none;
+}
+.ui-pagination[data-paginated] > .ui-pagination-content {
+    @apply flex-wrap justify-center;
+}
+:is(.ui-pagination-previous, .ui-pagination-next) > svg {
+    @apply rtl:rotate-180;
+}
+.ui-pagination-label {
+    @apply hidden sm:block;
+}
+.ui-pagination[data-paginated] .ui-pagination-label {
+    @apply @max-xl:hidden;
+}
+.ui-button.ui-pagination-previous:has([data-icon]) {
+    @apply pl-1.5;
+}
+.ui-button.ui-pagination-next:has([data-icon]) {
+    @apply pr-1.5;
 }

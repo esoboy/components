@@ -1,0 +1,493 @@
+/* Instance colors */
+:where(
+    .ui-accordion,
+    .ui-alert,
+    .ui-alert-dialog,
+    .ui-attachment,
+    .ui-avatar,
+    .ui-badge,
+    .ui-breadcrumb,
+    .ui-bubble,
+    .ui-button,
+    .ui-button-group,
+    .ui-calendar,
+    .ui-card,
+    .ui-carousel,
+    .ui-cascader,
+    .ui-checkbox,
+    .ui-code-block,
+    .ui-collapsible,
+    .ui-color-picker,
+    .ui-combobox,
+    .ui-command,
+    .ui-context-menu,
+    .ui-cropper,
+    .ui-data-table,
+    .ui-date-picker,
+    .ui-datetime-picker,
+    .ui-description-list,
+    .ui-dialog,
+    .ui-drawer,
+    .ui-dropdown-menu,
+    .ui-empty,
+    .ui-field,
+    .ui-heading,
+    .ui-hover-card,
+    .ui-icon,
+    .ui-icon-select,
+    .ui-image,
+    .ui-input,
+    .ui-input-group,
+    .ui-input-otp,
+    .ui-item,
+    .ui-kbd,
+    .ui-label,
+    .ui-marker,
+    .ui-media-preview,
+    .ui-mentions,
+    .ui-menubar,
+    .ui-message,
+    .ui-message-scroller,
+    .ui-native-select,
+    .ui-navigation-menu,
+    .ui-number-input,
+    .ui-pagination,
+    .ui-password-input,
+    .ui-popover,
+    .ui-progress,
+    .ui-qr-code,
+    .ui-questionnaire,
+    .ui-radio-group,
+    .ui-rating,
+    .ui-resizable,
+    .ui-rich-text,
+    .ui-scroll-area,
+    .ui-select,
+    .ui-separator,
+    .ui-sheet,
+    .ui-sidebar,
+    .ui-signature,
+    .ui-skeleton,
+    .ui-slider,
+    .ui-spinner,
+    .ui-statistic,
+    .ui-steps,
+    .ui-switch,
+    .ui-table,
+    .ui-tabs,
+    .ui-tags-input,
+    .ui-text,
+    .ui-textarea,
+    .ui-time-picker,
+    .ui-timeline,
+    .ui-toast,
+    .ui-toaster,
+    .ui-toggle,
+    .ui-toggle-group,
+    .ui-tooltip,
+    .ui-tour,
+    .ui-trace,
+    .ui-transfer,
+    .ui-tree,
+    .ui-tree-select
+) {
+    --fg: initial;
+    color: var(--fg, inherit);
+    font-family: var(--font-family, inherit);
+}
+:where(
+    .ui-alert,
+    .ui-attachment,
+    .ui-badge,
+    .ui-bubble,
+    .ui-button,
+    .ui-calendar,
+    .ui-card,
+    .ui-checkbox,
+    .ui-code-block,
+    .ui-color-picker,
+    .ui-command,
+    .ui-data-table,
+    .ui-description-list,
+    .ui-input,
+    .ui-input-group,
+    .ui-item,
+    .ui-kbd,
+    .ui-marker,
+    .ui-native-select,
+    .ui-number-input,
+    .ui-password-input,
+    .ui-qr-code,
+    .ui-separator,
+    .ui-sidebar,
+    .ui-skeleton,
+    .ui-textarea,
+    .ui-toast,
+    .ui-toggle
+) {
+    --bg: initial;
+}
+:where(
+    .ui-alert,
+    .ui-attachment,
+    .ui-avatar,
+    .ui-badge,
+    .ui-bubble,
+    .ui-button,
+    .ui-checkbox,
+    .ui-code-block,
+    .ui-color-picker,
+    .ui-description-list,
+    .ui-input,
+    .ui-input-group,
+    .ui-item,
+    .ui-marker,
+    .ui-menubar,
+    .ui-native-select,
+    .ui-number-input,
+    .ui-password-input,
+    .ui-switch,
+    .ui-textarea,
+    .ui-toast,
+    .ui-toggle
+) {
+    --border: initial;
+}
+
+/* Interaction states */
+:where(
+    .ui-attachment,
+    .ui-badge,
+    .ui-bubble,
+    .ui-button,
+    .ui-color-picker,
+    .ui-data-table,
+    .ui-item,
+    .ui-native-select,
+    .ui-rating,
+    .ui-toggle
+) {
+    --hover-bg: initial;
+}
+:where(.ui-badge, .ui-bubble, .ui-button, .ui-marker) {
+    --hover-fg: initial;
+}
+:where(
+    .ui-badge,
+    .ui-button,
+    .ui-checkbox,
+    .ui-code-block,
+    .ui-color-picker,
+    .ui-input,
+    .ui-input-group,
+    .ui-item,
+    .ui-native-select,
+    .ui-number-input,
+    .ui-password-input,
+    .ui-switch,
+    .ui-textarea,
+    .ui-toast,
+    .ui-toggle
+) {
+    --focus-border: initial;
+}
+:where(
+    .ui-attachment,
+    .ui-badge,
+    .ui-button,
+    .ui-checkbox,
+    .ui-code-block,
+    .ui-color-picker,
+    .ui-input,
+    .ui-input-group,
+    .ui-item,
+    .ui-native-select,
+    .ui-number-input,
+    .ui-password-input,
+    .ui-rating,
+    .ui-switch,
+    .ui-textarea,
+    .ui-toast,
+    .ui-trace
+) {
+    --focus-ring: initial;
+}
+:where(.ui-checkbox, .ui-native-select, .ui-toggle) {
+    --checked-bg: initial;
+}
+:where(.ui-checkbox, .ui-native-select) {
+    --checked-fg: initial;
+}
+:where(.ui-input, .ui-input-group, .ui-textarea) {
+    --disabled-bg: initial;
+}
+:where(
+    .ui-badge,
+    .ui-button,
+    .ui-checkbox,
+    .ui-color-picker,
+    .ui-input,
+    .ui-input-group,
+    .ui-native-select,
+    .ui-switch,
+    .ui-textarea
+) {
+    --invalid-border: initial;
+}
+:where(
+    .ui-badge,
+    .ui-button,
+    .ui-checkbox,
+    .ui-input,
+    .ui-input-group,
+    .ui-native-select,
+    .ui-switch,
+    .ui-textarea
+) {
+    --invalid-ring: initial;
+}
+:where(.ui-data-table, .ui-native-select) {
+    --selection-bg: initial;
+    --selection-fg: initial;
+}
+
+/* Content and decoration */
+:where(.ui-navigation-menu, .ui-sidebar) {
+    --content-bg: initial;
+}
+:where(.ui-sidebar, .ui-timeline) {
+    --content-fg: initial;
+}
+:where(.ui-bubble, .ui-sidebar) {
+    --content-border: initial;
+}
+:where(.ui-accordion, .ui-marker) {
+    --content-hover-fg: initial;
+}
+:where(.ui-alert, .ui-code-block, .ui-drawer, .ui-sheet, .ui-toast) {
+    --title-fg: initial;
+}
+:where(
+    .ui-alert,
+    .ui-alert-dialog,
+    .ui-attachment,
+    .ui-card,
+    .ui-dialog,
+    .ui-drawer,
+    .ui-empty,
+    .ui-field,
+    .ui-item,
+    .ui-popover,
+    .ui-questionnaire,
+    .ui-sheet,
+    .ui-statistic,
+    .ui-steps,
+    .ui-toast,
+    .ui-tour,
+    .ui-trace
+) {
+    --description-fg: initial;
+}
+:where(.ui-alert, .ui-alert-dialog, .ui-dialog, .ui-empty, .ui-field, .ui-item) {
+    --description-hover-fg: initial;
+}
+:where(.ui-menubar, .ui-statistic, .ui-steps) {
+    --label-fg: initial;
+}
+:where(.ui-alert, .ui-native-select, .ui-toast) {
+    --icon-fg: initial;
+}
+:where(.ui-alert-dialog, .ui-attachment, .ui-empty, .ui-item) {
+    --media-bg: initial;
+}
+:where(.ui-attachment, .ui-empty) {
+    --media-fg: initial;
+}
+:where(.ui-input, .ui-rich-text) {
+    --file-bg: initial;
+}
+:where(.ui-code-block, .ui-trace) {
+    --line-fg: initial;
+}
+:where(.ui-button-group, .ui-command, .ui-select, .ui-sidebar) {
+    --separator-bg: initial;
+}
+:where(.ui-alert-dialog, .ui-card, .ui-dialog, .ui-table, .ui-transfer) {
+    --footer-bg: initial;
+}
+:where(.ui-code-block, .ui-message) {
+    --footer-fg: initial;
+    --header-fg: initial;
+}
+:where(.ui-alert-dialog, .ui-card, .ui-dialog, .ui-table) {
+    --footer-border: initial;
+}
+
+/* Controls and triggers */
+:where(.ui-combobox, .ui-toggle) {
+    --control-border: initial;
+}
+:where(.ui-color-picker, .ui-tags-input) {
+    --field-fg: initial;
+}
+:where(.ui-input-group, .ui-questionnaire, .ui-sidebar) {
+    --input-bg: initial;
+}
+:where(.ui-number-input, .ui-password-input, .ui-progress, .ui-statistic) {
+    --value-fg: initial;
+}
+:where(
+    .ui-cascader,
+    .ui-input,
+    .ui-native-select,
+    .ui-number-input,
+    .ui-password-input,
+    .ui-textarea
+) {
+    --placeholder-fg: initial;
+}
+:where(.ui-field, .ui-questionnaire) {
+    --error-fg: initial;
+}
+:where(
+    .ui-cascader,
+    .ui-date-picker,
+    .ui-datetime-picker,
+    .ui-select,
+    .ui-time-picker,
+    .ui-tree-select
+) {
+    --trigger-bg: initial;
+    --trigger-border: initial;
+    --trigger-fg: initial;
+}
+:where(.ui-date-picker, .ui-datetime-picker, .ui-time-picker) {
+    --trigger-hover-fg: initial;
+    --trigger-icon: initial;
+}
+:where(.ui-date-picker, .ui-datetime-picker, .ui-select, .ui-time-picker) {
+    --trigger-focus-ring: initial;
+    --trigger-hover-bg: initial;
+    --trigger-placeholder-fg: initial;
+}
+:where(.ui-progress, .ui-slider) {
+    --fill: initial;
+    --track: initial;
+}
+:where(.ui-scroll-area, .ui-slider) {
+    --thumb: initial;
+}
+
+/* Panels */
+:where(.ui-cropper, .ui-data-table) {
+    --frame-border: initial;
+}
+:where(
+    .ui-alert-dialog,
+    .ui-cascader,
+    .ui-combobox,
+    .ui-context-menu,
+    .ui-date-picker,
+    .ui-datetime-picker,
+    .ui-dialog,
+    .ui-drawer,
+    .ui-dropdown-menu,
+    .ui-icon-select,
+    .ui-media-preview,
+    .ui-menubar,
+    .ui-navigation-menu,
+    .ui-popover,
+    .ui-select,
+    .ui-sheet,
+    .ui-time-picker,
+    .ui-tooltip,
+    .ui-tour,
+    .ui-transfer,
+    .ui-tree-select
+) {
+    --panel-bg: initial;
+    --panel-fg: initial;
+}
+:where(.ui-alert-dialog, .ui-dialog, .ui-drawer, .ui-media-preview, .ui-sheet, .ui-tour) {
+    --panel-border: initial;
+}
+:where(
+    .ui-alert-dialog,
+    .ui-combobox,
+    .ui-context-menu,
+    .ui-date-picker,
+    .ui-datetime-picker,
+    .ui-dialog,
+    .ui-dropdown-menu,
+    .ui-menubar,
+    .ui-navigation-menu,
+    .ui-popover,
+    .ui-select,
+    .ui-time-picker,
+    .ui-transfer
+) {
+    --panel-ring: initial;
+}
+:where(.ui-alert-dialog, .ui-dialog, .ui-drawer, .ui-sheet) {
+    --panel-shadow: initial;
+}
+:where(.ui-drawer, .ui-tour) {
+    --panel-backdrop-bg: initial;
+}
+
+/* Navigation and choices */
+:where(.ui-breadcrumb, .ui-tabs) {
+    --list-fg: initial;
+}
+:where(.ui-radio-group, .ui-toggle-group) {
+    --item-bg: initial;
+    --item-checked-bg: initial;
+    --item-focus-border: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-transfer) {
+    --item-fg: initial;
+    --item-hover-fg: initial;
+}
+:where(.ui-accordion, .ui-radio-group, .ui-toggle-group) {
+    --item-border: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-toggle-group, .ui-transfer) {
+    --item-hover-bg: initial;
+}
+:where(.ui-command, .ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+    --item-focus-bg: initial;
+    --item-focus-fg: initial;
+}
+:where(.ui-steps, .ui-timeline) {
+    --item-after-bg: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-rich-text, .ui-text) {
+    --link-fg: initial;
+}
+:where(.ui-breadcrumb, .ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+    --link-hover-fg: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-navigation-menu) {
+    --link-focus-bg: initial;
+    --link-hover-bg: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-questionnaire) {
+    --shortcut-fg: initial;
+}
+:where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+    --checkbox-item-focus-bg: initial;
+    --checkbox-item-focus-fg: initial;
+    --link-focus-fg: initial;
+    --radio-item-focus-bg: initial;
+    --radio-item-focus-fg: initial;
+    --shortcut-focus-fg: initial;
+    --sub-panel-bg: initial;
+    --sub-panel-fg: initial;
+    --sub-panel-ring: initial;
+}
+:where(.ui-breadcrumb, .ui-carousel, .ui-pagination) {
+    --page-fg: initial;
+}
+:where(.ui-carousel, .ui-pagination) {
+    --page-hover-bg: initial;
+}

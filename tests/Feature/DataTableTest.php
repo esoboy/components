@@ -37,13 +37,13 @@ it('uses paginator URLs inside a host without pagination actions and the named p
     $ordinary = HTMLDocument::createFromString(Livewire::test(EmbeddedPaginationExample::class)->html(), LIBXML_NOERROR);
     expect($ordinary->querySelector('.ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
         ->and($ordinary->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
-        ->and($ordinary->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('location.assign');
+        ->and($ordinary->querySelector('[data-page-name]')->getAttribute('x-data'))->toBe('uiPagination(false)');
 
     $live = Livewire::test(LivePaginationExample::class);
     $document = HTMLDocument::createFromString($live->html(), LIBXML_NOERROR);
     expect($document->querySelector('.ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
         ->and($document->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
-        ->and($document->querySelector('[data-page-name]')->getAttribute('x-data'))->toContain('gotoPage');
+        ->and($document->querySelector('[data-page-name]')->getAttribute('x-data'))->toBe('uiPagination(true)');
     $live->call('gotoPage', 4, 'ordersPage')->assertSet('paginators.ordersPage', 4);
 });
 

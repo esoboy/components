@@ -1,0 +1,3 @@
+.ui-tree-select-body > .ui-list-popup {
+    @apply p-1;
+}

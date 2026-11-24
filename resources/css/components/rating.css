@@ -1,0 +1,23 @@
+.ui-rating {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+}
+.ui-rating label {
+    @apply relative cursor-pointer text-[color:var(--fg,var(--color-muted-foreground))] inline-flex size-8
+        items-center justify-center rounded-lg transition-colors has-disabled:pointer-events-none
+        has-disabled:opacity-50;
+    @variant hover {
+        background-color: var(--hover-bg, var(--color-muted));
+    }
+}
+.ui-rating label:is(:has(:checked), :has(~ label :checked)) .ui-rating-star {
+    color: var(--part-fg, var(--color-primary));
+}
+.ui-rating label:is(:has(:checked), :has(~ label :checked)) svg {
+    fill: currentColor;
+}
+.ui-rating label:has(:focus-visible) {
+    @apply ring-[color:var(--focus-ring,var(--ring-50))] outline-none ring-3;
+}

@@ -1,0 +1,143 @@
+:where(.ui-calendar) {
+    --dropdowns-bg: initial;
+    --dropdowns-fg: initial;
+    --grid-bg: initial;
+    --grid-disabled-fg: initial;
+    --grid-fg: initial;
+}
+.ui-calendar-body + .ui-time-panel {
+    @apply border-t;
+}
+.ui-calendar-body {
+    @apply p-2 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(7)]
+        bg-[color:var(--bg,var(--color-background))] relative w-fit max-w-full;
+    @variant in-[.ui-card-content] {
+        background-color: var(--bg, transparent);
+    }
+    @variant in-[.ui-popover-content] {
+        background-color: var(--bg, transparent);
+    }
+}
+.ui-calendar-header {
+    @apply relative flex items-center justify-between gap-1 text-body font-medium mb-4 h-(--cell-size);
+}
+.ui-calendar-body:has(.ui-calendar-month:nth-child(2)):not(:has(.ui-calendar-dropdowns))
+    .ui-calendar-header {
+    @apply absolute inset-x-2 top-2 z-10 pointer-events-none;
+}
+.ui-calendar-header > button {
+    @apply p-0 pointer-events-auto [width:var(--cell-size)] [height:var(--cell-size)];
+}
+.ui-calendar-months {
+    @apply relative flex flex-col gap-4 md:flex-row;
+}
+.ui-calendar-month {
+    @apply flex w-full flex-col gap-4;
+}
+.ui-calendar-month-caption {
+    @apply flex w-full items-center justify-center text-body font-medium select-none h-(--cell-size)
+        px-(--cell-size);
+}
+.ui-calendar-dropdowns {
+    @apply flex min-w-0 items-center justify-center gap-1.5;
+}
+.ui-calendar-dropdowns > span {
+    @apply relative inline-flex items-center;
+}
+.ui-calendar-dropdowns select {
+    @apply bg-[color:var(--dropdowns-bg,transparent)] h-7 cursor-pointer appearance-none rounded-md
+        border-0 ps-1 pe-5 text-body font-medium outline-none focus-visible:ring-2
+        disabled:cursor-default field-sizing-content;
+    @variant hover {
+        background-color: var(--part-bg, var(--color-accent));
+    }
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--color-ring));
+    }
+}
+.ui-calendar-dropdowns option {
+    background-color: var(--dropdowns-bg, var(--color-popover));
+    color: var(--dropdowns-fg, var(--color-popover-foreground));
+}
+.ui-calendar-dropdowns svg {
+    @apply text-[color:var(--dropdowns-fg,var(--color-muted-foreground))] pointer-events-none absolute
+        end-1 size-3.5;
+}
+.ui-calendar-grid [data-disabled='true'] {
+    @apply opacity-50 text-[color:var(--grid-disabled-fg,var(--color-muted-foreground))];
+}
+.ui-calendar-grid [data-disabled='true'] [data-calendar-day]:disabled {
+    color: var(--grid-disabled-fg, inherit);
+}
+.ui-calendar-grid [data-hidden='true'] {
+    visibility: hidden;
+}
+.ui-calendar-grid {
+    @apply w-full border-collapse;
+}
+.ui-calendar-grid tr {
+    @apply flex w-full;
+}
+.ui-calendar-grid tbody tr {
+    @apply mt-2;
+}
+.ui-calendar-grid th {
+    @apply text-[color:var(--grid-fg,var(--color-muted-foreground))] flex-1 rounded-md
+        text-(length:--text-compact) font-normal select-none;
+}
+.ui-calendar-grid td {
+    @apply relative aspect-square h-full w-full rounded-md p-0 text-center select-none;
+}
+.ui-calendar-grid [data-calendar-day] {
+    @apply relative isolate z-10 flex aspect-square h-auto w-full flex-col gap-1 border-0 leading-none
+        font-normal rounded-lg data-[range-middle=true]:rounded-none min-w-(--cell-size);
+    @variant data-[selected-single=true] {
+        background-color: var(--grid-bg, var(--color-primary));
+        color: var(--grid-fg, var(--color-primary-foreground));
+    }
+    @variant data-[range-middle=true] {
+        background-color: var(--grid-bg, var(--color-muted));
+        color: var(--grid-fg, var(--color-foreground));
+    }
+    @variant ui-dark:hover {
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+[data-calendar-day] > span {
+    @apply text-caption opacity-70;
+}
+.ui-calendar-grid [data-outside='true'] {
+    color: var(--grid-fg, var(--color-muted-foreground));
+}
+.ui-calendar-grid [data-today='true'] {
+    @apply rounded-md bg-[color:var(--grid-bg,var(--color-muted))]
+        text-[color:var(--grid-fg,var(--color-foreground))];
+    @variant aria-selected {
+        @apply rounded-none;
+    }
+}
+.ui-calendar-grid [data-range='middle'] {
+    @apply rounded-none bg-[color:var(--grid-bg,var(--color-muted))];
+}
+.ui-calendar-grid :is([data-range='start'], [data-range='end']) {
+    @apply isolate z-0 bg-[color:var(--grid-bg,var(--color-muted))];
+}
+.ui-calendar-grid :is([data-range='start'], [data-range='end'])::after {
+    @apply [content:''] bg-[color:var(--part-bg,var(--color-muted))] absolute inset-y-0 w-4;
+}
+.ui-calendar-grid [data-range='start']::after {
+    right: 0;
+}
+.ui-calendar-grid [data-range='end']::after {
+    left: 0;
+}
+.ui-calendar-grid :is([data-range='start'], [data-range='end']) [data-calendar-day] {
+    @apply rounded-md;
+}
+.ui-calendar-week-number {
+    @apply flex size-7 shrink-0 items-center justify-center;
+}
+.ui-calendar-grid :is(.ui-calendar-week-number, .ui-calendar-week-number-header) {
+    flex: 0 0 var(--cell-size);
+    width: var(--cell-size);
+}

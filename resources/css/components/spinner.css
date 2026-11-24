@@ -1,0 +1,16 @@
+.ui-spinner {
+    animation: ui-spin 1s linear infinite;
+}
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-spinner {
+        animation: none;
+    }
+}
+.ui-spinner:where(:not(.ui-icon-size-explicit)) {
+    @apply size-4;
+}

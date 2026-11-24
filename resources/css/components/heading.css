@@ -1,0 +1,14 @@
+h1.ui-heading {
+    font-size: var(--text-title-4xl);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+}
+h2.ui-heading {
+    font-size: var(--text-title-2xl);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+}
+h3.ui-heading {
+    font-size: var(--text-title-lg);
+    font-weight: 600;
+}

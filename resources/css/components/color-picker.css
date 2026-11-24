@@ -1,0 +1,36 @@
+.ui-color-picker-field {
+    @apply relative inline-flex w-18 min-w-18 align-middle;
+}
+.ui-color-picker-control {
+    @apply border-[color:var(--border,var(--color-input))] bg-[color:var(--bg,var(--color-background))] h-8
+        w-full cursor-pointer appearance-none rounded-lg border py-1.5 ps-1.5 pe-8 outline-none
+        transition-colors focus-visible:ring-3 disabled:cursor-not-allowed;
+    @variant hover {
+        background-color: var(--hover-bg, var(--color-muted));
+    }
+    @variant focus-visible {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+    @variant aria-invalid {
+        border-color: var(--invalid-border, var(--color-destructive));
+    }
+}
+.ui-color-picker-control::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.ui-color-picker-control::-webkit-color-swatch {
+    @apply border-[color:var(--border,color-mix(in_oklab,var(--color-black)_15%,transparent))] rounded-sm
+        border;
+}
+.ui-color-picker-control::-moz-color-swatch {
+    @apply border-[color:var(--border,color-mix(in_oklab,var(--color-black)_15%,transparent))] rounded-sm
+        border;
+}
+.ui-color-picker-field:has(:disabled) {
+    opacity: 0.5;
+}
+.ui-color-picker-field > svg {
+    @apply text-[color:var(--field-fg,var(--color-muted-foreground))] pointer-events-none absolute end-2
+        top-1/2 -translate-y-1/2;
+}

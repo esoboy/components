@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as lucide from 'lucide-react'
+import postcss from 'postcss'
 import { registerUi } from '../../resources/js/ui.js'
 
 const root = resolve(import.meta.dirname, '../..')
@@ -10,6 +11,25 @@ const files = (dir) =>
     readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
         entry.isDirectory() ? files(resolve(dir, entry.name)) : [resolve(dir, entry.name)],
     )
+
+test('the CSS entry imports every component source and the token file owns the theme', () => {
+    const styles = resolve(root, 'resources/css')
+    const visited = new Set()
+    function visit(file) {
+        if (visited.has(file)) return
+        visited.add(file)
+        const css = postcss.parse(readFileSync(file, 'utf8'))
+        if (file === resolve(styles, 'ui.css'))
+            assert.ok(css.nodes.every((node) => node.name === 'import' || node.type === 'comment'))
+        css.walkAtRules('theme', () => assert.equal(file, resolve(styles, 'token.css')))
+        css.walkAtRules('import', (rule) => {
+            const target = rule.params.match(/^['"]([^'"]+)['"]/)[1]
+            visit(resolve(file, '..', target))
+        })
+    }
+    visit(resolve(styles, 'ui.css'))
+    assert.deepEqual(visited, new Set(files(styles).filter((file) => file.endsWith('.css'))))
+})
 
 test('editor controls import official Lucide names', () => {
     for (const file of files(resolve(root, 'resources/js/editor'))) {
@@ -20,6 +40,58 @@ test('editor controls import official Lucide names', () => {
                 if (name) assert.equal(lucide[name]?.displayName, name, file + ': ' + name)
             }
         }
+    }
+})
+
+test('each component selector and state has one source for its declarations', () => {
+    const componentClasses = new Map()
+    const styles = [
+        ...files(resolve(root, 'resources/css')),
+        ...files(resolve(root, 'resources/js/editor')),
+    ]
+    for (const file of styles.filter((file) => file.endsWith('.css'))) {
+        const css = postcss.parse(readFileSync(file, 'utf8'), { from: file })
+        const selectors = new Set()
+        const normalize = (text) => text.trim().replace(/\s+/g, ' ')
+        css.walk((node) => {
+            if (node.type !== 'rule' && node.name !== 'variant') return
+            const where = file + ':' + node.source.start.line
+            const context = []
+            for (let parent = node.parent; parent.type !== 'root'; parent = parent.parent)
+                context.unshift(
+                    normalize(parent.selector ?? '@' + parent.name + ' ' + parent.params),
+                )
+            if (node.type === 'rule') {
+                const names = node.selectors.map(normalize).sort()
+                const key = JSON.stringify([...context, names])
+                assert.ok(!selectors.has(key), where + ' repeats ' + node.selector)
+                selectors.add(key)
+                for (const name of names.filter(
+                    (s) => !context.length && /^\.ui-[\w-]+$/.test(s),
+                )) {
+                    assert.ok(
+                        !componentClasses.has(name),
+                        where + ' repeats ' + name + ' from ' + componentClasses.get(name),
+                    )
+                    componentClasses.set(name, where)
+                }
+            }
+            const properties = node.nodes
+                .filter((child) => child.type === 'decl')
+                .map((d) => d.prop)
+            const apply = node.nodes.filter((child) => child.name === 'apply')
+            const variants = node.nodes
+                .filter((child) => child.name === 'variant')
+                .map((v) => normalize(v.params))
+            assert.equal(new Set(variants).size, variants.length, where + ' repeats a state')
+            assert.equal(new Set(properties).size, properties.length, where + ' repeats a property')
+            assert.ok(
+                apply.length <= 1 && !(apply.length && properties.length),
+                where + ' splits its declarations',
+            )
+            const utilities = apply.flatMap((a) => postcss.list.space(a.params))
+            assert.equal(new Set(utilities).size, utilities.length, where + ' repeats a utility')
+        })
     }
 })
 

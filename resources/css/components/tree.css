@@ -1,0 +1,20 @@
+.ui-tree-row {
+    padding-inline-start: calc((var(--level) - 1) * 1rem);
+}
+[data-select-parents] > .ui-tree-row {
+    display: grid;
+    grid-template-columns: calc(var(--spacing) * 8) minmax(0, 1fr);
+}
+[data-select-parents] > .ui-tree-row > .ui-tree-action {
+    grid-column: 2;
+}
+.ui-tree-action > span {
+    @apply truncate;
+}
+.ui-tree-action > svg {
+    @apply size-4 shrink-0 text-[color:var(--part-fg,var(--color-muted-foreground))];
+}
+.ui-tree-action[aria-pressed='true'] {
+    background-color: var(--part-bg, var(--color-accent));
+    color: var(--part-fg, var(--color-accent-foreground));
+}

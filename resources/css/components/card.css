@@ -1,0 +1,60 @@
+:where(.ui-card) {
+    --ring: initial;
+}
+:where(.ui-card-footer) {
+    border-color: var(--footer-border, var(--color-border));
+}
+:where(.ui-card-header, .ui-card-content, .ui-card-footer) {
+    padding-inline: 1.25rem;
+}
+.ui-card-header:has(.ui-card-action) {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+.ui-card-description {
+    @apply text-body text-[color:var(--description-fg,var(--color-muted-foreground))];
+}
+.ui-card {
+    @apply text-body flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing)
+        [--card-spacing:--spacing(4)] ring-[color:var(--ring,var(--foreground-10))]
+        bg-[color:var(--bg,var(--color-card))] text-[color:var(--fg,var(--color-card-foreground))]
+        [outline:1px_solid_var(--tw-ring-color)] [box-shadow:var(--shadow-card)] [border-width:0];
+    @variant has-[.ui-card-footer] {
+        @apply pb-0;
+    }
+    @variant has-[>img:first-child] {
+        @apply pt-0;
+    }
+    @variant data-[size=sm] {
+        @apply [--card-spacing:--spacing(3)];
+    }
+    @variant data-[size=sm]:has-[.ui-card-footer] {
+        @apply pb-0;
+    }
+    @variant *:[img:first-child] {
+        @apply rounded-t-xl;
+    }
+    @variant *:[img:last-child] {
+        @apply rounded-b-xl;
+    }
+}
+.ui-card-header {
+    @apply @container/card-header auto-rows-min grid has-[.ui-card-action]:grid-cols-[1fr_auto]
+        has-[.ui-card-description]:grid-rows-[auto_auto] items-start gap-1 rounded-t-xl
+        px-(--card-spacing) [.border-b]:pb-(--card-spacing);
+}
+.ui-card-action {
+    @apply col-start-2 justify-self-end row-span-2 row-start-1 self-start;
+}
+.ui-card-footer {
+    @apply flex items-center bg-[color:var(--footer-bg,var(--muted-50))] rounded-b-xl border-t
+        p-(--card-spacing);
+}
+.ui-card-title {
+    @apply font-medium text-[length:var(--text-title)] [line-height:1.375];
+}
+.ui-card[data-size='sm'] .ui-card-title {
+    font-size: var(--text-body);
+}
+.ui-card-content {
+    @apply px-(--card-spacing);
+}

@@ -1,0 +1,41 @@
+.ui-resizable {
+    @apply flex h-full w-full [overflow:hidden];
+    @variant aria-[orientation=vertical] {
+        @apply flex-col;
+    }
+}
+.ui-resizable[data-direction='vertical'] {
+    flex-direction: column;
+}
+.ui-resizable-panel {
+    display: flex;
+    flex-direction: column;
+    flex: var(--panel-size, 1) 1 0px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+.ui-resizable-handle::after {
+    content: '';
+    position: absolute;
+    inset: 0 -5px;
+}
+[data-direction='vertical'] > .ui-resizable-handle {
+    cursor: row-resize;
+}
+[data-direction='vertical'] > .ui-resizable-handle::after {
+    inset: -5px 0;
+}
+.ui-resizable-handle {
+    @apply bg-[color:var(--part-bg,var(--color-border))]
+        ring-offset-[color:var(--part-ring-offset,var(--color-background))]
+        [&[aria-orientation=horizontal]>div]:rotate-90 after:-translate-x-1/2 after:absolute
+        after:inset-y-0 after:left-1/2 after:w-1 aria-[orientation=horizontal]:after:-translate-y-1/2
+        aria-[orientation=horizontal]:after:h-1 aria-[orientation=horizontal]:after:left-0
+        aria-[orientation=horizontal]:after:translate-x-0 aria-[orientation=horizontal]:after:w-full
+        aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full flex
+        focus-visible:outline-hidden focus-visible:ring-1 items-center justify-center relative w-px;
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--color-ring));
+    }
+}

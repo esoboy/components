@@ -1,0 +1,3 @@
+:where(.ui-date-picker) {
+    --extra-border: initial;
+}

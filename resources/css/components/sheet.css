@@ -1,0 +1,97 @@
+.ui-sheet-title {
+    @apply font-medium text-title text-[color:var(--title-fg,var(--color-foreground))];
+}
+.ui-sheet-description {
+    @apply text-body text-[color:var(--description-fg,var(--color-muted-foreground))];
+}
+.ui-sheet-footer {
+    @apply p-4 flex gap-2 mt-auto flex-col;
+}
+.ui-sheet-header {
+    @apply gap-0.5 p-4 flex flex-col;
+}
+:where(.ui-sheet-content) {
+    border-color: var(--panel-border, var(--color-border));
+}
+.ui-sheet-content {
+    margin: 0 0 0 auto;
+    height: 100dvh;
+    overscroll-behavior: contain;
+    font-size: var(--text-body);
+    line-height: var(--tw-leading, --theme(--text-body--line-height));
+    max-height: none;
+    z-index: --theme(--z-index-50, 50);
+    gap: --theme(--gap-4, --theme(--spacing-4, --spacing(4)));
+    background-clip: padding-box;
+    --sheet-x: 0px;
+    --sheet-y: 0px;
+    opacity: 0;
+    translate: var(--sheet-x) var(--sheet-y);
+    transition:
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        translate 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        display 200ms allow-discrete,
+        overlay 200ms allow-discrete;
+    @variant data-[side=bottom] {
+        @apply inset-x-0 bottom-0 h-auto;
+    }
+    @variant data-[side=left] {
+        @apply inset-y-0 left-0 h-full w-3/4;
+    }
+    @variant data-[side=right] {
+        @apply inset-y-0 right-0 h-full w-3/4;
+    }
+    @variant data-[side=top] {
+        @apply inset-x-0 top-0 h-auto;
+    }
+    @variant data-[side=left]:sm {
+        @apply max-w-sm;
+    }
+    @variant data-[side=right]:sm {
+        @apply max-w-sm;
+    }
+}
+.ui-sheet-content[data-side='right'] {
+    border-width: 0 0 0 1px;
+    left: auto;
+    --sheet-x: 2.5rem;
+}
+.ui-sheet-content[data-side='left'] {
+    border-width: 0 1px 0 0;
+    right: auto;
+    --sheet-x: -2.5rem;
+}
+.ui-sheet-content[data-side='bottom'] {
+    border-width: 1px 0 0;
+    top: auto;
+    --sheet-y: 2.5rem;
+}
+.ui-sheet-content[data-side='top'] {
+    border-width: 0 0 1px;
+    bottom: auto;
+    --sheet-y: -2.5rem;
+}
+.ui-sheet-scroll-body {
+    @apply min-h-0 overflow-y-auto overscroll-contain px-4;
+}
+.ui-sheet-dismiss {
+    @apply absolute top-3 right-3;
+}
+.ui-sheet-content[open] {
+    opacity: 1;
+    translate: none;
+}
+dialog:is(.ui-sheet-content, .ui-sidebar-content)::backdrop {
+    --backdrop-duration: 150ms;
+    --backdrop-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+@starting-style {
+    .ui-sheet-content[open] {
+        opacity: 0;
+        translate: var(--sheet-x) var(--sheet-y);
+    }
+}
+.ui-sheet-content[data-ending] {
+    opacity: 0;
+    translate: var(--sheet-x) var(--sheet-y);
+}

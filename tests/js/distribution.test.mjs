@@ -21,7 +21,13 @@ test('the distribution ships the component stylesheet and standalone editor asse
     assert.deepEqual(entries('resources/dist'), ['editor.css', 'editor.js', 'ui.js'])
     assert.deepEqual(entries('resources/icons'), ['LICENSE', 'catalog.php'])
     const notices = readFileSync('dist/THIRD-PARTY-LICENSES.txt', 'utf8')
-    assert.ok(notices.includes(readFileSync('resources/css/LICENSE.shadcn', 'utf8').trim()))
+    assert.ok(
+        notices.includes(readFileSync('resources/distribution/LICENSE.shadcn', 'utf8').trim()),
+    )
+    for (const name of ['embla-carousel', '@tiptap/core', 'react-dom', 'tailwindcss']) {
+        assert.ok(notices.includes(`\n${name} `), `Missing third-party notice for ${name}`)
+    }
+    assert.deepEqual(readFileSync('dist/LICENSE'), readFileSync('resources/distribution/LICENSE'))
     const manifest = JSON.parse(readFileSync('dist/composer.json', 'utf8'))
     const source = JSON.parse(readFileSync('composer.json', 'utf8'))
     for (const field of ['require', 'autoload', 'extra'])
@@ -32,7 +38,7 @@ test('the distribution ships the component stylesheet and standalone editor asse
     assert.match(sourceCss, /\.ui-rich-text\b/)
     assert.doesNotMatch(
         sourceCss,
-        /esoboy-editor|\.ui-editor\b|--ui-editor-|ProseMirror|\.tableWrapper/,
+        /esoboy-editor|\.ui-editor\b|--editor-|ProseMirror|\.tableWrapper/,
     )
     const editorCss = readFileSync('dist/resources/dist/editor.css', 'utf8')
     assert.match(editorCss, /esoboy-editor/)
@@ -97,7 +103,17 @@ test('a host with source detection disabled still builds every component default
 
 test('component defaults resolve host theme values in either import order', async () => {
     const library = readFileSync('dist/resources/css/ui.css', 'utf8')
-    const host = '@theme { --color-info: var(--brand-info); --radius-ui-lg: 17px; }'
+    const host = `@theme {
+        --color-info: var(--brand-info);
+        --text-body: 15px;
+        --text-body--line-height: 1.8;
+        --spacing-3: 21px;
+        --gap-2: 19px;
+        --padding-4: 23px;
+        --radius-sm: 5px;
+        --radius-lg: 17px;
+        --shadow-card: var(--brand-shadow);
+    }`
     for (const sources of [
         [host, library],
         [library, host],
@@ -109,14 +125,34 @@ test('component defaults resolve host theme values in either import order', asyn
                 onDependency() {},
             },
         )
-        const css = postcss.parse(compiler.build(['bg-info', 'rounded-ui-lg']))
+        const css = postcss.parse(
+            compiler.build(['bg-info', 'text-body', 'rounded-sm', 'rounded-lg']),
+        )
         const root = new Map()
         css.walkRules((rule) => {
             if (rule.selector.includes(':host') && rule.parent.params === 'components')
                 rule.walkDecls((decl) => root.set(decl.prop, decl.value))
         })
         assert.equal(root.get('--color-info'), 'var(--brand-info)')
-        assert.equal(root.get('--radius-ui-lg'), '17px')
+        assert.equal(root.get('--text-body'), '15px')
+        assert.equal(root.get('--radius-sm'), '5px')
+        assert.equal(root.get('--radius-lg'), '17px')
+        assert.equal(root.get('--shadow-card'), 'var(--brand-shadow)')
+        for (const [selector, property, token] of [
+            ['.ui-progress', 'gap', '--spacing-3'],
+            ['.ui-picker-trigger', 'gap', '--gap-2'],
+            ['.ui-alert-dialog-content', 'padding', '--padding-4'],
+            ['.ui-card', 'line-height', '--text-body--line-height'],
+        ]) {
+            const declarations = []
+            css.walkRules(selector, (rule) =>
+                declarations.push(...rule.nodes.filter((node) => node.prop === property)),
+            )
+            assert.ok(
+                declarations.some((d) => d.value.includes(token)),
+                selector + ' ' + property,
+            )
+        }
     }
 })
 

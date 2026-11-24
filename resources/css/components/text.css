@@ -1,0 +1,8 @@
+.ui-text {
+    line-height: 1.65;
+}
+.ui-text-link {
+    color: var(--link-fg, var(--color-primary));
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}

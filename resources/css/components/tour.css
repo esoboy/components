@@ -1,0 +1,24 @@
+:where(.ui-tour-content) {
+    border-color: var(--panel-border, var(--color-border));
+}
+.ui-tour-content {
+    @apply fixed [width:min(22rem,calc(100vw_-_2rem))] bg-[color:var(--panel-bg,var(--color-popover))]
+        text-[color:var(--panel-fg,var(--color-popover-foreground))] rounded-xl border p-4 text-body
+        [box-shadow:var(--shadow-dialog)];
+}
+.ui-tour-content::backdrop {
+    background: var(--panel-backdrop-bg, #0003);
+}
+.ui-tour-title {
+    @apply mb-1 text-title/none font-medium;
+}
+.ui-tour-description {
+    font-size: var(--text-body);
+    color: var(--description-fg, var(--color-muted-foreground));
+}
+.ui-tour-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}

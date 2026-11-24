@@ -3,8 +3,9 @@
     "type": "module",
     "scripts": {
         "build": "node scripts/build.js",
+        "size": "node scripts/size.js",
         "archive": "npm run build && composer --working-dir=dist validate --strict && composer --working-dir=dist archive --format=zip --dir=.. --file=esoboy-ui",
-        "docs": "node scripts/sync-examples.js",
+        "docs": "php scripts/component-examples.php",
         "test": "node --test tests/js/*.test.mjs",
         "format:check": "prettier --check resources/js resources/css scripts tests/js tests/distribution/*.mjs"
     },

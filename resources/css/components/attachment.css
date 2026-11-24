@@ -1,0 +1,83 @@
+:where(.ui-attachment) {
+    --error-border: initial;
+    border-color: var(--border, var(--color-border));
+}
+.ui-attachment {
+    @apply bg-[color:var(--bg,var(--color-card))] text-[color:var(--fg,var(--color-card-foreground))]
+        border data-[state=idle]:border-dashed flex flex-wrap max-w-full min-w-0 relative shrink-0
+        transition-colors rounded-xl w-fit focus-within:ring-1;
+    @variant data-[state=error] {
+        border-color: var(--error-border, var(--destructive-30));
+    }
+    @variant has-[>a,>button]:hover {
+        background-color: var(--hover-bg, var(--muted-50));
+    }
+    @variant focus-within {
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-attachment[data-orientation='horizontal'] {
+    @apply items-center min-w-40;
+}
+.ui-attachment[data-orientation='vertical'] {
+    @apply flex-col w-24 items-stretch relative;
+    @variant has-[.ui-attachment-content] {
+        @apply w-30;
+    }
+}
+.ui-attachment-content {
+    @apply flex-1 max-w-full min-w-0 leading-tight group-data-[orientation=vertical]/attachment:px-1;
+}
+.ui-attachment-name {
+    @apply font-medium block max-w-full min-w-0 truncate;
+}
+.ui-attachment-description {
+    @apply text-caption text-[color:var(--description-fg,var(--color-muted-foreground))] block min-w-0
+        truncate mt-0.5;
+    @variant group-data-[state=error]/attachment {
+        color: var(--part-fg, color-mix(in oklab, var(--color-destructive) 80%, transparent));
+    }
+}
+.ui-attachment-actions {
+    @apply flex items-center shrink-0 group-data-[orientation=vertical]/attachment:absolute
+        group-data-[orientation=vertical]/attachment:top-3
+        group-data-[orientation=vertical]/attachment:right-3 relative z-20
+        group-data-[orientation=vertical]/attachment:gap-1;
+}
+.ui-attachment-group {
+    @apply *:[.ui-attachment]:flex-none *:[.ui-attachment]:snap-start flex overflow-x-auto
+        overscroll-x-contain scrollbar-none snap-mandatory gap-3 scroll-px-1 py-1 min-w-0
+        [scroll-snap-type:x_mandatory];
+}
+.ui-attachment[data-size='default'] {
+    @apply gap-2 has-[.ui-attachment-content]:px-2.5 has-[.ui-attachment-content]:py-2
+        has-[.ui-attachment-media]:p-2 text-body;
+}
+.ui-attachment[data-size='sm'] {
+    @apply gap-2.5 has-[.ui-attachment-content]:px-2 has-[.ui-attachment-content]:py-1.5
+        has-[.ui-attachment-media]:p-1.5 text-caption;
+}
+.ui-attachment[data-size='xs'] {
+    @apply gap-1.5 has-[.ui-attachment-content]:px-1.5 has-[.ui-attachment-content]:py-1
+        has-[.ui-attachment-media]:p-1 text-caption rounded-lg;
+}
+.ui-attachment-media {
+    @apply bg-[color:var(--media-bg,var(--color-muted))]
+        text-[color:var(--media-fg,var(--color-foreground))] w-10 rounded-lg
+        group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7
+        group-data-[size=xs]/attachment:rounded-md [&_svg:not([class*=size-])]:size-4
+        group-data-[size=xs]/attachment:[&_svg:not([class*=size-])]:size-3.5
+        group-data-[orientation=vertical]/attachment:w-full
+        group-data-[orientation=vertical]/attachment:[&_svg:not([class*=size-])]:size-6
+        group-data-[orientation=vertical]/attachment:*:[.ui-spinner]:size-6 relative flex aspect-square
+        shrink-0 items-center justify-center overflow-hidden [&_svg]:pointer-events-none;
+    @variant group-data-[state=error]/attachment {
+        background-color: var(--part-bg, var(--destructive-10));
+        color: var(--part-fg, var(--color-destructive));
+    }
+}
+.ui-attachment-media.ui-attachment-media-variant-image {
+    @apply opacity-60 group-data-[state=idle]/attachment:opacity-100
+        group-data-[state=done]/attachment:opacity-100 *:[img]:aspect-square *:[img]:w-full
+        *:[img]:object-cover;
+}

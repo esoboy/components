@@ -1,0 +1,72 @@
+:where(.ui-item) {
+    border-color: var(--border, var(--color-border));
+}
+.ui-item-media {
+    @apply [&_svg]:pointer-events-none flex items-center justify-center shrink-0 gap-2
+        group-has-[.ui-item-description]/item:translate-y-0.5
+        group-has-[.ui-item-description]/item:self-start;
+}
+.ui-item-group {
+    @apply flex flex-col w-full gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2;
+}
+.ui-item {
+    @apply text-body [a]:transition-colors duration-100 flex flex-wrap focus-visible:ring-[3px]
+        items-center outline-none transition-colors w-full rounded-lg border;
+    @variant focus-visible {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-item-content {
+    @apply [&+.ui-item-content]:flex-none flex flex-1 flex-col gap-1 group-data-[size=xs]/item:gap-0;
+}
+.ui-item-title {
+    @apply font-medium text-body/[1.375] items-center flex overflow-hidden w-fit gap-2 underline-offset-4;
+}
+.ui-item-description {
+    @apply text-body/normal [&>a]:underline [&>a]:underline-offset-4 font-normal line-clamp-2
+        text-[color:var(--description-fg,var(--color-muted-foreground))] text-left
+        group-data-[size=xs]/item:text-caption;
+    @variant [&>a:hover] {
+        color: var(--description-hover-fg, var(--color-primary));
+    }
+}
+.ui-item-actions {
+    @apply flex items-center gap-2;
+}
+.ui-item-header,
+.ui-item-footer {
+    @apply basis-full flex items-center justify-between gap-2;
+}
+a.ui-item:hover {
+    background-color: var(--hover-bg, var(--color-muted));
+}
+.ui-item.ui-item-variant-default {
+    border-color: var(--border, transparent);
+}
+.ui-item.ui-item-variant-outline {
+    border-color: var(--border, var(--color-border));
+}
+.ui-item.ui-item-variant-muted {
+    background-color: var(--bg, var(--muted-50));
+    border-color: var(--border, transparent);
+}
+.ui-item:is([data-size='default'], [data-size='sm']) {
+    @apply gap-2.5 px-3 py-2.5;
+}
+.ui-item[data-size='xs'] {
+    @apply gap-2 px-2.5 py-2 in-[.ui-dropdown-menu-content]:p-0;
+}
+.ui-item-media.ui-item-media-variant-default {
+    background-color: var(--media-bg, transparent);
+}
+.ui-item-media.ui-item-media-variant-icon {
+    @apply [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-item-media.ui-item-media-variant-image {
+    @apply size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8
+        group-data-[size=xs]/item:size-6 [&_img]:size-full [&_img]:object-cover;
+}
+.ui-item-separator {
+    @apply my-2;
+}

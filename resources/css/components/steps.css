@@ -1,0 +1,68 @@
+:where(.ui-steps) {
+    --indicator-bg: initial;
+    --indicator-border: initial;
+    --indicator-fg: initial;
+}
+:where(.ui-steps-indicator) {
+    border-color: var(--indicator-border, var(--color-border));
+}
+.ui-steps {
+    @apply flex w-full list-none gap-3;
+}
+.ui-steps-item {
+    @apply relative flex min-w-0 flex-1 flex-col items-start gap-2;
+}
+.ui-steps-indicator {
+    @apply bg-[color:var(--indicator-bg,var(--color-background))]
+        text-[color:var(--indicator-fg,var(--color-muted-foreground))] inline-flex size-7 shrink-0
+        items-center justify-center rounded-full border text-caption font-medium tabular-nums;
+}
+[data-state='current'] > .ui-steps-indicator {
+    @apply border-[color:var(--indicator-border,var(--color-primary))]
+        bg-[color:var(--indicator-bg,var(--color-primary))]
+        text-[color:var(--indicator-fg,var(--color-primary-foreground))]
+        ring-[color:var(--part-ring,color-mix(in_oklab,var(--color-primary)_15%,transparent))] ring-3;
+}
+[data-state='complete'] > .ui-steps-indicator {
+    border-color: var(--indicator-border, var(--color-primary));
+    background-color: var(--indicator-bg, var(--color-primary));
+    color: var(--indicator-fg, var(--color-primary-foreground));
+}
+[data-state='error'] > .ui-steps-indicator {
+    border-color: var(--part-border, var(--color-destructive));
+    color: var(--part-fg, var(--color-destructive));
+}
+.ui-steps-item:not(:last-child)::after {
+    @apply [content:''] bg-[color:var(--item-after-bg,var(--color-border))] absolute top-3.5 end-0 start-9
+        h-px;
+}
+.ui-steps-item[data-state='complete']::after {
+    background-color: var(--item-after-bg, var(--color-primary));
+}
+.ui-steps-label {
+    @apply grid min-w-0 gap-1 [overflow-wrap:anywhere];
+}
+.ui-steps-title {
+    @apply text-body/5 font-medium;
+}
+[data-state='upcoming'] > .ui-steps-label {
+    color: var(--label-fg, var(--color-muted-foreground));
+}
+.ui-steps-description {
+    @apply text-[color:var(--description-fg,var(--color-muted-foreground))] text-caption/5;
+}
+.ui-steps[data-orientation='vertical'] {
+    @apply flex-col gap-0;
+}
+[data-orientation='vertical'] > .ui-steps-item {
+    @apply flex-row gap-3;
+}
+[data-orientation='vertical'] > .ui-steps-item:not(:last-child) {
+    @apply pb-5;
+}
+[data-orientation='vertical'] > .ui-steps-item:not(:last-child)::after {
+    @apply top-8 bottom-1 start-3.5 h-auto w-px;
+}
+.ui-steps > li[role='presentation'] {
+    @apply w-full;
+}

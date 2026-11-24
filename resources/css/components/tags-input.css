@@ -1,0 +1,31 @@
+:where(.ui-tags-input) {
+    --field-bg: initial;
+    --field-border: initial;
+    --remove-fg: initial;
+    --remove-hover-bg: initial;
+    --tag-bg: initial;
+    --tag-border: initial;
+    --tag-fg: initial;
+}
+.ui-tags-input-body {
+    display: grid;
+    gap: 0.5rem;
+}
+.ui-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+.ui-tags .ui-button {
+    @apply size-4 rounded-full [--fg:var(--remove-fg)] [--hover-bg:var(--remove-hover-bg)];
+}
+.ui-tags > .ui-badge {
+    --bg: var(--tag-bg);
+    --fg: var(--tag-fg);
+    --border: var(--tag-border);
+}
+.ui-tags-input-body > .ui-input {
+    --bg: var(--field-bg);
+    --fg: var(--field-fg);
+    --border: var(--field-border);
+}

@@ -1,0 +1,124 @@
+:where(.ui-select) {
+    --option-focus-bg: initial;
+    --option-focus-fg: initial;
+    --option-group-label-fg: initial;
+    --option-highlighted-bg: initial;
+    --option-highlighted-fg: initial;
+    --option-selected-bg: initial;
+    --option-selected-fg: initial;
+    --option-separator-bg: initial;
+    --option-shortcut-fg: initial;
+    --trigger-focus-border: initial;
+    --trigger-invalid-border: initial;
+    --trigger-invalid-ring: initial;
+}
+.ui-select-option:is(:hover, :focus) {
+    outline: none;
+    background: var(--option-focus-bg, var(--color-accent));
+    color: var(--option-focus-fg, var(--color-accent-foreground));
+}
+.ui-select-content {
+    @apply origin-(--transform-origin) w-(--anchor-width) data-[align-trigger=true]:animate-none isolate
+        z-50 max-w-none min-w-36 p-0;
+}
+.ui-select-option {
+    @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-hidden cursor-default
+        ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center select-none w-full
+        relative gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-body;
+}
+.ui-select-control {
+    @apply focus-visible:ring-3 aria-invalid:ring-3 [&_svg]:pointer-events-none [&_svg]:shrink-0
+        outline-none *:[.ui-select-value]:items-center *:[.ui-select-value]:overflow-hidden flex
+        items-center justify-between w-fit whitespace-nowrap transition-colors rounded-lg border
+        text-[color:var(--trigger-fg,inherit)] border-[color:var(--trigger-border,var(--color-input))]
+        bg-[color:var(--trigger-bg,transparent)] gap-1.5 py-2 pr-2 pl-2.5 select-none
+        data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)]
+        *:[.ui-select-value]:flex *:[.ui-select-value]:gap-1.5 text-body
+        [&_svg:not([class*='size-'])]:size-4 font-normal;
+    @variant data-placeholder {
+        color: var(--trigger-placeholder-fg, var(--color-muted-foreground));
+    }
+    @variant ui-dark {
+        background-color: var(--trigger-bg, var(--input-30));
+    }
+    @variant ui-dark:hover {
+        background-color: var(--trigger-hover-bg, var(--input-50));
+    }
+    @variant focus-visible {
+        border-color: var(--trigger-focus-border, var(--color-ring));
+        --tw-ring-color: var(--trigger-focus-ring, var(--ring-50));
+    }
+    @variant aria-invalid {
+        --tw-ring-color: var(--trigger-invalid-ring, var(--destructive-20));
+        border-color: var(--trigger-invalid-border, var(--color-destructive));
+    }
+    @variant ui-dark:aria-invalid {
+        --tw-ring-color: var(--trigger-invalid-ring, var(--destructive-40));
+        border-color: var(--trigger-invalid-border, var(--destructive-50));
+    }
+}
+.ui-select-control:is(:hover, [aria-expanded='true']) {
+    background-color: var(--trigger-hover-bg, transparent);
+    @variant ui-dark {
+        background-color: var(--trigger-hover-bg, var(--input-50));
+    }
+}
+.ui-select-value {
+    @apply flex flex-1 text-left;
+}
+.ui-select-option .ui-item-description {
+    white-space: normal;
+}
+.ui-select-group {
+    padding: 0.25rem;
+    scroll-margin-block: 0.25rem;
+}
+.ui-select-separator {
+    @apply bg-[color:var(--separator-bg,var(--color-border))] -mx-1 my-1 h-px pointer-events-none;
+}
+:where(.ui-select-option[aria-selected='true']) {
+    background-color: var(--option-selected-bg, transparent);
+    color: var(--option-selected-fg, inherit);
+}
+.ui-select-control[data-placeholder] {
+    color: var(--trigger-placeholder-fg, var(--color-muted-foreground));
+}
+.ui-select-option > .ui-option-text {
+    display: flex;
+    flex: 1;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.ui-select-option .ui-icon {
+    width: 1rem;
+    height: 1rem;
+}
+.ui-select-option > .ui-option-indicator {
+    position: absolute;
+    right: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ui-select-option:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+.ui-select-option:is(:hover, :focus) * {
+    color: var(--option-focus-fg, var(--color-accent-foreground));
+}
+svg.ui-select-chevron {
+    color: var(--part-fg, var(--color-muted-foreground));
+}
+.ui-select > .ui-select-body,
+.ui-select-body > .ui-select-trigger,
+.ui-select-trigger > .ui-select-control {
+    width: inherit;
+    max-width: 100%;
+}
+.ui-select-content[data-pointer-focus] {
+    outline-style: none;
+}

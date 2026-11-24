@@ -1,0 +1,48 @@
+:where(.ui-picker-extra) {
+    border-color: var(--extra-border, var(--color-border));
+}
+.ui-picker-control {
+    @apply relative inline-flex max-w-full items-center;
+}
+.ui-picker-trigger {
+    @apply max-w-full justify-start gap-2 tabular-nums [--bg:var(--trigger-bg)] [--fg:var(--trigger-fg)]
+        [--border:var(--trigger-border)] [--hover-bg:var(--trigger-hover-bg)]
+        [--hover-fg:var(--trigger-hover-fg)] [--focus-ring:var(--trigger-focus-ring)];
+}
+.ui-picker-trigger span {
+    @apply truncate;
+}
+.ui-picker-trigger svg {
+    @apply size-4 shrink-0 text-[color:var(--trigger-icon,var(--color-muted-foreground))];
+}
+.ui-picker-trigger svg:last-child {
+    @apply ms-auto size-3.5;
+}
+.ui-picker-trigger[data-placeholder] {
+    color: var(--trigger-placeholder-fg, var(--color-muted-foreground));
+}
+.ui-picker-control[data-clearable] .ui-picker-trigger {
+    @apply pe-9;
+}
+.ui-picker-clear {
+    @apply absolute end-1 text-[color:var(--part-fg,var(--color-muted-foreground))];
+}
+.ui-picker-extra {
+    @apply flex shrink-0 flex-wrap items-center gap-2 border-t px-2 py-1.5;
+}
+.ui-popover-content.ui-picker-popup {
+    @apply p-0;
+}
+.ui-date-popup {
+    @apply w-auto;
+}
+.ui-picker-target {
+    @apply contents;
+}
+.ui-picker-overlay,
+.ui-picker-overlay > .ui-picker-body,
+.ui-picker-body > .ui-picker-control,
+.ui-picker-control > .ui-popover-trigger {
+    width: inherit;
+    max-width: 100%;
+}

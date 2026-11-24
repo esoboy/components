@@ -1,0 +1,57 @@
+:where(.ui-table) {
+    --columns-fg: initial;
+    --header-border: initial;
+    --row-border: initial;
+}
+:where(.ui-table-footer) {
+    border-color: var(--footer-border, var(--color-border));
+}
+:where(.ui-table-header) {
+    border-color: var(--header-border, var(--color-border));
+}
+:where(.ui-table-row) {
+    border-color: var(--row-border, var(--color-border));
+}
+.ui-table-row {
+    @apply transition-colors border-b;
+    @variant has-aria-expanded {
+        background-color: var(--part-bg, var(--muted-50));
+    }
+    @variant hover {
+        background-color: var(--part-bg, var(--muted-50));
+    }
+    @variant data-[state=selected] {
+        background-color: var(--part-bg, var(--color-muted));
+    }
+}
+.ui-table-element {
+    @apply text-body w-full caption-bottom;
+}
+.ui-table-container {
+    @apply relative w-full overflow-x-auto;
+}
+.ui-table-header {
+    @apply [&_tr]:border-b;
+}
+.ui-table-body {
+    @apply [&_tr:last-child]:border-0;
+}
+.ui-table-footer {
+    @apply font-medium bg-[color:var(--footer-bg,var(--muted-50))] border-t [&>tr]:last:border-b-0;
+}
+.ui-table-head {
+    @apply font-medium text-[color:var(--part-fg,var(--color-foreground))] h-10 px-2 text-left align-middle
+        whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+}
+.ui-table-cell {
+    @apply p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+}
+.ui-table-empty > .ui-table-cell {
+    @apply whitespace-normal;
+}
+:is(.ui-table-head, .ui-table-cell):has(input[type='checkbox']) {
+    padding-right: 0;
+}
+.ui-table-caption {
+    @apply text-body text-[color:var(--part-fg,var(--color-muted-foreground))] mt-4;
+}

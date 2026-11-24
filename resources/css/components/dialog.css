@@ -1,0 +1,51 @@
+:where(.ui-dialog) {
+    --backdrop-bg: initial;
+}
+:where(.ui-dialog-footer) {
+    border-color: var(--footer-border, var(--color-border));
+}
+:where(.ui-dialog-content) {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(32rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--panel-border, var(--color-border));
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    background: var(--panel-bg, var(--color-background));
+    color: var(--panel-fg, var(--color-foreground));
+    box-shadow: var(--panel-shadow, var(--shadow-dialog));
+}
+.ui-dialog-description {
+    @apply text-body text-[color:var(--description-fg,var(--color-muted-foreground))] *:[a]:underline
+        *:[a]:underline-offset-3;
+    @variant *:[a]:hover {
+        color: var(--description-hover-fg, var(--color-foreground));
+    }
+}
+.ui-dialog-content-variant-default {
+    @apply text-body w-full z-50 grid max-w-[calc(100%-2rem)] gap-4 rounded-xl p-4
+        duration-100 bg-[color:var(--panel-bg,var(--color-popover))]
+        text-[color:var(--panel-fg,var(--color-popover-foreground))]
+        ring-[color:var(--panel-ring,var(--foreground-10))] [outline:1px_solid_var(--tw-ring-color)]
+        [box-shadow:var(--panel-shadow,var(--shadow-dialog))] [border-width:0];
+    @variant sm {
+        @apply max-w-sm;
+    }
+}
+.ui-dialog-header {
+    @apply flex flex-col gap-2 [margin-bottom:0];
+}
+.ui-dialog-footer {
+    @apply -mx-4 -mb-4 rounded-b-xl border-t bg-[color:var(--footer-bg,var(--muted-50))] p-4 justify-end
+        mt-0 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
+}
+.ui-dialog-title {
+    @apply font-medium text-title/none tracking-normal;
+}
+.ui-dialog-dismiss {
+    @apply absolute top-2 right-2;
+}

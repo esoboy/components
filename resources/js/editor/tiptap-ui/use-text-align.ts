@@ -159,25 +159,9 @@ export function useTextAlign(config: UseTextAlignConfig) {
     const { editor: providedEditor, align, hideWhenUnavailable = false, onAligned } = config
 
     const { editor } = useTiptapEditor(providedEditor)
-    const [isVisible, setIsVisible] = React.useState<boolean>(true)
+    const isVisible = shouldShowButton({ editor, align, hideWhenUnavailable })
     const canAlign = canSetTextAlign(editor, align)
     const isActive = isTextAlignActive(editor, align)
-
-    React.useEffect(() => {
-        if (!editor) return
-
-        const handleSelectionUpdate = () => {
-            setIsVisible(shouldShowButton({ editor, align, hideWhenUnavailable }))
-        }
-
-        handleSelectionUpdate()
-
-        editor.on('selectionUpdate', handleSelectionUpdate)
-
-        return () => {
-            editor.off('selectionUpdate', handleSelectionUpdate)
-        }
-    }, [editor, hideWhenUnavailable, align])
 
     const handleTextAlign = React.useCallback(() => {
         if (!editor) return false

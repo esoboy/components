@@ -1,2 +1,2 @@
-@import '../../css/rich-content.css' layer(components);
+@import '../../css/components/_document.css' layer(components);
 @import './editor.css' layer(components);

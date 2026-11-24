@@ -1,0 +1,40 @@
+:where(.ui-scroll-area) {
+    --scrollbar-border: initial;
+}
+.ui-scroll-area {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+.ui-scroll-area-viewport {
+    @apply min-h-0 overflow-auto [scrollbar-width:none] focus-visible:outline-1 focus-visible:ring-[3px]
+        outline-none rounded-[inherit] size-full transition-[color,box-shadow];
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+}
+.ui-scroll-area-content {
+    display: flow-root;
+}
+.ui-scroll-area[data-orientation='horizontal']
+    > .ui-scroll-area-viewport
+    > .ui-scroll-area-content {
+    width: max-content;
+    min-width: 100%;
+}
+.ui-scroll-area:not([data-overflow]) > .ui-scroll-area-scrollbar {
+    display: none;
+}
+.ui-scroll-area-scrollbar[data-orientation='vertical'] {
+    @apply [border-left-color:var(--scrollbar-border,transparent)] absolute inset-y-0 right-0 flex h-full
+        w-2.5 touch-none border-l p-px select-none;
+}
+.ui-scroll-area-scrollbar[data-orientation='horizontal'] {
+    @apply [border-top-color:var(--scrollbar-border,transparent)] absolute inset-x-0 bottom-0 flex h-2.5
+        flex-col touch-none border-t p-px select-none;
+}
+.ui-scroll-area-thumb {
+    @apply bg-[color:var(--thumb,var(--color-border))] relative h-full w-full rounded-full;
+}

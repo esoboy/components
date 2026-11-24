@@ -5,9 +5,6 @@ import * as React from 'react'
 // --- Lib ---
 import { parseShortcutKeys } from './helpers'
 
-// --- Hooks ---
-import { useTiptapEditor } from './helpers'
-
 // --- Tiptap UI ---
 import type { UndoRedoAction, UseUndoRedoConfig } from './use-undo-redo'
 import { UNDO_REDO_SHORTCUT_KEYS, useUndoRedo } from './use-undo-redo'
@@ -47,7 +44,7 @@ export function HistoryShortcutBadge({
 export const UndoRedoButton = React.forwardRef<HTMLButtonElement, UndoRedoButtonProps>(
     (
         {
-            editor: providedEditor,
+            editor,
             action,
             text,
             hideWhenUnavailable = false,
@@ -59,7 +56,6 @@ export const UndoRedoButton = React.forwardRef<HTMLButtonElement, UndoRedoButton
         },
         ref,
     ) => {
-        const { editor } = useTiptapEditor(providedEditor)
         const { isVisible, handleAction, label, canExecute, Icon, shortcutKeys } = useUndoRedo({
             editor,
             action,

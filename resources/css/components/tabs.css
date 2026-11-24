@@ -1,0 +1,90 @@
+:where(.ui-tabs) {
+    --list-bg: initial;
+    --tab-bg: initial;
+    --tab-fg: initial;
+    --tab-focus-border: initial;
+    --tab-focus-outline: initial;
+    --tab-focus-ring: initial;
+    --tab-hover-fg: initial;
+    --tab-selected-bg: initial;
+    --tab-selected-border: initial;
+    --tab-selected-fg: initial;
+}
+.ui-tabs-tab {
+    @apply transition-all [&_svg]:pointer-events-none [&_svg]:shrink-0
+        text-[color:var(--tab-fg,color-mix(in_oklab,var(--color-foreground)_60%,transparent))]
+        aria-disabled:opacity-50 aria-disabled:pointer-events-none flex-1
+        group-data-[orientation=vertical]/tabs:justify-start
+        group-data-[orientation=vertical]/tabs:w-full h-[calc(100%-1px)] relative whitespace-nowrap
+        after:absolute after:opacity-0 after:transition-opacity
+        group-data-[orientation=horizontal]/tabs:after:inset-x-0
+        group-data-[orientation=horizontal]/tabs:after:bottom-[-5px]
+        group-data-[orientation=horizontal]/tabs:after:h-0.5
+        group-data-[orientation=vertical]/tabs:after:inset-y-0
+        group-data-[orientation=vertical]/tabs:after:-right-1
+        group-data-[orientation=vertical]/tabs:after:w-0.5
+        group-[.ui-tabs-list-variant-line]/tabs-list:aria-selected:after:opacity-100
+        border-[color:var(--part-border,transparent)] inline-flex items-center justify-center gap-1.5
+        rounded-md border px-1.5 py-0.5 text-body font-medium disabled:opacity-50
+        disabled:pointer-events-none focus-visible:ring-3 focus-visible:outline-1;
+    @variant ui-dark:hover {
+        color: var(--tab-hover-fg, var(--color-foreground));
+    }
+    @variant ui-dark {
+        color: var(--tab-fg, var(--color-muted-foreground));
+    }
+    @variant focus-visible {
+        border-color: var(--tab-focus-border, var(--color-ring));
+        --tw-ring-color: var(--tab-focus-ring, var(--ring-50));
+        outline-color: var(--tab-focus-outline, var(--color-ring));
+    }
+    @variant hover {
+        color: var(--tab-hover-fg, var(--color-foreground));
+    }
+    @variant aria-selected {
+        background-color: var(--tab-selected-bg, var(--color-background));
+        color: var(--tab-selected-fg, var(--color-foreground));
+    }
+    @variant ui-dark:aria-selected {
+        border-color: var(--tab-selected-border, var(--color-input));
+        background-color: var(--tab-selected-bg, var(--input-30));
+        color: var(--tab-selected-fg, var(--color-foreground));
+    }
+    @variant after {
+        background-color: var(--tab-bg, var(--color-foreground));
+    }
+}
+.ui-tabs {
+    @apply flex gap-2 flex-col;
+}
+.ui-tabs-list {
+    @apply text-[color:var(--list-fg,var(--color-muted-foreground))]
+        group-data-[orientation=vertical]/tabs:flex-col group-data-[orientation=vertical]/tabs:h-fit
+        inline-flex items-center justify-center w-fit rounded-lg p-[3px]
+        group-data-[orientation=horizontal]/tabs:h-8 [&.ui-tabs-list-variant-line]:rounded-none;
+}
+.ui-tabs-list.ui-tabs-list-variant-default {
+    background-color: var(--list-bg, var(--color-muted));
+}
+.ui-tabs-list.ui-tabs-list-variant-line {
+    @apply gap-1 bg-[color:var(--list-bg,transparent)];
+}
+.ui-tabs-content {
+    @apply text-body flex-1 outline-none pt-0 min-w-0;
+}
+.ui-tabs-list.ui-tabs-list-variant-default .ui-tabs-tab[aria-selected='true'] {
+    @apply shadow-sm;
+}
+.ui-tabs-list.ui-tabs-list-variant-line .ui-tabs-tab {
+    @apply bg-[color:var(--tab-bg,transparent)] shadow-none;
+    @variant aria-selected {
+        background-color: var(--tab-selected-bg, transparent);
+    }
+    @variant ui-dark:aria-selected {
+        border-color: var(--tab-selected-border, transparent);
+        background-color: var(--tab-selected-bg, transparent);
+    }
+}
+.ui-tabs[data-orientation='vertical'] {
+    flex-direction: row;
+}

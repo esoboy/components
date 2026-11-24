@@ -1,0 +1,462 @@
+/* Host @theme values override these defaults in either import order. */
+@theme default reference {
+    /* Surfaces */
+    --color-background: oklch(1 0 0);
+    --color-foreground: oklch(0% 0 0);
+    --color-card: oklch(1 0 0);
+    --color-card-foreground: var(--color-foreground);
+    --color-popover: oklch(1 0 0);
+    --color-popover-foreground: var(--color-foreground);
+
+    /* Actions */
+    --color-primary: oklch(0% 0 0);
+    --color-primary-foreground: oklch(0.985 0 0);
+    --color-secondary: oklch(0.97 0 0);
+    --color-secondary-foreground: oklch(0.205 0 0);
+    --color-muted: oklch(0.97 0 0);
+    --color-muted-foreground: oklch(0.556 0 0);
+    --color-accent: oklch(0.97 0 0);
+    --color-accent-foreground: oklch(0.205 0 0);
+    --color-destructive: oklch(0.577 0.245 27.325);
+
+    /* Borders and focus */
+    --color-border: oklch(0.922 0 0);
+    --color-input: oklch(0.922 0 0);
+    --color-ring: oklch(0.708 0 0);
+
+    /* Sidebar */
+    --color-sidebar: oklch(0.985 0 0);
+    --color-sidebar-foreground: var(--color-foreground);
+    --color-sidebar-primary: oklch(0.205 0 0);
+    --color-sidebar-primary-foreground: var(--color-primary-foreground);
+    --color-sidebar-accent: var(--color-accent);
+    --color-sidebar-accent-foreground: var(--color-accent-foreground);
+    --color-sidebar-border: var(--color-border);
+    --color-sidebar-ring: var(--color-ring);
+
+    /* Status colors */
+    --color-info: var(--color-blue-500);
+    --color-info-foreground: var(--color-white);
+    --color-info-ink: var(--color-blue-800);
+    --color-success: var(--color-green-500);
+    --color-success-foreground: var(--color-white);
+    --color-success-ink: var(--color-green-800);
+    --color-warning: var(--color-yellow-500);
+    --color-warning-foreground: var(--color-white);
+    --color-warning-ink: var(--color-yellow-800);
+    --color-error: var(--color-red-500);
+    --color-error-foreground: var(--color-white);
+    --color-error-ink: var(--color-red-700);
+
+    /* Typography */
+    --font-heading: var(--font-sans);
+    --text-control: max(1rem, var(--text-body));
+
+    /* Shadows */
+    --shadow-card: none;
+    --shadow-popover: var(--shadow-md);
+    --shadow-dialog: var(--shadow-lg);
+}
+
+@theme default {
+    /* Type scale */
+    --text-body: var(--text-sm, 0.875rem);
+    --text-fine: calc(var(--text-body) * 10 / 14);
+    --text-label: calc(var(--text-body) * 11 / 14);
+    --text-caption: calc(var(--text-body) * 12 / 14);
+    --text-compact: calc(var(--text-body) * 12.8 / 14);
+    --text-small: calc(var(--text-body) * 13 / 14);
+    --text-subtitle: calc(var(--text-body) * 15 / 14);
+    --text-title: calc(var(--text-body) * 16 / 14);
+    --text-title-lg: calc(var(--text-body) * 18 / 14);
+    --text-title-xl: calc(var(--text-body) * 20 / 14);
+    --text-title-2xl: calc(var(--text-body) * 24 / 14);
+    --text-title-3xl: calc(var(--text-body) * 30 / 14);
+    --text-display: calc(var(--text-body) * 32 / 14);
+    --text-title-4xl: calc(var(--text-body) * 36 / 14);
+
+    /* Radius */
+    --radius: 0.625rem;
+    --radius-sm: max(0px, calc(var(--radius) - 0.25rem));
+    --radius-md: max(0px, calc(var(--radius) - 0.125rem));
+    --radius-lg: var(--radius);
+    --radius-xl: max(0px, calc(var(--radius) + 0.25rem));
+    --radius-2xl: max(0px, calc(var(--radius) + 0.5rem));
+    --radius-3xl: max(0px, calc(var(--radius) + 0.75rem));
+    --radius-4xl: max(0px, calc(var(--radius) + 1rem));
+}
+
+@theme default inline {
+    /* Use the line height from the corresponding Tailwind size. */
+    --text-caption--line-height: var(--text-xs--line-height);
+    --text-body--line-height: var(--text-sm--line-height);
+    --text-control--line-height: var(--text-base--line-height);
+    --text-title--line-height: var(--text-base--line-height);
+    --text-title-lg--line-height: var(--text-lg--line-height);
+    --text-title-xl--line-height: var(--text-xl--line-height);
+    --text-title-2xl--line-height: var(--text-2xl--line-height);
+    --text-title-3xl--line-height: var(--text-3xl--line-height);
+    --text-title-4xl--line-height: var(--text-4xl--line-height);
+}
+
+@layer components {
+    :where(:root, :host) {
+        color-scheme: light;
+
+        /* Surfaces */
+        --color-background: --theme(--color-background inline);
+        --color-foreground: --theme(--color-foreground inline);
+        --color-card: --theme(--color-card inline);
+        --color-popover: --theme(--color-popover inline);
+
+        /* Actions */
+        --color-primary: --theme(--color-primary inline);
+        --color-primary-foreground: --theme(--color-primary-foreground inline);
+        --color-secondary: --theme(--color-secondary inline);
+        --color-secondary-foreground: --theme(--color-secondary-foreground inline);
+        --color-muted: --theme(--color-muted inline);
+        --color-muted-foreground: --theme(--color-muted-foreground inline);
+        --color-accent: --theme(--color-accent inline);
+        --color-accent-foreground: --theme(--color-accent-foreground inline);
+        --color-destructive: --theme(--color-destructive inline);
+
+        /* Borders and focus */
+        --color-border: --theme(--color-border inline);
+        --color-input: --theme(--color-input inline);
+        --color-ring: --theme(--color-ring inline);
+
+        /* Sidebar */
+        --color-sidebar: --theme(--color-sidebar inline);
+        --color-sidebar-primary: --theme(--color-sidebar-primary inline);
+        --color-sidebar-accent: --theme(--color-sidebar-accent inline);
+        --color-sidebar-accent-foreground: --theme(--color-sidebar-accent-foreground inline);
+        --color-sidebar-ring: --theme(--color-sidebar-ring inline);
+
+        /* Status colors */
+        --color-info: --theme(--color-info inline);
+        --color-info-foreground: --theme(--color-info-foreground inline);
+        --color-info-ink: --theme(--color-info-ink inline);
+        --color-success: --theme(--color-success inline);
+        --color-success-foreground: --theme(--color-success-foreground inline);
+        --color-success-ink: --theme(--color-success-ink inline);
+        --color-warning: --theme(--color-warning inline);
+        --color-warning-foreground: --theme(--color-warning-foreground inline);
+        --color-warning-ink: --theme(--color-warning-ink inline);
+        --color-error: --theme(--color-error inline);
+        --color-error-foreground: --theme(--color-error-foreground inline);
+        --color-error-ink: --theme(--color-error-ink inline);
+
+        /* Color tint fallbacks */
+        --foreground-10: var(--color-foreground);
+        --muted-50: var(--color-muted);
+        --input-30: var(--color-input);
+        --input-50: var(--color-input);
+        --input-80: var(--color-input);
+        --ring-50: var(--color-ring);
+        --destructive-10: var(--color-destructive);
+        --destructive-20: var(--color-destructive);
+        --destructive-30: var(--color-destructive);
+        --destructive-40: var(--color-destructive);
+        --destructive-50: var(--color-destructive);
+
+        /* Typography */
+        --font-family: inherit;
+        --font-heading: --theme(--font-heading inline);
+        --text-body: --theme(--text-body inline);
+
+        /* Radius */
+        --radius: --theme(--radius inline);
+
+        /* Shadows */
+        --shadow-card: --theme(--shadow-card inline);
+        --shadow-popover: --theme(--shadow-popover inline);
+        --shadow-dialog: --theme(--shadow-dialog inline);
+    }
+
+    /* Recompute dependent values wherever a named theme starts. */
+    :where(:root, :host, [data-ui-theme]) {
+        --color-card-foreground: --theme(--color-card-foreground inline);
+        --color-popover-foreground: --theme(--color-popover-foreground inline);
+        --color-sidebar-foreground: --theme(--color-sidebar-foreground inline);
+        --color-sidebar-primary-foreground: --theme(--color-sidebar-primary-foreground inline);
+        --color-sidebar-border: --theme(--color-sidebar-border inline);
+
+        /* Type scale */
+        --text-fine: --theme(--text-fine inline);
+        --text-label: --theme(--text-label inline);
+        --text-caption: --theme(--text-caption inline);
+        --text-compact: --theme(--text-compact inline);
+        --text-small: --theme(--text-small inline);
+        --text-subtitle: --theme(--text-subtitle inline);
+        --text-title: --theme(--text-title inline);
+        --text-title-lg: --theme(--text-title-lg inline);
+        --text-title-xl: --theme(--text-title-xl inline);
+        --text-title-2xl: --theme(--text-title-2xl inline);
+        --text-title-3xl: --theme(--text-title-3xl inline);
+        --text-display: --theme(--text-display inline);
+        --text-title-4xl: --theme(--text-title-4xl inline);
+
+        /* Radius */
+        --radius-sm: --theme(--radius-sm inline);
+        --radius-md: --theme(--radius-md inline);
+        --radius-lg: --theme(--radius-lg inline);
+        --radius-xl: --theme(--radius-xl inline);
+        --radius-2xl: --theme(--radius-2xl inline);
+        --radius-3xl: --theme(--radius-3xl inline);
+        --radius-4xl: --theme(--radius-4xl inline);
+    }
+
+    :where([data-ui-theme]):not(:where(.dark, .dark *)) {
+        --color-sidebar-accent: --theme(--color-sidebar-accent inline);
+        --color-sidebar-accent-foreground: --theme(--color-sidebar-accent-foreground inline);
+        --color-sidebar-ring: --theme(--color-sidebar-ring inline);
+    }
+
+    .dark {
+        color-scheme: dark;
+
+        /* Surfaces */
+        --color-background: oklch(0.145 0 0);
+        --color-foreground: oklch(0.985 0 0);
+        --color-card: oklch(0.205 0 0);
+        --color-popover: oklch(0.205 0 0);
+
+        /* Actions */
+        --color-primary: oklch(0.922 0 0);
+        --color-primary-foreground: oklch(0.205 0 0);
+        --color-secondary: oklch(0.269 0 0);
+        --color-secondary-foreground: oklch(0.985 0 0);
+        --color-muted: oklch(0.269 0 0);
+        --color-muted-foreground: oklch(0.708 0 0);
+        --color-accent: oklch(0.371 0 0);
+        --color-accent-foreground: oklch(0.985 0 0);
+        --color-destructive: oklch(0.704 0.191 22.216);
+
+        /* Borders and focus */
+        --color-border: oklch(1 0 0 / 0.1);
+        --color-input: oklch(1 0 0 / 0.15);
+        --color-ring: oklch(0.556 0 0);
+
+        /* Sidebar */
+        --color-sidebar: oklch(0.205 0 0);
+        --color-sidebar-primary: oklch(0.488 0.243 264.376);
+        --color-sidebar-primary-foreground: oklch(0.985 0 0);
+        --color-sidebar-accent: oklch(0.269 0 0);
+        --color-sidebar-ring: oklch(0.439 0 0);
+
+        /* Status colors */
+        --color-info: var(--color-blue-600);
+        --color-info-foreground: var(--color-white);
+        --color-info-ink: var(--color-blue-300);
+        --color-success: var(--color-green-600);
+        --color-success-foreground: var(--color-white);
+        --color-success-ink: var(--color-green-300);
+        --color-warning: var(--color-yellow-600);
+        --color-warning-foreground: var(--color-white);
+        --color-warning-ink: var(--color-yellow-200);
+        --color-error: var(--color-red-600);
+        --color-error-foreground: var(--color-white);
+        --color-error-ink: var(--color-red-300);
+    }
+
+    /* Status colors for each component variant. */
+    :where(.ui-button, .ui-badge, .ui-switch, .ui-alert, .ui-toast) {
+        --status-fill: initial;
+        --status-on-fill: initial;
+        --status-ink: initial;
+        --status-soft-bg: color-mix(in oklch, var(--status-fill) 12%, transparent);
+        --status-hover-bg: color-mix(in oklch, var(--status-fill) 20%, transparent);
+    }
+
+    .ui-status-neutral {
+        --status-fill: var(--color-secondary);
+        --status-on-fill: var(--color-secondary-foreground);
+        --status-ink: var(--color-secondary-foreground);
+        --status-soft-bg: var(--color-secondary);
+        --status-hover-bg: color-mix(in oklch, var(--color-secondary), var(--color-foreground) 5%);
+
+        @variant ui-dark {
+            --status-on-fill: var(--color-white);
+        }
+    }
+
+    .ui-status-info {
+        --status-fill: var(--color-info);
+        --status-on-fill: var(--color-info-foreground);
+        --status-ink: var(--color-info-ink);
+    }
+
+    .ui-status-success {
+        --status-fill: var(--color-success);
+        --status-on-fill: var(--color-success-foreground);
+        --status-ink: var(--color-success-ink);
+    }
+
+    .ui-status-warning {
+        --status-fill: var(--color-warning);
+        --status-on-fill: var(--color-warning-foreground);
+        --status-ink: var(--color-warning-ink);
+    }
+
+    .ui-status-error {
+        --status-fill: var(--color-error);
+        --status-on-fill: var(--color-error-foreground);
+        --status-ink: var(--color-error-ink);
+    }
+
+    /* Derive tints on the painted part so a single control can override its own palette. */
+    @supports (color: color-mix(in oklab, black, transparent)) {
+        :where(
+            .ui-accordion-summary,
+            .ui-alert-dialog-content,
+            .ui-alert-dialog-footer,
+            .ui-attachment,
+            .ui-attachment-media,
+            .ui-badge,
+            .ui-bubble-content,
+            .ui-button,
+            .ui-card,
+            .ui-card-footer,
+            .ui-carousel-page,
+            .ui-checkbox,
+            .ui-code-block,
+            .ui-code-block-actions > button,
+            .ui-code-block-line,
+            .ui-color-picker-control,
+            .ui-combobox-content,
+            .ui-combobox-control,
+            .ui-combobox-multiple,
+            .ui-context-menu-content,
+            .ui-context-menu-sub-content,
+            .ui-dialog-content,
+            .ui-dialog-footer,
+            .ui-dropdown-menu-content,
+            .ui-dropdown-menu-sub-content,
+            .ui-field-label,
+            .ui-hover-card-content,
+            .ui-input,
+            .ui-input-group,
+            .ui-input-otp-group,
+            .ui-input-otp-slot,
+            .ui-item,
+            .ui-mentions-suggestions,
+            .ui-menu-item,
+            .ui-menubar-content,
+            .ui-menubar-sub-content,
+            .ui-native-select-control,
+            .ui-navigation-menu-link,
+            .ui-navigation-menu-menu [data-ui-trigger] > *,
+            .ui-navigation-menu-popup,
+            .ui-popover-content,
+            .ui-popup,
+            .ui-questionnaire-choice,
+            .ui-questionnaire-choice-indicator,
+            .ui-questionnaire-input,
+            .ui-radio-group-item,
+            .ui-rating label,
+            .ui-scroll-area-viewport,
+            .ui-select-content,
+            .ui-select-control,
+            .ui-slider-thumb,
+            .ui-switch,
+            .ui-table-footer,
+            .ui-table-row,
+            .ui-tabs-tab,
+            .ui-textarea,
+            .ui-toast,
+            .ui-trace,
+            .ui-trace > *,
+            .ui-trace > [data-ui-overlay] > [data-ui-trigger] > *,
+            .ui-trace-collapsible-button
+        ) {
+            --foreground-10: color-mix(in oklab, var(--color-foreground) 10%, transparent);
+            --muted-50: color-mix(in oklab, var(--color-muted) 50%, transparent);
+            --input-30: color-mix(in oklab, var(--color-input) 30%, transparent);
+            --input-50: color-mix(in oklab, var(--color-input) 50%, transparent);
+            --input-80: color-mix(in oklab, var(--color-input) 80%, transparent);
+            --ring-50: color-mix(in oklab, var(--color-ring) 50%, transparent);
+            --destructive-10: color-mix(in oklab, var(--color-destructive) 10%, transparent);
+            --destructive-20: color-mix(in oklab, var(--color-destructive) 20%, transparent);
+            --destructive-30: color-mix(in oklab, var(--color-destructive) 30%, transparent);
+            --destructive-40: color-mix(in oklab, var(--color-destructive) 40%, transparent);
+            --destructive-50: color-mix(in oklab, var(--color-destructive) 50%, transparent);
+        }
+    }
+}
+
+@layer components {
+    /* Paint overrides apply only to the selected part. */
+    @property --part-bg {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-border {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-caret {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-fg {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-outline {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-ring {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-ring-offset {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --part-shadow {
+        syntax: '*';
+        inherits: false;
+    }
+
+    /* Scroll fades */
+    @property --scroll-fade-t {
+        syntax: '<length-percentage>';
+        inherits: false;
+        initial-value: 0px;
+    }
+    @property --scroll-fade-b {
+        syntax: '<length-percentage>';
+        inherits: false;
+        initial-value: 0px;
+    }
+    @property --scroll-fade-s {
+        syntax: '<length-percentage>';
+        inherits: false;
+        initial-value: 0px;
+    }
+    @property --scroll-fade-e {
+        syntax: '<length-percentage>';
+        inherits: false;
+        initial-value: 0px;
+    }
+    @property --scroll-fade-mask {
+        syntax: '*';
+        inherits: false;
+    }
+
+    /* Shimmer */
+    @property --shimmer-angle {
+        syntax: '<angle>';
+        inherits: true;
+        initial-value: 20deg;
+    }
+    @property --shimmer-image {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --shimmer-text-fill {
+        syntax: '*';
+        inherits: false;
+    }
+}

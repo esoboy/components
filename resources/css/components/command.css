@@ -1,0 +1,53 @@
+.ui-command-body {
+    @apply flex w-full flex-col overflow-hidden bg-[color:var(--bg,var(--color-popover))]
+        text-[color:var(--fg,var(--color-popover-foreground))] rounded-xl p-1;
+}
+.ui-command-item {
+    @apply text-body [&_svg:not([class*='size-'])]:size-4 relative flex w-full cursor-default items-center
+        gap-2 rounded-sm px-2 py-1.5 text-left outline-hidden select-none
+        in-[.ui-dialog-content-variant-default]:rounded-lg disabled:pointer-events-none
+        disabled:opacity-50;
+}
+.ui-command-input {
+    @apply text-body w-full outline-hidden disabled:cursor-not-allowed disabled:opacity-50;
+}
+.ui-command-item:is(:hover, :focus, [aria-selected='true']),
+.ui-command-list:not(:has(:focus, [aria-selected='true']))
+    > .ui-command-item:not(:disabled):first-of-type,
+.ui-command-list:not(:has(:focus, [aria-selected='true']))
+    .ui-command-group:first-child
+    .ui-command-item:not(:disabled):first-of-type {
+    background-color: var(--item-focus-bg, var(--color-muted));
+    color: var(--item-focus-fg, var(--color-foreground));
+}
+.ui-command-list:has(.ui-command-item:hover) .ui-command-item:not(:hover):not(:focus) {
+    background: var(--item-focus-bg, transparent);
+}
+.ui-command-group {
+    @apply overflow-hidden p-1 text-[color:var(--part-fg,var(--color-foreground))];
+}
+.ui-command-group-heading {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] px-2 py-1.5 text-caption font-medium;
+}
+.ui-command-separator {
+    @apply h-px bg-[color:var(--separator-bg,var(--color-border))];
+}
+.ui-command-input-wrapper {
+    @apply p-1 pb-0;
+}
+.ui-command-input-wrapper > .ui-input-group {
+    @apply bg-[color:var(--bg,var(--input-30))] border-[color:var(--border,var(--input-30))] h-8 rounded-lg
+        shadow-none;
+}
+.ui-command-input-wrapper .ui-input-group-addon {
+    @apply pl-2;
+}
+.ui-command-input-wrapper svg {
+    @apply size-4 shrink-0 opacity-50;
+}
+.ui-command-check {
+    @apply ml-auto;
+}
+[aria-selected='false'] > .ui-command-check {
+    @apply opacity-0;
+}

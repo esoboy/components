@@ -1,5 +1,6 @@
 /vendor
 /.vscode/
+/.idea/
 .DS_Store
 Thumbs.db
 composer.lock
@@ -7,8 +8,5 @@ composer.lock
 .phpunit.cache
 /node_modules
 /dist
-/esoboy-ui.zip
-/.dist-*/
-/.idea/
 /resources/dist/
 /resources/icons/catalog.php

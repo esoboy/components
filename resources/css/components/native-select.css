@@ -1,0 +1,50 @@
+.ui-native-select-control {
+    @apply text-body disabled:pointer-events-none focus-visible:ring-3 aria-invalid:ring-3 outline-none
+        transition-colors border-[color:var(--border,var(--color-input))]
+        bg-[color:var(--bg,transparent)] rounded-lg border h-8 w-full min-w-0 appearance-none py-1 pr-8
+        pl-2.5 select-none data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)]
+        data-[size=sm]:py-0.5;
+    @variant ui-dark {
+        background-color: var(--bg, var(--input-30));
+    }
+    @variant placeholder {
+        color: var(--placeholder-fg, var(--color-muted-foreground));
+    }
+    @variant selection {
+        background-color: var(--selection-bg, var(--color-primary));
+        color: var(--selection-fg, var(--color-primary-foreground));
+    }
+    @variant ui-dark:hover {
+        background-color: var(--hover-bg, var(--input-50));
+    }
+}
+.ui-native-select-wrapper:has(select[multiple]) {
+    @apply w-full;
+}
+.ui-native-select-control[multiple] {
+    @apply block h-auto min-h-0 p-1 scheme-light;
+}
+.dark .ui-native-select-control[multiple] {
+    color-scheme: dark;
+}
+.ui-native-select-control:not([multiple]) :is(option, optgroup) {
+    background-color: var(--bg, Canvas);
+    color: var(--fg, CanvasText);
+}
+.ui-native-select-control[multiple] option:checked {
+    @apply bg-[color:var(--checked-bg,var(--color-primary))]
+        text-[color:var(--checked-fg,var(--color-primary-foreground))] font-medium;
+}
+.ui-native-select-control[multiple] option {
+    @apply rounded-sm px-2 py-1;
+}
+.ui-native-select-wrapper {
+    @apply relative w-fit has-[select:disabled]:opacity-50;
+}
+.ui-native-select-icon {
+    @apply text-[color:var(--icon-fg,var(--color-muted-foreground))] pointer-events-none absolute
+        select-none top-1/2 right-2.5 size-4 -translate-y-1/2;
+}
+.ui-native-select-control:disabled {
+    opacity: 1;
+}

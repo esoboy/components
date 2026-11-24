@@ -1,0 +1,25 @@
+.ui-number-input-body .ui-input-group:has(input:enabled):has(button:disabled) {
+    @apply opacity-100 bg-[color:var(--disabled-bg,transparent)];
+    @variant ui-dark {
+        background-color: var(--disabled-bg, var(--input-30));
+    }
+}
+.ui-number-input-body input[type='number'] {
+    appearance: textfield;
+    text-align: center;
+}
+.ui-number-input-body input::-webkit-inner-spin-button,
+.ui-number-input-body input::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+}
+.ui-number-input .ui-input-group {
+    --bg: inherit;
+    --border: inherit;
+    --focus-border: inherit;
+    --focus-ring: inherit;
+}
+.ui-number-input .ui-input-group-control {
+    --fg: var(--value-fg);
+    --placeholder-fg: inherit;
+}

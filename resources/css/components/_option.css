@@ -1,0 +1,34 @@
+.ui-option-separator {
+    @apply -mx-1 my-1 h-px bg-[color:var(--option-separator-bg,var(--color-border))];
+}
+.ui-option-group-label {
+    padding: 0.25rem 0.375rem;
+    color: var(--option-group-label-fg, var(--color-muted-foreground));
+    font-size: var(--text-caption);
+    line-height: 1rem;
+}
+.ui-option-shortcut {
+    margin-left: auto;
+    color: var(--option-shortcut-fg, var(--color-muted-foreground));
+    font-size: var(--text-caption);
+    line-height: 1rem;
+    letter-spacing: 0.1em;
+}
+.ui-option-label {
+    @apply p-0;
+}
+.ui-option-label[data-compact='true'] {
+    @apply w-full;
+}
+.ui-option-label[data-compact='true'] .ui-item-content {
+    @apply gap-0 normal-case;
+}
+.ui-option-label[data-compact='true'] .ui-item-title {
+    @apply font-sans;
+}
+.ui-option-label[data-compact='true'] .ui-item-description {
+    @apply text-caption/4 font-normal tracking-normal;
+}
+.ui-option-label[data-compact='false'] .ui-item-title {
+    @apply whitespace-nowrap;
+}

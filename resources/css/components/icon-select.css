@@ -1,0 +1,5 @@
+.ui-icon-select-pagination {
+    @apply border-[color:var(--part-border,var(--color-border))]
+        text-[color:var(--part-fg,var(--color-muted-foreground))] flex shrink-0 items-center
+        justify-between gap-2 border-t px-1 pt-1 text-caption tabular-nums;
+}

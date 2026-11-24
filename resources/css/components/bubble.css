@@ -1,0 +1,133 @@
+.ui-bubble-group {
+    @apply flex flex-col gap-2 min-w-0;
+}
+.ui-bubble {
+    @apply flex flex-col relative w-fit gap-1 data-[align=end]:self-end max-w-[80%]
+        [&.ui-bubble-variant-ghost]:max-w-full group-data-[align=end]/message:self-end min-w-0;
+}
+.ui-bubble-content {
+    @apply text-body/relaxed [button,a]:transition-colors [button]:text-left max-w-full min-w-0
+        overflow-hidden w-fit wrap-break-word border-[color:var(--content-border,transparent)]
+        rounded-xl border px-3 py-2 [button,a]:outline-none [button,a]:focus-visible:ring-3
+        group-data-[align=end]/bubble:self-end;
+    @variant [button,a]:focus-visible {
+        border-color: var(--part-border, var(--color-ring));
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+}
+.ui-bubble-reactions {
+    @apply text-body absolute flex items-center justify-center w-fit z-10
+        ring-[color:var(--part-ring,var(--color-card))] bg-[color:var(--part-bg,var(--color-muted))]
+        rounded-full ring-3 shrink-0 gap-1 px-1.5 py-0.5 has-[button]:p-0;
+}
+.ui-bubble.ui-bubble-variant-default {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, var(--color-primary));
+        color: var(--fg, var(--color-primary-foreground));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(
+            --hover-bg,
+            color-mix(in oklab, var(--color-primary) 80%, transparent)
+        );
+    }
+}
+.ui-bubble.ui-bubble-variant-secondary {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, var(--color-secondary));
+        color: var(--fg, var(--color-secondary-foreground));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(
+            --hover-bg,
+            color-mix(in oklch, var(--color-secondary), var(--color-foreground) 5%)
+        );
+    }
+}
+.ui-bubble.ui-bubble-variant-muted {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, var(--color-muted));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(
+            --hover-bg,
+            color-mix(in oklch, var(--color-muted), var(--color-foreground) 5%)
+        );
+    }
+}
+.ui-bubble.ui-bubble-variant-tinted {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, oklch(from var(--color-primary) 0.93 calc(c * 0.4) h));
+        color: var(--fg, var(--color-foreground));
+    }
+    @variant ui-dark:*:[.ui-bubble-content] {
+        background-color: var(--bg, oklch(from var(--color-primary) 0.3 calc(c * 0.4) h));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, oklch(from var(--color-primary) 0.88 calc(c * 0.5) h));
+    }
+    @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, oklch(from var(--color-primary) 0.35 calc(c * 0.5) h));
+    }
+}
+.ui-bubble.ui-bubble-variant-outline {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, var(--color-background));
+        border-color: var(--border, var(--color-border));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--color-muted));
+        color: var(--hover-fg, var(--color-foreground));
+    }
+    @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--input-30));
+    }
+}
+.ui-bubble.ui-bubble-variant-ghost {
+    @apply *:[.ui-bubble-content]:rounded-none *:[.ui-bubble-content]:p-0 border-none;
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, transparent);
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--color-muted));
+        color: var(--hover-fg, var(--color-foreground));
+    }
+    @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--muted-50));
+    }
+}
+.ui-bubble.ui-bubble-variant-destructive {
+    @variant *:[.ui-bubble-content] {
+        background-color: var(--bg, var(--destructive-10));
+        color: var(--fg, var(--color-destructive));
+    }
+    @variant ui-dark:*:[.ui-bubble-content] {
+        background-color: var(--bg, var(--destructive-20));
+    }
+    @variant [&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--destructive-20));
+    }
+    @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
+        background-color: var(--hover-bg, var(--destructive-30));
+    }
+}
+.ui-bubble[data-align='end'] {
+    align-self: flex-end;
+}
+.ui-bubble-reactions[data-side='top'] {
+    top: 0;
+    translate: 0 -75%;
+}
+.ui-bubble-reactions[data-side='bottom'] {
+    bottom: 0;
+    translate: 0 75%;
+}
+.ui-bubble-reactions[data-align='start'] {
+    left: 0.75rem;
+}
+.ui-bubble-reactions[data-align='end'] {
+    right: 0.75rem;
+}
+.ui-bubble.ui-bubble-variant-outline > .ui-bubble-content {
+    border-color: var(--content-border, var(--color-border));
+}

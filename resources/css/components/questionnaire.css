@@ -1,0 +1,161 @@
+:where(.ui-questionnaire) {
+    --choice-bg: initial;
+    --choice-input-checked-bg: initial;
+    --progress-fg: initial;
+}
+:where(
+    .ui-questionnaire-choice,
+    .ui-questionnaire-choice-indicator,
+    .ui-questionnaire-input,
+    .ui-questionnaire-shortcut
+) {
+    border-color: var(--part-border, var(--color-border));
+}
+.ui-questionnaire-title {
+    @apply text-pretty text-control/snug font-medium [&:not(:has(~.ui-questionnaire-description))]:mb-4;
+}
+.ui-questionnaire-description {
+    @apply text-pretty text-[color:var(--description-fg,var(--color-muted-foreground))] text-body;
+}
+.ui-questionnaire-choice-indicator {
+    @apply group-data-[type=radio]/questionnaire-choice:rounded-full
+        border-[color:var(--part-border,var(--color-input))] pointer-events-none relative
+        translate-y-[1.8px] flex size-4 shrink-0 items-center justify-center rounded-[4px] border;
+    @variant ui-dark {
+        background-color: var(--part-bg, var(--input-30));
+    }
+}
+.ui-questionnaire-input {
+    @apply disabled:pointer-events-none disabled:cursor-not-allowed
+        transition-[color,box-shadow,background-color] min-h-11 min-w-0 rounded-lg border
+        border-[color:var(--part-border,var(--color-input))] text-[color:var(--part-fg,inherit)]
+        bg-[color:var(--input-bg,transparent)] h-8 w-full px-2.5 py-1 text-control outline-none
+        focus-visible:ring-3 disabled:opacity-50 sm:min-h-0 md:text-body;
+    @variant placeholder {
+        color: var(--part-fg, var(--color-muted-foreground));
+    }
+    @variant focus-visible {
+        border-color: var(--part-border, var(--color-ring));
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+    @variant aria-invalid {
+        border-color: var(--part-border, var(--color-destructive));
+    }
+    @variant ui-dark {
+        background-color: var(--input-bg, var(--input-30));
+    }
+}
+.ui-questionnaire-previous {
+    @apply min-h-11 sm:min-h-0 col-start-1 row-start-1 justify-self-start;
+}
+.ui-questionnaire-skip {
+    @apply min-h-11 sm:min-h-0 col-start-2 row-start-1 justify-self-end;
+}
+.ui-questionnaire-next,
+.ui-questionnaire-submit {
+    @apply min-h-11 sm:min-h-0 col-start-3 row-start-1 justify-self-end;
+}
+.ui-questionnaire-body {
+    @apply flex w-full min-w-0 flex-col gap-4;
+}
+.ui-questionnaire-field {
+    width: 100%;
+}
+.ui-questionnaire-progress {
+    @apply block text-[color:var(--progress-fg,var(--color-muted-foreground))] min-h-[1lh] w-fit
+        min-w-[14ch] text-caption font-medium tabular-nums;
+}
+.ui-questionnaire-item {
+    @apply flex min-w-0 flex-col gap-4 border-0 p-0 outline-none;
+}
+.ui-questionnaire-description:empty {
+    display: none;
+}
+.ui-questionnaire-choices {
+    @apply grid min-w-0 gap-2;
+}
+.ui-questionnaire-choice {
+    @apply outline-none min-h-11 min-w-0 rounded-lg border
+        border-[color:var(--part-border,var(--color-input))] bg-[color:var(--choice-bg,transparent)]
+        relative flex cursor-pointer items-start gap-2.5 px-3 py-2.5 text-start text-body
+        transition-colors select-none has-[:focus-visible]:ring-3;
+    @variant hover {
+        background-color: var(--part-bg, var(--muted-50));
+    }
+    @variant ui-dark {
+        background-color: var(
+            --choice-bg,
+            color-mix(in oklab, var(--color-input) 20%, transparent)
+        );
+    }
+    @variant has-[:checked] {
+        border-color: var(
+            --part-border,
+            color-mix(in oklab, var(--color-primary) 40%, transparent)
+        );
+        background-color: var(--part-bg, var(--color-muted));
+    }
+    @variant has-[:focus-visible] {
+        border-color: var(--part-border, var(--color-ring));
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+    @variant has-[input[aria-invalid=true]] {
+        border-color: var(--part-border, var(--color-destructive));
+    }
+}
+.ui-questionnaire-choice[data-disabled] {
+    @apply pointer-events-none cursor-not-allowed opacity-50;
+}
+.ui-questionnaire-choice-input {
+    @apply absolute inset-0 z-10 size-full cursor-pointer opacity-0;
+}
+.ui-questionnaire-choice-input:disabled {
+    opacity: 0;
+}
+.ui-questionnaire-choice-indicator > * {
+    display: none;
+}
+.ui-questionnaire-choice:has(.ui-questionnaire-choice-description)
+    .ui-questionnaire-choice-indicator {
+    translate: 0 0.125rem;
+}
+.ui-questionnaire-choice-input[type='radio'] + span {
+    @apply rounded-full;
+}
+.ui-questionnaire-choice-input:checked + span {
+    border-color: var(--part-border, var(--color-primary));
+    background-color: var(--choice-input-checked-bg, var(--color-primary));
+    color: var(--part-fg, var(--color-primary-foreground));
+}
+.ui-questionnaire-choice-input[type='radio']:checked + span > span {
+    @apply block size-2 rounded-full
+        bg-[color:var(--choice-input-checked-bg,var(--color-primary-foreground))];
+}
+.ui-questionnaire-choice-input[type='checkbox']:checked + span > svg {
+    @apply block size-3.5;
+}
+.ui-questionnaire-choice-label {
+    @apply flex min-w-0 flex-1 flex-col gap-0.5 leading-snug wrap-anywhere;
+}
+.ui-questionnaire-choice-description {
+    color: var(--part-fg, var(--color-muted-foreground));
+}
+.ui-questionnaire-shortcut {
+    @apply border-[color:var(--part-border,var(--color-input))]
+        bg-[color:var(--part-bg,var(--color-background))]
+        text-[color:var(--shortcut-fg,var(--color-muted-foreground))] pointer-events-none ms-auto mt-0.5
+        inline-flex size-5 shrink-0 items-center justify-center rounded-md border font-mono
+        text-(length:--text-fine) leading-none font-medium;
+}
+.ui-questionnaire-error {
+    @apply text-[color:var(--error-fg,var(--color-destructive))] mt-2 text-body;
+}
+.ui-questionnaire-actions {
+    @apply grid min-h-11 w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 sm:min-h-8;
+}
+.ui-questionnaire-actions button {
+    @apply min-h-11 sm:min-h-0;
+}
+.ui-questionnaire-item > .ui-card {
+    @apply mx-auto w-full max-w-lg;
+}

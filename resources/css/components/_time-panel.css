@@ -1,0 +1,50 @@
+:where(.ui-time-unit) {
+    border-color: var(--unit-border, var(--color-border));
+}
+.ui-time-popup {
+    width: 18rem;
+}
+.ui-time-panel {
+    @apply flex min-h-0 flex-col [--time-cell:2.25rem];
+}
+.ui-time-segments {
+    @apply flex shrink-0 items-center justify-center gap-1 px-3 py-2;
+}
+.ui-time-segment {
+    @apply border-[color:var(--part-border,var(--color-input))]
+        text-[color:var(--part-fg,var(--color-muted-foreground))] flex min-w-14 cursor-pointer flex-col
+        items-center rounded-lg border px-2 py-1 text-caption font-medium outline-none
+        focus-visible:ring-2 disabled:cursor-default disabled:opacity-50;
+    @variant enabled:hover {
+        border-color: var(--part-border, var(--color-ring));
+        background-color: var(--part-bg, var(--color-muted));
+    }
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--color-ring));
+    }
+}
+.ui-time-segment[aria-expanded='true'] {
+    background-color: var(--part-bg, var(--color-accent));
+    color: var(--part-fg, var(--color-accent-foreground));
+}
+.ui-time-digits {
+    @apply text-[color:var(--part-fg,var(--color-foreground))] text-title-2xl/7 font-semibold
+        tracking-tight tabular-nums;
+}
+.ui-time-colon {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] self-start pt-1 text-title-lg/7;
+}
+.ui-time-unit {
+    @apply flex min-h-0 flex-col border-t py-2 outline-none;
+}
+.ui-time-list {
+    --list-max-height: calc(5 * var(--time-cell) + 4 * 0.125rem);
+}
+@media (pointer: coarse) {
+    .ui-time-panel {
+        --time-cell: 2.75rem;
+    }
+}
+.ui-time-hint {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] px-3 pb-2 text-caption;
+}

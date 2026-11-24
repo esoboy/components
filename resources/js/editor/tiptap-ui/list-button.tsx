@@ -3,9 +3,6 @@ import * as React from 'react'
 // --- Lib ---
 import { parseShortcutKeys } from './helpers'
 
-// --- Hooks ---
-import { useTiptapEditor } from './helpers'
-
 // --- UI Primitives ---
 import type { ButtonProps } from './primitives'
 import { Button } from './primitives'
@@ -45,7 +42,7 @@ export function ListShortcutBadge({
 export const ListButton = React.forwardRef<HTMLButtonElement, ListButtonProps>(
     (
         {
-            editor: providedEditor,
+            editor,
             type,
             text,
             hideWhenUnavailable = false,
@@ -57,7 +54,6 @@ export const ListButton = React.forwardRef<HTMLButtonElement, ListButtonProps>(
         },
         ref,
     ) => {
-        const { editor } = useTiptapEditor(providedEditor)
         const { isVisible, canToggle, isActive, handleToggle, label, shortcutKeys, Icon } = useList(
             {
                 editor,

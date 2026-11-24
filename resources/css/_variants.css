@@ -1,0 +1,4 @@
+@custom-variant ui-dark (&:where(.dark, .dark *));
+@custom-variant ui-open (&:where([data-state='open'], [data-open]:not([data-open='false'])));
+@custom-variant ui-disabled (&:where([data-disabled]:not([data-disabled='false'])));
+@custom-variant ui-active (&:where([data-state='active'], [data-active]:not([data-active='false'])));

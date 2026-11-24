@@ -1,0 +1,94 @@
+.ui-popup {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    max-height: var(--available-height, calc(100dvh - 10px));
+    max-width: calc(100vw - 1rem);
+    min-width: 10rem;
+    overflow: auto;
+    padding: 0.25rem;
+    background-color: var(--panel-bg, var(--color-popover));
+    color: var(--panel-fg, var(--color-popover-foreground));
+    --tw-ring-color: var(--panel-ring, var(--foreground-10));
+    border-radius: --theme(--radius-lg);
+    border-style: var(--tw-border-style);
+    border-width: --theme(--border-width-0, 0px);
+    outline: 1px solid var(--tw-ring-color);
+    box-shadow: var(--panel-shadow, var(--shadow-popover));
+    --motion-duration: 100ms;
+    --enter-x: 0px;
+    --enter-y: 0px;
+    opacity: 0;
+    transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
+    transition: outline-width var(--motion-duration) ease;
+}
+.ui-list-popup {
+    overflow: clip;
+}
+.ui-list-popup:popover-open {
+    display: flex;
+    flex-direction: column;
+}
+.ui-list-scroll {
+    max-height: min(var(--list-max-height, 18rem), var(--available-height, calc(100dvh - 10px)));
+}
+.ui-list-scroll > .ui-scroll-area-viewport {
+    height: auto;
+    overflow-x: hidden;
+    scroll-padding-block: 0.25rem;
+}
+.ui-list-scroll[data-overflow] > .ui-scroll-area-viewport {
+    overscroll-behavior-y: contain;
+}
+[popover][data-ui-panel]:not(:popover-open) {
+    display: none;
+}
+@keyframes ui-popup-enter {
+    from {
+        opacity: 0;
+        transform: translate3d(var(--enter-x, 0px), var(--enter-y, 0px), 0)
+            scale3d(0.95, 0.95, 0.95);
+        filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+}
+@keyframes ui-popup-exit {
+    from {
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale3d(0.95, 0.95, 0.95);
+        filter: blur(0px);
+    }
+}
+.ui-popup[data-side='bottom'] {
+    --enter-y: -0.5rem;
+}
+.ui-popup[data-side='top'] {
+    --enter-y: 0.5rem;
+}
+.ui-popup[data-side='left'] {
+    --enter-x: 0.5rem;
+}
+.ui-popup[data-side='right'] {
+    --enter-x: -0.5rem;
+}
+.ui-popup:popover-open {
+    opacity: 1;
+    animation: ui-popup-enter var(--motion-duration) ease;
+}
+.ui-popup:popover-open[data-ending] {
+    opacity: 0;
+    animation: ui-popup-exit var(--motion-duration) ease;
+}
+:is(.ui-select-content, .ui-combobox-content)[data-align-trigger='true'] {
+    animation: none;
+    transition: none;
+}

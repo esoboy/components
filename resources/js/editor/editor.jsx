@@ -17,7 +17,7 @@ import { TableTools } from './table'
 import { LinkPopover } from './text-tools'
 import { EmbedDialog, EmbedTools } from './iframe'
 import { Toolbar, ToolbarGroup } from './tiptap-ui/primitives'
-import { editor as editorControl } from '../behaviors/editor.js'
+import { editor as editorControl } from './host.js'
 import './style.css'
 
 const bubbleOptions = {
@@ -127,7 +127,7 @@ function EditorApp({ host, container }) {
         onCreate({ editor: instance }) {
             host.editor = instance
             host.serialize = serializer(instance)
-            host.replace(host._value, host._sourceType ?? host.getAttribute('input-type') ?? 'auto')
+            host.replace(host._value, host._sourceType, { addToHistory: false })
             host.syncState()
             host.dispatchEvent(
                 new CustomEvent('editor-ready', {
@@ -314,7 +314,7 @@ function EditorApp({ host, container }) {
                     hidden={sourceMode}
                     style={{
                         '--editor-zoom': Number(zoom) / 100,
-                        '--ui-file-label': JSON.stringify(t('file')),
+                        '--file-label': JSON.stringify(t('file')),
                     }}
                 >
                     <EditorContent editor={editor} />
@@ -496,14 +496,14 @@ class EsoboyEditor extends HTMLElement {
     set value(value) {
         this.replace(value)
     }
-    replace(value, type = this.getAttribute('input-type') ?? 'auto') {
+    replace(value, type = this.getAttribute('input-type') ?? 'auto', { addToHistory = true } = {}) {
         if (typeof value !== 'string') throw new TypeError(this.getMessage('contentTypeError'))
         this._value = value
         this._sourceType = type
         if (this.editor) {
             try {
                 this.resetMedia()
-                setContent(this.editor, value, type, this.getMessage)
+                setContent(this.editor, value, type, this.getMessage, addToHistory)
                 this.dispatchEvent(new CustomEvent('editor-document-replaced'))
             } catch (error) {
                 this.dispatchEvent(

@@ -1,158 +1,162 @@
-@layer components {
-    .ui-data-table {
-        @apply min-w-0 space-y-4;
+:where(.ui-data-table) {
+    --selection-border: initial;
+}
+:where(.ui-data-table-frame) {
+    border-color: var(--frame-border, var(--color-border));
+}
+:where(.ui-data-table-selection) {
+    border-color: var(--selection-border, var(--color-border));
+}
+.ui-data-table {
+    @apply min-w-0 space-y-4;
+}
+.ui-data-table-container {
+    @apply @container min-w-0 space-y-4;
+}
+.ui-data-table-frame {
+    @apply overflow-hidden rounded-md border;
+}
+.ui-data-table-toolbar {
+    @apply flex flex-wrap items-center gap-2;
+}
+.ui-data-table-footer {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-2;
+}
+.ui-data-table-filter-primary {
+    @apply flex min-w-0 flex-wrap items-center gap-2 @max-xl:w-full;
+}
+.ui-data-table-filter-actions {
+    @apply flex flex-wrap items-center gap-2;
+}
+.ui-table-secondary {
+    @apply order-last w-full;
+}
+.ui-table-filter-fields {
+    @apply flex flex-wrap items-center gap-4 py-1;
+}
+.ui-data-table-page-size {
+    @apply flex items-center gap-2 whitespace-nowrap text-body font-medium;
+}
+.ui-data-table-total {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] whitespace-nowrap text-body
+        tabular-nums;
+}
+.ui-data-table-selection {
+    @apply bg-[color:var(--selection-bg,var(--color-popover))]
+        text-[color:var(--selection-fg,var(--color-popover-foreground))] z-10 mx-auto flex w-fit
+        max-w-full flex-wrap items-center gap-2 rounded-lg border p-1.5
+        [box-shadow:var(--shadow-popover)];
+}
+.ui-data-table-selection > [role='status'] {
+    @apply px-2 text-body font-medium tabular-nums;
+}
+.ui-data-table-selection > .ui-separator[aria-orientation='vertical'] {
+    @apply h-5;
+}
+.ui-data-table-selection-actions {
+    @apply flex flex-wrap items-center gap-1;
+}
+.ui-table-columns-trigger {
+    @apply ms-auto;
+}
+.ui-table-columns {
+    @apply w-64 max-w-[calc(100vw-1rem)];
+}
+.ui-table-columns > header {
+    @apply flex items-baseline justify-between gap-2 px-1;
+}
+.ui-table-columns > header > :first-child {
+    @apply text-body font-medium;
+}
+.ui-table-columns > header > :last-child {
+    @apply text-[color:var(--columns-fg,var(--color-muted-foreground))] text-caption;
+}
+.ui-table-columns > fieldset {
+    @apply min-w-0 space-y-0.5 overflow-y-auto overscroll-contain max-h-[min(22rem,55dvh)];
+}
+.ui-table-columns [data-key] {
+    @apply flex min-h-8 items-center gap-2 rounded-md px-1.5 [&.sortable-ghost]:opacity-50;
+    @variant hover {
+        background-color: var(--part-bg, var(--color-accent));
+        color: var(--part-fg, var(--color-accent-foreground));
     }
-    .ui-data-table-container {
-        @apply @container min-w-0 space-y-4;
+    @variant [&.sortable-ghost] {
+        background-color: var(--part-bg, var(--color-accent));
     }
-    .ui-data-table-frame {
-        @apply overflow-hidden rounded-ui-md border;
+}
+.ui-table-columns [data-key] > label {
+    @apply flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-body has-disabled:cursor-default;
+}
+.ui-table-columns label > input {
+    @apply disabled:opacity-50;
+}
+.ui-table-columns label > span {
+    @apply truncate;
+}
+.ui-table-column-pin {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] inline-flex items-center gap-1
+        whitespace-nowrap text-caption;
+}
+.ui-table-columns [data-column-handle] {
+    @apply touch-none cursor-grab text-[color:var(--columns-fg,var(--color-muted-foreground))];
+    @variant active {
+        @apply cursor-grabbing;
     }
-    .ui-data-table-toolbar {
-        @apply flex flex-wrap items-center gap-2;
-    }
-    .ui-data-table-footer {
-        @apply flex flex-wrap items-center gap-x-4 gap-y-2;
-    }
-    .ui-data-table-filter-primary {
-        @apply flex min-w-0 flex-wrap items-center gap-2 @max-xl:w-full;
-    }
-    .ui-data-table-filter-actions {
-        @apply flex flex-wrap items-center gap-2;
-    }
-    .ui-table-secondary {
-        @apply order-last w-full;
-    }
-    .ui-table-filter-fields {
-        @apply flex flex-wrap items-center gap-4 py-1;
-    }
-    .ui-data-table-page-size {
-        @apply flex items-center gap-2 whitespace-nowrap text-sm font-medium;
-    }
-    .ui-data-table-total {
-        color: var(--ui-part-fg, var(--color-muted-foreground));
-        @apply whitespace-nowrap text-sm tabular-nums;
-    }
-    .ui-data-table-selection {
-        background-color: var(--ui-selection-bg, var(--color-popover));
-        color: var(--ui-selection-fg, var(--color-popover-foreground));
-        @apply z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-2 rounded-ui-lg border p-1.5 shadow-md;
-    }
-    .ui-data-table-selection > [role='status'] {
-        @apply px-2 text-sm font-medium tabular-nums;
-    }
-    .ui-data-table-selection > .ui-separator[aria-orientation='vertical'] {
-        @apply h-5;
-    }
-    .ui-data-table-selection-actions {
-        @apply flex flex-wrap items-center gap-1;
-    }
-    .ui-table-columns-trigger {
-        @apply ms-auto;
-    }
-    .ui-table-columns {
-        @apply w-64 max-w-[calc(100vw-1rem)];
-    }
-    .ui-table-columns > header {
-        @apply flex items-baseline justify-between gap-2 px-1;
-    }
-    .ui-table-columns > header > :first-child {
-        @apply text-sm font-medium;
-    }
-    .ui-table-columns > header > :last-child {
-        color: var(--ui-columns-fg, var(--color-muted-foreground));
-        @apply text-xs;
-    }
-    .ui-table-columns > fieldset {
-        @apply min-w-0 space-y-0.5 overflow-y-auto overscroll-contain max-h-[min(22rem,55dvh)];
-    }
-    .ui-table-columns [data-key] {
-        @apply flex min-h-8 items-center gap-2 rounded-ui-md px-1.5 [&.sortable-ghost]:opacity-50;
-        @variant hover {
-            background-color: var(--ui-part-bg, var(--color-accent));
-            color: var(--ui-part-fg, var(--color-accent-foreground));
-        }
-        @variant [&.sortable-ghost] {
-            background-color: var(--ui-part-bg, var(--color-accent));
-        }
-    }
-    .ui-table-columns [data-key] > label {
-        @apply flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-sm has-disabled:cursor-default;
-    }
-    .ui-table-columns label > input {
-        @apply disabled:opacity-50;
-    }
-    .ui-table-columns label > span {
-        @apply truncate;
-    }
-    .ui-table-column-pin {
-        color: var(--ui-part-fg, var(--color-muted-foreground));
-        @apply inline-flex items-center gap-1 whitespace-nowrap text-xs;
-    }
-    .ui-table-columns [data-column-handle] {
-        color: var(--ui-columns-fg, var(--color-muted-foreground));
-        @apply touch-none cursor-grab active:cursor-grabbing;
-    }
-    .ui-table-columns > footer {
-        @apply flex items-center justify-between gap-2;
-    }
-    .ui-table-selection-cell {
-        @apply w-8;
-    }
-    .ui-table-sort-trigger {
-        @apply -mx-2;
-    }
-    .ui-table-sort-check {
-        @apply ms-auto;
-    }
-
-    .ui-data-table-filters > .ui-collapsible {
-        @apply flex flex-wrap items-center gap-2;
-    }
-    .ui-data-table-toolbar > .ui-data-table-filters,
-    .ui-data-table-toolbar > .ui-data-table-filters > .ui-collapsible {
-        display: contents;
-    }
-
-    .ui-data-table :is(th, td)[data-align='end'] {
-        text-align: end;
-    }
-    .ui-data-table :is(th, td)[data-align='center'] {
-        text-align: center;
-    }
-    .ui-data-table [data-fixed] {
-        background-color: var(--ui-bg, var(--color-background));
-        @apply sticky z-1;
-    }
-    .ui-data-table [data-fixed='start'] {
-        inset-inline-start: var(--dt-inset);
-    }
-    .ui-data-table [data-fixed='end'] {
-        inset-inline-end: var(--dt-inset);
-    }
-    .ui-data-table tr:hover > [data-fixed] {
-        background: var(
-            --ui-hover-bg,
-            color-mix(in oklab, var(--color-muted) 50%, var(--color-background))
-        );
-    }
-    .ui-data-table tr[data-state='selected'] > [data-fixed] {
-        background-color: var(--ui-bg, var(--color-muted));
-    }
-
+}
+.ui-table-columns > footer {
+    @apply flex items-center justify-between gap-2;
+}
+.ui-table-selection-cell {
+    @apply w-8;
+}
+.ui-table-sort-trigger {
+    @apply -mx-2;
+}
+.ui-table-sort-check {
+    @apply ms-auto;
+}
+.ui-data-table-filters > .ui-collapsible {
+    @apply flex flex-wrap items-center gap-2;
+}
+.ui-data-table-toolbar > .ui-data-table-filters,
+.ui-data-table-toolbar > .ui-data-table-filters > .ui-collapsible {
+    display: contents;
+}
+.ui-data-table :is(th, td)[data-align='end'] {
+    text-align: end;
+}
+.ui-data-table :is(th, td)[data-align='center'] {
+    text-align: center;
+}
+.ui-data-table [data-fixed] {
+    @apply sticky z-1 bg-[color:var(--bg,var(--color-background))];
+}
+.ui-data-table [data-fixed='start'] {
+    inset-inline-start: var(--dt-inset);
+}
+.ui-data-table [data-fixed='end'] {
+    inset-inline-end: var(--dt-inset);
+}
+.ui-data-table tr:hover > [data-fixed] {
+    background: var(
+        --hover-bg,
+        color-mix(in oklab, var(--color-muted) 50%, var(--color-background))
+    );
+}
+.ui-data-table tr[data-state='selected'] > [data-fixed] {
+    background-color: var(--bg, var(--color-muted));
+}
+.ui-data-table-footer > .ui-pagination {
+    @apply m-0 ms-auto w-auto;
+}
+.ui-data-table-selection[data-placement='table'] {
+    @apply sticky bottom-3;
+}
+.ui-data-table-selection[data-placement='viewport'] {
+    @apply fixed inset-x-3 bottom-3 [max-width:calc(100%_-_1.5rem)];
+}
+@container (max-width: 36rem) {
     .ui-data-table-footer > .ui-pagination {
-        @apply m-0 ms-auto w-auto;
-    }
-    .ui-data-table-selection[data-placement='table'] {
-        @apply sticky bottom-3;
-    }
-    .ui-data-table-selection[data-placement='viewport'] {
-        @apply fixed inset-x-3 bottom-3;
-        max-width: calc(100% - 1.5rem);
-    }
-    @container (max-width: 36rem) {
-        .ui-data-table-footer > .ui-pagination {
-            @apply m-0 w-full justify-between;
-        }
+        @apply m-0 w-full justify-between;
     }
 }

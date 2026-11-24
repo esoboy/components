@@ -1,0 +1,54 @@
+.ui-alert-variant-destructive:is(
+    .ui-status-neutral,
+    .ui-status-info,
+    .ui-status-success,
+    .ui-status-warning,
+    .ui-status-error
+) {
+    --fg: var(--color-card-foreground);
+    --description-fg: var(--color-muted-foreground);
+}
+.ui-alert {
+    @apply text-body relative w-full border-[color:var(--border,var(--status-ink,var(--color-border)))]
+        grid gap-0.5 rounded-lg border px-2.5 py-2 text-left has-[.ui-alert-action]:relative
+        has-[.ui-alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2
+        *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4;
+    @variant *:[svg] {
+        color: var(--icon-fg, var(--status-ink, currentColor));
+    }
+}
+.ui-alert-title {
+    @apply font-medium [&_a]:underline [&_a]:underline-offset-3 text-[color:var(--title-fg,inherit)]
+        group-has-[>svg]/alert:col-start-2;
+    @variant [&_a]:hover {
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-alert-description {
+    @apply text-body [&_a]:underline [&_a]:underline-offset-3
+        text-[color:var(--description-fg,var(--color-muted-foreground))] text-balance md:text-pretty
+        [&_p:not(:last-child)]:mb-4;
+    @variant [&_a]:hover {
+        color: var(--description-hover-fg, var(--color-foreground));
+    }
+}
+.ui-alert.ui-alert-variant-default {
+    background-color: var(--bg, var(--color-card));
+    color: var(--fg, var(--color-card-foreground));
+}
+.ui-alert.ui-alert-variant-destructive {
+    color: var(--fg, var(--color-destructive));
+    background-color: var(--bg, var(--color-card));
+    @variant *:[.ui-alert-description] {
+        color: var(
+            --description-fg,
+            color-mix(in oklab, var(--color-destructive) 90%, transparent)
+        );
+    }
+    @variant *:[svg] {
+        color: var(--icon-fg, var(--status-ink, currentColor));
+    }
+}
+.ui-alert-action {
+    @apply absolute top-2 right-2;
+}

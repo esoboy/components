@@ -1,0 +1,85 @@
+.ui-trace-collapsible {
+    @apply flex w-full min-w-0 flex-col;
+}
+:where(.ui-trace) {
+    --collapsible-button-fg: initial;
+    --collapsible-content-inner-border: initial;
+}
+:where(.ui-trace-collapsible-content-inner) {
+    border-color: var(--collapsible-content-inner-border, var(--color-border));
+}
+.ui-trace {
+    @apply flex w-full min-w-0 flex-col gap-2;
+}
+.ui-trace > :has(> .ui-trace-line),
+.ui-trace > [data-ui-overlay] > [data-ui-trigger] > :has(> .ui-trace-line) {
+    @apply flex w-fit max-w-full min-w-0 rounded-md text-left outline-none focus-visible:ring-3;
+    @variant focus-visible {
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-trace-collapsible-button {
+    @apply flex w-fit max-w-full min-w-0 rounded-md text-left outline-none focus-visible:ring-3
+        text-[color:var(--collapsible-button-fg,var(--color-muted-foreground))] cursor-pointer
+        items-center gap-1 transition-colors;
+    @variant focus-visible {
+        --tw-ring-color: var(--part-ring, var(--ring-50));
+    }
+    @variant hover {
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-trace-line {
+    @apply text-body text-[color:var(--line-fg,var(--color-muted-foreground))] flex w-fit max-w-full
+        min-w-0 items-center gap-2 transition-colors in-[a,button]:cursor-pointer;
+    @variant in-[a:hover,button:hover] {
+        color: var(--part-fg, var(--color-foreground));
+    }
+}
+.ui-trace-line[data-status='pending'] {
+    @apply opacity-60;
+}
+.ui-trace-icon {
+    @apply flex size-4 shrink-0 items-center justify-center [&_svg]:pointer-events-none
+        [&_svg:not([class*='size-'])]:size-4;
+}
+.ui-trace-title ~ .ui-trace-icon {
+    @apply -ml-1;
+}
+.ui-trace-title {
+    @apply min-w-0 truncate;
+}
+.ui-trace-description {
+    @apply shrink-0 tabular-nums
+        text-[color:var(--description-fg,color-mix(in_oklab,var(--color-muted-foreground)_70%,transparent))];
+}
+.ui-trace-line[data-status='error'] {
+    color: var(--line-fg, var(--color-destructive));
+}
+.ui-trace-collapsible-button:has([data-status='error']) {
+    color: var(--collapsible-button-fg, var(--color-destructive));
+}
+.ui-trace-collapsible-button > .ui-trace-icon:last-child {
+    @apply transition-transform;
+}
+.ui-trace-collapsible-button[aria-expanded='true'] > .ui-trace-icon:last-child {
+    @apply rotate-90;
+}
+.ui-trace-collapsible-content {
+    @apply min-w-0 overflow-hidden [--panel-height:auto] [interpolate-size:allow-keywords] [height:0]
+        [transition:height_200ms_cubic-bezier(0.4,0,0.2,1),display_200ms_allow-discrete];
+}
+.ui-trace-collapsible-content-inner {
+    @apply text-[color:var(--part-fg,var(--color-muted-foreground))] mt-2 mb-1 ml-[calc(--spacing(2)-1px)]
+        min-w-0 border-l pr-1 pl-4 leading-relaxed wrap-break-word;
+}
+.ui-trace-collapsible-content[data-open='true'] {
+    height: var(--panel-height, auto);
+}
+.ui-trace-collapsible-content[data-open='true'][data-settled] {
+    height: auto;
+    transition: none;
+}
+.ui-trace-collapsible-content[data-open='true'][data-starting-style] {
+    height: 0;
+}

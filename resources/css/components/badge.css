@@ -1,0 +1,90 @@
+:where(.ui-badge) {
+    color: var(--fg, inherit);
+    background-color: var(--bg, transparent);
+}
+.ui-badge.ui-badge-variant-outline {
+    background: var(--bg, transparent);
+    border-color: var(--border, var(--status-ink, var(--color-border)));
+    color: var(--fg, var(--status-ink, var(--color-foreground)));
+    @variant [a]:hover {
+        background-color: var(--hover-bg, var(--status-hover-bg, var(--color-muted)));
+        color: var(--hover-fg, var(--fg, var(--status-ink, var(--color-muted-foreground))));
+    }
+}
+.ui-badge {
+    @apply font-medium text-caption inline-flex items-center justify-center shrink-0 whitespace-nowrap
+        [&>svg]:pointer-events-none focus-visible:ring-[3px] overflow-hidden w-fit border
+        border-[color:var(--border,transparent)] h-5 gap-1 rounded-4xl px-2 py-0.5 transition-all
+        has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:size-3;
+    @variant aria-invalid {
+        border-color: var(--invalid-border, var(--color-destructive));
+        --tw-ring-color: var(--invalid-ring, var(--destructive-20));
+    }
+    @variant ui-dark:aria-invalid {
+        --tw-ring-color: var(--invalid-ring, var(--destructive-40));
+    }
+    @variant focus-visible {
+        border-color: var(--focus-border, var(--color-ring));
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-badge.ui-badge-variant-default {
+    background-color: var(--bg, var(--status-fill, var(--color-primary)));
+    color: var(--fg, var(--status-on-fill, var(--color-primary-foreground)));
+    @variant [a]:hover {
+        background-color: var(
+            --hover-bg,
+            color-mix(in oklab, var(--status-fill, var(--color-primary)) 80%, transparent)
+        );
+    }
+}
+.ui-badge.ui-badge-variant-secondary {
+    background-color: var(--bg, var(--status-soft-bg, var(--color-secondary)));
+    color: var(--fg, var(--status-ink, var(--color-secondary-foreground)));
+    @variant [a]:hover {
+        background-color: var(
+            --hover-bg,
+            var(--status-hover-bg, color-mix(in oklab, var(--color-secondary) 80%, transparent))
+        );
+    }
+}
+.ui-badge.ui-badge-variant-destructive {
+    background-color: var(--bg, var(--status-soft-bg, var(--destructive-10)));
+    color: var(--fg, var(--status-ink, var(--color-destructive)));
+    @variant [a]:hover {
+        background-color: var(--hover-bg, var(--status-hover-bg, var(--destructive-20)));
+    }
+    @variant focus-visible {
+        --tw-ring-color: var(
+            --focus-ring,
+            color-mix(in oklab, var(--status-fill, var(--color-destructive)) 20%, transparent)
+        );
+    }
+    @variant ui-dark:focus-visible {
+        --tw-ring-color: var(
+            --focus-ring,
+            color-mix(in oklab, var(--status-fill, var(--color-destructive)) 40%, transparent)
+        );
+    }
+    @variant ui-dark {
+        background-color: var(--bg, var(--status-soft-bg, var(--destructive-20)));
+    }
+}
+:where(.ui-badge.ui-badge-variant-ghost) {
+    color: var(--fg, var(--status-ink, inherit));
+}
+.ui-badge.ui-badge-variant-ghost {
+    @variant hover {
+        background-color: var(--hover-bg, var(--status-hover-bg, var(--color-muted)));
+        color: var(--hover-fg, var(--fg, var(--status-ink, var(--color-muted-foreground))));
+    }
+    @variant ui-dark:hover {
+        background-color: var(--hover-bg, var(--status-hover-bg, var(--muted-50)));
+    }
+}
+.ui-badge.ui-badge-variant-link {
+    @apply underline-offset-4 text-[color:var(--fg,var(--status-ink,var(--color-primary)))];
+    @variant hover {
+        @apply underline;
+    }
+}

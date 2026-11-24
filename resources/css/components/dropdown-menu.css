@@ -1,0 +1,65 @@
+.ui-menu-choice {
+    @apply text-body outline-hidden cursor-default ui-disabled:pointer-events-none flex items-center
+        relative ui-disabled:opacity-50 gap-1.5 rounded-md py-1 pr-8 pl-1.5 select-none data-inset:pl-7
+        [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0;
+}
+.ui-dropdown-menu-content {
+    @apply origin-(--transform-origin) z-50 min-w-32 w-(--anchor-width);
+}
+.ui-dropdown-menu-sub-content {
+    @apply w-auto min-w-[96px];
+}
+.ui-dropdown-menu-checkbox-item {
+    @variant focus {
+        background-color: var(--checkbox-item-focus-bg, var(--color-accent));
+        color: var(--checkbox-item-focus-fg, var(--color-accent-foreground));
+    }
+    @variant focus:** {
+        color: var(--checkbox-item-focus-fg, var(--color-accent-foreground));
+    }
+}
+.ui-dropdown-menu-radio-item {
+    @variant focus {
+        background-color: var(--radio-item-focus-bg, var(--color-accent));
+        color: var(--radio-item-focus-fg, var(--color-accent-foreground));
+    }
+    @variant focus:** {
+        color: var(--radio-item-focus-fg, var(--color-accent-foreground));
+    }
+}
+.ui-dropdown-menu-shortcut {
+    @apply ml-auto;
+    @variant group-focus/dropdown-menu-item {
+        color: var(--shortcut-focus-fg, var(--color-accent-foreground));
+    }
+}
+.ui-menu-choice > span:not(.ui-menu-choice-indicator) {
+    display: contents;
+}
+.ui-dropdown-menu-checkbox-item:has(:focus) {
+    background: var(--checkbox-item-focus-bg, var(--color-accent));
+    background-color: var(--checkbox-item-focus-bg, var(--color-accent));
+    color: var(--checkbox-item-focus-fg, var(--color-accent-foreground));
+}
+.ui-dropdown-menu-radio-item:has(:focus) {
+    background: var(--radio-item-focus-bg, var(--color-accent));
+    background-color: var(--radio-item-focus-bg, var(--color-accent));
+    color: var(--radio-item-focus-fg, var(--color-accent-foreground));
+}
+.ui-menu-choice > input {
+    @apply absolute inset-0 z-10 m-0 h-full w-full cursor-default overflow-clip opacity-0;
+}
+.ui-menu-choice > input::after,
+.ui-menu-choice > input::before {
+    content: none;
+}
+.ui-menu-choice > input:disabled {
+    opacity: 0;
+}
+.ui-menu-choice:has(:checked) > .ui-menu-choice-indicator {
+    display: flex;
+}
+.ui-menu-choice:has(:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+}

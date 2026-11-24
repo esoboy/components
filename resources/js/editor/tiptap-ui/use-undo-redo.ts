@@ -122,24 +122,8 @@ export function useUndoRedo(config: UseUndoRedoConfig) {
     const { editor: providedEditor, action, hideWhenUnavailable = false, onExecuted } = config
 
     const { editor } = useTiptapEditor(providedEditor)
-    const [isVisible, setIsVisible] = React.useState<boolean>(true)
+    const isVisible = shouldShowButton({ editor, action, hideWhenUnavailable })
     const canExecute = canExecuteUndoRedoAction(editor, action)
-
-    React.useEffect(() => {
-        if (!editor) return
-
-        const handleUpdate = () => {
-            setIsVisible(shouldShowButton({ editor, hideWhenUnavailable, action }))
-        }
-
-        handleUpdate()
-
-        editor.on('transaction', handleUpdate)
-
-        return () => {
-            editor.off('transaction', handleUpdate)
-        }
-    }, [editor, hideWhenUnavailable, action])
 
     const handleAction = React.useCallback(() => {
         if (!editor) return false

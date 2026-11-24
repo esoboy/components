@@ -1,0 +1,13 @@
+:where(.ui-input) {
+    --file-fg: initial;
+    border-color: var(--border, var(--color-border));
+}
+.ui-input {
+    @apply disabled:pointer-events-none focus-visible:ring-3 aria-invalid:ring-3 file:border-0
+        file:inline-flex min-w-0 w-full h-8 px-2.5 py-1 text-control file:h-6 file:text-body
+        file:font-medium md:text-body;
+    @variant file {
+        background-color: var(--file-bg, transparent);
+        color: var(--file-fg, var(--color-foreground));
+    }
+}

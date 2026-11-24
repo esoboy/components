@@ -1,0 +1,140 @@
+.ui-code-block-title {
+    @apply text-body font-medium [&_svg]:pointer-events-none [&_svg]:align-middle [&_svg]:inline-block
+        min-w-0 truncate text-[color:var(--title-fg,var(--color-foreground))] font-sans *:[svg]:me-1.5
+        [&_svg:not([class*='size-'])]:size-3.5 group-data-[size=sm]/code-block:text-caption;
+    @variant group-[.ui-code-block-variant-destructive]/code-block {
+        color: var(--title-fg, var(--color-destructive));
+    }
+}
+.ui-code-block {
+    @apply text-body flex flex-col overflow-hidden relative w-full rounded-lg data-[size=sm]:text-caption
+        has-[>.ui-code-block-content:focus-visible]:ring-3 min-w-0;
+    @variant has-[>.ui-code-block-content:focus-visible] {
+        --tw-ring-color: var(--focus-ring, var(--ring-50));
+    }
+}
+.ui-code-block-header {
+    @apply *:has-[>.ui-code-block-title]:min-w-0 flex items-center min-w-0 shrink-0
+        text-[color:var(--header-fg,var(--color-muted-foreground))] gap-2 px-3 pt-3
+        group-data-[size=sm]/code-block:px-2.5 group-data-[size=sm]/code-block:pt-2.5;
+    @variant group-[.ui-code-block-variant-destructive]/code-block {
+        color: var(--header-fg, var(--color-destructive));
+    }
+}
+.ui-code-block-content {
+    @apply [counter-reset:line_var(--code-line-start,0)] data-wrap:whitespace-pre-wrap
+        data-wrap:wrap-break-word font-mono min-h-0 min-w-0 outline-none overflow-auto scrollbar-thin
+        text-start px-3 py-3 leading-relaxed group-has-[.ui-code-block-header]/code-block:pt-2
+        group-has-[.ui-code-block-footer]/code-block:pb-2 group-data-[size=sm]/code-block:px-2.5
+        group-data-[size=sm]/code-block:py-2.5
+        group-data-[size=sm]/code-block:group-has-[.ui-code-block-header]/code-block:pt-1.5
+        text-[length:inherit];
+}
+.ui-code-block-line {
+    @apply after:absolute after:select-none after:top-0 block in-data-numbered:[counter-increment:line]
+        in-data-numbered:before:content-[counter(line)] in-data-numbered:before:select-none
+        in-data-numbered:col-span-2 in-data-numbered:grid in-data-numbered:grid-cols-subgrid
+        in-data-numbered:supports-[content:counter(line)_/_'']:before:content-[counter(line)_/_'']
+        min-h-lh relative -mx-3 px-3 in-data-numbered:gap-x-3 before:min-w-6 before:text-end
+        after:start-1 group-data-[size=sm]/code-block:-mx-2.5 group-data-[size=sm]/code-block:px-2.5;
+    @variant before {
+        color: var(--line-fg, var(--color-muted-foreground));
+    }
+    @variant after {
+        color: var(--line-fg, var(--color-muted-foreground));
+    }
+}
+.ui-code-block-footer {
+    @apply flex items-center min-w-0 shrink-0 text-[color:var(--footer-fg,var(--color-muted-foreground))]
+        gap-2 px-3 pb-3 group-data-[size=sm]/code-block:px-2.5 group-data-[size=sm]/code-block:pb-2.5;
+}
+.ui-code-block.ui-code-block-variant-default {
+    @apply border-[color:var(--border,var(--color-input))] text-[color:var(--fg,var(--color-foreground))]
+        border;
+    @variant ui-dark {
+        background-color: var(--bg, var(--input-30));
+    }
+    @variant has-[>.ui-code-block-content:focus-visible] {
+        border-color: var(--focus-border, var(--color-ring));
+    }
+}
+.ui-code-block.ui-code-block-variant-destructive {
+    @apply border-[color:var(--border,var(--destructive-30))]
+        text-[color:var(--fg,var(--color-destructive))] border;
+    @variant ui-dark {
+        border-color: var(--border, var(--destructive-40));
+    }
+}
+.ui-code-block-actions {
+    @apply ms-auto flex shrink-0 items-center [.ui-code-block>&]:absolute [.ui-code-block>&]:z-10
+        [.ui-code-block>&]:opacity-0 [.ui-code-block>&]:transition-opacity
+        [.ui-code-block>&]:group-focus-within/code-block:opacity-100
+        [.ui-code-block>&]:group-hover/code-block:opacity-100
+        [.ui-code-block>&]:pointer-coarse:opacity-100 -my-1 -me-1.5 gap-1 [.ui-code-block>&]:m-0
+        [.ui-code-block>&]:top-2 [.ui-code-block>&]:end-2
+        group-data-[size=sm]/code-block:[.ui-code-block>&]:top-1.5
+        group-data-[size=sm]/code-block:[.ui-code-block>&]:end-1.5 [.ui-code-block>&]:*:[button]:ring-1;
+    @variant [.ui-code-block>&]:*:[button] {
+        background-color: var(--part-bg, var(--color-background));
+        --tw-ring-color: var(--part-ring, var(--foreground-10));
+    }
+}
+.ui-code-block-content[data-wrap] {
+    --_scroll-fade-size-t: var(
+        --scroll-fade-t-size,
+        var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
+    );
+    --_scroll-fade-size-b: var(
+        --scroll-fade-b-size,
+        var(--scroll-fade-size, min(12%, calc(var(--spacing) * 10)))
+    );
+    --scroll-fade-block: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--scroll-fade-t, 0px),
+        #000 calc(100% - var(--scroll-fade-b, 0px)),
+        transparent 100%
+    );
+    -webkit-mask-image: var(--scroll-fade-mask, var(--scroll-fade-block));
+    mask-image: var(--scroll-fade-mask, var(--scroll-fade-block));
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    @supports (animation-timeline: scroll()) {
+        animation:
+            scroll-fade-reveal-t 1ms ease-in-out,
+            scroll-fade-reveal-b 1ms ease-in-out;
+        animation-timeline: scroll(self y), scroll(self y);
+        animation-range:
+            0 var(--scroll-fade-reveal, calc(var(--spacing) * 24)),
+            calc(100% - var(--scroll-fade-reveal, calc(var(--spacing) * 24))) 100%;
+        animation-fill-mode: both;
+    }
+
+    @supports not (animation-timeline: scroll()) {
+        --scroll-fade-t: var(--_scroll-fade-size-t);
+        --scroll-fade-b: var(--_scroll-fade-size-b);
+    }
+}
+.ui-code-block-line-content {
+    @apply min-w-0;
+}
+.ui-code-block-line:is(.ui-code-block-line-variant-added, .ui-code-block-line-variant-highlighted) {
+    background-color: var(--part-bg, var(--color-muted));
+}
+.ui-code-block-line.ui-code-block-line-variant-added {
+    @apply after:content-['+'];
+}
+.ui-code-block-line.ui-code-block-line-variant-removed {
+    background-color: var(--part-bg, var(--destructive-10));
+    @variant after {
+        @apply content-['−'] text-[color:var(--line-fg,var(--color-destructive))];
+    }
+}
+.ui-code-block-code {
+    @apply grid min-h-lh min-w-max content-start in-data-numbered:grid-cols-[auto_1fr] in-data-wrap:min-w-0;
+}

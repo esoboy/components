@@ -1,0 +1,12 @@
+.ui-context-menu-content {
+    @apply origin-(--transform-origin) z-50 min-w-36;
+}
+.ui-context-menu-sub-content {
+    @apply min-w-36;
+}
+.ui-context-menu-shortcut {
+    @apply ml-auto;
+    @variant group-focus/context-menu-item {
+        color: var(--shortcut-focus-fg, var(--color-accent-foreground));
+    }
+}

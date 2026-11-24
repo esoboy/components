@@ -1,0 +1,61 @@
+:where(.ui-alert-dialog-footer) {
+    border-color: var(--footer-border, var(--color-border));
+}
+:where(.ui-alert-dialog-content) {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--panel-border, var(--color-border));
+    background: var(--panel-bg, var(--color-background));
+}
+.ui-alert-dialog-content {
+    @apply z-50 gap-4 rounded-xl p-4 duration-100
+        bg-[color:var(--panel-bg,var(--color-popover))]
+        text-[color:var(--panel-fg,var(--color-popover-foreground))]
+        ring-[color:var(--panel-ring,var(--foreground-10))] [border-width:0]
+        [outline:1px_solid_var(--tw-ring-color)] [box-shadow:var(--panel-shadow,var(--shadow-dialog))]
+        [width:calc(100vw_-_2rem)];
+    @variant data-[size=default] {
+        @apply max-w-xs;
+    }
+    @variant data-[size=sm] {
+        @apply max-w-xs;
+    }
+    @variant data-[size=default]:sm {
+        @apply max-w-sm;
+    }
+}
+.ui-alert-dialog-header {
+    @apply mb-0 grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center
+        has-[.ui-alert-dialog-media]:grid-rows-[auto_auto_1fr] has-[.ui-alert-dialog-media]:gap-x-4
+        sm:group-data-[size=default]/alert-dialog-content:place-items-start
+        sm:group-data-[size=default]/alert-dialog-content:text-left
+        sm:group-data-[size=default]/alert-dialog-content:has-[.ui-alert-dialog-media]:grid-rows-[auto_1fr];
+}
+.ui-alert-dialog-footer {
+    @apply -mx-4 -mb-4 rounded-b-xl border-t bg-[color:var(--footer-bg,var(--muted-50))] p-4 flex
+        justify-end gap-2 mt-0 flex-col-reverse group-data-[size=sm]/alert-dialog-content:grid
+        group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end;
+}
+.ui-alert-dialog-title {
+    @apply font-medium text-title
+        sm:group-data-[size=default]/alert-dialog-content:group-has-[.ui-alert-dialog-media]/alert-dialog-content:col-start-2;
+}
+.ui-alert-dialog-description {
+    @apply text-body text-[color:var(--description-fg,var(--color-muted-foreground))] *:[a]:underline
+        *:[a]:underline-offset-3 text-balance md:text-pretty;
+    @variant *:[a]:hover {
+        color: var(--description-hover-fg, var(--color-foreground));
+    }
+}
+.ui-alert-dialog-content[open] {
+    display: grid;
+}
+.ui-alert-dialog-media {
+    @apply bg-[color:var(--media-bg,var(--color-muted))] mb-2 inline-flex size-10 items-center
+        justify-center rounded-md sm:group-data-[size=default]/alert-dialog-content:row-span-2
+        *:[svg:not([class*='size-'])]:size-6;
+}
