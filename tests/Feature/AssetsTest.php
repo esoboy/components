@@ -20,7 +20,7 @@ final class AssetsTest extends TestCase
 
     public static function assets(): array
     {
-        return [['ui.js', 'text/javascript'], ['editor.js', 'text/javascript']];
+        return [['ui.js', 'text/javascript'], ['editor.js', 'text/javascript'], ['editor.css', 'text/css']];
     }
 
     #[DataProvider('assets')]
@@ -45,15 +45,17 @@ final class AssetsTest extends TestCase
     public function test_explicit_publication_uses_the_static_url_only_for_a_matching_copy(): void
     {
         URL::useAssetOrigin('https://assets.example.test');
-        $packageUrl = Assets::url('editor.js');
+        $packageUrls = ['editor.js' => Assets::url('editor.js'), 'editor.css' => Assets::url('editor.css')];
         $this->artisan('vendor:publish', ['--tag' => 'ui-assets'])->assertSuccessful();
 
-        $published = public_path('vendor/esoboy/ui/editor.js');
-        $this->assertFileEquals(dirname(__DIR__, 2).'/resources/dist/editor.js', $published);
-        $this->assertSame('https://assets.example.test/vendor/esoboy/ui/editor.js?v='.hash_file('xxh128', $published), Assets::url('editor.js'));
+        foreach ($packageUrls as $file => $packageUrl) {
+            $published = public_path('vendor/esoboy/ui/'.$file);
+            $this->assertFileEquals(Assets::DIRECTORY.'/'.$file, $published);
+            $this->assertSame('https://assets.example.test/vendor/esoboy/ui/'.$file.'?v='.hash_file('xxh128', $published), Assets::url($file));
 
-        file_put_contents($published, 'previous release');
-        $this->assertSame($packageUrl, Assets::url('editor.js'));
+            file_put_contents($published, 'previous release');
+            $this->assertSame($packageUrl, Assets::url($file));
+        }
     }
 
     public function test_the_layout_directive_loads_the_common_script_once_per_render(): void

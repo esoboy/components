@@ -7,15 +7,21 @@
         @apply relative w-fit has-[select:disabled]:opacity-50;
     }
     .ui-native-select-icon {
-        color: var(--ui-native-select-icon-fg, var(--color-muted-foreground));
+        color: var(--ui-icon-fg, var(--color-muted-foreground));
         @apply pointer-events-none absolute select-none top-1/2 right-2.5 size-4 -translate-y-1/2;
     }
     .ui-accordion {
         @apply flex flex-col w-full;
     }
+    .ui-accordion-summary,
+    .ui-button,
+    .ui-switch,
+    .ui-tabs-tab {
+        @apply transition-all;
+    }
     .ui-accordion-summary {
-        border-color: var(--ui-accordion-summary-border, transparent);
-        @apply aria-disabled:opacity-50 aria-disabled:pointer-events-none border flex flex-1 items-start justify-between outline-none relative transition-all;
+        border-color: var(--ui-part-border, transparent);
+        @apply aria-disabled:opacity-50 aria-disabled:pointer-events-none border flex flex-1 items-start justify-between outline-none relative;
     }
     .ui-accordion-content {
         @apply overflow-hidden;
@@ -26,33 +32,29 @@
     .ui-alert {
         @apply relative w-full;
     }
-    .ui-alert-title {
+    .ui-alert-title,
+    .ui-alert-description {
         @apply [&_a]:underline [&_a]:underline-offset-3;
+    }
+    .ui-alert-title {
         @variant [&_a]:hover {
-            color: var(--ui-alert-title-hover-fg, var(--color-foreground));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-alert-description {
-        @apply [&_a]:underline [&_a]:underline-offset-3;
         @variant [&_a]:hover {
-            color: var(--ui-alert-description-hover-fg, var(--color-foreground));
+            color: var(--ui-description-hover-fg, var(--color-foreground));
         }
     }
     .ui-attachment {
-        background-color: var(--ui-attachment-bg, var(--color-card));
-        color: var(--ui-attachment-fg, var(--color-card-foreground));
+        background-color: var(--ui-bg, var(--color-card));
+        color: var(--ui-fg, var(--color-card-foreground));
         @apply border data-[state=idle]:border-dashed flex flex-wrap max-w-full min-w-0 relative shrink-0 transition-colors;
         @variant data-[state=error] {
-            border-color: var(
-                --ui-attachment-error-border,
-                color-mix(in oklab, var(--color-destructive) 30%, transparent)
-            );
+            border-color: var(--ui-error-border, var(--ui-destructive-30));
         }
         @variant has-[>a,>button]:hover {
-            background-color: var(
-                --ui-attachment-hover-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-muted-50));
         }
     }
     .ui-attachment[data-orientation='horizontal'] {
@@ -68,11 +70,11 @@
         @apply block max-w-full min-w-0 truncate;
     }
     .ui-attachment-description {
-        color: var(--ui-attachment-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
         @apply block min-w-0 truncate;
         @variant group-data-[state=error]/attachment {
             color: var(
-                --ui-attachment-description-error-fg,
+                --ui-part-fg,
                 color-mix(in oklab, var(--color-destructive) 80%, transparent)
             );
         }
@@ -86,7 +88,7 @@
     .ui-avatar {
         @apply after:absolute after:border after:inset-0 after:mix-blend-darken ui-dark:after:mix-blend-lighten flex relative select-none shrink-0;
         @variant after {
-            border-color: var(--ui-avatar-border, var(--color-border));
+            border-color: var(--ui-border, var(--color-border));
         }
     }
     .ui-avatar-image {
@@ -95,40 +97,28 @@
     .ui-avatar-fallback {
         @apply flex group-data-[size=sm]/avatar:text-xs items-center justify-center size-full text-sm;
     }
-    .ui-avatar-badge {
-        @apply absolute bg-blend-color bottom-0 inline-flex items-center justify-center right-0 ring-2 rounded-full select-none z-10;
-    }
     .ui-avatar-group {
         @apply *:[.ui-avatar]:ring-2 -space-x-2 flex;
         @variant *:[.ui-avatar] {
-            --tw-ring-color: var(--ui-avatar-group-ring, var(--color-background));
+            --tw-ring-color: var(--ui-part-ring, var(--color-background));
         }
     }
-    .ui-avatar-group-count {
-        --tw-ring-color: var(--ui-avatar-group-count-ring, var(--color-background));
-        @apply flex items-center justify-center relative ring-2 shrink-0;
+    .ui-badge,
+    .ui-button {
+        @apply inline-flex items-center justify-center shrink-0 whitespace-nowrap;
     }
     .ui-badge {
-        @apply [&>svg]:pointer-events-none focus-visible:ring-[3px] inline-flex items-center justify-center overflow-hidden shrink-0 w-fit whitespace-nowrap;
+        @apply [&>svg]:pointer-events-none focus-visible:ring-[3px] overflow-hidden w-fit;
         @variant aria-invalid {
-            border-color: var(--ui-badge-invalid-border, var(--color-destructive));
-            --tw-ring-color: var(
-                --ui-badge-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            border-color: var(--ui-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-20));
         }
         @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-badge-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-40));
         }
         @variant focus-visible {
-            border-color: var(--ui-badge-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-badge-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-breadcrumb-list {
@@ -152,29 +142,127 @@
     .ui-button-group {
         @apply *:focus-visible:relative *:focus-visible:z-10 [&>.ui-select-trigger:not([class*='w-'])]:w-fit [&>input]:flex-1 flex items-stretch w-fit;
     }
-    .ui-button-group[data-orientation='horizontal'] {
-        @apply *:[:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:rounded-r-none [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:border-l-0 [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:rounded-l-none;
+    .ui-button-group[data-orientation='horizontal']
+        > :is(
+            .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply rounded-r-none;
+    }
+    .ui-button-group[data-orientation='horizontal']
+        > :nth-child(
+            n + 2 of .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply border-l-0 rounded-l-none;
     }
     .ui-button-group[data-orientation='vertical'] {
-        @apply *:[:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:rounded-b-none [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:border-t-0 [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])]:rounded-t-none flex-col;
+        @apply flex-col;
+    }
+    .ui-button-group[data-orientation='vertical']
+        > :is(
+            .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply rounded-b-none;
+    }
+    .ui-button-group[data-orientation='vertical']
+        > :nth-child(
+            n + 2 of .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply border-t-0 rounded-t-none;
+    }
+    .ui-button-group-text,
+    .ui-button,
+    .ui-code-block-title,
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-empty-media,
+    .ui-input-group-text,
+    .ui-item-media,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item,
+    .ui-select-control,
+    .ui-select-option,
+    .ui-tabs-tab,
+    .ui-toggle-control {
+        @apply [&_svg]:pointer-events-none;
     }
     .ui-button-group-text {
-        @apply [&_svg]:pointer-events-none flex items-center;
+        @apply flex items-center;
     }
     .ui-button-group-separator {
         @apply data-[orientation=horizontal]:mx-px data-[orientation=horizontal]:w-auto data-[orientation=vertical]:h-auto data-[orientation=vertical]:my-px relative self-stretch;
     }
-    .ui-button {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center justify-center outline-none select-none shrink-0 transition-all whitespace-nowrap;
+    .ui-button,
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-empty-media,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item,
+    .ui-select-control,
+    .ui-select-option,
+    .ui-sidebar-menu-button,
+    .ui-tabs-tab,
+    .ui-toggle-control {
+        @apply [&_svg]:shrink-0;
     }
-    .ui-calendar-body {
-        background-color: var(--ui-calendar-bg, var(--color-background));
-        @variant in-[.ui-card-content] {
-            background-color: var(--ui-calendar-bg, transparent);
-        }
-        @variant in-[.ui-popover-content] {
-            background-color: var(--ui-calendar-bg, transparent);
-        }
+    .ui-button,
+    .ui-checkbox,
+    .ui-input,
+    .ui-questionnaire-input,
+    .ui-select-control,
+    .ui-sidebar-menu-button,
+    .ui-sidebar-menu-sub-button,
+    .ui-tabs-tab,
+    .ui-textarea,
+    .ui-toggle-control {
+        @apply disabled:opacity-50;
+    }
+    .ui-button,
+    .ui-input,
+    .ui-questionnaire-input,
+    .ui-sidebar-menu-button,
+    .ui-sidebar-menu-sub-button,
+    .ui-tabs-tab,
+    .ui-toggle-control {
+        @apply disabled:pointer-events-none;
+    }
+    .ui-button {
+        @apply outline-none select-none;
     }
     .ui-card {
         @apply flex flex-col;
@@ -188,8 +276,15 @@
     .ui-card-footer {
         @apply flex items-center;
     }
+    .ui-checkbox,
+    .ui-input,
+    .ui-questionnaire-input,
+    .ui-select-control,
+    .ui-textarea {
+        @apply disabled:cursor-not-allowed;
+    }
     .ui-checkbox {
-        @apply after:-inset-x-3 after:-inset-y-2 after:absolute disabled:cursor-not-allowed disabled:opacity-50 outline-none relative shrink-0;
+        @apply after:-inset-x-3 after:-inset-y-2 after:absolute outline-none relative shrink-0;
     }
     .ui-code-block {
         @apply flex flex-col min-w-0 overflow-hidden relative w-full;
@@ -198,7 +293,7 @@
         @apply *:has-[>.ui-code-block-title]:min-w-0 flex items-center min-w-0 shrink-0;
     }
     .ui-code-block-title {
-        @apply [&_svg]:align-middle [&_svg]:inline-block [&_svg]:pointer-events-none min-w-0 truncate;
+        @apply [&_svg]:align-middle [&_svg]:inline-block min-w-0 truncate;
     }
     .ui-code-block-content {
         counter-reset: line var(--ui-code-line-start, 0);
@@ -210,8 +305,12 @@
     .ui-code-block-footer {
         @apply flex items-center min-w-0 shrink-0;
     }
+    .ui-combobox-content,
+    .ui-select-content {
+        @apply origin-(--transform-origin) w-(--anchor-width);
+    }
     .ui-combobox-content {
-        @apply max-w-(--available-width) origin-(--transform-origin) w-(--anchor-width);
+        @apply max-w-(--available-width);
     }
     .ui-combobox-chip {
         @apply has-disabled:cursor-not-allowed has-disabled:opacity-50 has-disabled:pointer-events-none;
@@ -219,14 +318,40 @@
     .ui-command-body {
         @apply flex w-full flex-col overflow-hidden;
     }
-    .ui-context-menu-content {
+    .ui-context-menu-content,
+    .ui-dropdown-menu-content {
         @apply origin-(--transform-origin) outline-none z-50;
     }
-    .ui-context-menu-checkbox-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-hover-card-content,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item,
+    .ui-popover-content,
+    .ui-select-option,
+    .ui-sidebar-group-label,
+    .ui-sidebar-group-action,
+    .ui-sidebar-menu-button,
+    .ui-sidebar-menu-action,
+    .ui-sidebar-menu-sub-button {
+        @apply outline-hidden;
     }
-    .ui-context-menu-radio-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item {
+        @apply cursor-default ui-disabled:pointer-events-none flex items-center relative select-none;
+    }
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-checkbox-item {
+        @apply ui-disabled:opacity-50;
     }
     .ui-dialog-content-variant-default {
         @apply outline-none w-full z-50;
@@ -238,16 +363,10 @@
         @apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
     }
     .ui-dropdown-menu-content {
-        @apply origin-(--transform-origin) outline-none w-(--anchor-width) z-50;
+        @apply w-(--anchor-width);
     }
     .ui-dropdown-menu-sub-content {
         @apply w-auto;
-    }
-    .ui-dropdown-menu-checkbox-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
-    }
-    .ui-dropdown-menu-radio-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
     }
     .ui-empty {
         @apply flex flex-1 flex-col items-center justify-center min-w-0 text-balance text-center w-full;
@@ -257,13 +376,13 @@
         @apply flex flex-col items-center max-w-sm;
     }
     .ui-empty-media {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 flex items-center justify-center shrink-0;
+        @apply flex items-center justify-center shrink-0;
     }
     .ui-empty-description {
-        color: var(--ui-empty-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
         @apply [&>a]:underline [&>a]:underline-offset-4;
         @variant [&>a:hover] {
-            color: var(--ui-empty-description-hover-fg, var(--color-primary));
+            color: var(--ui-description-hover-fg, var(--color-primary));
         }
     }
     .ui-empty-content {
@@ -300,53 +419,36 @@
         @apply relative;
     }
     .ui-field-separator-content {
-        background-color: var(--ui-field-separator-content-bg, var(--color-background));
+        background-color: var(--ui-separator-content-bg, var(--color-background));
         @apply block mx-auto relative w-fit;
     }
     .ui-field-error {
         @apply font-normal;
     }
-    .ui-hover-card-content {
-        @apply origin-(--transform-origin) outline-hidden z-50;
-    }
-    .ui-input-group-addon {
-        @apply cursor-text flex items-center justify-center select-none;
-    }
-    .ui-input-group-addon[data-align='inline-start'] {
-        @apply order-first;
-    }
-    .ui-input-group-addon[data-align='inline-end'] {
-        @apply order-last;
-    }
-    .ui-input-group-addon[data-align='block-start'] {
-        @apply justify-start order-first w-full;
-    }
-    .ui-input-group-addon[data-align='block-end'] {
-        @apply justify-start order-last w-full;
-    }
-    .ui-input-group-button {
-        @apply flex items-center shadow-none;
-    }
-    .ui-input-group-text {
-        @apply [&_svg]:pointer-events-none flex items-center;
-    }
-    .ui-input-group-input {
-        @apply flex-1;
-    }
-    .ui-input-group-textarea {
-        @apply flex-1 resize-none;
+    .ui-hover-card-content,
+    .ui-popover-content,
+    .ui-tooltip-content {
+        @apply origin-(--transform-origin) z-50;
     }
     .ui-input-otp-separator {
         @apply flex items-center;
     }
-    .ui-input {
-        @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none file:border-0 file:inline-flex min-w-0 outline-none w-full;
-        @variant file {
-            background-color: var(--ui-input-file-bg, transparent);
-            color: var(--ui-input-file-fg, var(--color-foreground));
-        }
+    .ui-input,
+    .ui-select-control,
+    .ui-textarea {
+        @apply outline-none;
+    }
+    .ui-input,
+    .ui-textarea {
         @variant placeholder {
-            color: var(--ui-input-placeholder-fg, var(--color-muted-foreground));
+            color: var(--ui-placeholder-fg, var(--color-muted-foreground));
+        }
+    }
+    .ui-input {
+        @apply file:border-0 file:inline-flex min-w-0 w-full;
+        @variant file {
+            background-color: var(--ui-file-bg, transparent);
+            color: var(--ui-file-fg, var(--color-foreground));
         }
     }
     .ui-item-group {
@@ -355,15 +457,12 @@
     .ui-item {
         @apply [a]:transition-colors duration-100 flex flex-wrap focus-visible:ring-[3px] items-center outline-none transition-colors w-full;
         @variant focus-visible {
-            border-color: var(--ui-item-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-item-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-item-media {
-        @apply [&_svg]:pointer-events-none flex items-center justify-center shrink-0;
+        @apply flex items-center justify-center shrink-0;
     }
     .ui-item-content {
         @apply [&+.ui-item-content]:flex-none flex flex-1 flex-col;
@@ -374,7 +473,7 @@
     .ui-item-description {
         @apply [&>a]:underline [&>a]:underline-offset-4 font-normal line-clamp-2;
         @variant [&>a:hover] {
-            color: var(--ui-item-description-hover-fg, var(--color-primary));
+            color: var(--ui-description-hover-fg, var(--color-primary));
         }
     }
     .ui-item-actions {
@@ -407,12 +506,6 @@
     .ui-menubar {
         @apply flex items-center;
     }
-    .ui-menubar-checkbox-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
-    }
-    .ui-menubar-radio-item {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none;
-    }
     .ui-menubar-shortcut {
         @apply ml-auto;
     }
@@ -429,13 +522,13 @@
         @apply [contain-intrinsic-size:auto_10rem] [content-visibility:auto] min-w-0 shrink-0;
     }
     .ui-message-scroller-button {
-        background-color: var(--ui-message-scroller-button-bg, var(--color-background));
-        border-color: var(--ui-message-scroller-button-border, var(--color-border));
-        color: var(--ui-message-scroller-button-fg, var(--color-foreground));
+        background-color: var(--ui-button-bg, var(--color-background));
+        border-color: var(--ui-part-border, var(--color-border));
+        color: var(--ui-part-fg, var(--color-foreground));
         @apply -translate-x-1/2 absolute data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=false]:opacity-0 data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[active=true]:opacity-100 data-[active=true]:scale-100 data-[active=true]:translate-y-0 data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:data-[active=false]:-translate-y-full data-[direction=start]:top-4 duration-200 inset-s-1/2 rtl:translate-x-1/2 transition-[translate,scale,opacity];
         @variant hover {
-            background-color: var(--ui-message-scroller-button-hover-bg, var(--color-muted));
-            color: var(--ui-message-scroller-button-hover-fg, var(--color-foreground));
+            background-color: var(--ui-part-bg, var(--color-muted));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-message-group {
@@ -445,7 +538,7 @@
         @apply data-[align=end]:flex-row-reverse flex min-w-0 relative w-full;
     }
     .ui-message-avatar {
-        background-color: var(--ui-message-avatar-bg, var(--color-muted));
+        background-color: var(--ui-part-bg, var(--color-muted));
         @apply flex items-center justify-center overflow-hidden rounded-full self-end shrink-0 w-fit;
     }
     .ui-message-content {
@@ -458,7 +551,7 @@
         @apply flex group-data-[align=end]/message:justify-end items-center max-w-full min-w-0;
     }
     .ui-navigation-menu {
-        @apply flex flex-1 items-center justify-center max-w-max relative;
+        @apply flex flex-1 items-center justify-center relative;
     }
     .ui-navigation-menu-list {
         @apply flex flex-1 items-center justify-center list-none;
@@ -477,10 +570,10 @@
         @apply flex items-center;
     }
     .ui-pagination-ellipsis {
-        @apply flex items-center justify-center;
+        @apply flex;
     }
     .ui-popover-content {
-        @apply origin-(--transform-origin) outline-hidden w-72 z-50;
+        @apply w-72;
     }
     .ui-progress {
         @apply flex flex-wrap gap-3;
@@ -488,91 +581,60 @@
     .ui-progress-track {
         @apply flex items-center overflow-x-hidden relative w-full;
     }
-    .ui-questionnaire-body {
-        @apply flex flex-col min-w-0 w-full;
-    }
-    .ui-questionnaire-progress {
-        color: var(--ui-questionnaire-progress-fg, var(--color-muted-foreground));
-        @apply font-medium min-h-[1lh] min-w-[14ch] tabular-nums w-fit;
-    }
-    .ui-questionnaire-item {
-        @apply border-0 min-w-0 outline-none p-0;
-    }
     .ui-questionnaire-title {
         @apply text-pretty;
     }
     .ui-questionnaire-description {
-        color: var(--ui-questionnaire-description-fg, var(--color-muted-foreground));
         @apply text-pretty;
     }
-    .ui-questionnaire-choices {
-        @apply grid min-w-0;
-    }
-    .ui-questionnaire-choice {
-        @apply cursor-pointer flex items-start min-h-11 outline-none relative select-none text-start transition-colors;
-    }
-    .ui-questionnaire-choice-input {
-        @apply absolute cursor-pointer inset-0 opacity-0 size-full z-10;
+    .ui-questionnaire-choice,
+    .ui-questionnaire-input {
+        @apply outline-none;
     }
     .ui-questionnaire-choice-indicator {
-        @apply border flex group-data-[type=radio]/questionnaire-choice:rounded-full items-center justify-center pointer-events-none relative shrink-0;
-    }
-    .ui-questionnaire-choice-label {
-        @apply flex flex-1 flex-col leading-snug min-w-0;
+        @apply group-data-[type=radio]/questionnaire-choice:rounded-full;
     }
     .ui-questionnaire-input {
-        @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none min-h-11 min-w-0 outline-none sm:min-h-0 transition-[color,box-shadow,background-color] w-full;
-    }
-    .ui-questionnaire-error {
-        color: var(--ui-questionnaire-error-fg, var(--color-destructive));
-    }
-    .ui-questionnaire-actions {
-        @apply grid grid-cols-[minmax(0,1fr)_auto_auto] items-center min-h-11 w-full;
+        @apply transition-[color,box-shadow,background-color];
     }
     .ui-questionnaire-previous {
-        @apply col-start-1 justify-self-start min-h-11 row-start-1 sm:min-h-0;
+        @apply min-h-11 sm:min-h-0;
     }
     .ui-questionnaire-skip {
-        @apply col-start-2 justify-self-end min-h-11 row-start-1 sm:min-h-0;
+        @apply min-h-11 sm:min-h-0;
     }
     .ui-questionnaire-next {
-        @apply col-start-3 justify-self-end min-h-11 row-start-1 sm:min-h-0;
+        @apply min-h-11 sm:min-h-0;
     }
     .ui-questionnaire-submit {
-        @apply col-start-3 justify-self-end min-h-11 row-start-1 sm:min-h-0;
-    }
-    .ui-radio-group {
-        @apply w-full;
+        @apply min-h-11 sm:min-h-0;
     }
     .ui-resizable {
         @apply aria-[orientation=vertical]:flex-col flex h-full w-full;
     }
     .ui-resizable-handle {
-        background-color: var(--ui-resizable-handle-bg, var(--color-border));
-        --tw-ring-offset-color: var(--ui-resizable-handle-ring-offset, var(--color-background));
+        background-color: var(--ui-part-bg, var(--color-border));
+        --tw-ring-offset-color: var(--ui-part-ring-offset, var(--color-background));
         @apply [&[aria-orientation=horizontal]>div]:rotate-90 after:-translate-x-1/2 after:absolute after:inset-y-0 after:left-1/2 after:w-1 aria-[orientation=horizontal]:after:-translate-y-1/2 aria-[orientation=horizontal]:after:h-1 aria-[orientation=horizontal]:after:left-0 aria-[orientation=horizontal]:after:translate-x-0 aria-[orientation=horizontal]:after:w-full aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full flex focus-visible:outline-hidden focus-visible:ring-1 items-center justify-center relative w-px;
         @variant focus-visible {
-            --tw-ring-color: var(--ui-resizable-handle-focus-ring, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--color-ring));
         }
     }
     .ui-scroll-area-viewport {
         @apply focus-visible:outline-1 focus-visible:ring-[3px] outline-none rounded-[inherit] size-full transition-[color,box-shadow];
         @variant focus-visible {
-            --tw-ring-color: var(
-                --ui-scroll-area-viewport-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
     }
     .ui-select-control {
-        @apply *:[.ui-select-value]:flex *:[.ui-select-value]:items-center *:[.ui-select-value]:line-clamp-1 [&_svg]:pointer-events-none [&_svg]:shrink-0 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-between outline-none w-fit whitespace-nowrap;
+        @apply *:[.ui-select-value]:items-center *:[.ui-select-value]:line-clamp-1 flex items-center justify-between w-fit whitespace-nowrap;
     }
     .ui-select-content {
-        @apply data-[align-trigger=true]:animate-none isolate origin-(--transform-origin) w-(--anchor-width) z-50;
+        @apply data-[align-trigger=true]:animate-none isolate z-50;
         max-width: none;
     }
     .ui-select-option {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center outline-hidden relative select-none w-full;
+        @apply cursor-default ui-disabled:opacity-50 ui-disabled:pointer-events-none flex items-center select-none w-full;
     }
     .ui-sheet-content {
         @apply data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-ending-style:opacity-0 data-starting-style:opacity-0;
@@ -596,10 +658,14 @@
         @apply flex flex-col min-w-0 relative w-full;
     }
     .ui-sidebar-group-label {
-        @apply [&>svg]:shrink-0 flex items-center outline-hidden shrink-0;
+        @apply [&>svg]:shrink-0 flex items-center shrink-0;
+    }
+    .ui-sidebar-group-action,
+    .ui-sidebar-menu-action {
+        @apply [&>svg]:shrink-0 after:-inset-2 after:absolute flex group-data-[collapsible=icon]:hidden items-center justify-center md:after:hidden transition-transform;
     }
     .ui-sidebar-group-action {
-        @apply [&>svg]:shrink-0 after:-inset-2 after:absolute aspect-square flex group-data-[collapsible=icon]:hidden items-center justify-center md:after:hidden outline-hidden transition-transform;
+        @apply aspect-square;
     }
     .ui-sidebar-group-content {
         @apply w-full;
@@ -608,77 +674,65 @@
         @apply flex flex-col min-w-0 w-full;
     }
     .ui-sidebar-menu-button {
-        @apply [&>span:last-child]:truncate [&_svg]:shrink-0 [&_svg]:size-4 aria-disabled:opacity-50 aria-disabled:pointer-events-none disabled:opacity-50 disabled:pointer-events-none flex items-center outline-hidden overflow-hidden w-full;
-    }
-    .ui-sidebar-menu-action {
-        @apply [&>svg]:shrink-0 after:-inset-2 after:absolute flex group-data-[collapsible=icon]:hidden items-center justify-center md:after:hidden outline-hidden transition-transform;
+        @apply [&>span:last-child]:truncate [&_svg]:size-4 aria-disabled:opacity-50 aria-disabled:pointer-events-none flex items-center overflow-hidden w-full;
     }
     .ui-sidebar-menu-badge {
-        @apply flex group-data-[collapsible=icon]:hidden items-center justify-center select-none tabular-nums;
+        @apply group-data-[collapsible=icon]:hidden items-center justify-center select-none tabular-nums;
     }
     .ui-sidebar-menu-sub {
         @apply flex flex-col min-w-0;
     }
     .ui-sidebar-menu-sub-button {
-        @apply -translate-x-px [&>span:last-child]:truncate [&>svg]:shrink-0 aria-disabled:opacity-50 aria-disabled:pointer-events-none disabled:opacity-50 disabled:pointer-events-none flex group-data-[collapsible=icon]:hidden items-center min-w-0 outline-hidden overflow-hidden;
+        @apply -translate-x-px [&>span:last-child]:truncate [&>svg]:shrink-0 aria-disabled:opacity-50 aria-disabled:pointer-events-none flex group-data-[collapsible=icon]:hidden items-center min-w-0 overflow-hidden;
     }
     .ui-skeleton {
         @apply animate-pulse;
     }
     .ui-switch {
-        @apply after:-inset-x-3 after:-inset-y-2 after:absolute ui-disabled:cursor-not-allowed ui-disabled:opacity-50 inline-flex items-center outline-none relative transition-all;
+        @apply after:-inset-x-3 after:-inset-y-2 after:absolute ui-disabled:cursor-not-allowed ui-disabled:opacity-50 inline-flex items-center outline-none relative;
     }
     .ui-table-row {
         @variant has-aria-expanded {
-            background-color: var(
-                --ui-table-row-expanded-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-muted-50));
         }
     }
     .ui-tabs {
         @apply data-[orientation=horizontal]:flex-col flex;
     }
     .ui-tabs-list {
-        color: var(--ui-tabs-list-fg, var(--color-muted-foreground));
+        color: var(--ui-list-fg, var(--color-muted-foreground));
         @apply group-data-[orientation=vertical]/tabs:flex-col group-data-[orientation=vertical]/tabs:h-fit inline-flex items-center justify-center w-fit;
     }
     .ui-tabs-list.ui-tabs-list-variant-default {
-        background-color: var(--ui-tabs-list-bg, var(--color-muted));
+        background-color: var(--ui-list-bg, var(--color-muted));
     }
     .ui-tabs-list.ui-tabs-list-variant-line {
-        background-color: var(--ui-tabs-list-bg, transparent);
+        background-color: var(--ui-list-bg, transparent);
         @apply gap-1;
     }
     .ui-tabs-tab {
-        color: var(--ui-tabs-tab-fg, color-mix(in oklab, var(--color-foreground) 60%, transparent));
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 aria-disabled:opacity-50 aria-disabled:pointer-events-none disabled:opacity-50 disabled:pointer-events-none flex-1 focus-visible:outline-1 focus-visible:ring-[3px] group-data-[orientation=vertical]/tabs:justify-start group-data-[orientation=vertical]/tabs:w-full h-[calc(100%-1px)] inline-flex items-center justify-center relative transition-all whitespace-nowrap;
+        color: var(--ui-tab-fg, color-mix(in oklab, var(--color-foreground) 60%, transparent));
+        @apply aria-disabled:opacity-50 aria-disabled:pointer-events-none flex-1 focus-visible:ring-[3px] group-data-[orientation=vertical]/tabs:justify-start group-data-[orientation=vertical]/tabs:w-full h-[calc(100%-1px)] relative whitespace-nowrap;
         @variant ui-dark:hover {
-            color: var(--ui-tabs-tab-hover-fg, var(--color-foreground));
+            color: var(--ui-tab-hover-fg, var(--color-foreground));
         }
         @variant ui-dark {
-            color: var(--ui-tabs-tab-fg, var(--color-muted-foreground));
+            color: var(--ui-tab-fg, var(--color-muted-foreground));
         }
         @variant focus-visible {
-            border-color: var(--ui-tabs-tab-focus-border, var(--color-ring));
-            outline-color: var(--ui-tabs-tab-focus-outline, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-tabs-tab-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-tab-focus-border, var(--color-ring));
+            outline-color: var(--ui-tab-focus-outline, var(--color-ring));
+            --tw-ring-color: var(--ui-tab-focus-ring, var(--ui-ring-50));
         }
         @variant hover {
-            color: var(--ui-tabs-tab-hover-fg, var(--color-foreground));
+            color: var(--ui-tab-hover-fg, var(--color-foreground));
         }
     }
     .ui-tabs-content {
         @apply flex-1 outline-none;
     }
     .ui-textarea {
-        @apply disabled:cursor-not-allowed disabled:opacity-50 field-sizing-content flex min-h-16 outline-none w-full;
-        @variant placeholder {
-            color: var(--ui-textarea-placeholder-fg, var(--color-muted-foreground));
-        }
+        @apply field-sizing-content flex min-h-16 w-full;
     }
     .ui-toggle-group {
         @apply data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch flex flex-row gap-[--spacing(var(--gap))] items-center w-fit;
@@ -687,14 +741,14 @@
         @apply focus-visible:z-10 focus:z-10 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:[&.ui-toggle-group-item-variant-outline]:border-l-0 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:[&.ui-toggle-group-item-variant-outline]:first:border-l group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:[&.ui-toggle-group-item-variant-outline]:border-t-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:[&.ui-toggle-group-item-variant-outline]:first:border-t shrink-0;
     }
     .ui-toggle-control {
-        @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 disabled:opacity-50 disabled:pointer-events-none focus-visible:ring-[3px] inline-flex items-center justify-center outline-none whitespace-nowrap;
+        @apply focus-visible:ring-[3px] outline-none;
         @variant hover {
-            background-color: var(--ui-toggle-control-hover-bg, var(--color-muted));
+            background-color: var(--ui-control-hover-bg, var(--color-muted));
         }
     }
     .ui-tooltip-content {
-        background-color: var(--ui-tooltip-content-bg, var(--color-foreground));
-        color: var(--ui-tooltip-content-fg, var(--color-background));
-        @apply max-w-xs origin-(--transform-origin) w-fit z-50;
+        background-color: var(--ui-panel-bg, var(--color-foreground));
+        color: var(--ui-panel-fg, var(--color-background));
+        @apply max-w-xs w-fit;
     }
 }

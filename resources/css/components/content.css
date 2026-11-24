@@ -18,26 +18,26 @@
         inset: auto auto 1rem 1rem;
     }
     .ui-toast {
-        color: var(--ui-toast-fg, inherit);
+        color: var(--ui-fg, inherit);
         will-change: transform;
         pointer-events: auto;
-        background: var(--ui-toast-bg, var(--color-popover));
-        border: 1px solid var(--ui-toast-border, var(--ui-status-ink, var(--color-border)));
-        @apply rounded-ui-2xl shadow-lg outline-none;
+        background: var(--ui-bg, var(--color-popover));
+        border: 1px solid var(--ui-border, var(--ui-status-ink, var(--color-border)));
+        @apply shadow-lg outline-none;
     }
     .ui-toast-content {
         @apply flex h-full items-center gap-3 overflow-hidden p-4;
     }
     .ui-toast > .ui-icon,
     .ui-toast-content > .ui-icon {
-        color: var(--ui-toast-icon, var(--ui-status-ink, currentColor));
+        color: var(--ui-icon-fg, var(--ui-status-ink, currentColor));
     }
     .ui-toast-title {
-        color: var(--ui-toast-title-fg, inherit);
+        color: var(--ui-title-fg, inherit);
         @apply text-sm font-medium;
     }
     .ui-toast-description {
-        color: var(--ui-toast-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
         @apply text-sm;
     }
     .ui-toast-actions {
@@ -46,25 +46,22 @@
         justify-content: flex-end;
     }
     .ui-toast-close > .ui-button-variant-ghost {
-        color: var(--ui-toast-close-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply relative shrink-0 after:absolute after:-inset-2 after:content-[''];
         @variant hover {
-            color: var(--ui-toast-close-hover-fg, var(--color-foreground));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-toast.ui-toast-variant-destructive {
-        border-color: var(--ui-toast-border, var(--ui-status-ink, var(--color-destructive)));
+        border-color: var(--ui-border, var(--ui-status-ink, var(--color-destructive)));
     }
     .ui-mentions-body {
         position: relative;
     }
     .ui-mentions-suggestions {
-        background-color: var(--ui-mentions-suggestions-bg, var(--color-popover));
-        color: var(--ui-mentions-suggestions-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-mentions-suggestions-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
+        background-color: var(--ui-part-bg, var(--color-popover));
+        color: var(--ui-part-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-part-ring, var(--ui-foreground-10));
         @apply mt-1 rounded-ui-lg p-1 shadow-md ring-1;
     }
     .ui-signature-body {
@@ -76,12 +73,12 @@
         position: relative;
         width: 100%;
         height: 12rem;
-        border: 1px solid var(--ui-signature-surface-border, var(--color-border));
+        border: 1px solid var(--ui-canvas-border, var(--color-border));
         border-radius: var(--radius-ui-lg);
-        background: var(--ui-signature-surface-bg, var(--color-background));
+        background: var(--ui-canvas-bg, var(--color-background));
     }
     .ui-signature-surface canvas {
-        color: var(--ui-signature-ink, inherit);
+        color: var(--ui-ink, inherit);
         position: absolute;
         inset: 0;
         width: 100%;
@@ -104,8 +101,8 @@
     }
     .ui-cropper-frame {
         position: absolute;
-        border: 2px solid var(--ui-cropper-frame-border, white);
-        box-shadow: 0 0 0 9999px var(--ui-cropper-mask-bg, #0006);
+        border: 2px solid var(--ui-frame-border, white);
+        box-shadow: 0 0 0 9999px var(--ui-part-bg, #0006);
         cursor: move;
     }
     .ui-cropper-resize {
@@ -114,8 +111,8 @@
         bottom: -5px;
         width: 10px;
         height: 10px;
-        background: var(--ui-cropper-resize-bg, white);
-        border: 1px solid var(--ui-cropper-resize-border, black);
+        background: var(--ui-part-bg, white);
+        border: 1px solid var(--ui-part-border, black);
         cursor: nwse-resize;
     }
     [data-ui-media-trigger][role='button'] {
@@ -153,19 +150,19 @@
     .ui-tour-content {
         position: fixed;
         width: min(22rem, calc(100vw - 2rem));
-        background-color: var(--ui-tour-content-bg, var(--color-popover));
-        color: var(--ui-tour-content-fg, var(--color-popover-foreground));
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
         @apply rounded-ui-xl border p-4 text-sm shadow-lg;
     }
     .ui-tour-content::backdrop {
-        background: var(--ui-tour-content-backdrop-bg, #0003);
+        background: var(--ui-panel-backdrop-bg, #0003);
     }
     .ui-tour-title {
         @apply mb-1 text-base font-medium leading-none;
     }
     .ui-tour-description {
         font-size: 0.875rem;
-        color: var(--ui-tour-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
     }
     .ui-tour-footer {
         display: flex;
@@ -215,14 +212,11 @@
             height 150ms;
         user-select: none;
         touch-action: none;
-        color: var(--ui-toast-fg, var(--color-popover-foreground));
+        color: var(--ui-fg, var(--color-popover-foreground));
         @apply focus-visible:ring-3;
         @variant focus-visible {
-            border-color: var(--ui-toast-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-toast-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-toaster .ui-toast::after {

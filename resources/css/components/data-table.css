@@ -30,12 +30,12 @@
         @apply flex items-center gap-2 whitespace-nowrap text-sm font-medium;
     }
     .ui-data-table-total {
-        color: var(--ui-data-table-total-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply whitespace-nowrap text-sm tabular-nums;
     }
     .ui-data-table-selection {
-        background-color: var(--ui-data-table-selection-bg, var(--color-popover));
-        color: var(--ui-data-table-selection-fg, var(--color-popover-foreground));
+        background-color: var(--ui-selection-bg, var(--color-popover));
+        color: var(--ui-selection-fg, var(--color-popover-foreground));
         @apply z-10 mx-auto flex w-fit max-w-full flex-wrap items-center gap-2 rounded-ui-lg border p-1.5 shadow-md;
     }
     .ui-data-table-selection > [role='status'] {
@@ -60,7 +60,7 @@
         @apply text-sm font-medium;
     }
     .ui-table-columns > header > :last-child {
-        color: var(--ui-table-columns-fg, var(--color-muted-foreground));
+        color: var(--ui-columns-fg, var(--color-muted-foreground));
         @apply text-xs;
     }
     .ui-table-columns > fieldset {
@@ -69,11 +69,11 @@
     .ui-table-columns [data-key] {
         @apply flex min-h-8 items-center gap-2 rounded-ui-md px-1.5 [&.sortable-ghost]:opacity-50;
         @variant hover {
-            background-color: var(--ui-table-columns-hover-bg, var(--color-accent));
-            color: var(--ui-table-columns-hover-fg, var(--color-accent-foreground));
+            background-color: var(--ui-part-bg, var(--color-accent));
+            color: var(--ui-part-fg, var(--color-accent-foreground));
         }
         @variant [&.sortable-ghost] {
-            background-color: var(--ui-table-columns-bg, var(--color-accent));
+            background-color: var(--ui-part-bg, var(--color-accent));
         }
     }
     .ui-table-columns [data-key] > label {
@@ -86,11 +86,11 @@
         @apply truncate;
     }
     .ui-table-column-pin {
-        color: var(--ui-table-column-pin-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply inline-flex items-center gap-1 whitespace-nowrap text-xs;
     }
     .ui-table-columns [data-column-handle] {
-        color: var(--ui-table-columns-fg, var(--color-muted-foreground));
+        color: var(--ui-columns-fg, var(--color-muted-foreground));
         @apply touch-none cursor-grab active:cursor-grabbing;
     }
     .ui-table-columns > footer {
@@ -121,7 +121,7 @@
         text-align: center;
     }
     .ui-data-table [data-fixed] {
-        background-color: var(--ui-data-table-bg, var(--color-background));
+        background-color: var(--ui-bg, var(--color-background));
         @apply sticky z-1;
     }
     .ui-data-table [data-fixed='start'] {
@@ -132,12 +132,12 @@
     }
     .ui-data-table tr:hover > [data-fixed] {
         background: var(
-            --ui-data-table-hover-bg,
+            --ui-hover-bg,
             color-mix(in oklab, var(--color-muted) 50%, var(--color-background))
         );
     }
     .ui-data-table tr[data-state='selected'] > [data-fixed] {
-        background-color: var(--ui-data-table-bg, var(--color-muted));
+        background-color: var(--ui-bg, var(--color-muted));
     }
 
     .ui-data-table-footer > .ui-pagination {

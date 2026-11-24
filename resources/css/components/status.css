@@ -3,21 +3,19 @@
         --ui-status-fill: initial;
         --ui-status-on-fill: initial;
         --ui-status-ink: initial;
-        --ui-status-body-fg: initial;
-        --ui-status-description-fg: initial;
         --ui-status-soft-bg: color-mix(in oklch, var(--ui-status-fill) 12%, transparent);
         --ui-status-hover-bg: color-mix(in oklch, var(--ui-status-fill) 20%, transparent);
     }
 
-    .ui-alert:is(
+    .ui-alert-variant-destructive:is(
         .ui-status-neutral,
         .ui-status-info,
         .ui-status-success,
         .ui-status-warning,
         .ui-status-error
     ) {
-        --ui-status-body-fg: var(--color-card-foreground);
-        --ui-status-description-fg: var(--color-muted-foreground);
+        --ui-fg: var(--color-card-foreground);
+        --ui-description-fg: var(--color-muted-foreground);
     }
 
     .ui-status-neutral {
@@ -30,6 +28,10 @@
             var(--color-secondary),
             var(--color-foreground) 5%
         );
+
+        @variant ui-dark {
+            --ui-status-on-fill: var(--color-white);
+        }
     }
 
     .ui-status-info {

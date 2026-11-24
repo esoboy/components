@@ -18,6 +18,7 @@ import { LinkPopover } from './text-tools'
 import { EmbedDialog, EmbedTools } from './iframe'
 import { Toolbar, ToolbarGroup } from './tiptap-ui/primitives'
 import { editor as editorControl } from '../behaviors/editor.js'
+import './style.css'
 
 const bubbleOptions = {
     placement: 'top',

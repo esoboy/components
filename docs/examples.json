@@ -54,7 +54,7 @@
   "pagination": "<x-ui::pagination><x-ui::pagination.content><x-ui::pagination.item><x-ui::pagination.link href=\"?page=1\"\n                :active=\"true\">1</x-ui::pagination.link></x-ui::pagination.item><x-ui::pagination.item><x-ui::pagination.link\n                href=\"?page=2\">2</x-ui::pagination.link></x-ui::pagination.item></x-ui::pagination.content></x-ui::pagination>",
   "password-input": "<x-ui::password-input aria-label=\"password-input\" />",
   "popover": "<x-ui::popover><x-ui::popover.trigger><x-ui::button variant=\"outline\">打开\n            popover</x-ui::button></x-ui::popover.trigger><x-ui::popover.content aria-label=\"示例\">由 Blade\n        渲染的内容。</x-ui::popover.content></x-ui::popover>",
-  "progress": "<x-ui::progress :value=\"65\" aria-label=\"完成度\" class=\"[--ui-progress-fill:var(--color-success)]\" />",
+  "progress": "<x-ui::progress :value=\"65\" aria-label=\"完成度\" class=\"[--ui-fill:var(--color-success)]\" />",
   "qr-code": "<x-ui::qr-code value=\"https://example.com\" />",
   "radio-group": "<x-ui::radio-group aria-label=\"角色\"><label><x-ui::radio-group.item name=\"example-role\" value=\"reader\" />\n        阅读者</label><label><x-ui::radio-group.item name=\"example-role\" value=\"editor\" /> 编辑者</label></x-ui::radio-group>",
   "rating": "<x-ui::rating name=\"example-rating\" :initial-value=\"3\" aria-label=\"评分\" />",

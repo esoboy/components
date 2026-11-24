@@ -1,1327 +1,810 @@
-/* Keep a nested instance on its own variant defaults. Tailwind utilities on the root override this layer. */
+/* Reset each shared part at its owning instance. Parts inherit within a component. */
 @layer components {
+    /* A paint override belongs to the selected part or pseudo-element. */
+    @property --ui-part-bg {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-border {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-caret {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-fg {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-outline {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-ring {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-ring-offset {
+        syntax: '*';
+        inherits: false;
+    }
+    @property --ui-part-shadow {
+        syntax: '*';
+        inherits: false;
+    }
+    :where(
+        .ui-accordion,
+        .ui-alert,
+        .ui-alert-dialog,
+        .ui-attachment,
+        .ui-avatar,
+        .ui-badge,
+        .ui-breadcrumb,
+        .ui-bubble,
+        .ui-button,
+        .ui-button-group,
+        .ui-calendar,
+        .ui-card,
+        .ui-carousel,
+        .ui-cascader,
+        .ui-checkbox,
+        .ui-code-block,
+        .ui-collapsible,
+        .ui-color-picker,
+        .ui-combobox,
+        .ui-command,
+        .ui-context-menu,
+        .ui-cropper,
+        .ui-data-table,
+        .ui-date-picker,
+        .ui-datetime-picker,
+        .ui-description-list,
+        .ui-dialog,
+        .ui-drawer,
+        .ui-dropdown-menu,
+        .ui-empty,
+        .ui-field,
+        .ui-heading,
+        .ui-hover-card,
+        .ui-icon,
+        .ui-icon-select,
+        .ui-image,
+        .ui-input,
+        .ui-input-group,
+        .ui-input-otp,
+        .ui-item,
+        .ui-kbd,
+        .ui-label,
+        .ui-marker,
+        .ui-media-preview,
+        .ui-mentions,
+        .ui-menubar,
+        .ui-message,
+        .ui-message-scroller,
+        .ui-native-select,
+        .ui-navigation-menu,
+        .ui-number-input,
+        .ui-pagination,
+        .ui-password-input,
+        .ui-popover,
+        .ui-progress,
+        .ui-qr-code,
+        .ui-questionnaire,
+        .ui-radio-group,
+        .ui-rating,
+        .ui-resizable,
+        .ui-rich-text,
+        .ui-scroll-area,
+        .ui-select,
+        .ui-separator,
+        .ui-sheet,
+        .ui-sidebar,
+        .ui-signature,
+        .ui-skeleton,
+        .ui-slider,
+        .ui-spinner,
+        .ui-statistic,
+        .ui-steps,
+        .ui-switch,
+        .ui-table,
+        .ui-tabs,
+        .ui-tags-input,
+        .ui-text,
+        .ui-textarea,
+        .ui-time-picker,
+        .ui-timeline,
+        .ui-toast,
+        .ui-toaster,
+        .ui-toggle,
+        .ui-toggle-group,
+        .ui-tooltip,
+        .ui-tour,
+        .ui-trace,
+        .ui-transfer,
+        .ui-tree,
+        .ui-tree-select
+    ) {
+        --ui-fg: initial;
+        color: var(--ui-fg, inherit);
+    }
+    :where(
+        .ui-alert,
+        .ui-attachment,
+        .ui-badge,
+        .ui-bubble,
+        .ui-button,
+        .ui-calendar,
+        .ui-card,
+        .ui-checkbox,
+        .ui-code-block,
+        .ui-color-picker,
+        .ui-command,
+        .ui-data-table,
+        .ui-description-list,
+        .ui-input,
+        .ui-input-group,
+        .ui-item,
+        .ui-kbd,
+        .ui-marker,
+        .ui-native-select,
+        .ui-number-input,
+        .ui-password-input,
+        .ui-qr-code,
+        .ui-separator,
+        .ui-sidebar,
+        .ui-skeleton,
+        .ui-textarea,
+        .ui-toast,
+        .ui-toggle
+    ) {
+        --ui-bg: initial;
+    }
+    :where(
+        .ui-alert,
+        .ui-attachment,
+        .ui-avatar,
+        .ui-badge,
+        .ui-bubble,
+        .ui-button,
+        .ui-checkbox,
+        .ui-code-block,
+        .ui-color-picker,
+        .ui-description-list,
+        .ui-input,
+        .ui-input-group,
+        .ui-item,
+        .ui-marker,
+        .ui-menubar,
+        .ui-native-select,
+        .ui-number-input,
+        .ui-password-input,
+        .ui-switch,
+        .ui-textarea,
+        .ui-toast,
+        .ui-toggle
+    ) {
+        --ui-border: initial;
+    }
+    :where(
+        .ui-alert-dialog,
+        .ui-cascader,
+        .ui-combobox,
+        .ui-context-menu,
+        .ui-date-picker,
+        .ui-datetime-picker,
+        .ui-dialog,
+        .ui-drawer,
+        .ui-dropdown-menu,
+        .ui-icon-select,
+        .ui-media-preview,
+        .ui-menubar,
+        .ui-navigation-menu,
+        .ui-popover,
+        .ui-select,
+        .ui-sheet,
+        .ui-time-picker,
+        .ui-tooltip,
+        .ui-tour,
+        .ui-transfer,
+        .ui-tree-select
+    ) {
+        --ui-panel-bg: initial;
+        --ui-panel-fg: initial;
+    }
+    :where(
+        .ui-alert,
+        .ui-alert-dialog,
+        .ui-attachment,
+        .ui-card,
+        .ui-dialog,
+        .ui-drawer,
+        .ui-empty,
+        .ui-field,
+        .ui-item,
+        .ui-popover,
+        .ui-questionnaire,
+        .ui-sheet,
+        .ui-statistic,
+        .ui-steps,
+        .ui-toast,
+        .ui-tour,
+        .ui-trace
+    ) {
+        --ui-description-fg: initial;
+    }
+    :where(
+        .ui-attachment,
+        .ui-badge,
+        .ui-button,
+        .ui-checkbox,
+        .ui-code-block,
+        .ui-color-picker,
+        .ui-input,
+        .ui-input-group,
+        .ui-item,
+        .ui-native-select,
+        .ui-number-input,
+        .ui-password-input,
+        .ui-rating,
+        .ui-switch,
+        .ui-textarea,
+        .ui-toast,
+        .ui-trace
+    ) {
+        --ui-focus-ring: initial;
+    }
+    :where(
+        .ui-badge,
+        .ui-button,
+        .ui-checkbox,
+        .ui-code-block,
+        .ui-color-picker,
+        .ui-input,
+        .ui-input-group,
+        .ui-item,
+        .ui-native-select,
+        .ui-number-input,
+        .ui-password-input,
+        .ui-switch,
+        .ui-textarea,
+        .ui-toast,
+        .ui-toggle
+    ) {
+        --ui-focus-border: initial;
+    }
+    :where(
+        .ui-alert-dialog,
+        .ui-combobox,
+        .ui-context-menu,
+        .ui-date-picker,
+        .ui-datetime-picker,
+        .ui-dialog,
+        .ui-dropdown-menu,
+        .ui-menubar,
+        .ui-navigation-menu,
+        .ui-popover,
+        .ui-select,
+        .ui-time-picker,
+        .ui-transfer
+    ) {
+        --ui-panel-ring: initial;
+    }
+    :where(
+        .ui-attachment,
+        .ui-badge,
+        .ui-bubble,
+        .ui-button,
+        .ui-color-picker,
+        .ui-data-table,
+        .ui-item,
+        .ui-native-select,
+        .ui-rating,
+        .ui-toggle
+    ) {
+        --ui-hover-bg: initial;
+    }
+    :where(
+        .ui-badge,
+        .ui-button,
+        .ui-checkbox,
+        .ui-color-picker,
+        .ui-input,
+        .ui-input-group,
+        .ui-native-select,
+        .ui-switch,
+        .ui-textarea
+    ) {
+        --ui-invalid-border: initial;
+    }
+    :where(
+        .ui-badge,
+        .ui-button,
+        .ui-checkbox,
+        .ui-input,
+        .ui-input-group,
+        .ui-native-select,
+        .ui-switch,
+        .ui-textarea
+    ) {
+        --ui-invalid-ring: initial;
+    }
+    :where(.ui-alert-dialog, .ui-dialog, .ui-drawer, .ui-media-preview, .ui-sheet, .ui-tour) {
+        --ui-panel-border: initial;
+    }
+    :where(.ui-alert, .ui-alert-dialog, .ui-dialog, .ui-empty, .ui-field, .ui-item) {
+        --ui-description-hover-fg: initial;
+    }
+    :where(
+        .ui-cascader,
+        .ui-date-picker,
+        .ui-datetime-picker,
+        .ui-select,
+        .ui-time-picker,
+        .ui-tree-select
+    ) {
+        --ui-trigger-bg: initial;
+        --ui-trigger-border: initial;
+        --ui-trigger-fg: initial;
+    }
+    :where(
+        .ui-cascader,
+        .ui-input,
+        .ui-native-select,
+        .ui-number-input,
+        .ui-password-input,
+        .ui-textarea
+    ) {
+        --ui-placeholder-fg: initial;
+    }
+    :where(.ui-alert-dialog, .ui-card, .ui-dialog, .ui-table, .ui-transfer) {
+        --ui-footer-bg: initial;
+    }
+    :where(.ui-alert, .ui-code-block, .ui-drawer, .ui-sheet, .ui-toast) {
+        --ui-title-fg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-rich-text, .ui-text) {
+        --ui-link-fg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-toggle-group, .ui-transfer) {
+        --ui-item-hover-bg: initial;
+    }
+    :where(.ui-alert-dialog, .ui-attachment, .ui-empty, .ui-item) {
+        --ui-media-bg: initial;
+    }
+    :where(.ui-alert-dialog, .ui-card, .ui-dialog, .ui-table) {
+        --ui-footer-border: initial;
+    }
+    :where(.ui-alert-dialog, .ui-dialog, .ui-drawer, .ui-sheet) {
+        --ui-panel-shadow: initial;
+    }
+    :where(.ui-badge, .ui-bubble, .ui-button, .ui-marker) {
+        --ui-hover-fg: initial;
+    }
+    :where(.ui-breadcrumb, .ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+        --ui-link-hover-fg: initial;
+    }
+    :where(.ui-button-group, .ui-command, .ui-select, .ui-sidebar) {
+        --ui-separator-bg: initial;
+    }
+    :where(.ui-command, .ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+        --ui-item-focus-bg: initial;
+        --ui-item-focus-fg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-navigation-menu) {
+        --ui-link-focus-bg: initial;
+        --ui-link-hover-bg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-questionnaire) {
+        --ui-shortcut-fg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar, .ui-transfer) {
+        --ui-item-fg: initial;
+        --ui-item-hover-fg: initial;
+    }
+    :where(.ui-date-picker, .ui-datetime-picker, .ui-select, .ui-time-picker) {
+        --ui-trigger-focus-ring: initial;
+        --ui-trigger-hover-bg: initial;
+        --ui-trigger-placeholder-fg: initial;
+    }
+    :where(.ui-number-input, .ui-password-input, .ui-progress, .ui-statistic) {
+        --ui-value-fg: initial;
+    }
+    :where(.ui-accordion, .ui-radio-group, .ui-toggle-group) {
+        --ui-item-border: initial;
+    }
+    :where(.ui-alert, .ui-native-select, .ui-toast) {
+        --ui-icon-fg: initial;
+    }
+    :where(.ui-breadcrumb, .ui-carousel, .ui-pagination) {
+        --ui-page-fg: initial;
+    }
+    :where(.ui-checkbox, .ui-native-select, .ui-toggle) {
+        --ui-checked-bg: initial;
+    }
+    :where(.ui-context-menu, .ui-dropdown-menu, .ui-menubar) {
+        --ui-checkbox-item-focus-bg: initial;
+        --ui-checkbox-item-focus-fg: initial;
+        --ui-link-focus-fg: initial;
+        --ui-radio-item-focus-bg: initial;
+        --ui-radio-item-focus-fg: initial;
+        --ui-shortcut-focus-fg: initial;
+        --ui-sub-panel-bg: initial;
+        --ui-sub-panel-fg: initial;
+        --ui-sub-panel-ring: initial;
+    }
+    :where(.ui-date-picker, .ui-datetime-picker, .ui-time-picker) {
+        --ui-trigger-hover-fg: initial;
+        --ui-trigger-icon: initial;
+    }
+    :where(.ui-input-group, .ui-questionnaire, .ui-sidebar) {
+        --ui-input-bg: initial;
+    }
+    :where(.ui-input, .ui-input-group, .ui-textarea) {
+        --ui-disabled-bg: initial;
+    }
+    :where(.ui-menubar, .ui-statistic, .ui-steps) {
+        --ui-label-fg: initial;
+    }
+    :where(.ui-accordion, .ui-marker) {
+        --ui-content-hover-fg: initial;
+    }
+    :where(.ui-attachment, .ui-empty) {
+        --ui-media-fg: initial;
+    }
+    :where(.ui-breadcrumb, .ui-tabs) {
+        --ui-list-fg: initial;
+    }
+    :where(.ui-bubble, .ui-sidebar) {
+        --ui-content-border: initial;
+    }
+    :where(.ui-carousel, .ui-pagination) {
+        --ui-page-hover-bg: initial;
+    }
+    :where(.ui-checkbox, .ui-native-select) {
+        --ui-checked-fg: initial;
+    }
+    :where(.ui-code-block, .ui-message) {
+        --ui-footer-fg: initial;
+        --ui-header-fg: initial;
+    }
+    :where(.ui-code-block, .ui-trace) {
+        --ui-line-fg: initial;
+    }
+    :where(.ui-color-picker, .ui-tags-input) {
+        --ui-field-fg: initial;
+    }
+    :where(.ui-combobox, .ui-toggle) {
+        --ui-control-border: initial;
+    }
+    :where(.ui-cropper, .ui-data-table) {
+        --ui-frame-border: initial;
+    }
+    :where(.ui-data-table, .ui-native-select) {
+        --ui-selection-bg: initial;
+        --ui-selection-fg: initial;
+    }
+    :where(.ui-drawer, .ui-tour) {
+        --ui-panel-backdrop-bg: initial;
+    }
+    :where(.ui-field, .ui-questionnaire) {
+        --ui-error-fg: initial;
+    }
+    :where(.ui-input, .ui-rich-text) {
+        --ui-file-bg: initial;
+    }
+    :where(.ui-navigation-menu, .ui-sidebar) {
+        --ui-content-bg: initial;
+    }
+    :where(.ui-progress, .ui-slider) {
+        --ui-fill: initial;
+        --ui-track: initial;
+    }
+    :where(.ui-radio-group, .ui-toggle-group) {
+        --ui-item-bg: initial;
+        --ui-item-checked-bg: initial;
+        --ui-item-focus-border: initial;
+    }
+    :where(.ui-scroll-area, .ui-slider) {
+        --ui-thumb: initial;
+    }
+    :where(.ui-sidebar, .ui-timeline) {
+        --ui-content-fg: initial;
+    }
+    :where(.ui-steps, .ui-timeline) {
+        --ui-item-after-bg: initial;
+    }
     :where(.ui-accordion) {
-        --ui-accordion-content-hover-fg: initial;
-        --ui-accordion-fg: initial;
-        --ui-accordion-item-border: initial;
-        --ui-accordion-summary-border: initial;
-        --ui-accordion-summary-fg: initial;
-        --ui-accordion-summary-focus-border: initial;
-        --ui-accordion-summary-focus-ring: initial;
-        color: var(--ui-accordion-fg, inherit);
-    }
-    :where(.ui-alert) {
-        --ui-alert-bg: initial;
-        --ui-alert-border: initial;
-        --ui-alert-description-fg: initial;
-        --ui-alert-description-hover-fg: initial;
-        --ui-alert-fg: initial;
-        --ui-alert-icon: initial;
-        --ui-alert-title-fg: initial;
-        --ui-alert-title-hover-fg: initial;
-        color: var(--ui-alert-fg, inherit);
-    }
-    :where(.ui-alert-dialog) {
-        --ui-alert-dialog-content-bg: initial;
-        --ui-alert-dialog-content-border: initial;
-        --ui-alert-dialog-content-fg: initial;
-        --ui-alert-dialog-content-ring: initial;
-        --ui-alert-dialog-content-shadow: initial;
-        --ui-alert-dialog-description-fg: initial;
-        --ui-alert-dialog-description-hover-fg: initial;
-        --ui-alert-dialog-fg: initial;
-        --ui-alert-dialog-footer-bg: initial;
-        --ui-alert-dialog-footer-border: initial;
-        --ui-alert-dialog-media-bg: initial;
-        color: var(--ui-alert-dialog-fg, inherit);
+        --ui-summary-focus-border: initial;
     }
     :where(.ui-attachment) {
-        --ui-attachment-bg: initial;
-        --ui-attachment-border: initial;
-        --ui-attachment-description-error-fg: initial;
-        --ui-attachment-description-fg: initial;
-        --ui-attachment-error-border: initial;
-        --ui-attachment-fg: initial;
-        --ui-attachment-focus-ring: initial;
-        --ui-attachment-hover-bg: initial;
-        --ui-attachment-media-bg: initial;
-        --ui-attachment-media-error-bg: initial;
-        --ui-attachment-media-error-fg: initial;
-        --ui-attachment-media-fg: initial;
-        color: var(--ui-attachment-fg, inherit);
+        --ui-error-border: initial;
     }
     :where(.ui-avatar) {
-        --ui-avatar-badge-bg: initial;
-        --ui-avatar-badge-fg: initial;
-        --ui-avatar-badge-ring: initial;
-        --ui-avatar-border: initial;
-        --ui-avatar-fallback-bg: initial;
-        --ui-avatar-fallback-fg: initial;
-        --ui-avatar-fg: initial;
-        --ui-avatar-group-count-bg: initial;
-        --ui-avatar-group-count-fg: initial;
-        --ui-avatar-group-count-ring: initial;
-        --ui-avatar-group-ring: initial;
-        --ui-avatar-shadow: initial;
-        color: var(--ui-avatar-fg, inherit);
-    }
-    :where(.ui-badge) {
-        --ui-badge-bg: initial;
-        --ui-badge-border: initial;
-        --ui-badge-fg: initial;
-        --ui-badge-focus-border: initial;
-        --ui-badge-focus-ring: initial;
-        --ui-badge-hover-bg: initial;
-        --ui-badge-hover-fg: initial;
-        --ui-badge-invalid-border: initial;
-        --ui-badge-invalid-ring: initial;
-        color: var(--ui-badge-fg, inherit);
-    }
-    :where(.ui-breadcrumb) {
-        --ui-breadcrumb-fg: initial;
-        --ui-breadcrumb-link-hover-fg: initial;
-        --ui-breadcrumb-list-fg: initial;
-        --ui-breadcrumb-page-fg: initial;
-        color: var(--ui-breadcrumb-fg, inherit);
-    }
-    :where(.ui-bubble) {
-        --ui-bubble-bg: initial;
-        --ui-bubble-border: initial;
-        --ui-bubble-content-border: initial;
-        --ui-bubble-content-focus-border: initial;
-        --ui-bubble-content-focus-ring: initial;
-        --ui-bubble-fg: initial;
-        --ui-bubble-hover-bg: initial;
-        --ui-bubble-hover-fg: initial;
-        --ui-bubble-reactions-bg: initial;
-        --ui-bubble-reactions-ring: initial;
-        color: var(--ui-bubble-fg, inherit);
+        --ui-group-count-ring: initial;
+        --ui-shadow: initial;
     }
     :where(.ui-button) {
-        --ui-button-bg: initial;
-        --ui-button-border: initial;
-        --ui-button-expanded-bg: initial;
-        --ui-button-expanded-fg: initial;
-        --ui-button-fg: initial;
-        --ui-button-focus-border: initial;
-        --ui-button-focus-ring: initial;
-        --ui-button-hover-bg: initial;
-        --ui-button-hover-fg: initial;
-        --ui-button-invalid-border: initial;
-        --ui-button-invalid-ring: initial;
-        color: var(--ui-button-fg, inherit);
+        --ui-expanded-bg: initial;
+        --ui-expanded-fg: initial;
     }
     :where(.ui-button-group) {
-        --ui-button-group-fg: initial;
-        --ui-button-group-separator-bg: initial;
-        --ui-button-group-text-bg: initial;
-        --ui-button-group-text-border: initial;
-        color: var(--ui-button-group-fg, inherit);
+        --ui-text-border: initial;
     }
     :where(.ui-calendar) {
-        --ui-calendar-bg: initial;
-        --ui-calendar-dropdowns-bg: initial;
-        --ui-calendar-dropdowns-fg: initial;
-        --ui-calendar-dropdowns-focus-ring: initial;
-        --ui-calendar-dropdowns-hover-bg: initial;
-        --ui-calendar-fg: initial;
-        --ui-calendar-grid-after-bg: initial;
-        --ui-calendar-grid-bg: initial;
-        --ui-calendar-grid-disabled-fg: initial;
-        --ui-calendar-grid-fg: initial;
-        --ui-calendar-grid-hover-fg: initial;
-        color: var(--ui-calendar-fg, inherit);
+        --ui-dropdowns-bg: initial;
+        --ui-dropdowns-fg: initial;
+        --ui-grid-bg: initial;
+        --ui-grid-disabled-fg: initial;
+        --ui-grid-fg: initial;
     }
     :where(.ui-card) {
-        --ui-card-bg: initial;
-        --ui-card-description-fg: initial;
-        --ui-card-fg: initial;
-        --ui-card-footer-bg: initial;
-        --ui-card-footer-border: initial;
-        --ui-card-ring: initial;
-        color: var(--ui-card-fg, inherit);
+        --ui-ring: initial;
     }
     :where(.ui-carousel) {
-        --ui-carousel-dot-bg: initial;
-        --ui-carousel-fg: initial;
-        --ui-carousel-fraction-fg: initial;
-        --ui-carousel-page-bg: initial;
-        --ui-carousel-page-fg: initial;
-        --ui-carousel-page-focus-ring: initial;
-        --ui-carousel-page-hover-bg: initial;
-        color: var(--ui-carousel-fg, inherit);
-    }
-    :where(.ui-cascader) {
-        --ui-cascader-column-border: initial;
-        --ui-cascader-column-expanded-bg: initial;
-        --ui-cascader-column-expanded-fg: initial;
-        --ui-cascader-fg: initial;
-        --ui-cascader-panel-bg: initial;
-        --ui-cascader-panel-fg: initial;
-        --ui-cascader-placeholder-fg: initial;
-        --ui-cascader-trigger-bg: initial;
-        --ui-cascader-trigger-border: initial;
-        --ui-cascader-trigger-fg: initial;
-        color: var(--ui-cascader-fg, inherit);
+        --ui-dot-bg: initial;
     }
     :where(.ui-checkbox) {
-        --ui-checkbox-bg: initial;
-        --ui-checkbox-border: initial;
-        --ui-checkbox-checked-bg: initial;
-        --ui-checkbox-checked-border: initial;
-        --ui-checkbox-checked-fg: initial;
-        --ui-checkbox-fg: initial;
-        --ui-checkbox-focus-border: initial;
-        --ui-checkbox-focus-ring: initial;
-        --ui-checkbox-indeterminate-bg: initial;
-        --ui-checkbox-indeterminate-border: initial;
-        --ui-checkbox-indeterminate-fg: initial;
-        --ui-checkbox-invalid-border: initial;
-        --ui-checkbox-invalid-ring: initial;
-        color: var(--ui-checkbox-fg, inherit);
-    }
-    :where(.ui-code-block) {
-        --ui-code-block-actions-bg: initial;
-        --ui-code-block-actions-ring: initial;
-        --ui-code-block-bg: initial;
-        --ui-code-block-border: initial;
-        --ui-code-block-fg: initial;
-        --ui-code-block-focus-border: initial;
-        --ui-code-block-focus-ring: initial;
-        --ui-code-block-footer-fg: initial;
-        --ui-code-block-header-fg: initial;
-        --ui-code-block-line-bg: initial;
-        --ui-code-block-line-fg: initial;
-        --ui-code-block-line-highlighted-bg: initial;
-        --ui-code-block-title-fg: initial;
-        color: var(--ui-code-block-fg, inherit);
-    }
-    :where(.ui-collapsible) {
-        --ui-collapsible-fg: initial;
-        color: var(--ui-collapsible-fg, inherit);
-    }
-    :where(.ui-color-picker) {
-        --ui-color-picker-bg: initial;
-        --ui-color-picker-border: initial;
-        --ui-color-picker-fg: initial;
-        --ui-color-picker-field-fg: initial;
-        --ui-color-picker-focus-border: initial;
-        --ui-color-picker-focus-ring: initial;
-        --ui-color-picker-hover-bg: initial;
-        --ui-color-picker-invalid-border: initial;
-        color: var(--ui-color-picker-fg, inherit);
+        --ui-checked-border: initial;
+        --ui-indeterminate-bg: initial;
+        --ui-indeterminate-border: initial;
+        --ui-indeterminate-fg: initial;
     }
     :where(.ui-combobox) {
-        --ui-combobox-chip-bg: initial;
-        --ui-combobox-chip-fg: initial;
-        --ui-combobox-content-bg: initial;
-        --ui-combobox-content-fg: initial;
-        --ui-combobox-content-ring: initial;
-        --ui-combobox-control-bg: initial;
-        --ui-combobox-control-border: initial;
-        --ui-combobox-fg: initial;
-        --ui-combobox-multiple-disabled-bg: initial;
-        --ui-combobox-multiple-focus-border: initial;
-        --ui-combobox-multiple-focus-ring: initial;
-        --ui-combobox-multiple-invalid-border: initial;
-        color: var(--ui-combobox-fg, inherit);
-    }
-    :where(.ui-command) {
-        --ui-command-bg: initial;
-        --ui-command-fg: initial;
-        --ui-command-group-fg: initial;
-        --ui-command-group-heading-fg: initial;
-        --ui-command-item-focus-bg: initial;
-        --ui-command-item-focus-fg: initial;
-        --ui-command-separator-bg: initial;
-        color: var(--ui-command-fg, inherit);
-    }
-    :where(.ui-context-menu) {
-        --ui-context-menu-checkbox-item-focus-bg: initial;
-        --ui-context-menu-checkbox-item-focus-fg: initial;
-        --ui-context-menu-content-bg: initial;
-        --ui-context-menu-content-fg: initial;
-        --ui-context-menu-content-ring: initial;
-        --ui-context-menu-fg: initial;
-        --ui-context-menu-item-fg: initial;
-        --ui-context-menu-item-focus-bg: initial;
-        --ui-context-menu-item-focus-fg: initial;
-        --ui-context-menu-item-hover-bg: initial;
-        --ui-context-menu-item-hover-fg: initial;
-        --ui-context-menu-link-fg: initial;
-        --ui-context-menu-link-focus-bg: initial;
-        --ui-context-menu-link-focus-fg: initial;
-        --ui-context-menu-link-hover-bg: initial;
-        --ui-context-menu-link-hover-fg: initial;
-        --ui-context-menu-radio-item-focus-bg: initial;
-        --ui-context-menu-radio-item-focus-fg: initial;
-        --ui-context-menu-shortcut-fg: initial;
-        --ui-context-menu-shortcut-focus-fg: initial;
-        --ui-context-menu-sub-content-bg: initial;
-        --ui-context-menu-sub-content-fg: initial;
-        --ui-context-menu-sub-content-ring: initial;
-        color: var(--ui-context-menu-fg, inherit);
-    }
-    :where(.ui-cropper) {
-        --ui-cropper-fg: initial;
-        --ui-cropper-frame-border: initial;
-        --ui-cropper-mask-bg: initial;
-        --ui-cropper-resize-bg: initial;
-        --ui-cropper-resize-border: initial;
-        color: var(--ui-cropper-fg, inherit);
+        --ui-multiple-disabled-bg: initial;
     }
     :where(.ui-data-table) {
-        --ui-data-table-bg: initial;
-        --ui-data-table-fg: initial;
-        --ui-data-table-frame-border: initial;
-        --ui-data-table-hover-bg: initial;
-        --ui-data-table-selection-bg: initial;
-        --ui-data-table-selection-border: initial;
-        --ui-data-table-selection-fg: initial;
-        --ui-data-table-total-fg: initial;
-        color: var(--ui-data-table-fg, inherit);
+        --ui-selection-border: initial;
     }
     :where(.ui-date-picker) {
-        --ui-date-picker-fg: initial;
-        --ui-date-picker-panel-bg: initial;
-        --ui-date-picker-panel-fg: initial;
-        --ui-date-picker-panel-ring: initial;
-        --ui-date-picker-trigger-bg: initial;
-        --ui-date-picker-trigger-border: initial;
-        --ui-date-picker-trigger-fg: initial;
-        --ui-date-picker-trigger-focus-ring: initial;
-        --ui-date-picker-trigger-hover-bg: initial;
-        --ui-date-picker-trigger-hover-fg: initial;
-        --ui-picker-clear-fg: initial;
-        --ui-picker-extra-border: initial;
-        --ui-picker-trigger-icon: initial;
-        --ui-picker-trigger-placeholder-fg: initial;
-        color: var(--ui-date-picker-fg, inherit);
-    }
-    :where(.ui-datetime-picker) {
-        --ui-datetime-picker-fg: initial;
-        --ui-datetime-picker-panel-bg: initial;
-        --ui-datetime-picker-panel-fg: initial;
-        --ui-datetime-picker-panel-ring: initial;
-        --ui-datetime-picker-trigger-bg: initial;
-        --ui-datetime-picker-trigger-border: initial;
-        --ui-datetime-picker-trigger-fg: initial;
-        --ui-datetime-picker-trigger-focus-ring: initial;
-        --ui-datetime-picker-trigger-hover-bg: initial;
-        --ui-datetime-picker-trigger-hover-fg: initial;
-        --ui-picker-clear-fg: initial;
-        --ui-picker-trigger-icon: initial;
-        --ui-picker-trigger-placeholder-fg: initial;
-        color: var(--ui-datetime-picker-fg, inherit);
-    }
-    :where(.ui-description-list) {
-        --ui-description-list-bg: initial;
-        --ui-description-list-border: initial;
-        --ui-description-list-fg: initial;
-        --ui-description-list-term-bg: initial;
-        --ui-description-list-term-fg: initial;
-        color: var(--ui-description-list-fg, inherit);
+        --ui-extra-border: initial;
     }
     :where(.ui-dialog) {
-        --ui-dialog-backdrop-bg: initial;
-        --ui-dialog-content-bg: initial;
-        --ui-dialog-content-border: initial;
-        --ui-dialog-content-fg: initial;
-        --ui-dialog-content-ring: initial;
-        --ui-dialog-content-shadow: initial;
-        --ui-dialog-description-fg: initial;
-        --ui-dialog-description-hover-fg: initial;
-        --ui-dialog-fg: initial;
-        --ui-dialog-footer-bg: initial;
-        --ui-dialog-footer-border: initial;
-        color: var(--ui-dialog-fg, inherit);
+        --ui-backdrop-bg: initial;
     }
     :where(.ui-drawer) {
-        --ui-drawer-content-after-bg: initial;
-        --ui-drawer-content-backdrop-bg: initial;
-        --ui-drawer-content-bg: initial;
-        --ui-drawer-content-border: initial;
-        --ui-drawer-content-fg: initial;
-        --ui-drawer-content-shadow: initial;
-        --ui-drawer-description-fg: initial;
-        --ui-drawer-fg: initial;
-        --ui-drawer-handle-after-bg: initial;
-        --ui-drawer-title-fg: initial;
-        color: var(--ui-drawer-fg, inherit);
-    }
-    :where(.ui-dropdown-menu) {
-        --ui-dropdown-menu-checkbox-item-focus-bg: initial;
-        --ui-dropdown-menu-checkbox-item-focus-fg: initial;
-        --ui-dropdown-menu-content-bg: initial;
-        --ui-dropdown-menu-content-fg: initial;
-        --ui-dropdown-menu-content-ring: initial;
-        --ui-dropdown-menu-fg: initial;
-        --ui-dropdown-menu-item-fg: initial;
-        --ui-dropdown-menu-item-focus-bg: initial;
-        --ui-dropdown-menu-item-focus-fg: initial;
-        --ui-dropdown-menu-item-hover-bg: initial;
-        --ui-dropdown-menu-item-hover-fg: initial;
-        --ui-dropdown-menu-link-fg: initial;
-        --ui-dropdown-menu-link-focus-bg: initial;
-        --ui-dropdown-menu-link-focus-fg: initial;
-        --ui-dropdown-menu-link-hover-bg: initial;
-        --ui-dropdown-menu-link-hover-fg: initial;
-        --ui-dropdown-menu-radio-item-focus-bg: initial;
-        --ui-dropdown-menu-radio-item-focus-fg: initial;
-        --ui-dropdown-menu-shortcut-fg: initial;
-        --ui-dropdown-menu-shortcut-focus-fg: initial;
-        --ui-dropdown-menu-sub-content-bg: initial;
-        --ui-dropdown-menu-sub-content-fg: initial;
-        --ui-dropdown-menu-sub-content-ring: initial;
-        --ui-menu-item-fg: initial;
-        --ui-menu-item-focus-bg: initial;
-        --ui-menu-item-focus-fg: initial;
-        color: var(--ui-dropdown-menu-fg, inherit);
-    }
-    :where(.ui-editor) {
-        --ui-editor-action-menu-bg: initial;
-        --ui-editor-actions-border: initial;
-        --ui-editor-bg: initial;
-        --ui-editor-border: initial;
-        --ui-editor-button-bg: initial;
-        --ui-editor-button-expanded-bg: initial;
-        --ui-editor-color-tool-focus-outline: initial;
-        --ui-editor-color-tool-hover-bg: initial;
-        --ui-editor-column-resize-handle-bg: initial;
-        --ui-editor-control-focus-outline: initial;
-        --ui-editor-control-hover-bg: initial;
-        --ui-editor-custom-size-fg: initial;
-        --ui-editor-dialog-backdrop-bg: initial;
-        --ui-editor-dialog-bg: initial;
-        --ui-editor-dialog-border: initial;
-        --ui-editor-dialog-fg: initial;
-        --ui-editor-dialog-shadow: initial;
-        --ui-editor-drag-handle-bg: initial;
-        --ui-editor-drag-handle-fg: initial;
-        --ui-editor-embed-caption-fg: initial;
-        --ui-editor-error-fg: initial;
-        --ui-editor-fg: initial;
-        --ui-editor-field-bg: initial;
-        --ui-editor-field-border: initial;
-        --ui-editor-field-fg: initial;
-        --ui-editor-find-navigation-fg: initial;
-        --ui-editor-floating-toolbar-bg: initial;
-        --ui-editor-floating-toolbar-border: initial;
-        --ui-editor-floating-toolbar-shadow: initial;
-        --ui-editor-footer-border: initial;
-        --ui-editor-footer-control-bg: initial;
-        --ui-editor-footer-fg: initial;
-        --ui-editor-gap-cursor-border: initial;
-        --ui-editor-line: initial;
-        --ui-editor-media-sources-bg: initial;
-        --ui-editor-media-sources-fg: initial;
-        --ui-editor-media-sources-hover-border: initial;
-        --ui-editor-muted: initial;
-        --ui-editor-outline-description-fg: initial;
-        --ui-editor-outline-item-bg: initial;
-        --ui-editor-outline-panel-border: initial;
-        --ui-editor-outline-panel-fg: initial;
-        --ui-editor-panel: initial;
-        --ui-editor-panel-heading-fg: initial;
-        --ui-editor-paper: initial;
-        --ui-editor-placeholder-fg: initial;
-        --ui-editor-popover-bg: initial;
-        --ui-editor-popover-border: initial;
-        --ui-editor-popover-shadow: initial;
-        --ui-editor-primary-bg: initial;
-        --ui-editor-primary-border: initial;
-        --ui-editor-primary-fg: initial;
-        --ui-editor-resize-handle-bg: initial;
-        --ui-editor-resize-handle-shadow: initial;
-        --ui-editor-search-result-bg: initial;
-        --ui-editor-search-result-current-bg: initial;
-        --ui-editor-search-result-current-fg: initial;
-        --ui-editor-search-result-fg: initial;
-        --ui-editor-selected: initial;
-        --ui-editor-selected-cell-bg: initial;
-        --ui-editor-selected-node-outline: initial;
-        --ui-editor-selection: initial;
-        --ui-editor-selection-bg: initial;
-        --ui-editor-separator-bg: initial;
-        --ui-editor-shadow: initial;
-        --ui-editor-size-hint-fg: initial;
-        --ui-editor-source-back-fg: initial;
-        --ui-editor-source-input-bg: initial;
-        --ui-editor-source-input-fg: initial;
-        --ui-editor-source-mode-label-fg: initial;
-        --ui-editor-surface-bg: initial;
-        --ui-editor-surface-border: initial;
-        --ui-editor-surface-focus-border: initial;
-        --ui-editor-swatch-bg: initial;
-        --ui-editor-table-grid-bg: initial;
-        --ui-editor-table-grid-border: initial;
-        --ui-editor-tool-active-ink: initial;
-        --ui-editor-tool-active-wash: initial;
-        --ui-editor-toolbar-active-bg: initial;
-        --ui-editor-toolbar-active-fg: initial;
-        --ui-editor-toolbar-bg: initial;
-        --ui-editor-toolbar-border: initial;
-        --ui-editor-toolbar-group-border: initial;
-        --ui-editor-toolbar-row-border: initial;
-        --ui-editor-toolbar-row-fg: initial;
-        --ui-editor-wash: initial;
-        color: var(--ui-editor-fg, inherit);
-    }
-    :where(.ui-empty) {
-        --ui-empty-description-fg: initial;
-        --ui-empty-description-hover-fg: initial;
-        --ui-empty-fg: initial;
-        --ui-empty-media-bg: initial;
-        --ui-empty-media-fg: initial;
-        color: var(--ui-empty-fg, inherit);
+        --ui-panel-after-bg: initial;
     }
     :where(.ui-field) {
-        --ui-field-description-fg: initial;
-        --ui-field-description-hover-fg: initial;
-        --ui-field-error-fg: initial;
-        --ui-field-fg: initial;
-        --ui-field-label-border: initial;
-        --ui-field-label-checked-bg: initial;
-        --ui-field-label-checked-border: initial;
-        --ui-field-label-disabled-bg: initial;
-        --ui-field-label-focus-border: initial;
-        --ui-field-label-focus-ring: initial;
-        --ui-field-separator-content-bg: initial;
-        --ui-field-separator-content-fg: initial;
-        color: var(--ui-field-fg, inherit);
-    }
-    :where(.ui-heading) {
-        --ui-heading-fg: initial;
-        color: var(--ui-heading-fg, inherit);
+        --ui-label-border: initial;
+        --ui-label-checked-bg: initial;
+        --ui-label-checked-border: initial;
+        --ui-separator-content-bg: initial;
     }
     :where(.ui-hover-card) {
-        --ui-hover-card-content-hover-bg: initial;
-        --ui-hover-card-content-hover-fg: initial;
-        --ui-hover-card-content-hover-ring: initial;
-        --ui-hover-card-fg: initial;
-        color: var(--ui-hover-card-fg, inherit);
-    }
-    :where(.ui-icon) {
-        --ui-icon-fg: initial;
-        color: var(--ui-icon-fg, inherit);
-    }
-    :where(.ui-icon-select) {
-        --ui-icon-select-fg: initial;
-        --ui-icon-select-pagination-border: initial;
-        --ui-icon-select-pagination-fg: initial;
-        --ui-icon-select-panel-bg: initial;
-        --ui-icon-select-panel-fg: initial;
-        color: var(--ui-icon-select-fg, inherit);
-    }
-    :where(.ui-image) {
-        --ui-image-fg: initial;
-        color: var(--ui-image-fg, inherit);
+        --ui-panel-hover-bg: initial;
+        --ui-panel-hover-fg: initial;
+        --ui-panel-hover-ring: initial;
     }
     :where(.ui-input) {
-        --ui-input-bg: initial;
-        --ui-input-border: initial;
-        --ui-input-disabled-bg: initial;
-        --ui-input-fg: initial;
-        --ui-input-file-bg: initial;
-        --ui-input-file-fg: initial;
-        --ui-input-focus-border: initial;
-        --ui-input-focus-ring: initial;
-        --ui-input-invalid-border: initial;
-        --ui-input-invalid-ring: initial;
-        --ui-input-placeholder-fg: initial;
-        color: var(--ui-input-fg, inherit);
+        --ui-file-fg: initial;
     }
     :where(.ui-input-group) {
-        --ui-input-group-addon-fg: initial;
-        --ui-input-group-bg: initial;
-        --ui-input-group-border: initial;
-        --ui-input-group-disabled-bg: initial;
-        --ui-input-group-fg: initial;
-        --ui-input-group-focus-border: initial;
-        --ui-input-group-focus-ring: initial;
-        --ui-input-group-input-bg: initial;
-        --ui-input-group-input-disabled-bg: initial;
-        --ui-input-group-invalid-border: initial;
-        --ui-input-group-invalid-ring: initial;
-        --ui-input-group-text-fg: initial;
-        --ui-input-group-textarea-bg: initial;
-        --ui-input-group-textarea-disabled-bg: initial;
-        color: var(--ui-input-group-fg, inherit);
+        --ui-textarea-bg: initial;
     }
     :where(.ui-input-otp) {
-        --ui-input-otp-caret-bg: initial;
-        --ui-input-otp-fg: initial;
-        --ui-input-otp-group-invalid-border: initial;
-        --ui-input-otp-group-invalid-ring: initial;
-        --ui-input-otp-slot-bg: initial;
-        --ui-input-otp-slot-border: initial;
-        --ui-input-otp-slot-caret: initial;
-        --ui-input-otp-slot-fg: initial;
-        --ui-input-otp-slot-focus-border: initial;
-        --ui-input-otp-slot-focus-ring: initial;
-        --ui-input-otp-slot-invalid-border: initial;
-        --ui-input-otp-slot-invalid-ring: initial;
-        color: var(--ui-input-otp-fg, inherit);
-    }
-    :where(.ui-item) {
-        --ui-item-bg: initial;
-        --ui-item-border: initial;
-        --ui-item-description-fg: initial;
-        --ui-item-description-hover-fg: initial;
-        --ui-item-fg: initial;
-        --ui-item-focus-border: initial;
-        --ui-item-focus-ring: initial;
-        --ui-item-hover-bg: initial;
-        --ui-item-media-bg: initial;
-        color: var(--ui-item-fg, inherit);
-    }
-    :where(.ui-kbd) {
-        --ui-kbd-bg: initial;
-        --ui-kbd-fg: initial;
-        color: var(--ui-kbd-fg, inherit);
-    }
-    :where(.ui-label) {
-        --ui-label-fg: initial;
-        color: var(--ui-label-fg, inherit);
+        --ui-group-invalid-ring: initial;
+        --ui-slot-bg: initial;
+        --ui-slot-invalid-ring: initial;
     }
     :where(.ui-marker) {
-        --ui-marker-bg: initial;
-        --ui-marker-border: initial;
-        --ui-marker-content-hover-fg: initial;
-        --ui-marker-fg: initial;
-        --ui-marker-hover-fg: initial;
-        --ui-marker-line: initial;
-        color: var(--ui-marker-fg, inherit);
-    }
-    :where(.ui-media-preview) {
-        --ui-media-preview-fg: initial;
-        --ui-media-preview-panel-bg: initial;
-        --ui-media-preview-panel-border: initial;
-        --ui-media-preview-panel-fg: initial;
-        color: var(--ui-media-preview-fg, inherit);
-    }
-    :where(.ui-mentions) {
-        --ui-mentions-fg: initial;
-        --ui-mentions-suggestions-bg: initial;
-        --ui-mentions-suggestions-fg: initial;
-        --ui-mentions-suggestions-ring: initial;
-        color: var(--ui-mentions-fg, inherit);
-    }
-    :where(.ui-menubar) {
-        --ui-menubar-border: initial;
-        --ui-menubar-checkbox-item-focus-bg: initial;
-        --ui-menubar-checkbox-item-focus-fg: initial;
-        --ui-menubar-content-bg: initial;
-        --ui-menubar-content-fg: initial;
-        --ui-menubar-content-ring: initial;
-        --ui-menubar-fg: initial;
-        --ui-menubar-item-fg: initial;
-        --ui-menubar-item-focus-bg: initial;
-        --ui-menubar-item-focus-fg: initial;
-        --ui-menubar-item-hover-bg: initial;
-        --ui-menubar-item-hover-fg: initial;
-        --ui-menubar-label-fg: initial;
-        --ui-menubar-link-fg: initial;
-        --ui-menubar-link-focus-bg: initial;
-        --ui-menubar-link-focus-fg: initial;
-        --ui-menubar-link-hover-bg: initial;
-        --ui-menubar-link-hover-fg: initial;
-        --ui-menubar-radio-item-focus-bg: initial;
-        --ui-menubar-radio-item-focus-fg: initial;
-        --ui-menubar-shortcut-fg: initial;
-        --ui-menubar-shortcut-focus-fg: initial;
-        --ui-menubar-sub-content-bg: initial;
-        --ui-menubar-sub-content-fg: initial;
-        --ui-menubar-sub-content-ring: initial;
-        color: var(--ui-menubar-fg, inherit);
-    }
-    :where(.ui-message) {
-        --ui-message-avatar-bg: initial;
-        --ui-message-fg: initial;
-        --ui-message-footer-fg: initial;
-        --ui-message-header-fg: initial;
-        color: var(--ui-message-fg, inherit);
+        --ui-line: initial;
     }
     :where(.ui-message-scroller) {
-        --ui-message-scroller-button-bg: initial;
-        --ui-message-scroller-button-border: initial;
-        --ui-message-scroller-button-fg: initial;
-        --ui-message-scroller-button-hover-bg: initial;
-        --ui-message-scroller-button-hover-fg: initial;
-        --ui-message-scroller-fg: initial;
-        color: var(--ui-message-scroller-fg, inherit);
-    }
-    :where(.ui-native-select) {
-        --ui-native-select-bg: initial;
-        --ui-native-select-border: initial;
-        --ui-native-select-checked-bg: initial;
-        --ui-native-select-checked-fg: initial;
-        --ui-native-select-fg: initial;
-        --ui-native-select-focus-border: initial;
-        --ui-native-select-focus-ring: initial;
-        --ui-native-select-hover-bg: initial;
-        --ui-native-select-icon-fg: initial;
-        --ui-native-select-invalid-border: initial;
-        --ui-native-select-invalid-ring: initial;
-        --ui-native-select-placeholder-fg: initial;
-        --ui-native-select-selection-bg: initial;
-        --ui-native-select-selection-fg: initial;
-        color: var(--ui-native-select-fg, inherit);
-    }
-    :where(.ui-navigation-menu) {
-        --ui-navigation-menu-content-bg: initial;
-        --ui-navigation-menu-fg: initial;
-        --ui-navigation-menu-link-focus-bg: initial;
-        --ui-navigation-menu-link-focus-ring: initial;
-        --ui-navigation-menu-link-hover-bg: initial;
-        --ui-navigation-menu-link-selected-bg: initial;
-        --ui-navigation-menu-menu-expanded-bg: initial;
-        --ui-navigation-menu-menu-focus-bg: initial;
-        --ui-navigation-menu-menu-hover-bg: initial;
-        --ui-navigation-menu-popup-bg: initial;
-        --ui-navigation-menu-popup-fg: initial;
-        --ui-navigation-menu-popup-ring: initial;
-        --ui-navigation-menu-positioner-bg: initial;
-        --ui-navigation-menu-positioner-fg: initial;
-        color: var(--ui-navigation-menu-fg, inherit);
-    }
-    :where(.ui-number-input) {
-        --ui-number-input-bg: initial;
-        --ui-number-input-border: initial;
-        --ui-number-input-fg: initial;
-        --ui-number-input-focus-border: initial;
-        --ui-number-input-focus-ring: initial;
-        --ui-number-input-value-fg: initial;
-        --ui-number-input-placeholder-fg: initial;
-        color: var(--ui-number-input-fg, inherit);
+        --ui-button-bg: initial;
     }
     :where(.ui-pagination) {
-        --ui-pagination-active-bg: initial;
-        --ui-pagination-active-border: initial;
-        --ui-pagination-active-fg: initial;
-        --ui-pagination-fg: initial;
-        --ui-pagination-jump-fg: initial;
-        --ui-pagination-page-fg: initial;
-        --ui-pagination-page-hover-bg: initial;
-        --ui-pagination-page-hover-fg: initial;
-        color: var(--ui-pagination-fg, inherit);
-    }
-    :where(.ui-password-input) {
-        --ui-password-input-bg: initial;
-        --ui-password-input-border: initial;
-        --ui-password-input-fg: initial;
-        --ui-password-input-focus-border: initial;
-        --ui-password-input-focus-ring: initial;
-        --ui-password-input-value-fg: initial;
-        --ui-password-input-placeholder-fg: initial;
-        color: var(--ui-password-input-fg, inherit);
-    }
-    :where(.ui-popover) {
-        --ui-popover-content-bg: initial;
-        --ui-popover-content-fg: initial;
-        --ui-popover-content-ring: initial;
-        --ui-popover-description-fg: initial;
-        --ui-popover-fg: initial;
-        color: var(--ui-popover-fg, inherit);
-    }
-    :where(.ui-progress) {
-        --ui-progress-fg: initial;
-        --ui-progress-fill: initial;
-        --ui-progress-track: initial;
-        --ui-progress-value-fg: initial;
-        color: var(--ui-progress-fg, inherit);
-    }
-    :where(.ui-qr-code) {
-        --ui-qr-code-bg: initial;
-        --ui-qr-code-fg: initial;
-        color: var(--ui-qr-code-fg, inherit);
+        --ui-active-bg: initial;
+        --ui-active-border: initial;
+        --ui-active-fg: initial;
+        --ui-page-hover-fg: initial;
     }
     :where(.ui-questionnaire) {
-        --ui-questionnaire-choice-bg: initial;
-        --ui-questionnaire-choice-border: initial;
-        --ui-questionnaire-choice-checked-bg: initial;
-        --ui-questionnaire-choice-checked-border: initial;
-        --ui-questionnaire-choice-description-fg: initial;
-        --ui-questionnaire-choice-focus-border: initial;
-        --ui-questionnaire-choice-focus-ring: initial;
-        --ui-questionnaire-choice-hover-bg: initial;
-        --ui-questionnaire-choice-indicator-bg: initial;
-        --ui-questionnaire-choice-indicator-border: initial;
-        --ui-questionnaire-choice-input-checked-bg: initial;
-        --ui-questionnaire-choice-input-checked-border: initial;
-        --ui-questionnaire-choice-input-checked-fg: initial;
-        --ui-questionnaire-choice-invalid-border: initial;
-        --ui-questionnaire-description-fg: initial;
-        --ui-questionnaire-error-fg: initial;
-        --ui-questionnaire-fg: initial;
-        --ui-questionnaire-input-bg: initial;
-        --ui-questionnaire-input-border: initial;
-        --ui-questionnaire-input-fg: initial;
-        --ui-questionnaire-input-focus-border: initial;
-        --ui-questionnaire-input-focus-ring: initial;
-        --ui-questionnaire-input-invalid-border: initial;
-        --ui-questionnaire-input-placeholder-fg: initial;
-        --ui-questionnaire-progress-fg: initial;
-        --ui-questionnaire-shortcut-bg: initial;
-        --ui-questionnaire-shortcut-border: initial;
-        --ui-questionnaire-shortcut-fg: initial;
-        color: var(--ui-questionnaire-fg, inherit);
+        --ui-choice-bg: initial;
+        --ui-choice-input-checked-bg: initial;
+        --ui-progress-fg: initial;
     }
     :where(.ui-radio-group) {
-        --ui-radio-bg: initial;
-        --ui-radio-border: initial;
-        --ui-radio-checked-bg: initial;
-        --ui-radio-checked-border: initial;
-        --ui-radio-group-fg: initial;
-        --ui-radio-group-item-bg: initial;
-        --ui-radio-group-item-border: initial;
-        --ui-radio-group-item-checked-bg: initial;
-        --ui-radio-group-item-checked-border: initial;
-        --ui-radio-group-item-checked-fg: initial;
-        --ui-radio-group-item-focus-border: initial;
-        --ui-radio-group-item-focus-ring: initial;
-        --ui-radio-group-item-invalid-border: initial;
-        --ui-radio-group-item-invalid-ring: initial;
-        color: var(--ui-radio-group-fg, inherit);
-    }
-    :where(.ui-rating) {
-        --ui-rating-fg: initial;
-        --ui-rating-focus-ring: initial;
-        --ui-rating-hover-bg: initial;
-        --ui-rating-star-checked-fg: initial;
-        color: var(--ui-rating-fg, inherit);
-    }
-    :where(.ui-resizable) {
-        --ui-resizable-fg: initial;
-        --ui-resizable-handle-bg: initial;
-        --ui-resizable-handle-focus-ring: initial;
-        --ui-resizable-handle-ring-offset: initial;
-        color: var(--ui-resizable-fg, inherit);
+        --ui-item-invalid-border: initial;
+        --ui-item-invalid-ring: initial;
     }
     :where(.ui-rich-text) {
-        --ui-rich-content-a-after-bg: initial;
-        --ui-rich-content-a-before-bg: initial;
-        --ui-rich-content-a-before-fg: initial;
-        --ui-rich-content-a-bg: initial;
-        --ui-rich-content-a-border: initial;
-        --ui-rich-content-a-fg: initial;
-        --ui-rich-content-a-focus-bg: initial;
-        --ui-rich-content-a-focus-border: initial;
-        --ui-rich-content-blockquote-border: initial;
-        --ui-rich-content-blockquote-fg: initial;
-        --ui-rich-content-border: initial;
-        --ui-rich-content-code-bg: initial;
-        --ui-rich-content-details-border: initial;
-        --ui-rich-content-hr-border: initial;
-        --ui-rich-content-iframe-bg: initial;
-        --ui-rich-content-pre-bg: initial;
-        --ui-rich-content-span-fg: initial;
-        --ui-rich-content-td-border: initial;
-        --ui-rich-content-th-bg: initial;
-        --ui-rich-content-th-border: initial;
-        --ui-rich-text-fg: initial;
-        color: var(--ui-rich-text-fg, inherit);
+        --ui-blockquote-border: initial;
+        --ui-blockquote-fg: initial;
+        --ui-cell-border: initial;
+        --ui-code-bg: initial;
+        --ui-code-block-bg: initial;
+        --ui-details-border: initial;
+        --ui-embed-bg: initial;
+        --ui-file-action-bg: initial;
+        --ui-file-border: initial;
+        --ui-file-description-fg: initial;
+        --ui-file-focus-bg: initial;
+        --ui-file-focus-border: initial;
+        --ui-file-icon-bg: initial;
+        --ui-file-icon-fg: initial;
+        --ui-head-bg: initial;
+        --ui-head-border: initial;
+        --ui-media-border: initial;
+        --ui-separator-border: initial;
     }
     :where(.ui-scroll-area) {
-        --ui-scroll-area-fg: initial;
-        --ui-scroll-area-scrollbar-border: initial;
-        --ui-scroll-area-thumb-bg: initial;
-        --ui-scroll-area-viewport-focus-ring: initial;
-        color: var(--ui-scroll-area-fg, inherit);
+        --ui-scrollbar-border: initial;
     }
     :where(.ui-select) {
+        --ui-option-focus-bg: initial;
+        --ui-option-focus-fg: initial;
         --ui-option-group-label-fg: initial;
+        --ui-option-highlighted-bg: initial;
+        --ui-option-highlighted-fg: initial;
+        --ui-option-selected-bg: initial;
+        --ui-option-selected-fg: initial;
         --ui-option-separator-bg: initial;
         --ui-option-shortcut-fg: initial;
-        --ui-select-chevron-fg: initial;
-        --ui-select-fg: initial;
-        --ui-select-option-focus-bg: initial;
-        --ui-select-option-focus-fg: initial;
-        --ui-select-option-highlighted-bg: initial;
-        --ui-select-option-highlighted-fg: initial;
-        --ui-select-option-selected-bg: initial;
-        --ui-select-option-selected-fg: initial;
-        --ui-select-panel-bg: initial;
-        --ui-select-panel-fg: initial;
-        --ui-select-panel-ring: initial;
-        --ui-select-separator-bg: initial;
-        --ui-select-trigger-bg: initial;
-        --ui-select-trigger-border: initial;
-        --ui-select-trigger-fg: initial;
-        --ui-select-trigger-focus-border: initial;
-        --ui-select-trigger-focus-ring: initial;
-        --ui-select-trigger-hover-bg: initial;
-        --ui-select-trigger-invalid-border: initial;
-        --ui-select-trigger-invalid-ring: initial;
-        --ui-select-trigger-placeholder-fg: initial;
-        color: var(--ui-select-fg, inherit);
-    }
-    :where(.ui-separator) {
-        --ui-separator-bg: initial;
-        --ui-separator-fg: initial;
-        color: var(--ui-separator-fg, inherit);
-    }
-    :where(.ui-sheet) {
-        --ui-sheet-content-bg: initial;
-        --ui-sheet-content-border: initial;
-        --ui-sheet-content-fg: initial;
-        --ui-sheet-content-shadow: initial;
-        --ui-sheet-description-fg: initial;
-        --ui-sheet-fg: initial;
-        --ui-sheet-title-fg: initial;
-        color: var(--ui-sheet-fg, inherit);
+        --ui-trigger-focus-border: initial;
+        --ui-trigger-invalid-border: initial;
+        --ui-trigger-invalid-ring: initial;
     }
     :where(.ui-sidebar) {
-        --ui-sidebar-bg: initial;
-        --ui-sidebar-content-bg: initial;
-        --ui-sidebar-content-border: initial;
-        --ui-sidebar-content-fg: initial;
-        --ui-sidebar-content-shadow: initial;
-        --ui-sidebar-fg: initial;
-        --ui-sidebar-group-action-fg: initial;
-        --ui-sidebar-group-action-hover-bg: initial;
-        --ui-sidebar-group-action-hover-fg: initial;
-        --ui-sidebar-group-action-ring: initial;
-        --ui-sidebar-group-label-fg: initial;
-        --ui-sidebar-group-label-ring: initial;
-        --ui-sidebar-inner-bg: initial;
-        --ui-sidebar-inner-ring: initial;
-        --ui-sidebar-input-bg: initial;
-        --ui-sidebar-inset-bg: initial;
-        --ui-sidebar-menu-action-fg: initial;
-        --ui-sidebar-menu-action-hover-bg: initial;
-        --ui-sidebar-menu-action-hover-fg: initial;
-        --ui-sidebar-menu-action-ring: initial;
-        --ui-sidebar-menu-badge-active-fg: initial;
-        --ui-sidebar-menu-badge-fg: initial;
-        --ui-sidebar-menu-badge-hover-fg: initial;
-        --ui-sidebar-menu-button-active-bg: initial;
-        --ui-sidebar-menu-button-active-fg: initial;
-        --ui-sidebar-menu-button-bg: initial;
-        --ui-sidebar-menu-button-fg: initial;
-        --ui-sidebar-menu-button-hover-bg: initial;
-        --ui-sidebar-menu-button-hover-fg: initial;
-        --ui-sidebar-menu-button-ring: initial;
-        --ui-sidebar-menu-button-selected-bg: initial;
-        --ui-sidebar-menu-button-selected-fg: initial;
-        --ui-sidebar-menu-link-bg: initial;
-        --ui-sidebar-menu-link-fg: initial;
-        --ui-sidebar-menu-link-focus-ring: initial;
-        --ui-sidebar-menu-link-hover-bg: initial;
-        --ui-sidebar-menu-link-hover-fg: initial;
-        --ui-sidebar-menu-sub-border: initial;
-        --ui-sidebar-menu-sub-button-bg: initial;
-        --ui-sidebar-menu-sub-button-fg: initial;
-        --ui-sidebar-menu-sub-button-hover-bg: initial;
-        --ui-sidebar-menu-sub-button-hover-fg: initial;
-        --ui-sidebar-menu-sub-button-ring: initial;
-        --ui-sidebar-separator-bg: initial;
-        color: var(--ui-sidebar-fg, inherit);
+        --ui-inset-bg: initial;
+        --ui-menu-action-hover-fg: initial;
+        --ui-menu-button-bg: initial;
+        --ui-menu-button-hover-bg: initial;
+        --ui-menu-button-hover-fg: initial;
+        --ui-menu-link-hover-bg: initial;
+        --ui-menu-sub-button-bg: initial;
+        --ui-menu-sub-button-fg: initial;
     }
     :where(.ui-signature) {
-        --ui-signature-fg: initial;
-        --ui-signature-ink: initial;
-        --ui-signature-surface-bg: initial;
-        --ui-signature-surface-border: initial;
-        color: var(--ui-signature-fg, inherit);
-    }
-    :where(.ui-skeleton) {
-        --ui-skeleton-bg: initial;
-        --ui-skeleton-fg: initial;
-        color: var(--ui-skeleton-fg, inherit);
+        --ui-canvas-bg: initial;
+        --ui-canvas-border: initial;
+        --ui-ink: initial;
     }
     :where(.ui-slider) {
-        --ui-slider-accent: initial;
-        --ui-slider-fg: initial;
-        --ui-slider-range-bg: initial;
-        --ui-slider-thumb-bg: initial;
-        --ui-slider-thumb-border: initial;
-        --ui-slider-thumb-hover-shadow: initial;
-        --ui-slider-thumb-ring: initial;
-        --ui-slider-track-bg: initial;
-        color: var(--ui-slider-fg, inherit);
-    }
-    :where(.ui-spinner) {
-        --ui-spinner-fg: initial;
-        color: var(--ui-spinner-fg, inherit);
-    }
-    :where(.ui-statistic) {
-        --ui-statistic-description-fg: initial;
-        --ui-statistic-fg: initial;
-        --ui-statistic-label-fg: initial;
-        --ui-statistic-value-fg: initial;
-        color: var(--ui-statistic-fg, inherit);
+        --ui-accent: initial;
+        --ui-thumb-border: initial;
+        --ui-thumb-hover-shadow: initial;
+        --ui-thumb-ring: initial;
     }
     :where(.ui-steps) {
-        --ui-steps-description-fg: initial;
-        --ui-steps-fg: initial;
-        --ui-steps-indicator-bg: initial;
-        --ui-steps-indicator-border: initial;
-        --ui-steps-indicator-error-border: initial;
-        --ui-steps-indicator-error-fg: initial;
-        --ui-steps-indicator-fg: initial;
-        --ui-steps-indicator-ring: initial;
-        --ui-steps-item-after-bg: initial;
-        --ui-steps-label-fg: initial;
-        color: var(--ui-steps-fg, inherit);
+        --ui-indicator-bg: initial;
+        --ui-indicator-border: initial;
+        --ui-indicator-fg: initial;
     }
     :where(.ui-switch) {
-        --ui-switch-border: initial;
-        --ui-switch-fg: initial;
-        --ui-switch-focus-border: initial;
-        --ui-switch-focus-ring: initial;
-        --ui-switch-invalid-border: initial;
-        --ui-switch-invalid-ring: initial;
-        --ui-switch-thumb-off: initial;
-        --ui-switch-thumb-on: initial;
-        --ui-switch-track-off: initial;
-        --ui-switch-track-on: initial;
-        color: var(--ui-switch-fg, inherit);
+        --ui-thumb-off: initial;
+        --ui-thumb-on: initial;
+        --ui-track-off: initial;
+        --ui-track-on: initial;
     }
     :where(.ui-table) {
-        --ui-table-caption-fg: initial;
-        --ui-table-column-pin-fg: initial;
-        --ui-table-columns-bg: initial;
-        --ui-table-columns-fg: initial;
-        --ui-table-columns-hover-bg: initial;
-        --ui-table-columns-hover-fg: initial;
-        --ui-table-fg: initial;
-        --ui-table-footer-bg: initial;
-        --ui-table-footer-border: initial;
-        --ui-table-head-fg: initial;
-        --ui-table-header-border: initial;
-        --ui-table-row-bg: initial;
-        --ui-table-row-border: initial;
-        --ui-table-row-expanded-bg: initial;
-        --ui-table-row-hover-bg: initial;
-        color: var(--ui-table-fg, inherit);
+        --ui-columns-fg: initial;
+        --ui-header-border: initial;
+        --ui-row-border: initial;
     }
     :where(.ui-tabs) {
-        --ui-tabs-fg: initial;
-        --ui-tabs-list-bg: initial;
-        --ui-tabs-list-fg: initial;
-        --ui-tabs-tab-bg: initial;
-        --ui-tabs-tab-border: initial;
-        --ui-tabs-tab-fg: initial;
-        --ui-tabs-tab-focus-border: initial;
-        --ui-tabs-tab-focus-outline: initial;
-        --ui-tabs-tab-focus-ring: initial;
-        --ui-tabs-tab-hover-fg: initial;
-        --ui-tabs-tab-selected-bg: initial;
-        --ui-tabs-tab-selected-border: initial;
-        --ui-tabs-tab-selected-fg: initial;
-        color: var(--ui-tabs-fg, inherit);
+        --ui-list-bg: initial;
+        --ui-tab-bg: initial;
+        --ui-tab-fg: initial;
+        --ui-tab-focus-border: initial;
+        --ui-tab-focus-outline: initial;
+        --ui-tab-focus-ring: initial;
+        --ui-tab-hover-fg: initial;
+        --ui-tab-selected-bg: initial;
+        --ui-tab-selected-border: initial;
+        --ui-tab-selected-fg: initial;
     }
     :where(.ui-tags-input) {
-        --ui-tags-input-fg: initial;
-        --ui-tags-input-field-bg: initial;
-        --ui-tags-input-field-border: initial;
-        --ui-tags-input-field-fg: initial;
-        --ui-tags-input-remove-fg: initial;
-        --ui-tags-input-remove-hover-bg: initial;
-        --ui-tags-input-tag-bg: initial;
-        --ui-tags-input-tag-border: initial;
-        --ui-tags-input-tag-fg: initial;
-        color: var(--ui-tags-input-fg, inherit);
-    }
-    :where(.ui-text) {
-        --ui-text-fg: initial;
-        --ui-text-link-fg: initial;
-        color: var(--ui-text-fg, inherit);
-    }
-    :where(.ui-textarea) {
-        --ui-textarea-bg: initial;
-        --ui-textarea-border: initial;
-        --ui-textarea-disabled-bg: initial;
-        --ui-textarea-fg: initial;
-        --ui-textarea-focus-border: initial;
-        --ui-textarea-focus-ring: initial;
-        --ui-textarea-invalid-border: initial;
-        --ui-textarea-invalid-ring: initial;
-        --ui-textarea-placeholder-fg: initial;
-        color: var(--ui-textarea-fg, inherit);
-    }
-    :where(.ui-time-picker) {
-        --ui-picker-clear-fg: initial;
-        --ui-picker-trigger-icon: initial;
-        --ui-picker-trigger-placeholder-fg: initial;
-        --ui-time-picker-fg: initial;
-        --ui-time-picker-grid-focus-ring: initial;
-        --ui-time-picker-grid-hover-bg: initial;
-        --ui-time-picker-grid-selected-bg: initial;
-        --ui-time-picker-grid-selected-fg: initial;
-        --ui-time-picker-panel-bg: initial;
-        --ui-time-picker-panel-fg: initial;
-        --ui-time-picker-panel-ring: initial;
-        --ui-time-picker-trigger-bg: initial;
-        --ui-time-picker-trigger-border: initial;
-        --ui-time-picker-trigger-fg: initial;
-        --ui-time-picker-trigger-focus-ring: initial;
-        --ui-time-picker-trigger-hover-bg: initial;
-        --ui-time-picker-trigger-hover-fg: initial;
-        color: var(--ui-time-picker-fg, inherit);
+        --ui-field-bg: initial;
+        --ui-field-border: initial;
+        --ui-remove-fg: initial;
+        --ui-remove-hover-bg: initial;
+        --ui-tag-bg: initial;
+        --ui-tag-border: initial;
+        --ui-tag-fg: initial;
     }
     :where(.ui-timeline) {
-        --ui-timeline-content-fg: initial;
-        --ui-timeline-fg: initial;
-        --ui-timeline-item-after-bg: initial;
-        --ui-timeline-item-before-bg: initial;
-        --ui-timeline-item-before-border: initial;
-        --ui-timeline-item-before-ring: initial;
-        --ui-timeline-time-fg: initial;
-        color: var(--ui-timeline-fg, inherit);
-    }
-    :where(.ui-toast) {
-        --ui-toast-bg: initial;
-        --ui-toast-border: initial;
-        --ui-toast-close-fg: initial;
-        --ui-toast-close-hover-fg: initial;
-        --ui-toast-description-fg: initial;
-        --ui-toast-fg: initial;
-        --ui-toast-focus-border: initial;
-        --ui-toast-focus-ring: initial;
-        --ui-toast-icon: initial;
-        --ui-toast-title-fg: initial;
-        color: var(--ui-toast-fg, inherit);
-    }
-    :where(.ui-toaster) {
-        --ui-toaster-fg: initial;
-        color: var(--ui-toaster-fg, inherit);
+        --ui-item-before-bg: initial;
+        --ui-item-before-border: initial;
     }
     :where(.ui-toggle) {
-        --ui-toggle-bg: initial;
-        --ui-toggle-border: initial;
-        --ui-toggle-checked-bg: initial;
-        --ui-toggle-control-border: initial;
-        --ui-toggle-control-hover-bg: initial;
-        --ui-toggle-control-hover-fg: initial;
-        --ui-toggle-fg: initial;
-        --ui-toggle-focus-border: initial;
-        --ui-toggle-focus-outline: initial;
-        --ui-toggle-focus-shadow: initial;
-        --ui-toggle-hover-bg: initial;
-        color: var(--ui-toggle-fg, inherit);
-    }
-    :where(.ui-toggle-group) {
-        --ui-toggle-group-fg: initial;
-        --ui-toggle-group-item-bg: initial;
-        --ui-toggle-group-item-border: initial;
-        --ui-toggle-group-item-checked-bg: initial;
-        --ui-toggle-group-item-focus-border: initial;
-        --ui-toggle-group-item-focus-outline: initial;
-        --ui-toggle-group-item-focus-shadow: initial;
-        --ui-toggle-group-item-hover-bg: initial;
-        color: var(--ui-toggle-group-fg, inherit);
-    }
-    :where(.ui-tooltip) {
-        --ui-tooltip-arrow-bg: initial;
-        --ui-tooltip-content-bg: initial;
-        --ui-tooltip-content-fg: initial;
-        --ui-tooltip-fg: initial;
-        color: var(--ui-tooltip-fg, inherit);
-    }
-    :where(.ui-tour) {
-        --ui-tour-content-backdrop-bg: initial;
-        --ui-tour-content-bg: initial;
-        --ui-tour-content-border: initial;
-        --ui-tour-content-fg: initial;
-        --ui-tour-description-fg: initial;
-        --ui-tour-fg: initial;
-        color: var(--ui-tour-fg, inherit);
+        --ui-control-hover-bg: initial;
+        --ui-focus-outline: initial;
+        --ui-focus-shadow: initial;
     }
     :where(.ui-trace) {
-        --ui-trace-collapsible-button-fg: initial;
-        --ui-trace-collapsible-button-focus-ring: initial;
-        --ui-trace-collapsible-button-hover-fg: initial;
-        --ui-trace-collapsible-content-inner-border: initial;
-        --ui-trace-collapsible-content-inner-fg: initial;
-        --ui-trace-description-fg: initial;
-        --ui-trace-fg: initial;
-        --ui-trace-focus-ring: initial;
-        --ui-trace-line-fg: initial;
-        --ui-trace-line-hover-fg: initial;
-        color: var(--ui-trace-fg, inherit);
+        --ui-collapsible-button-fg: initial;
+        --ui-collapsible-content-inner-border: initial;
     }
     :where(.ui-transfer) {
-        --ui-transfer-action-bg: initial;
-        --ui-transfer-action-border: initial;
-        --ui-transfer-action-fg: initial;
-        --ui-transfer-fg: initial;
-        --ui-transfer-footer-bg: initial;
-        --ui-transfer-item-fg: initial;
-        --ui-transfer-item-hover-bg: initial;
-        --ui-transfer-item-hover-fg: initial;
-        --ui-transfer-panel-bg: initial;
-        --ui-transfer-panel-fg: initial;
-        --ui-transfer-panel-ring: initial;
-        --ui-transfer-search-bg: initial;
-        --ui-transfer-search-border: initial;
-        --ui-transfer-search-fg: initial;
-        color: var(--ui-transfer-fg, inherit);
+        --ui-action-bg: initial;
+        --ui-action-border: initial;
+        --ui-action-fg: initial;
+        --ui-search-bg: initial;
+        --ui-search-border: initial;
+        --ui-search-fg: initial;
     }
-    :where(.ui-tree) {
-        --ui-node-selector-border: initial;
-        --ui-node-selector-checked-bg: initial;
-        --ui-node-selector-checked-border: initial;
-        --ui-node-selector-checked-fg: initial;
-        --ui-node-selector-indicator: initial;
-        --ui-tree-action-icon: initial;
-        --ui-tree-action-selected-bg: initial;
-        --ui-tree-action-selected-fg: initial;
-        --ui-tree-fg: initial;
-        color: var(--ui-tree-fg, inherit);
-    }
-    :where(.ui-tree-select) {
-        --ui-tree-select-fg: initial;
-        --ui-tree-select-panel-bg: initial;
-        --ui-tree-select-panel-fg: initial;
-        --ui-tree-select-trigger-bg: initial;
-        --ui-tree-select-trigger-border: initial;
-        --ui-tree-select-trigger-fg: initial;
-        color: var(--ui-tree-select-fg, inherit);
-    }
-    :where(.ui-accordion-item) {
-        border-color: var(--ui-accordion-item-border, var(--color-border));
-    }
-    :where(.ui-accordion-summary) {
-        border-color: var(--ui-accordion-summary-border, var(--color-border));
-    }
-    :where(.ui-alert) {
-        border-color: var(--ui-alert-border, var(--color-border));
-    }
-    :where(.ui-alert-dialog-footer) {
-        border-color: var(--ui-alert-dialog-footer-border, var(--color-border));
-    }
-    :where(.ui-attachment) {
-        border-color: var(--ui-attachment-border, var(--color-border));
-    }
-    :where(.ui-avatar) {
-        border-color: var(--ui-avatar-border, var(--color-border));
-    }
-    :where(.ui-badge) {
-        border-color: var(--ui-badge-border, var(--color-border));
-    }
-    :where(.ui-bubble-content) {
-        border-color: var(--ui-bubble-content-border, var(--color-border));
-    }
-    :where(.ui-button) {
-        border-color: var(--ui-button-border, var(--color-border));
-    }
-    :where(.ui-button-group-text) {
-        border-color: var(--ui-button-group-text-border, var(--color-border));
-    }
-    :where(.ui-card-footer) {
-        border-color: var(--ui-card-footer-border, var(--color-border));
-    }
-    :where(.ui-checkbox) {
-        border-color: var(--ui-checkbox-border, var(--color-border));
-    }
-    :where(.ui-color-picker-control) {
-        border-color: var(--ui-color-picker-border, var(--color-border));
-    }
-    :where(.ui-data-table-frame) {
-        border-color: var(--ui-data-table-frame-border, var(--color-border));
-    }
-    :where(.ui-data-table-selection) {
-        border-color: var(--ui-data-table-selection-border, var(--color-border));
-    }
-    :where(.ui-description-list) {
-        border-color: var(--ui-description-list-border, var(--color-border));
-    }
-    :where(.ui-dialog-footer) {
-        border-color: var(--ui-dialog-footer-border, var(--color-border));
-    }
-    :where(.ui-drawer-content) {
-        border-color: var(--ui-drawer-content-border, var(--color-border));
-    }
-    :where(.ui-field-label) {
-        border-color: var(--ui-field-label-border, var(--color-border));
-    }
-    :where(.ui-icon-select-pagination) {
-        border-color: var(--ui-icon-select-pagination-border, var(--color-border));
-    }
-    :where(.ui-input) {
-        border-color: var(--ui-input-border, var(--color-border));
-    }
-    :where(.ui-input-group) {
-        border-color: var(--ui-input-group-border, var(--color-border));
-    }
-    :where(.ui-item) {
+    :where(.ui-accordion-item, .ui-radio-group-item, .ui-toggle-group-item) {
         border-color: var(--ui-item-border, var(--color-border));
     }
-    :where(.ui-menubar) {
-        border-color: var(--ui-menubar-border, var(--color-border));
+    :where(
+        .ui-accordion-summary,
+        .ui-icon-select-pagination,
+        .ui-questionnaire-choice,
+        .ui-questionnaire-choice-indicator,
+        .ui-questionnaire-input,
+        .ui-questionnaire-shortcut,
+        .ui-sidebar-menu-sub,
+        .ui-tabs-tab,
+        .ui-time-segment
+    ) {
+        border-color: var(--ui-part-border, var(--color-border));
     }
-    :where(.ui-native-select-control) {
-        border-color: var(--ui-native-select-border, var(--color-border));
+    :where(
+        .ui-alert,
+        .ui-attachment,
+        .ui-avatar,
+        .ui-badge,
+        .ui-button,
+        .ui-checkbox,
+        .ui-color-picker-control,
+        .ui-description-list,
+        .ui-input,
+        .ui-input-group,
+        .ui-item,
+        .ui-menubar,
+        .ui-native-select-control,
+        .ui-switch,
+        .ui-textarea
+    ) {
+        border-color: var(--ui-border, var(--color-border));
+    }
+    :where(.ui-alert-dialog-footer, .ui-card-footer, .ui-dialog-footer, .ui-table-footer) {
+        border-color: var(--ui-footer-border, var(--color-border));
+    }
+    :where(.ui-bubble-content) {
+        border-color: var(--ui-content-border, var(--color-border));
+    }
+    :where(.ui-button-group-text) {
+        border-color: var(--ui-text-border, var(--color-border));
+    }
+    :where(.ui-data-table-frame) {
+        border-color: var(--ui-frame-border, var(--color-border));
+    }
+    :where(.ui-data-table-selection) {
+        border-color: var(--ui-selection-border, var(--color-border));
+    }
+    :where(.ui-drawer-content, .ui-sheet-content, .ui-tour-content) {
+        border-color: var(--ui-panel-border, var(--color-border));
+    }
+    :where(.ui-field-label) {
+        border-color: var(--ui-label-border, var(--color-border));
     }
     :where(.ui-picker-extra) {
-        border-color: var(--ui-picker-extra-border, var(--color-border));
-    }
-    :where(.ui-questionnaire-choice) {
-        border-color: var(--ui-questionnaire-choice-border, var(--color-border));
-    }
-    :where(.ui-questionnaire-choice-indicator) {
-        border-color: var(--ui-questionnaire-choice-indicator-border, var(--color-border));
-    }
-    :where(.ui-questionnaire-input) {
-        border-color: var(--ui-questionnaire-input-border, var(--color-border));
-    }
-    :where(.ui-questionnaire-shortcut) {
-        border-color: var(--ui-questionnaire-shortcut-border, var(--color-border));
-    }
-    :where(.ui-radio-group-item) {
-        border-color: var(--ui-radio-group-item-border, var(--color-border));
+        border-color: var(--ui-extra-border, var(--color-border));
     }
     :where(.ui-select-control) {
-        border-color: var(--ui-select-trigger-border, var(--color-border));
-    }
-    :where(.ui-sheet-content) {
-        border-color: var(--ui-sheet-content-border, var(--color-border));
-    }
-    :where(.ui-sidebar-menu-sub) {
-        border-color: var(--ui-sidebar-menu-sub-border, var(--color-border));
+        border-color: var(--ui-trigger-border, var(--color-border));
     }
     :where(.ui-slider-thumb) {
-        border-color: var(--ui-slider-thumb-border, var(--color-border));
+        border-color: var(--ui-thumb-border, var(--color-border));
     }
     :where(.ui-steps-indicator) {
-        border-color: var(--ui-steps-indicator-border, var(--color-border));
-    }
-    :where(.ui-switch) {
-        border-color: var(--ui-switch-border, var(--color-border));
-    }
-    :where(.ui-table-footer) {
-        border-color: var(--ui-table-footer-border, var(--color-border));
+        border-color: var(--ui-indicator-border, var(--color-border));
     }
     :where(.ui-table-header) {
-        border-color: var(--ui-table-header-border, var(--color-border));
+        border-color: var(--ui-header-border, var(--color-border));
     }
     :where(.ui-table-row) {
-        border-color: var(--ui-table-row-border, var(--color-border));
-    }
-    :where(.ui-tabs-tab) {
-        border-color: var(--ui-tabs-tab-border, var(--color-border));
-    }
-    :where(.ui-textarea) {
-        border-color: var(--ui-textarea-border, var(--color-border));
-    }
-    :where(.ui-time-segment) {
-        border-color: var(--ui-time-segment-border, var(--color-border));
+        border-color: var(--ui-row-border, var(--color-border));
     }
     :where(.ui-time-unit) {
-        border-color: var(--ui-time-unit-border, var(--color-border));
+        border-color: var(--ui-unit-border, var(--color-border));
     }
     :where(.ui-toggle-control) {
-        border-color: var(--ui-toggle-control-border, var(--color-border));
-    }
-    :where(.ui-toggle-group-item) {
-        border-color: var(--ui-toggle-group-item-border, var(--color-border));
-    }
-    :where(.ui-tour-content) {
-        border-color: var(--ui-tour-content-border, var(--color-border));
+        border-color: var(--ui-control-border, var(--color-border));
     }
     :where(.ui-trace-collapsible-content-inner) {
-        border-color: var(--ui-trace-collapsible-content-inner-border, var(--color-border));
+        border-color: var(--ui-collapsible-content-inner-border, var(--color-border));
     }
 }

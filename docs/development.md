@@ -38,12 +38,13 @@ npm run archive
 | `composer.json`、`src/`、`routes/` | 运行依赖、包发现、PHP 类和资源路由 |
 | `resources/views/`、`lang/`、`resources/content/schema.json` | Blade 渲染、翻译及内容契约 |
 | `resources/boost/skills/esoboy-ui-development/` | Laravel Boost 可安装的组件开发技能及配套示例 |
-| `resources/css/ui.css` | Tailwind 源文件，包含所有组件和编辑器的样式 |
-| `resources/dist/ui.js`、`resources/dist/editor.js` | 通用组件行为和按需加载的完整编辑器 |
+| `resources/css/ui.css` | 普通组件和只读 RichText 的 Tailwind 源样式 |
+| `resources/dist/ui.js` | 通用组件行为 |
+| `resources/dist/editor.js`、`resources/dist/editor.css` | Tiptap 编辑器的脚本与样式，由编辑器按需加载 |
 | `resources/icons/catalog.php` | 正式 Lucide 图标的 SVG 内容 |
 | `README.md`、`LICENSE`、`resources/icons/LICENSE`、`THIRD-PARTY-LICENSES.txt` | 安装说明和随包许可 |
 
-宿主在 Tailwind 入口导入库样式，通过 `@uiScript` 加载通用脚本并启动 Livewire / Alpine。Editor 出现在页面时加载一次专用脚本。接入示例见[使用说明](../README.md)。
+宿主在 Tailwind 入口导入库样式，通过 `@uiScript` 加载通用脚本并启动 Livewire / Alpine。Editor 首次出现在页面时加载专用脚本和样式。接入示例见[使用说明](../README.md)。
 
 ## 发布与验证
 

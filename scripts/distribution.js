@@ -24,6 +24,7 @@ const runtime = [
     'resources/icons/LICENSE',
     'resources/dist/ui.js',
     'resources/dist/editor.js',
+    'resources/dist/editor.css',
     'LICENSE',
 ]
 

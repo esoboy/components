@@ -21,9 +21,9 @@ metadata:
 @import '../../vendor/esoboy/ui/resources/css/ui.css';
 ```
 
-在公共布局的 `<head>` 放置 `@uiScript`，排在启动 Livewire 或 Alpine 的脚本前。Editor 首次渲染时会加载自己的脚本。在根元素上使用 `.dark` 切换暗色，用组件的 `class` 覆盖默认样式。
+在公共布局的 `<head>` 放置 `@uiScript`，排在启动 Livewire 或 Alpine 的脚本前。Editor 首次渲染时加载自己的脚本和样式。只读 RichText 的样式随组件库提供。在根元素上使用 `.dark` 切换暗色，用组件的 `class` 覆盖默认样式。
 
-按钮、徽标、开关、提示和通知可组合 `variant` 与 `status`。五种状态为 `neutral`、`info`、`success`、`warning`、`error`。省略状态时使用变体自身的配色。在组件根 class 上用 Tailwind 任意属性调整部位，例如 `[--ui-progress-fill:var(--color-success)]`。
+按钮、徽标、开关、提示和通知可组合 `variant` 与 `status`。五种状态为 `neutral`、`info`、`success`、`warning`、`error`。省略状态时使用变体自身的配色。在组件根 class 上用 Tailwind 任意属性调整部位，例如 `[--ui-fill:var(--color-success)]`。
 
 ## 表单与状态
 

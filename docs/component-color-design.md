@@ -9,7 +9,7 @@
 | 样式入口 | 按钮已有 `.ui-button`，徽标、开关滑块等主要用 `[data-slot=…]:where([data-esoboy-ui])` 定位。 | 每个组件提供稳定的根 class，例如 `.ui-button`、`.ui-badge`、`.ui-switch`。导入库 CSS 后，在普通 HTML 页面即可生效。 |
 | 变体渲染 | 徽标模板输出 `data-variant`，CSS 按属性切换外观。按钮模板已经会输出固定的变体类。 | Blade 按 `variant` 渲染基础结构和外观类，变体样式给出布局、边框、默认配色和交互反馈。有专属部位的变体只输出自己需要的节点。 |
 | 颜色来源 | 变体 CSS 直接使用 `bg-primary`、`text-foreground`、`border-border` 等主题工具类。 | 各变体自带完整配色。显式指定 `status` 时，组件通过部位变量替换相应颜色。 |
-| 实例覆盖 | 应用可以用工具类覆盖样式，也可以改组件读取的通用主题变量。某些内部部位需要单独定位。 | 应用在根 `class` 里改一个部位变量即可，例如 `[--ui-button-border:var(--color-violet-600)]` 只改这个按钮的边框。 |
+| 实例覆盖 | 应用可以用工具类覆盖样式，也可以改组件读取的通用主题变量。某些内部部位需要单独定位。 | 应用在根 `class` 里改一个部位变量即可，例如 `[--ui-border:var(--color-violet-600)]` 只改这个按钮的边框。 |
 
 宿主布局只需引入组件 CSS。应用中依赖旧 DOM 的选择器可将 `[data-slot="badge"]` 换成 `.ui-badge`，描边变体使用 `.ui-badge-variant-outline`。
 
@@ -26,10 +26,10 @@
 <x-ui::switch status="success" wire:model="enabled" aria-label="启用同步" />
 
 <x-ui::button variant="outline" status="info"
-    class="[--ui-button-border:var(--color-violet-600)]">查看详情</x-ui::button>
+    class="[--ui-border:var(--color-violet-600)]">查看详情</x-ui::button>
 
 <x-ui::progress :value="72" aria-label="上传进度"
-    class="[--ui-progress-track:var(--color-slate-200)] [--ui-progress-fill:var(--color-info)]" />
+    class="[--ui-track:var(--color-slate-200)] [--ui-fill:var(--color-info)]" />
 ```
 
 同一个 `secondary` 徽标，省略状态和指定 `info` 时分别生成以下 HTML。两者的节点和变体完全相同。
@@ -45,19 +45,19 @@
 
 状态名描述业务含义。`neutral` 用于平实地标明现状，`info` 用于主动告知一条消息。`secondary` 保留为外观名，`accent` 继续作为主题强调色，通过现有工具类或组件部位变量使用。这样组件库仍提供 `accent`，`status` 的取值共五个。警示状态统一拼为 `warning`。
 
-每种状态提供三种用途的颜色。下表每格依次为实心底色、实心底上的前景色、普通表面上的强调文字色。后者用于淡底或描边，例如白底上的警示文字用深琥珀色。
+每种状态提供三种用途的颜色。下表每格依次为实心底色、实心底上的前景色、普通表面上的强调文字色。后者用于淡底或描边，例如白底上的警告文字使用 `yellow-800`。
 
 | 状态 | 业务示例 | 浅色默认值 | 暗色默认值 |
 | --- | --- | --- | --- |
-| `neutral`（灰） | 草稿、已归档 | `secondary` / `secondary-foreground` / `secondary-foreground` | 同一组变量，随暗色主题切换 |
-| `info`（蓝） | 正在同步、有新版本 | `sky-700` / 白 / `sky-800` | `sky-400` / `sky-950` / `sky-300` |
-| `success`（绿） | 已完成、支付成功 | `emerald-700` / 白 / `emerald-800` | `emerald-400` / `emerald-950` / `emerald-300` |
-| `warning`（琥珀） | 即将到期、额度不足 | `amber-400` / `amber-950` / `amber-800` | `amber-300` / `amber-950` / `amber-200` |
-| `error`（红） | 保存失败、连接出错 | `oklch(0.577 0.245 27.325)` / 白 / `red-700` | `oklch(0.704 0.191 22.216)` / `#171717` / `red-300` |
+| `neutral`（灰） | 草稿、已归档 | `neutral-100` / `neutral-900` / `neutral-900` | `neutral-800` / `white` / `neutral-50` |
+| `info`（蓝） | 正在同步、有新版本 | `blue-500` / `white` / `blue-800` | `blue-600` / `white` / `blue-300` |
+| `success`（绿） | 已完成、支付成功 | `green-500` / `white` / `green-800` | `green-600` / `white` / `green-300` |
+| `warning`（金黄） | 即将到期、额度不足 | `yellow-500` / `white` / `yellow-800` | `yellow-600` / `white` / `yellow-200` |
+| `error`（红） | 保存失败、连接出错 | `red-500` / `white` / `red-700` | `red-600` / `white` / `red-300` |
 
-`neutral` 直接引用按钮使用的 `--color-secondary` 和 `--color-secondary-foreground`。浅色主题里的 `secondary` 和 `accent` 恰好同色，暗色主题里的底色分别为 `oklch(0.269 0 0)` 和 `oklch(0.371 0 0)`。应用定制 `secondary` 时，灰色状态随之更新。
+`neutral` 的底色取 `--color-secondary`，强调文字取 `--color-secondary-foreground`。实心中性状态在浅色主题使用 `--color-secondary-foreground`，在暗色主题使用 `white`。浅色主题里的 `secondary` 和 `accent` 恰好同色，暗色主题里的底色分别为 `oklch(0.269 0 0)` 和 `oklch(0.371 0 0)`。应用定制 `secondary` 时，灰色状态随之更新。
 
-四种彩色状态各自公开 `--color-{status}`、`--color-{status}-foreground`、`--color-{status}-ink`。`--color-error` 在亮暗主题中独立声明，初始色值取各主题的 `destructive` 色值。应用可以分别定制错误提示和破坏性操作。全局配色沿用 Tailwind 的 `@theme` 和库已有的 `.dark` 规则。
+四种彩色状态各自公开 `--color-{status}`、`--color-{status}-foreground`、`--color-{status}-ink`。应用可以通过 `--color-error` 定制错误状态，通过 `--color-destructive` 定制破坏性操作。全局配色沿用 Tailwind 的 `@theme` 和库已有的 `.dark` 规则。
 
 ## 变体怎样使用状态色
 
@@ -72,21 +72,32 @@
 
 Blade 从五个状态名中选取一个固定 class，例如 `ui-status-info`。每种状态只需配好实心底色、实心前景和强调文字。彩色淡底由底色统一生成，灰色淡底直接取 `secondary`。变体所渲染的部位读取各自需要的颜色。把 `info` 换成 `success` 时，节点结构、交互和 ARIA 语义一致。
 
-## 每个组件的颜色变量
+## 共享颜色变量
 
-每个组件按可独立着色的部位公开 `--ui-组件-部位`。跟随文字的单色图标使用 `currentColor`。需要区分的部位才单设变量，例如提示图标与正文、开关轨道与滑块。悬停文字先读取 `--ui-button-hover-fg`，再回退到 `--ui-button-fg`，应用改一次前景即可覆盖两态。下面列出常用部位。组件根上可覆盖的变量按组件名列在[部位变量清单](../resources/css/components/part-colors.css)。
+根变量按用途命名。按钮和徽标都读 `--ui-border`。选择框、日期选择器和级联选择器都读 `--ui-trigger-bg` 与 `--ui-panel-bg`，所以可以在同一实例里分别给触发器和弹层着色。悬停文字先读 `--ui-hover-fg`，再回退到 `--ui-fg`。跟随文字的单色图标使用 `currentColor`。
 
 | 组件 | 部位变量示例 |
 | --- | --- |
-| `button`、`badge` | 各自前缀下的 `bg`、`fg`、`border`、`hover-bg`、`hover-fg`。按钮另有 `focus-ring`。 |
-| `switch` | `--ui-switch-track-on`、`--ui-switch-track-off`、`--ui-switch-thumb-on`、`--ui-switch-thumb-off`、`--ui-switch-focus-ring` |
-| `alert`、`toast` | 各自前缀下的 `bg`、`border`、`icon`、`title-fg`、`description-fg` |
-| `progress` | `--ui-progress-track`、`--ui-progress-fill`，原生进度条的浏览器伪元素读取相同的变量。 |
-| `select` | `--ui-select-trigger-bg`、`--ui-select-panel-bg`、`--ui-select-option-selected-bg`、`--ui-select-option-selected-fg` |
-| `password-input` | `--ui-password-input-value-fg` 用于输入值，`--ui-password-input-placeholder-fg` 用于占位文字。 |
-| `signature` | `--ui-signature-ink` 用于画布笔迹，`--ui-signature-surface-bg` 和 `--ui-signature-surface-border` 分别用于画布底色和边框。 |
+| `button`、`badge` | `--ui-bg`、`--ui-fg`、`--ui-border`、`--ui-hover-bg`、`--ui-hover-fg`、`--ui-focus-ring` |
+| `switch` | `--ui-track-on`、`--ui-track-off`、`--ui-thumb-on`、`--ui-thumb-off`、`--ui-focus-ring` |
+| `alert`、`toast` | `--ui-bg`、`--ui-border`、`--ui-icon-fg`、`--ui-title-fg`、`--ui-description-fg` |
+| `progress` | `--ui-track`、`--ui-fill`，原生进度条的浏览器伪元素读取相同的变量。 |
+| `select` | `--ui-trigger-bg`、`--ui-panel-bg`、`--ui-option-selected-bg`、`--ui-option-selected-fg` |
+| `password-input` | `--ui-value-fg` 用于输入值，`--ui-placeholder-fg` 用于占位文字。 |
+| `signature` | `--ui-ink` 用于画布笔迹，`--ui-canvas-bg` 和 `--ui-canvas-border` 分别用于画布底色和边框。 |
 
 组件在实例根元素上用 Tailwind 的 `components` 层声明默认部位变量，绘制节点读取这些变量。应用的 `utilities` 层可以直接覆盖最终值。例如示例中的按钮只替换边框，文字与悬停仍走 `outline + info`。同类组件嵌套时，子实例在自己的根上重新声明默认值。全局主题色可以跨实例继承。
+
+只在一个部位绘制的颜色使用局部变量。比如头像徽标和头像占位符都接受 `--ui-part-bg` 和 `--ui-part-fg`。把变量放在相应部位，或从实例根用 Tailwind 的子选择器定位它。局部变量只在命中的节点或伪元素生效。
+
+```blade
+<x-ui::avatar class="[&_.ui-avatar-badge]:[--ui-part-bg:#245647]">
+    <x-ui::avatar.fallback>林</x-ui::avatar.fallback>
+    <x-ui::avatar.badge>✓</x-ui::avatar.badge>
+</x-ui::avatar>
+```
+
+升级时将按钮的 `--ui-button-border`、徽标的 `--ui-badge-border` 改为各自根上的 `--ui-border`。原先写在头像根上的 `--ui-avatar-badge-bg` 移到示例中的徽标部位。完整对照给出了每个旧变量的新名字和设置位置。[变量迁移表](color-variable-migration.csv) · [实例作用域](../resources/css/components/part-colors.css)
 
 实例 `class` 应落在能覆盖全部绘制部位的根上。例如 `date-picker` 的触发器与弹层目标位于同一个实例容器内，使一处变量覆盖同时作用于两边。原生输入继续接收 `id`、`name`、`wire:model` 和 ARIA 属性。应用原先直接针对触发器的焦点样式可改用部位变量，容器级反馈可在根上使用 `focus-within:`。
 
@@ -98,7 +109,7 @@ Blade 从五个状态名中选取一个固定 class，例如 `ui-status-info`。
 <button type="button" class="ui-button ui-button-variant-outline ui-status-info">查看详情</button>
 ```
 
-变体有额外内容或交互区域时，Blade 直接渲染相应节点。仅有装饰差异时，共用节点就够了。例如 `marker` 的 `separator` 由 Blade 输出 `ui-marker-variant-separator`，沿用现有的 `::before` 和 `::after` 绘制两条线，二者都读取 `--ui-marker-line`。
+变体有额外内容或交互区域时，Blade 直接渲染相应节点。仅有装饰差异时，共用节点就够了。例如 `marker` 的 `separator` 由 Blade 输出 `ui-marker-variant-separator`，沿用现有的 `::before` 和 `::after` 绘制两条线，二者都读取 `--ui-line`。
 
 ### 同一个描边徽标的 CSS 对照
 
@@ -114,8 +125,8 @@ Blade 从五个状态名中选取一个固定 class，例如 `ui-status-info`。
 
 ```css
 .ui-badge.ui-badge-variant-outline {
-    border-color: var(--ui-badge-border, var(--ui-status-ink, var(--color-border)));
-    color: var(--ui-badge-fg, var(--ui-status-ink, var(--color-foreground)));
+    border-color: var(--ui-border, var(--ui-status-ink, var(--color-border)));
+    color: var(--ui-fg, var(--ui-status-ink, var(--color-foreground)));
 }
 ```
 

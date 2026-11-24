@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { compile, optimize } from '@tailwindcss/node'
 import postcss from 'postcss'
 
-test('the distribution ships one Tailwind source and two standalone scripts', () => {
+test('the distribution ships the component stylesheet and standalone editor assets', () => {
     const entries = (path) => readdirSync('dist/' + path).sort()
     assert.deepEqual(entries(''), [
         'LICENSE',
@@ -18,7 +18,7 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
     ])
     assert.deepEqual(entries('resources'), ['boost', 'content', 'css', 'dist', 'icons', 'views'])
     assert.deepEqual(entries('resources/css'), ['ui.css'])
-    assert.deepEqual(entries('resources/dist'), ['editor.js', 'ui.js'])
+    assert.deepEqual(entries('resources/dist'), ['editor.css', 'editor.js', 'ui.js'])
     assert.deepEqual(entries('resources/icons'), ['LICENSE', 'catalog.php'])
     const notices = readFileSync('dist/THIRD-PARTY-LICENSES.txt', 'utf8')
     assert.ok(notices.includes(readFileSync('resources/css/LICENSE.shadcn', 'utf8').trim()))
@@ -29,6 +29,19 @@ test('the distribution ships one Tailwind source and two standalone scripts', ()
     for (const field of ['require-dev', 'autoload-dev', 'scripts'])
         assert.equal(field in manifest, false)
     const sourceCss = readFileSync('dist/resources/css/ui.css', 'utf8')
+    assert.match(sourceCss, /\.ui-rich-text\b/)
+    assert.doesNotMatch(
+        sourceCss,
+        /esoboy-editor|\.ui-editor\b|--ui-editor-|ProseMirror|\.tableWrapper/,
+    )
+    const editorCss = readFileSync('dist/resources/dist/editor.css', 'utf8')
+    assert.match(editorCss, /esoboy-editor/)
+    assert.match(editorCss, /\.document/)
+    assert.doesNotMatch(editorCss, /\.ui-rich-text|@import\b/)
+    for (const node of postcss.parse(editorCss).nodes.filter((node) => node.type !== 'comment')) {
+        assert.equal(node.name, 'layer')
+        assert.equal(node.params, 'components')
+    }
     assert.match(sourceCss, /@apply\b/)
     assert.match(sourceCss, /@theme\b/)
     assert.doesNotMatch(sourceCss, /@(import|tailwind|utility)\b/)
@@ -68,26 +81,43 @@ test('a host with source detection disabled still builds every component default
         optimize(compiler.build(['block', 'rounded-lg']), { minify: true }).code,
     )
     const utilities = new Set()
-    let editorDisplay
     css.walkRules((rule) => {
         let layer = rule.parent
         while (layer && layer.name !== 'layer') layer = layer.parent
         if (layer?.params === 'utilities') utilities.add(rule.selector)
         if (
             rule.selector.includes('.ui-') ||
-            rule.selector.includes('esoboy-editor') ||
-            rule.selector.includes('.ui-rich-content')
+            rule.nodes.some((node) => node.prop === '--color-info')
         ) {
             assert.equal(layer?.params, 'components', rule.selector)
         }
-        if (rule.selectors.includes('esoboy-editor')) {
-            rule.walkDecls('display', (decl) => {
-                editorDisplay = decl.value
-            })
-        }
     })
     assert.deepEqual(utilities, new Set(['.block', '.rounded-lg']))
-    assert.equal(editorDisplay, 'block')
+})
+
+test('component defaults resolve host theme values in either import order', async () => {
+    const library = readFileSync('dist/resources/css/ui.css', 'utf8')
+    const host = '@theme { --color-info: var(--brand-info); --radius-ui-lg: 17px; }'
+    for (const sources of [
+        [host, library],
+        [library, host],
+    ]) {
+        const compiler = await compile(
+            ['@import "tailwindcss" source(none);', ...sources].join('\n'),
+            {
+                base: process.cwd(),
+                onDependency() {},
+            },
+        )
+        const css = postcss.parse(compiler.build(['bg-info', 'rounded-ui-lg']))
+        const root = new Map()
+        css.walkRules((rule) => {
+            if (rule.selector.includes(':host') && rule.parent.params === 'components')
+                rule.walkDecls((decl) => root.set(decl.prop, decl.value))
+        })
+        assert.equal(root.get('--color-info'), 'var(--brand-info)')
+        assert.equal(root.get('--radius-ui-lg'), '17px')
+    }
 })
 
 test('the distributed names and SVGs match the pinned Lucide release', () => {

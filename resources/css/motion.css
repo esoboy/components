@@ -264,10 +264,7 @@
         content: '';
         position: absolute;
         pointer-events: none;
-        background: var(
-            --ui-drawer-content-after-bg,
-            var(--drawer-bleed-background, var(--color-popover))
-        );
+        background: var(--ui-panel-after-bg, var(--drawer-bleed-background, var(--color-popover)));
     }
     .ui-drawer-content[data-swipe-axis='y']::after {
         left: 0;
@@ -358,9 +355,9 @@
         border: 0;
         width: max-content;
         max-width: calc(100vw - 10px);
-        background: var(--ui-navigation-menu-positioner-bg, transparent);
+        background: var(--ui-part-bg, transparent);
         overflow: visible;
-        color: var(--ui-navigation-menu-positioner-fg, var(--color-popover-foreground));
+        color: var(--ui-part-fg, var(--color-popover-foreground));
         transition:
             top 350ms cubic-bezier(0.22, 1, 0.36, 1),
             left 350ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -369,12 +366,9 @@
         transition: none;
     }
     .ui-navigation-menu-popup {
-        background-color: var(--ui-navigation-menu-popup-bg, var(--color-popover));
-        color: var(--ui-navigation-menu-popup-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-navigation-menu-popup-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
         @apply rounded-ui-lg shadow ring-1 outline-none;
         position: relative;
         width: max-content;
@@ -417,7 +411,7 @@
         width: auto;
         max-width: calc(100vw - 10px);
         padding: 0.25rem;
-        background: var(--ui-navigation-menu-content-bg, transparent);
+        background: var(--ui-content-bg, transparent);
         box-shadow: none;
         border-radius: 0;
         opacity: 1;

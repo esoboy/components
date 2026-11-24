@@ -26,12 +26,13 @@ test('explicit statuses recolor existing variants and root utilities reach their
             const pair = (s) => [s.backgroundColor, s.color]
             const swatch = document.createElement('span')
             document.body.append(swatch)
-            const palette = (name) => {
+            const palette = (name, foreground = name + '-foreground') => {
                 swatch.style.backgroundColor = 'var(--color-' + name + ')'
-                swatch.style.color = 'var(--color-' + name + '-foreground)'
+                swatch.style.color = 'var(--color-' + foreground + ')'
                 return pair(getComputedStyle(swatch))
             }
             const primary = palette('primary')
+            const muted = palette('muted')[0]
             const fieldWidth = (id, root) => {
                 const trigger = document.getElementById(id)
                 return [trigger.offsetWidth, trigger.closest(root).offsetWidth]
@@ -40,9 +41,17 @@ test('explicit statuses recolor existing variants and root utilities reach their
                 swatch.style.color = 'var(--color-' + name + ')'
                 return getComputedStyle(swatch).color
             }
-            const statuses = ['neutral', 'info', 'success', 'warning', 'error'].map((name) => {
+            const shade = dark ? '600' : '500'
+            const neutralText = dark ? 'white' : 'secondary-foreground'
+            const defaults = {
+                neutral: palette('secondary', neutralText),
+                info: palette('blue-' + shade, 'white'),
+                success: palette('green-' + shade, 'white'),
+                warning: palette('yellow-' + shade, 'white'),
+                error: palette('red-' + shade, 'white'),
+            }
+            const statuses = Object.entries(defaults).map(([name, expected]) => {
                 const token = name === 'neutral' ? 'secondary' : name
-                const expected = palette(token)
                 swatch.style.color =
                     'var(--color-' + token + (name === 'neutral' ? '-foreground)' : '-ink)')
                 const ink = getComputedStyle(swatch).color
@@ -50,8 +59,10 @@ test('explicit statuses recolor existing variants and root utilities reach their
                 return {
                     name,
                     expected,
+                    semantic: palette(token, name === 'neutral' ? neutralText : undefined),
                     ink,
                     solid: pair(style('#solid-' + name)),
+                    badge: pair(style('#badge-' + name)),
                     softText: style('#soft-' + name).color,
                     outline: [
                         style('#outline-' + name).color,
@@ -103,6 +114,9 @@ test('explicit statuses recolor existing variants and root utilities reach their
                 nested: pair(style('#nested-badge')),
                 inner: pair(style('#inner-badge')),
                 customBorder: style('#custom-outline').borderTopColor,
+                avatarBadge: style('#avatar-badge').backgroundColor,
+                avatarFallback: style('#avatar-fallback').backgroundColor,
+                muted,
                 customText: style('#custom-outline').color,
                 infoText: style('#outline-info').color,
                 progress: [style('progress').backgroundColor, style('progress').color],
@@ -127,7 +141,9 @@ test('explicit statuses recolor existing variants and root utilities reach their
             }
         }, dark)
         for (const status of paint.statuses) {
+            assert.deepEqual(status.semantic, status.expected, status.name)
             assert.deepEqual(status.solid, status.expected, status.name)
+            assert.deepEqual(status.badge, status.expected, status.name)
             assert.deepEqual(status.switchColors, status.expected, status.name)
             assert.deepEqual(status.outline, [status.ink, status.ink], status.name)
             assert.equal(status.softText, status.ink, status.name)
@@ -141,6 +157,8 @@ test('explicit statuses recolor existing variants and root utilities reach their
         for (const [trigger, root] of paint.widths) assert.equal(trigger, root)
         assert.deepEqual(paint.neutralSoft, paint.secondary)
         assert.equal(paint.customBorder, 'rgb(18, 52, 86)')
+        assert.equal(paint.avatarBadge, 'rgb(36, 86, 71)')
+        assert.equal(paint.avatarFallback, paint.muted)
         assert.equal(paint.customText, paint.infoText)
         assert.deepEqual(paint.progress, ['rgb(237, 237, 237)', 'rgb(35, 69, 103)'])
         assert.deepEqual(paint.select, [
@@ -187,7 +205,7 @@ test('explicit statuses recolor existing variants and root utilities reach their
     const readInk = (canvas) => canvas.getContext('2d').strokeStyle
     assert.equal(await drawing.evaluate(readInk), '#24795c')
     await drawing.evaluate((canvas) => {
-        canvas.closest('.ui-signature').style.setProperty('--ui-signature-ink', '#453682')
+        canvas.closest('.ui-signature').style.setProperty('--ui-ink', '#453682')
     })
     await page.waitForFunction(
         () =>
@@ -202,6 +220,25 @@ test('explicit statuses recolor existing variants and root utilities reach their
         'rgb(113, 6, 39)',
         true,
     ])
+})
+
+test('grouped button corners and focused invalid controls retain their state styles', async (t) => {
+    const page = await openProbe(t, '?status=1')
+    await page.addStyleTag({ content: '.ui-checkbox { transition: none }' })
+    await page.keyboard.press('Tab')
+    const colors = await page.locator('#invalid-focus').evaluate((checkbox) => {
+        checkbox.focus()
+        return [false, true].map((dark) => {
+            document.documentElement.classList.toggle('dark', dark)
+            return getComputedStyle(checkbox).borderTopColor
+        })
+    })
+    assert.deepEqual(colors, ['rgb(33, 105, 83)', 'rgb(33, 105, 83)'])
+    const corners = await page.locator('#grouped-small').evaluate((button) => {
+        const style = getComputedStyle(button)
+        return [style.borderTopLeftRadius, style.borderTopRightRadius]
+    })
+    assert.deepEqual(corners, ['10px', '0px'])
 })
 
 test('a replaced dialog trigger opens and receives focus on close', async (t) => {
@@ -897,10 +934,11 @@ test('the host stylesheet styles components and the first editor loads one share
         await page.locator('esoboy-editor').first().waitFor({ state: 'detached' })
         await page.locator('#start-editing').click()
         await page.waitForFunction(() => document.querySelector('#second-editor')?.editor)
-        assert.deepEqual(
-            assets.filter(([name]) => name === 'editor.js'),
-            [['editor.js', 200]],
-        )
+        assert.deepEqual(assets.filter(([name]) => name.startsWith('editor.')).sort(), [
+            ['editor.css', 200],
+            ['editor.js', 200],
+        ])
+        assert.equal(await page.locator('link[href*="editor.css"]').count(), 1)
         assert.equal(await page.locator('script[src*="editor.js"]').count(), 1)
         assert.deepEqual(errors, [])
     } finally {
@@ -908,23 +946,43 @@ test('the host stylesheet styles components and the first editor loads one share
     }
 })
 
-test('an editor-only Blade page loads its own script and reuses it across Livewire navigation', async (t) => {
+test('an editor-only page loads its stylesheet and script once across Livewire navigation', async (t) => {
     const browser = await chromium.launch()
     t.after(() => browser.close())
     const page = await browser.newPage()
     page.setDefaultTimeout(7000)
-    const scripts = []
+    const assets = []
     const errors = []
     page.on('pageerror', (error) => errors.push(error.message))
     page.on('request', (request) => {
         const path = new URL(request.url()).pathname
-        if (path.startsWith('/esoboy/ui/')) scripts.push(path.split('/')[3])
+        if (path.startsWith('/esoboy/ui/')) assets.push(path.split('/')[3])
     })
     const base = process.env.UI_TEST_URL ?? 'http://127.0.0.1:18744'
     await page.goto(new URL('/ui-package-test?editors=1', base).href)
     const second = page.locator('#document-two [contenteditable="true"]')
     assert.equal(await second.innerText(), 'Two')
-    assert.deepEqual(scripts, ['editor.js'])
+    assert.deepEqual([...assets].sort(), ['editor.css', 'editor.js'])
+    assert.equal(await page.locator('link[href*="editor.css"]').count(), 1)
+    const documentStyles = await page.locator('#document-two .document').evaluate((editor) => {
+        // Check the editor product's own typography with the application's CSS disabled.
+        const hostStyle = document.querySelector('link[href*="/build/"][rel="stylesheet"]')
+        hostStyle.disabled = true
+        const sample = document.createElement('div')
+        sample.className = editor.className
+        const heading = sample.appendChild(document.createElement('h2'))
+        editor.after(sample)
+        const ratio =
+            parseFloat(getComputedStyle(heading).fontSize) /
+            parseFloat(getComputedStyle(editor).fontSize)
+        const toolbar = getComputedStyle(
+            editor.closest('esoboy-editor').querySelector('.toolbar'),
+        ).display
+        sample.remove()
+        hostStyle.disabled = false
+        return [ratio, toolbar]
+    })
+    assert.deepEqual(documentStyles, [1.75, 'grid'])
     assert.equal(await page.locator('script[src*="editor.js"]').count(), 1)
     await page.getByRole('link', { name: 'General components' }).click()
     // Alpine sets aria-expanded once Livewire has loaded the new page's head scripts.
@@ -932,6 +990,6 @@ test('an editor-only Blade page loads its own script and reuses it across Livewi
     await page.getByRole('option', { name: 'One', exact: true }).click()
     await page.getByRole('link', { name: 'Standalone editors' }).click()
     assert.equal(await second.innerText(), 'Two')
-    assert.deepEqual(scripts, ['editor.js', 'ui.js'])
+    assert.deepEqual(assets.sort(), ['editor.css', 'editor.js', 'ui.js'])
     assert.deepEqual(errors, [])
 })

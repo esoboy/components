@@ -15,7 +15,7 @@
         @apply font-medium;
     }
     .ui-popover-description {
-        color: var(--ui-popover-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
     }
     .ui-drawer-scroll-body {
         @apply min-h-0 overflow-y-auto overscroll-contain p-4;
@@ -27,15 +27,12 @@
         @apply -mx-1 my-1 w-auto;
     }
     .ui-attachment-media {
-        background-color: var(--ui-attachment-media-bg, var(--color-muted));
-        color: var(--ui-attachment-media-fg, var(--color-foreground));
+        background-color: var(--ui-media-bg, var(--color-muted));
+        color: var(--ui-media-fg, var(--color-foreground));
         @apply w-10 rounded-ui-lg group-data-[size=sm]/attachment:w-8 group-data-[size=xs]/attachment:w-7 group-data-[size=xs]/attachment:rounded-ui-md [&_svg:not([class*=size-])]:size-4 group-data-[size=xs]/attachment:[&_svg:not([class*=size-])]:size-3.5 group-data-[orientation=vertical]/attachment:w-full group-data-[orientation=vertical]/attachment:[&_svg:not([class*=size-])]:size-6 group-data-[orientation=vertical]/attachment:*:[.ui-spinner]:size-6 relative flex aspect-square shrink-0 items-center justify-center overflow-hidden [&_svg]:pointer-events-none;
         @variant group-data-[state=error]/attachment {
-            background-color: var(
-                --ui-attachment-media-error-bg,
-                color-mix(in oklab, var(--color-destructive) 10%, transparent)
-            );
-            color: var(--ui-attachment-media-error-fg, var(--color-destructive));
+            background-color: var(--ui-part-bg, var(--ui-destructive-10));
+            color: var(--ui-part-fg, var(--color-destructive));
         }
     }
     .ui-attachment-media.ui-attachment-media-variant-image {
@@ -48,19 +45,16 @@
         .ui-code-block-line-variant-added,
         .ui-code-block-line-variant-highlighted
     ) {
-        background-color: var(--ui-code-block-line-highlighted-bg, var(--color-muted));
+        background-color: var(--ui-part-bg, var(--color-muted));
     }
     .ui-code-block-line.ui-code-block-line-variant-added {
         @apply after:content-['+'];
     }
     .ui-code-block-line.ui-code-block-line-variant-removed {
-        background-color: var(
-            --ui-code-block-line-bg,
-            color-mix(in oklab, var(--color-destructive) 10%, transparent)
-        );
+        background-color: var(--ui-part-bg, var(--ui-destructive-10));
         @apply after:content-['−'];
         @variant after {
-            color: var(--ui-code-block-line-fg, var(--color-destructive));
+            color: var(--ui-line-fg, var(--color-destructive));
         }
     }
     .ui-code-block-code {
@@ -73,7 +67,7 @@
         @apply size-4;
     }
     .ui-color-picker-field > svg {
-        color: var(--ui-color-picker-field-fg, var(--color-muted-foreground));
+        color: var(--ui-field-fg, var(--color-muted-foreground));
         @apply pointer-events-none absolute end-2 top-1/2 -translate-y-1/2;
     }
     .ui-field-separator > .ui-separator {
@@ -98,7 +92,7 @@
         @apply rounded-full;
     }
     svg.ui-select-chevron {
-        color: var(--ui-select-chevron-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
     }
     .ui-combobox-trigger {
         @apply w-full justify-between font-normal;
@@ -119,14 +113,8 @@
         @apply p-1 pb-0;
     }
     .ui-command-input-wrapper > .ui-input-group {
-        background-color: var(
-            --ui-input-group-bg,
-            color-mix(in oklab, var(--color-input) 30%, transparent)
-        );
-        border-color: var(
-            --ui-input-group-border,
-            color-mix(in oklab, var(--color-input) 30%, transparent)
-        );
+        background-color: var(--ui-bg, var(--ui-input-30));
+        border-color: var(--ui-border, var(--ui-input-30));
         @apply h-8 rounded-ui-lg shadow-none;
     }
     .ui-command-input-wrapper .ui-input-group-addon {
@@ -168,209 +156,89 @@
     .ui-picker-target {
         @apply contents;
     }
-    .ui-date-picker-trigger {
-        --ui-button-bg: var(--ui-date-picker-trigger-bg);
-        --ui-button-fg: var(--ui-date-picker-trigger-fg);
-        --ui-button-border: var(--ui-date-picker-trigger-border);
-        --ui-button-hover-bg: var(--ui-date-picker-trigger-hover-bg);
-        --ui-button-hover-fg: var(--ui-date-picker-trigger-hover-fg);
-        --ui-button-focus-ring: var(--ui-date-picker-trigger-focus-ring);
+    .ui-picker-trigger {
+        --ui-bg: var(--ui-trigger-bg);
+        --ui-fg: var(--ui-trigger-fg);
+        --ui-border: var(--ui-trigger-border);
+        --ui-hover-bg: var(--ui-trigger-hover-bg);
+        --ui-hover-fg: var(--ui-trigger-hover-fg);
+        --ui-focus-ring: var(--ui-trigger-focus-ring);
     }
-    .ui-date-picker-panel {
-        --ui-popover-content-bg: var(--ui-date-picker-panel-bg);
-        --ui-popover-content-fg: var(--ui-date-picker-panel-fg);
-        --ui-popover-content-ring: var(--ui-date-picker-panel-ring);
-    }
-    .ui-datetime-picker-trigger {
-        --ui-button-bg: var(--ui-datetime-picker-trigger-bg);
-        --ui-button-fg: var(--ui-datetime-picker-trigger-fg);
-        --ui-button-border: var(--ui-datetime-picker-trigger-border);
-        --ui-button-hover-bg: var(--ui-datetime-picker-trigger-hover-bg);
-        --ui-button-hover-fg: var(--ui-datetime-picker-trigger-hover-fg);
-        --ui-button-focus-ring: var(--ui-datetime-picker-trigger-focus-ring);
-    }
-    .ui-datetime-picker-panel {
-        --ui-popover-content-bg: var(--ui-datetime-picker-panel-bg);
-        --ui-popover-content-fg: var(--ui-datetime-picker-panel-fg);
-        --ui-popover-content-ring: var(--ui-datetime-picker-panel-ring);
-    }
-    .ui-time-picker-trigger {
-        --ui-button-bg: var(--ui-time-picker-trigger-bg);
-        --ui-button-fg: var(--ui-time-picker-trigger-fg);
-        --ui-button-border: var(--ui-time-picker-trigger-border);
-        --ui-button-hover-bg: var(--ui-time-picker-trigger-hover-bg);
-        --ui-button-hover-fg: var(--ui-time-picker-trigger-hover-fg);
-        --ui-button-focus-ring: var(--ui-time-picker-trigger-focus-ring);
-    }
-    .ui-time-picker-panel {
-        --ui-popover-content-bg: var(--ui-time-picker-panel-bg);
-        --ui-popover-content-fg: var(--ui-time-picker-panel-fg);
-        --ui-popover-content-ring: var(--ui-time-picker-panel-ring);
-    }
-    .ui-password-input .ui-input-group {
-        --ui-input-group-bg: var(--ui-password-input-bg);
-        --ui-input-group-border: var(--ui-password-input-border);
-        --ui-input-group-focus-border: var(--ui-password-input-focus-border);
-        --ui-input-group-focus-ring: var(--ui-password-input-focus-ring);
-    }
-    .ui-password-input .ui-input-group-control {
-        --ui-input-fg: var(--ui-password-input-value-fg);
-        --ui-input-placeholder-fg: var(--ui-password-input-placeholder-fg);
-    }
+    .ui-password-input .ui-input-group,
     .ui-number-input .ui-input-group {
-        --ui-input-group-bg: var(--ui-number-input-bg);
-        --ui-input-group-border: var(--ui-number-input-border);
-        --ui-input-group-focus-border: var(--ui-number-input-focus-border);
-        --ui-input-group-focus-ring: var(--ui-number-input-focus-ring);
+        --ui-bg: inherit;
+        --ui-border: inherit;
+        --ui-focus-border: inherit;
+        --ui-focus-ring: inherit;
     }
+    .ui-password-input .ui-input-group-control,
     .ui-number-input .ui-input-group-control {
-        --ui-input-fg: var(--ui-number-input-value-fg);
-        --ui-input-placeholder-fg: var(--ui-number-input-placeholder-fg);
+        --ui-fg: var(--ui-value-fg);
+        --ui-placeholder-fg: inherit;
     }
-    .ui-tree-select-body > .ui-select-trigger > .ui-select-control {
-        --ui-select-trigger-bg: var(--ui-tree-select-trigger-bg);
-        --ui-select-trigger-fg: var(--ui-tree-select-trigger-fg);
-        --ui-select-trigger-border: var(--ui-tree-select-trigger-border);
-    }
-    .ui-tree-select-body > .ui-list-popup {
-        --ui-popover-content-bg: var(--ui-tree-select-panel-bg);
-        --ui-popover-content-fg: var(--ui-tree-select-panel-fg);
-    }
-    .ui-icon-select .ui-combobox-content {
-        --ui-combobox-content-bg: var(--ui-icon-select-panel-bg);
-        --ui-combobox-content-fg: var(--ui-icon-select-panel-fg);
-    }
-    .ui-media-preview-panel {
-        --ui-dialog-content-bg: var(--ui-media-preview-panel-bg);
-        --ui-dialog-content-fg: var(--ui-media-preview-panel-fg);
-        --ui-dialog-content-border: var(--ui-media-preview-panel-border);
-    }
-    .ui-context-menu-content {
-        --ui-popup-bg: var(--ui-context-menu-content-bg);
-        --ui-popup-fg: var(--ui-context-menu-content-fg);
-        --ui-popup-ring: var(--ui-context-menu-content-ring);
-    }
-    .ui-context-menu-sub-content {
-        --ui-popup-bg: var(--ui-context-menu-sub-content-bg);
-        --ui-popup-fg: var(--ui-context-menu-sub-content-fg);
-        --ui-popup-ring: var(--ui-context-menu-sub-content-ring);
-    }
-    .ui-context-menu-item {
-        --ui-menu-item-fg: var(--ui-context-menu-item-fg);
-        --ui-menu-item-hover-bg: var(--ui-context-menu-item-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-context-menu-item-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-context-menu-item-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-context-menu-item-focus-fg);
-    }
-    .ui-context-menu-link {
-        --ui-menu-item-fg: var(--ui-context-menu-link-fg);
-        --ui-menu-item-hover-bg: var(--ui-context-menu-link-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-context-menu-link-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-context-menu-link-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-context-menu-link-focus-fg);
-    }
-    .ui-dropdown-menu-content {
-        --ui-popup-bg: var(--ui-dropdown-menu-content-bg);
-        --ui-popup-fg: var(--ui-dropdown-menu-content-fg);
-        --ui-popup-ring: var(--ui-dropdown-menu-content-ring);
-    }
-    .ui-dropdown-menu-sub-content {
-        --ui-popup-bg: var(--ui-dropdown-menu-sub-content-bg);
-        --ui-popup-fg: var(--ui-dropdown-menu-sub-content-fg);
-        --ui-popup-ring: var(--ui-dropdown-menu-sub-content-ring);
-    }
-    .ui-dropdown-menu-item {
-        --ui-menu-item-fg: var(--ui-dropdown-menu-item-fg);
-        --ui-menu-item-hover-bg: var(--ui-dropdown-menu-item-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-dropdown-menu-item-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-dropdown-menu-item-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-dropdown-menu-item-focus-fg);
-    }
-    :where(.ui-dropdown-menu-link) {
-        --ui-menu-item-fg: var(--ui-dropdown-menu-link-fg);
-        --ui-menu-item-hover-bg: var(--ui-dropdown-menu-link-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-dropdown-menu-link-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-dropdown-menu-link-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-dropdown-menu-link-focus-fg);
-    }
-    .ui-menubar-content {
-        --ui-popup-bg: var(--ui-menubar-content-bg);
-        --ui-popup-fg: var(--ui-menubar-content-fg);
-        --ui-popup-ring: var(--ui-menubar-content-ring);
-    }
+    .ui-context-menu-sub-content,
+    .ui-dropdown-menu-sub-content,
     .ui-menubar-sub-content {
-        --ui-popup-bg: var(--ui-menubar-sub-content-bg);
-        --ui-popup-fg: var(--ui-menubar-sub-content-fg);
-        --ui-popup-ring: var(--ui-menubar-sub-content-ring);
+        --ui-panel-bg: var(--ui-sub-panel-bg);
+        --ui-panel-fg: var(--ui-sub-panel-fg);
+        --ui-panel-ring: var(--ui-sub-panel-ring);
     }
-    .ui-menubar-item {
-        --ui-menu-item-fg: var(--ui-menubar-item-fg);
-        --ui-menu-item-hover-bg: var(--ui-menubar-item-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-menubar-item-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-menubar-item-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-menubar-item-focus-fg);
-    }
+    .ui-context-menu-link,
+    :where(.ui-dropdown-menu-link),
     .ui-menubar-link {
-        --ui-menu-item-fg: var(--ui-menubar-link-fg);
-        --ui-menu-item-hover-bg: var(--ui-menubar-link-hover-bg);
-        --ui-menu-item-hover-fg: var(--ui-menubar-link-hover-fg);
-        --ui-menu-item-focus-bg: var(--ui-menubar-link-focus-bg);
-        --ui-menu-item-focus-fg: var(--ui-menubar-link-focus-fg);
+        --ui-item-fg: var(--ui-link-fg);
+        --ui-item-hover-bg: var(--ui-link-hover-bg);
+        --ui-item-hover-fg: var(--ui-link-hover-fg);
+        --ui-item-focus-bg: var(--ui-link-focus-bg);
+        --ui-item-focus-fg: var(--ui-link-focus-fg);
     }
     .ui-cascader-body > .ui-select-trigger > .ui-select-control {
-        --ui-select-trigger-bg: var(--ui-cascader-trigger-bg);
-        --ui-select-trigger-fg: var(--ui-cascader-trigger-fg);
-        --ui-select-trigger-border: var(--ui-cascader-trigger-border);
-        --ui-select-trigger-placeholder-fg: var(--ui-cascader-placeholder-fg);
-    }
-    .ui-cascader-body > .ui-list-popup {
-        --ui-popover-content-bg: var(--ui-cascader-panel-bg);
-        --ui-popover-content-fg: var(--ui-cascader-panel-fg);
+        --ui-trigger-placeholder-fg: var(--ui-placeholder-fg);
     }
     .ui-tags > .ui-badge {
-        --ui-badge-bg: var(--ui-tags-input-tag-bg);
-        --ui-badge-fg: var(--ui-tags-input-tag-fg);
-        --ui-badge-border: var(--ui-tags-input-tag-border);
+        --ui-bg: var(--ui-tag-bg);
+        --ui-fg: var(--ui-tag-fg);
+        --ui-border: var(--ui-tag-border);
     }
     .ui-tags .ui-button {
-        --ui-button-fg: var(--ui-tags-input-remove-fg);
-        --ui-button-hover-bg: var(--ui-tags-input-remove-hover-bg);
+        --ui-fg: var(--ui-remove-fg);
+        --ui-hover-bg: var(--ui-remove-hover-bg);
     }
     .ui-tags-input-body > .ui-input {
-        --ui-input-bg: var(--ui-tags-input-field-bg);
-        --ui-input-fg: var(--ui-tags-input-field-fg);
-        --ui-input-border: var(--ui-tags-input-field-border);
+        --ui-bg: var(--ui-field-bg);
+        --ui-fg: var(--ui-field-fg);
+        --ui-border: var(--ui-field-border);
     }
     .ui-transfer-body > .ui-input {
-        --ui-input-bg: var(--ui-transfer-search-bg);
-        --ui-input-fg: var(--ui-transfer-search-fg);
-        --ui-input-border: var(--ui-transfer-search-border);
+        --ui-bg: var(--ui-search-bg);
+        --ui-fg: var(--ui-search-fg);
+        --ui-border: var(--ui-search-border);
     }
     .ui-transfer-columns > .ui-card {
-        --ui-card-bg: var(--ui-transfer-panel-bg);
-        --ui-card-fg: var(--ui-transfer-panel-fg);
-        --ui-card-ring: var(--ui-transfer-panel-ring);
-        --ui-card-footer-bg: var(--ui-transfer-footer-bg);
+        --ui-bg: var(--ui-panel-bg);
+        --ui-fg: var(--ui-panel-fg);
+        --ui-ring: var(--ui-panel-ring);
+        --ui-footer-bg: inherit;
     }
     .ui-transfer-item {
-        --ui-button-fg: var(--ui-transfer-item-fg);
-        --ui-button-hover-bg: var(--ui-transfer-item-hover-bg);
-        --ui-button-hover-fg: var(--ui-transfer-item-hover-fg);
+        --ui-fg: var(--ui-item-fg);
+        --ui-hover-bg: var(--ui-item-hover-bg);
+        --ui-hover-fg: var(--ui-item-hover-fg);
     }
     .ui-transfer-columns > .ui-card > .ui-card-footer > .ui-button {
-        --ui-button-fg: var(--ui-transfer-action-fg);
-        --ui-button-bg: var(--ui-transfer-action-bg);
-        --ui-button-border: var(--ui-transfer-action-border);
+        --ui-fg: var(--ui-action-fg);
+        --ui-bg: var(--ui-action-bg);
+        --ui-border: var(--ui-action-border);
     }
     :is(.ui-pagination-link, .ui-pagination-button) {
-        --ui-button-fg: var(--ui-pagination-page-fg);
-        --ui-button-hover-bg: var(--ui-pagination-page-hover-bg);
-        --ui-button-hover-fg: var(--ui-pagination-page-hover-fg);
+        --ui-fg: var(--ui-page-fg);
+        --ui-hover-bg: var(--ui-page-hover-bg);
+        --ui-hover-fg: var(--ui-page-hover-fg);
     }
     :is(.ui-pagination-link, .ui-pagination-button)[data-active='true'] {
-        --ui-button-bg: var(--ui-pagination-active-bg);
-        --ui-button-border: var(--ui-pagination-active-border);
-        --ui-button-fg: var(--ui-pagination-active-fg);
+        --ui-bg: var(--ui-active-bg);
+        --ui-border: var(--ui-active-border);
+        --ui-fg: var(--ui-active-fg);
     }
     .ui-select > .ui-select-body,
     .ui-select-body > .ui-select-trigger,

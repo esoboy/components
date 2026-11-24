@@ -9,63 +9,162 @@
     .ui-alert-dialog-header {
         @apply grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center has-[.ui-alert-dialog-media]:grid-rows-[auto_auto_1fr] has-[.ui-alert-dialog-media]:gap-x-4 sm:group-data-[size=default]/alert-dialog-content:place-items-start sm:group-data-[size=default]/alert-dialog-content:text-left sm:group-data-[size=default]/alert-dialog-content:has-[.ui-alert-dialog-media]:grid-rows-[auto_1fr];
     }
+    .ui-alert-dialog-footer,
+    .ui-dialog-footer {
+        @apply -mx-4 -mb-4 rounded-b-ui-xl border-t;
+        background-color: var(--ui-footer-bg, var(--ui-muted-50));
+    }
+    .ui-alert-dialog-footer,
+    .ui-sheet-footer,
+    .ui-drawer-footer,
+    .ui-dialog-footer {
+        @apply p-4;
+    }
+    .ui-alert-dialog-footer,
+    .ui-sheet-footer,
+    .ui-drawer-footer {
+        @apply flex gap-2;
+    }
     .ui-alert-dialog-footer {
-        background-color: var(
-            --ui-alert-dialog-footer-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
-        @apply -mx-4 -mb-4 rounded-b-ui-xl border-t p-4 flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end;
+        @apply flex-col-reverse group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end;
+    }
+    .ui-alert-dialog-title,
+    .ui-sheet-title,
+    .ui-drawer-title,
+    .ui-accordion-summary,
+    .ui-alert-title,
+    .ui-badge,
+    .ui-button,
+    .ui-button-group-text,
+    .ui-card-title,
+    .ui-dialog-title,
+    .ui-empty-title,
+    .ui-field-legend,
+    .ui-item-title,
+    .ui-kbd,
+    .ui-label,
+    .ui-menubar-label,
+    .ui-progress-label,
+    .ui-sidebar-group-label,
+    .ui-table-footer,
+    .ui-table-head,
+    .ui-input-group-addon,
+    .ui-attachment-name,
+    .ui-message-footer {
+        @apply font-medium;
+    }
+    .ui-alert-dialog-title,
+    .ui-sheet-title,
+    .ui-drawer-title,
+    .ui-dialog-title {
+        @apply text-base;
     }
     .ui-alert-dialog-title {
-        @apply text-base font-medium sm:group-data-[size=default]/alert-dialog-content:group-has-[.ui-alert-dialog-media]/alert-dialog-content:col-start-2;
+        @apply sm:group-data-[size=default]/alert-dialog-content:group-has-[.ui-alert-dialog-media]/alert-dialog-content:col-start-2;
     }
-    .ui-alert-dialog-description {
-        color: var(--ui-alert-dialog-description-fg, var(--color-muted-foreground));
-        @apply text-sm text-balance md:text-pretty *:[a]:underline *:[a]:underline-offset-3;
+    .ui-alert-dialog-description,
+    .ui-sheet-description,
+    .ui-drawer-description,
+    .ui-accordion-summary,
+    .ui-accordion-content,
+    .ui-alert,
+    .ui-alert-description,
+    .ui-breadcrumb-list,
+    .ui-button,
+    .ui-button-group-text,
+    .ui-card,
+    .ui-card-description,
+    .ui-command-input,
+    .ui-command-item,
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dialog-content-variant-default,
+    .ui-dialog-description,
+    .ui-drawer-content,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-empty-title,
+    .ui-empty-content,
+    .ui-field-description,
+    .ui-field-error,
+    .ui-hover-card-content,
+    .ui-item,
+    .ui-item-title,
+    .ui-item-description,
+    .ui-label,
+    .ui-menubar-label,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item,
+    .ui-navigation-menu-link,
+    .ui-native-select-control,
+    .ui-popover-content,
+    .ui-progress-label,
+    .ui-sheet-content,
+    .ui-sidebar-menu-button,
+    .ui-table-element,
+    .ui-table-caption,
+    .ui-tabs-content,
+    .ui-input-group-addon,
+    .ui-input-group-button,
+    .ui-input-group-text,
+    .ui-bubble-content,
+    .ui-marker,
+    .ui-code-block,
+    .ui-message {
+        @apply text-sm;
+    }
+    .ui-alert-dialog-description,
+    .ui-sheet-description,
+    .ui-drawer-description,
+    .ui-dialog-description {
+        color: var(--ui-description-fg, var(--color-muted-foreground));
+    }
+    .ui-alert-dialog-description,
+    .ui-dialog-description {
+        @apply *:[a]:underline *:[a]:underline-offset-3;
         @variant *:[a]:hover {
-            color: var(--ui-alert-dialog-description-hover-fg, var(--color-foreground));
+            color: var(--ui-description-hover-fg, var(--color-foreground));
         }
     }
-    .ui-sheet-header {
+    .ui-alert-dialog-description {
+        @apply text-balance md:text-pretty;
+    }
+    .ui-sheet-header,
+    .ui-drawer-header {
         @apply gap-0.5 p-4 flex flex-col;
     }
-    .ui-sheet-footer {
-        @apply gap-2 p-4 mt-auto flex flex-col;
+    .ui-sheet-footer,
+    .ui-drawer-footer {
+        @apply mt-auto flex-col;
     }
-    .ui-sheet-title {
-        color: var(--ui-sheet-title-fg, var(--color-foreground));
-        @apply text-base font-medium;
-    }
+    .ui-sheet-title,
     .ui-drawer-title {
-        color: var(--ui-drawer-title-fg, var(--color-foreground));
-        @apply text-base font-medium;
-    }
-    .ui-sheet-description {
-        color: var(--ui-sheet-description-fg, var(--color-muted-foreground));
-        @apply text-sm;
-    }
-    .ui-drawer-description {
-        color: var(--ui-drawer-description-fg, var(--color-muted-foreground));
-        @apply text-sm;
+        color: var(--ui-title-fg, var(--color-foreground));
     }
     .ui-drawer-header {
-        @apply gap-0.5 p-4 pb-0 flex shrink-0 flex-col;
+        @apply pb-0 shrink-0;
     }
     .ui-drawer-content:is([data-side='top'], [data-side='bottom']) .ui-drawer-header {
         text-align: center;
     }
     .ui-drawer-footer {
-        @apply gap-2 p-4 pt-0 mt-auto flex shrink-0 flex-col;
+        @apply pt-0 shrink-0;
     }
     .ui-sheet-content,
     .ui-drawer-content {
         padding: 0;
     }
+    .ui-drawer-content,
+    .ui-sheet-content {
+        @apply flex flex-col data-[side=bottom]:border-t data-[side=left]:border-r data-[side=right]:border-l data-[side=top]:border-b;
+        overflow: visible;
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+    }
     .ui-drawer-content {
         box-shadow: none;
         user-select: none;
         outline: none;
-        overflow: visible;
         overscroll-behavior: auto;
         transform: translateZ(0);
         will-change: transform;
@@ -89,7 +188,7 @@
         display: none;
     }
     .ui-drawer-content .ui-drawer-content::backdrop {
-        background: var(--ui-drawer-content-backdrop-bg, transparent);
+        background: var(--ui-panel-backdrop-bg, transparent);
         backdrop-filter: none;
     }
     .ui-sheet-content[data-side='right'] {
@@ -130,12 +229,15 @@
         font-weight: 400;
         border-width: 0;
     }
-    .ui-tooltip-content {
+    .ui-tooltip-content,
+    .ui-popover-content {
         overflow: visible;
+    }
+    .ui-tooltip-content {
         box-shadow: none;
     }
     .ui-tooltip-arrow {
-        background-color: var(--ui-tooltip-arrow-bg, var(--color-foreground));
+        background-color: var(--ui-part-bg, var(--color-foreground));
         @apply pointer-events-none absolute z-50 size-2.5 rotate-45 rounded-[2px];
         translate: 0 calc(-50% - 2px);
     }
@@ -160,28 +262,33 @@
     .ui-accordion-item {
         @apply not-last:border-b;
     }
+    .ui-accordion-summary,
+    .ui-button,
+    .ui-input,
+    .ui-navigation-menu-link,
+    .ui-native-select-control,
+    .ui-select-control,
+    .ui-textarea {
+        @apply focus-visible:ring-3;
+    }
     .ui-accordion-summary {
-        @apply rounded-ui-lg py-2.5 text-left text-sm font-medium hover:underline focus-visible:ring-3 **:[.ui-accordion-trigger-icon]:ml-auto **:[.ui-accordion-trigger-icon]:size-4;
+        @apply rounded-ui-lg py-2.5 text-left hover:underline **:[.ui-accordion-trigger-icon]:ml-auto **:[.ui-accordion-trigger-icon]:size-4;
         @variant focus-visible {
-            --tw-ring-color: var(
-                --ui-accordion-summary-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-            border-color: var(--ui-accordion-summary-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
+            border-color: var(--ui-summary-focus-border, var(--color-ring));
         }
         @variant focus-visible:after {
-            border-color: var(--ui-accordion-summary-focus-border, var(--color-ring));
+            border-color: var(--ui-summary-focus-border, var(--color-ring));
         }
         @variant **:[.ui-accordion-trigger-icon] {
-            color: var(--ui-accordion-summary-fg, var(--color-muted-foreground));
+            color: var(--ui-part-fg, var(--color-muted-foreground));
         }
     }
     .ui-accordion-content {
         @apply [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4;
         @variant [&_a]:hover {
-            color: var(--ui-accordion-content-hover-fg, var(--color-foreground));
+            color: var(--ui-content-hover-fg, var(--color-foreground));
         }
-        @apply text-sm;
     }
     .ui-accordion-trigger-icon {
         flex-shrink: 0;
@@ -190,84 +297,107 @@
         @apply pt-0 pb-2.5;
     }
     .ui-alert {
-        border-color: var(--ui-alert-border, var(--ui-status-ink, var(--color-border)));
-        @apply grid gap-0.5 rounded-ui-lg border px-2.5 py-2 text-left text-sm has-[.ui-alert-action]:relative has-[.ui-alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4;
+        border-color: var(--ui-border, var(--ui-status-ink, var(--color-border)));
+        @apply grid gap-0.5 rounded-ui-lg border px-2.5 py-2 text-left has-[.ui-alert-action]:relative has-[.ui-alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg:not([class*='size-'])]:size-4;
         @variant *:[svg] {
-            color: var(--ui-alert-icon, var(--ui-status-ink, currentColor));
+            color: var(--ui-icon-fg, var(--ui-status-ink, currentColor));
         }
     }
     .ui-alert.ui-alert-variant-default {
-        background-color: var(--ui-alert-bg, var(--color-card));
-        color: var(--ui-alert-fg, var(--color-card-foreground));
+        background-color: var(--ui-bg, var(--color-card));
+        color: var(--ui-fg, var(--color-card-foreground));
     }
     .ui-alert.ui-alert-variant-destructive {
-        color: var(--ui-alert-fg, var(--ui-status-body-fg, var(--color-destructive)));
-        background-color: var(--ui-alert-bg, var(--color-card));
+        color: var(--ui-fg, var(--color-destructive));
+        background-color: var(--ui-bg, var(--color-card));
         @variant *:[.ui-alert-description] {
             color: var(
-                --ui-alert-description-fg,
-                var(
-                    --ui-status-description-fg,
-                    color-mix(in oklab, var(--color-destructive) 90%, transparent)
-                )
+                --ui-description-fg,
+                color-mix(in oklab, var(--color-destructive) 90%, transparent)
             );
         }
         @variant *:[svg] {
-            color: var(--ui-alert-icon, var(--ui-status-ink, currentColor));
+            color: var(--ui-icon-fg, var(--ui-status-ink, currentColor));
         }
     }
     .ui-alert-title {
-        color: var(--ui-alert-title-fg, inherit);
-        @apply font-medium group-has-[>svg]/alert:col-start-2;
+        color: var(--ui-title-fg, inherit);
+        @apply group-has-[>svg]/alert:col-start-2;
     }
     .ui-alert-description {
-        color: var(--ui-alert-description-fg, var(--color-muted-foreground));
-        @apply text-sm text-balance md:text-pretty [&_p:not(:last-child)]:mb-4;
+        color: var(--ui-description-fg, var(--color-muted-foreground));
+        @apply text-balance md:text-pretty [&_p:not(:last-child)]:mb-4;
+    }
+    .ui-alert-dialog-content,
+    .ui-card,
+    .ui-context-menu-content,
+    .ui-context-menu-sub-content,
+    .ui-dialog-content-variant-default,
+    .ui-dropdown-menu-content,
+    .ui-dropdown-menu-sub-content,
+    .ui-hover-card-content,
+    .ui-menubar-content,
+    .ui-menubar-sub-content,
+    .ui-popover-content {
+        @apply ring-1;
     }
     .ui-alert-dialog-content {
-        background-color: var(--ui-alert-dialog-content-bg, var(--color-popover));
-        color: var(--ui-alert-dialog-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-alert-dialog-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply gap-4 rounded-ui-xl p-4 ring-1 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm;
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
+        @apply gap-4 rounded-ui-xl p-4 duration-100 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm;
     }
     .ui-avatar {
         @apply size-8 rounded-full after:rounded-full data-[size=lg]:size-10 data-[size=sm]:size-6;
     }
     .ui-avatar-fallback {
-        background-color: var(--ui-avatar-fallback-bg, var(--color-muted));
-        color: var(--ui-avatar-fallback-fg, var(--color-muted-foreground));
+        background-color: var(--ui-part-bg, var(--color-muted));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply rounded-full;
     }
     .ui-avatar-image {
         @apply rounded-full;
     }
     :where(.ui-badge) {
-        color: var(--ui-badge-fg, inherit);
-        background-color: var(--ui-badge-bg, transparent);
+        color: var(--ui-fg, inherit);
+        background-color: var(--ui-bg, transparent);
+    }
+    .ui-badge,
+    .ui-button-size-xs,
+    .ui-context-menu-shortcut,
+    .ui-dropdown-menu-shortcut,
+    .ui-kbd,
+    .ui-menubar-shortcut,
+    .ui-sidebar-group-label,
+    .ui-tooltip-content,
+    .ui-attachment-description,
+    .ui-message-footer {
+        @apply text-xs;
+    }
+    .ui-badge,
+    .ui-button {
+        @apply border;
+        border-color: var(--ui-border, transparent);
     }
     .ui-badge {
-        border-color: var(--ui-badge-border, transparent);
-        @apply h-5 gap-1 rounded-ui-4xl border px-2 py-0.5 text-xs font-medium transition-all has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:size-3;
+        @apply h-5 gap-1 rounded-ui-4xl px-2 py-0.5 transition-all has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&>svg]:size-3;
     }
     .ui-badge.ui-badge-variant-default {
-        background-color: var(--ui-badge-bg, var(--ui-status-fill, var(--color-primary)));
-        color: var(--ui-badge-fg, var(--ui-status-on-fill, var(--color-primary-foreground)));
+        background-color: var(--ui-bg, var(--ui-status-fill, var(--color-primary)));
+        color: var(--ui-fg, var(--ui-status-on-fill, var(--color-primary-foreground)));
         @variant [a]:hover {
             background-color: var(
-                --ui-badge-hover-bg,
+                --ui-hover-bg,
                 color-mix(in oklab, var(--ui-status-fill, var(--color-primary)) 80%, transparent)
             );
         }
     }
     .ui-badge.ui-badge-variant-secondary {
-        background-color: var(--ui-badge-bg, var(--ui-status-soft-bg, var(--color-secondary)));
-        color: var(--ui-badge-fg, var(--ui-status-ink, var(--color-secondary-foreground)));
+        background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--color-secondary)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-secondary-foreground)));
         @variant [a]:hover {
             background-color: var(
-                --ui-badge-hover-bg,
+                --ui-hover-bg,
                 var(
                     --ui-status-hover-bg,
                     color-mix(in oklab, var(--color-secondary) 80%, transparent)
@@ -276,37 +406,28 @@
         }
     }
     .ui-badge.ui-badge-variant-outline {
-        border-color: var(--ui-badge-border, var(--ui-status-ink, var(--color-border)));
-        color: var(--ui-badge-fg, var(--ui-status-ink, var(--color-foreground)));
+        border-color: var(--ui-border, var(--ui-status-ink, var(--color-border)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-foreground)));
         @variant [a]:hover {
-            background-color: var(
-                --ui-badge-hover-bg,
-                var(--ui-status-hover-bg, var(--color-muted))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--color-muted)));
             color: var(
-                --ui-badge-hover-fg,
-                var(--ui-badge-fg, var(--ui-status-ink, var(--color-muted-foreground)))
+                --ui-hover-fg,
+                var(--ui-fg, var(--ui-status-ink, var(--color-muted-foreground)))
             );
         }
     }
     .ui-badge.ui-badge-variant-destructive {
-        background-color: var(
-            --ui-badge-bg,
-            var(--ui-status-soft-bg, color-mix(in oklab, var(--color-destructive) 10%, transparent))
-        );
-        color: var(--ui-badge-fg, var(--ui-status-ink, var(--color-destructive)));
+        background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--ui-destructive-10)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-destructive)));
         @variant [a]:hover {
             background-color: var(
-                --ui-badge-hover-bg,
-                var(
-                    --ui-status-hover-bg,
-                    color-mix(in oklab, var(--color-destructive) 20%, transparent)
-                )
+                --ui-hover-bg,
+                var(--ui-status-hover-bg, var(--ui-destructive-20))
             );
         }
         @variant focus-visible {
             --tw-ring-color: var(
-                --ui-badge-focus-ring,
+                --ui-focus-ring,
                 color-mix(
                     in oklab,
                     var(--ui-status-fill, var(--color-destructive)) 20%,
@@ -316,7 +437,7 @@
         }
         @variant ui-dark:focus-visible {
             --tw-ring-color: var(
-                --ui-badge-focus-ring,
+                --ui-focus-ring,
                 color-mix(
                     in oklab,
                     var(--ui-status-fill, var(--color-destructive)) 40%,
@@ -325,143 +446,154 @@
             );
         }
         @variant ui-dark {
-            background-color: var(
-                --ui-badge-bg,
-                var(
-                    --ui-status-soft-bg,
-                    color-mix(in oklab, var(--color-destructive) 20%, transparent)
-                )
-            );
+            background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--ui-destructive-20)));
         }
     }
     :where(.ui-badge.ui-badge-variant-ghost) {
-        color: var(--ui-badge-fg, var(--ui-status-ink, inherit));
+        color: var(--ui-fg, var(--ui-status-ink, inherit));
     }
     .ui-badge.ui-badge-variant-ghost {
         @variant hover {
-            background-color: var(
-                --ui-badge-hover-bg,
-                var(--ui-status-hover-bg, var(--color-muted))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--color-muted)));
             color: var(
-                --ui-badge-hover-fg,
-                var(--ui-badge-fg, var(--ui-status-ink, var(--color-muted-foreground)))
+                --ui-hover-fg,
+                var(--ui-fg, var(--ui-status-ink, var(--color-muted-foreground)))
             );
         }
         @variant ui-dark:hover {
-            background-color: var(
-                --ui-badge-hover-bg,
-                var(--ui-status-hover-bg, color-mix(in oklab, var(--color-muted) 50%, transparent))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--ui-muted-50)));
         }
     }
     .ui-badge.ui-badge-variant-link {
-        color: var(--ui-badge-fg, var(--ui-status-ink, var(--color-primary)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-primary)));
         @apply underline-offset-4 hover:underline;
     }
     .ui-breadcrumb-list {
-        color: var(--ui-breadcrumb-list-fg, var(--color-muted-foreground));
-        @apply gap-1.5 text-sm;
+        color: var(--ui-list-fg, var(--color-muted-foreground));
+        @apply gap-1.5;
     }
     .ui-breadcrumb-item {
         @apply gap-1;
     }
-    .ui-breadcrumb-link {
+    .ui-breadcrumb-link,
+    .ui-checkbox,
+    .ui-input,
+    .ui-native-select-control,
+    .ui-select-control,
+    .ui-table-row,
+    .ui-textarea,
+    .ui-input-group {
         @apply transition-colors;
+    }
+    .ui-breadcrumb-link {
         @variant hover {
-            color: var(--ui-breadcrumb-link-hover-fg, var(--color-foreground));
+            color: var(--ui-link-hover-fg, var(--color-foreground));
         }
     }
     .ui-breadcrumb-page {
-        color: var(--ui-breadcrumb-page-fg, var(--color-foreground));
+        color: var(--ui-page-fg, var(--color-foreground));
         @apply font-normal;
     }
     .ui-breadcrumb-separator {
         @apply [&>svg]:size-3.5;
     }
     :where(.ui-button) {
-        color: var(--ui-button-fg, inherit);
-        background-color: var(--ui-button-bg, transparent);
+        color: var(--ui-fg, inherit);
+        background-color: var(--ui-bg, transparent);
+    }
+    .ui-button,
+    .ui-input,
+    .ui-native-select-control,
+    .ui-select-control,
+    .ui-textarea {
+        @apply aria-invalid:ring-3;
+    }
+    .ui-button,
+    .ui-button-group-text,
+    .ui-command-item,
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-radio-item,
+    .ui-navigation-menu-link,
+    .ui-pagination-ellipsis,
+    .ui-input-group-text,
+    .ui-marker {
+        @apply [&_svg:not([class*='size-'])]:size-4;
+    }
+    .ui-button,
+    .ui-input,
+    .ui-native-select-control,
+    .ui-textarea,
+    .ui-switch {
+        @variant focus-visible {
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
+        }
+    }
+    .ui-button,
+    .ui-input,
+    .ui-native-select-control,
+    .ui-textarea,
+    .ui-switch {
+        @variant aria-invalid {
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-20));
+            border-color: var(--ui-invalid-border, var(--color-destructive));
+        }
+    }
+    .ui-button,
+    .ui-input,
+    .ui-native-select-control,
+    .ui-textarea,
+    .ui-switch {
+        @variant ui-dark:aria-invalid {
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-40));
+            border-color: var(--ui-invalid-border, var(--ui-destructive-50));
+        }
     }
     .ui-button {
-        border-color: var(--ui-button-border, transparent);
-        @apply rounded-ui-lg border text-sm font-medium focus-visible:ring-3 aria-invalid:ring-3 active:not-aria-[haspopup]:translate-y-px [&_svg:not([class*='size-'])]:size-4;
-        @variant focus-visible {
-            border-color: var(--ui-button-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-button-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-        }
-        @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-button-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-button-invalid-border, var(--color-destructive));
-        }
-        @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-button-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-button-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
-        }
+        @apply rounded-ui-lg active:not-aria-[haspopup]:translate-y-px;
     }
     .ui-button-variant-default {
-        background-color: var(--ui-button-bg, var(--ui-status-fill, var(--color-primary)));
-        color: var(--ui-button-fg, var(--ui-status-on-fill, var(--color-primary-foreground)));
+        background-color: var(--ui-bg, var(--ui-status-fill, var(--color-primary)));
+        color: var(--ui-fg, var(--ui-status-on-fill, var(--color-primary-foreground)));
         @variant hover {
             background-color: var(
-                --ui-button-hover-bg,
+                --ui-hover-bg,
                 color-mix(in oklab, var(--ui-status-fill, var(--color-primary)) 80%, transparent)
             );
         }
     }
-    .ui-button-variant-outline {
-        color: var(--ui-button-fg, var(--ui-status-ink, inherit));
-        border-color: var(--ui-button-border, var(--ui-status-ink, var(--color-border)));
-        background-color: var(--ui-button-bg, var(--color-background));
+    .ui-button-variant-outline,
+    .ui-button-variant-ghost {
         @variant hover {
-            background-color: var(
-                --ui-button-hover-bg,
-                var(--ui-status-hover-bg, var(--color-muted))
-            );
-            color: var(
-                --ui-button-hover-fg,
-                var(--ui-button-fg, var(--ui-status-ink, var(--color-foreground)))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--color-muted)));
+            color: var(--ui-hover-fg, var(--ui-fg, var(--ui-status-ink, var(--color-foreground))));
         }
+    }
+    .ui-button-variant-outline {
+        color: var(--ui-fg, var(--ui-status-ink, inherit));
+        border-color: var(--ui-border, var(--ui-status-ink, var(--color-border)));
+        background-color: var(--ui-bg, var(--color-background));
         @variant ui-dark {
-            background-color: var(
-                --ui-button-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
-            border-color: var(--ui-button-border, var(--ui-status-ink, var(--color-input)));
+            background-color: var(--ui-bg, var(--ui-input-30));
+            border-color: var(--ui-border, var(--ui-status-ink, var(--color-input)));
         }
         @variant ui-dark:hover {
-            background-color: var(
-                --ui-button-hover-bg,
-                var(--ui-status-hover-bg, color-mix(in oklab, var(--color-input) 50%, transparent))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--ui-input-50)));
         }
         @variant aria-expanded {
-            background-color: var(
-                --ui-button-expanded-bg,
-                var(--ui-status-soft-bg, var(--color-muted))
-            );
-            color: var(--ui-button-expanded-fg, var(--ui-status-ink, var(--color-foreground)));
+            background-color: var(--ui-expanded-bg, var(--ui-status-soft-bg, var(--color-muted)));
+            color: var(--ui-expanded-fg, var(--ui-status-ink, var(--color-foreground)));
         }
     }
     .ui-button-variant-secondary {
-        background-color: var(--ui-button-bg, var(--ui-status-soft-bg, var(--color-secondary)));
-        color: var(--ui-button-fg, var(--ui-status-ink, var(--color-secondary-foreground)));
+        background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--color-secondary)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-secondary-foreground)));
         @variant hover {
             background-color: var(
-                --ui-button-hover-bg,
+                --ui-hover-bg,
                 var(
                     --ui-status-hover-bg,
                     color-mix(in oklch, var(--color-secondary), var(--color-foreground) 5%)
@@ -470,61 +602,36 @@
         }
         @variant aria-expanded {
             background-color: var(
-                --ui-button-expanded-bg,
+                --ui-expanded-bg,
                 var(--ui-status-soft-bg, var(--color-secondary))
             );
-            color: var(
-                --ui-button-expanded-fg,
-                var(--ui-status-ink, var(--color-secondary-foreground))
-            );
+            color: var(--ui-expanded-fg, var(--ui-status-ink, var(--color-secondary-foreground)));
         }
     }
     :where(.ui-button-variant-ghost) {
-        color: var(--ui-button-fg, var(--ui-status-ink, inherit));
+        color: var(--ui-fg, var(--ui-status-ink, inherit));
     }
     .ui-button-variant-ghost {
-        @variant hover {
-            background-color: var(
-                --ui-button-hover-bg,
-                var(--ui-status-hover-bg, var(--color-muted))
-            );
-            color: var(
-                --ui-button-hover-fg,
-                var(--ui-button-fg, var(--ui-status-ink, var(--color-foreground)))
-            );
-        }
         @variant ui-dark:hover {
-            background-color: var(
-                --ui-button-hover-bg,
-                var(--ui-status-hover-bg, color-mix(in oklab, var(--color-muted) 50%, transparent))
-            );
+            background-color: var(--ui-hover-bg, var(--ui-status-hover-bg, var(--ui-muted-50)));
         }
         @variant aria-expanded {
-            background-color: var(
-                --ui-button-expanded-bg,
-                var(--ui-status-soft-bg, var(--color-muted))
-            );
-            color: var(--ui-button-expanded-fg, var(--ui-status-ink, var(--color-foreground)));
+            background-color: var(--ui-expanded-bg, var(--ui-status-soft-bg, var(--color-muted)));
+            color: var(--ui-expanded-fg, var(--ui-status-ink, var(--color-foreground)));
         }
     }
     .ui-button-variant-destructive {
-        background-color: var(
-            --ui-button-bg,
-            var(--ui-status-soft-bg, color-mix(in oklab, var(--color-destructive) 10%, transparent))
-        );
-        color: var(--ui-button-fg, var(--ui-status-ink, var(--color-destructive)));
+        background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--ui-destructive-10)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-destructive)));
         @variant hover {
             background-color: var(
-                --ui-button-hover-bg,
-                var(
-                    --ui-status-hover-bg,
-                    color-mix(in oklab, var(--color-destructive) 20%, transparent)
-                )
+                --ui-hover-bg,
+                var(--ui-status-hover-bg, var(--ui-destructive-20))
             );
         }
         @variant focus-visible {
             --tw-ring-color: var(
-                --ui-button-focus-ring,
+                --ui-focus-ring,
                 color-mix(
                     in oklab,
                     var(--ui-status-fill, var(--color-destructive)) 20%,
@@ -532,7 +639,7 @@
                 )
             );
             border-color: var(
-                --ui-button-focus-border,
+                --ui-focus-border,
                 color-mix(
                     in oklab,
                     var(--ui-status-fill, var(--color-destructive)) 40%,
@@ -542,7 +649,7 @@
         }
         @variant ui-dark:focus-visible {
             --tw-ring-color: var(
-                --ui-button-focus-ring,
+                --ui-focus-ring,
                 color-mix(
                     in oklab,
                     var(--ui-status-fill, var(--color-destructive)) 40%,
@@ -551,48 +658,58 @@
             );
         }
         @variant ui-dark {
-            background-color: var(
-                --ui-button-bg,
-                var(
-                    --ui-status-soft-bg,
-                    color-mix(in oklab, var(--color-destructive) 20%, transparent)
-                )
-            );
+            background-color: var(--ui-bg, var(--ui-status-soft-bg, var(--ui-destructive-20)));
         }
         @variant ui-dark:hover {
             background-color: var(
-                --ui-button-hover-bg,
-                var(
-                    --ui-status-hover-bg,
-                    color-mix(in oklab, var(--color-destructive) 30%, transparent)
-                )
+                --ui-hover-bg,
+                var(--ui-status-hover-bg, var(--ui-destructive-30))
             );
         }
     }
     .ui-button-variant-link {
-        color: var(--ui-button-fg, var(--ui-status-ink, var(--color-primary)));
+        color: var(--ui-fg, var(--ui-status-ink, var(--color-primary)));
         @apply underline-offset-4 hover:underline;
     }
+    .ui-button-size-xs,
+    .ui-button-size-sm {
+        @apply gap-1 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
+    }
     .ui-button-size-xs {
-        @apply h-6 gap-1 rounded-[min(var(--radius-ui-md),10px)] px-2 text-xs in-[.ui-button-group]:rounded-ui-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3;
+        @apply h-6 rounded-[min(var(--radius-ui-md),10px)] px-2 [&_svg:not([class*='size-'])]:size-3;
+    }
+    .ui-button-size-sm,
+    .ui-button-size-default,
+    .ui-button-size-lg {
+        @apply px-2.5;
     }
     .ui-button-size-sm {
-        @apply h-7 gap-1 rounded-[min(var(--radius-ui-md),12px)] px-2.5 text-[0.8rem] in-[.ui-button-group]:rounded-ui-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5;
+        @apply h-7 rounded-[min(var(--radius-ui-md),12px)] text-[0.8rem] [&_svg:not([class*='size-'])]:size-3.5;
     }
     .ui-button-size-sm {
         line-height: inherit;
     }
+    .ui-button-size-default,
+    .ui-button-size-lg {
+        @apply gap-1.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
+    }
     .ui-button-size-default {
-        @apply h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
+        @apply h-8;
     }
     .ui-button-size-lg {
-        @apply h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2;
+        @apply h-9;
     }
     .ui-button-size-icon-xs {
-        @apply size-6 rounded-[min(var(--radius-ui-md),10px)] in-[.ui-button-group]:rounded-ui-lg [&_svg:not([class*='size-'])]:size-3;
+        @apply size-6 rounded-[min(var(--radius-ui-md),10px)] [&_svg:not([class*='size-'])]:size-3;
     }
     .ui-button-size-icon-sm {
-        @apply size-7 rounded-[min(var(--radius-ui-md),12px)] in-[.ui-button-group]:rounded-ui-lg;
+        @apply size-7 rounded-[min(var(--radius-ui-md),12px)];
+    }
+    .ui-button-size-xs,
+    .ui-button-size-sm,
+    .ui-button-size-icon-xs,
+    .ui-button-size-icon-sm {
+        @apply in-[.ui-button-group]:rounded-ui-lg;
     }
     .ui-button-size-icon {
         @apply size-8;
@@ -603,11 +720,33 @@
     .ui-button-group {
         @apply has-[>.ui-button-group]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>.ui-select-trigger:last-of-type]:rounded-r-ui-lg;
     }
-    .ui-button-group[data-orientation='horizontal'] {
-        @apply [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay]):not(:has(~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])))]:rounded-r-ui-lg;
+    .ui-button-group[data-orientation='horizontal']
+        > :nth-last-child(
+            1 of .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply rounded-r-ui-lg;
     }
-    .ui-button-group[data-orientation='vertical'] {
-        @apply [&>:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay]):not(:has(~:is(.ui-button,.ui-input,.ui-input-group,.ui-separator,.ui-button-group-text,.ui-button-group-separator,.ui-button-group,.ui-native-select-wrapper,[data-ui-overlay])))]:rounded-b-ui-lg;
+    .ui-button-group[data-orientation='vertical']
+        > :nth-last-child(
+            1 of .ui-button,
+            .ui-input,
+            .ui-input-group,
+            .ui-separator,
+            .ui-button-group-text,
+            .ui-button-group-separator,
+            .ui-button-group,
+            .ui-native-select-wrapper,
+            [data-ui-overlay]
+        ) {
+        @apply rounded-b-ui-lg;
     }
     .ui-button-group[data-orientation='horizontal']
         > :is(
@@ -762,26 +901,22 @@
         border-bottom-left-radius: 0;
     }
     .ui-button-group-text {
-        background-color: var(--ui-button-group-text-bg, var(--color-muted));
-        @apply gap-2 rounded-ui-lg border px-2.5 text-sm font-medium [&_svg:not([class*='size-'])]:size-4;
+        background-color: var(--ui-part-bg, var(--color-muted));
+        @apply gap-2 rounded-ui-lg border px-2.5;
     }
     .ui-calendar-body {
         @apply p-2 [--cell-radius:var(--radius-ui-md)] [--cell-size:--spacing(7)];
     }
     .ui-card {
-        --tw-ring-color: var(
-            --ui-card-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        background-color: var(--ui-card-bg, var(--color-card));
-        color: var(--ui-card-fg, var(--color-card-foreground));
-        @apply gap-(--card-spacing) overflow-hidden rounded-ui-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-[.ui-card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-[.ui-card-footer]:pb-0 *:[img:first-child]:rounded-t-ui-xl *:[img:last-child]:rounded-b-ui-xl;
+        --tw-ring-color: var(--ui-ring, var(--ui-foreground-10));
+        background-color: var(--ui-bg, var(--color-card));
+        color: var(--ui-fg, var(--color-card-foreground));
+        @apply gap-(--card-spacing) overflow-hidden rounded-ui-xl py-(--card-spacing) [--card-spacing:--spacing(4)] has-[.ui-card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-[.ui-card-footer]:pb-0 *:[img:first-child]:rounded-t-ui-xl *:[img:last-child]:rounded-b-ui-xl;
     }
     .ui-card-header {
         @apply gap-1 rounded-t-ui-xl px-(--card-spacing) [.border-b]:pb-(--card-spacing);
     }
     .ui-card-title {
-        @apply font-medium;
         font-size: 1rem;
         line-height: 1.375;
     }
@@ -789,122 +924,100 @@
         font-size: 0.875rem;
     }
     .ui-card-description {
-        color: var(--ui-card-description-fg, var(--color-muted-foreground));
-        @apply text-sm;
+        color: var(--ui-description-fg, var(--color-muted-foreground));
     }
     .ui-card-content {
         @apply px-(--card-spacing);
     }
     .ui-card-footer {
-        background-color: var(
-            --ui-card-footer-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
+        background-color: var(--ui-footer-bg, var(--ui-muted-50));
         @apply rounded-b-ui-xl border-t p-(--card-spacing);
     }
-    .ui-checkbox {
-        border-color: var(--ui-checkbox-border, var(--color-input));
-        @apply flex size-4 items-center justify-center rounded-[4px] border transition-colors group-has-disabled/field:opacity-50 focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0;
+    .ui-checkbox,
+    .ui-radio-group-item {
+        @apply flex size-4 items-center justify-center border;
+    }
+    .ui-checkbox,
+    .ui-input-group {
         @variant ui-dark {
-            background-color: var(
-                --ui-checkbox-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-bg, var(--ui-input-30));
         }
+    }
+    .ui-checkbox,
+    .ui-radio-group-item,
+    .ui-switch {
+        @apply focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0;
+    }
+    .ui-checkbox {
+        border-color: var(--ui-border, var(--color-input));
+        @apply rounded-[4px] group-has-disabled/field:opacity-50;
         @variant checked {
-            background-color: var(--ui-checkbox-checked-bg, var(--color-primary));
-            color: var(--ui-checkbox-checked-fg, var(--color-primary-foreground));
-            border-color: var(--ui-checkbox-checked-border, var(--color-primary));
+            background-color: var(--ui-checked-bg, var(--color-primary));
+            color: var(--ui-checked-fg, var(--color-primary-foreground));
+            border-color: var(--ui-checked-border, var(--color-primary));
         }
         @variant ui-dark:checked {
-            background-color: var(--ui-checkbox-checked-bg, var(--color-primary));
+            background-color: var(--ui-checked-bg, var(--color-primary));
         }
         @variant aria-invalid:aria-checked {
-            border-color: var(--ui-checkbox-invalid-border, var(--color-primary));
+            border-color: var(--ui-invalid-border, var(--color-primary));
         }
         @variant aria-invalid {
-            border-color: var(--ui-checkbox-invalid-border, var(--color-destructive));
-            --tw-ring-color: var(
-                --ui-checkbox-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            border-color: var(--ui-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-20));
         }
         @variant ui-dark:aria-invalid {
-            border-color: var(
-                --ui-checkbox-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
-            --tw-ring-color: var(
-                --ui-checkbox-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            border-color: var(--ui-invalid-border, var(--ui-destructive-50));
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-40));
         }
         @variant focus-visible {
-            border-color: var(--ui-checkbox-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-checkbox-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
         @variant group-has-[:focus-visible]/field-label:not-checked {
-            border-color: var(--ui-checkbox-focus-border, var(--color-input));
+            border-color: var(--ui-focus-border, var(--color-input));
         }
         @variant group-has-[:focus-visible]/field-label:checked {
-            border-color: var(--ui-checkbox-focus-border, var(--color-primary));
+            border-color: var(--ui-focus-border, var(--color-primary));
         }
     }
     .ui-radio-group {
-        @apply grid w-full gap-2;
+        @apply w-full;
     }
     .ui-radio-group-item {
-        border-color: var(--ui-radio-group-item-border, var(--color-input));
-        @apply relative aspect-square shrink-0 border outline-none disabled:cursor-not-allowed disabled:opacity-50 flex size-4 rounded-full focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0 items-center justify-center;
+        border-color: var(--ui-item-border, var(--color-input));
+        @apply relative aspect-square shrink-0 outline-none disabled:cursor-not-allowed disabled:opacity-50 rounded-full;
         @variant ui-dark {
-            background-color: var(
-                --ui-radio-group-item-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-item-bg, var(--ui-input-30));
         }
         @variant checked {
-            background-color: var(--ui-radio-group-item-checked-bg, var(--color-primary));
-            color: var(--ui-radio-group-item-checked-fg, var(--color-primary-foreground));
-            border-color: var(--ui-radio-group-item-checked-border, var(--color-primary));
+            background-color: var(--ui-item-checked-bg, var(--color-primary));
+            color: var(--ui-part-fg, var(--color-primary-foreground));
+            border-color: var(--ui-part-border, var(--color-primary));
         }
         @variant ui-dark:checked {
-            background-color: var(--ui-radio-group-item-checked-bg, var(--color-primary));
+            background-color: var(--ui-item-checked-bg, var(--color-primary));
         }
         @variant aria-invalid:checked {
-            border-color: var(--ui-radio-group-item-invalid-border, var(--color-primary));
+            border-color: var(--ui-item-invalid-border, var(--color-primary));
         }
         @variant aria-invalid {
-            border-color: var(--ui-radio-group-item-invalid-border, var(--color-destructive));
-            --tw-ring-color: var(
-                --ui-radio-group-item-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            border-color: var(--ui-item-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-item-invalid-ring, var(--ui-destructive-20));
         }
         @variant focus-visible {
-            border-color: var(--ui-radio-group-item-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-radio-group-item-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-item-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
         @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-radio-group-item-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-radio-group-item-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-item-invalid-ring, var(--ui-destructive-40));
+            border-color: var(--ui-item-invalid-border, var(--ui-destructive-50));
         }
         @variant group-has-[:focus-visible]/field-label:not-checked {
-            border-color: var(--ui-radio-group-item-focus-border, var(--color-input));
+            border-color: var(--ui-item-focus-border, var(--color-input));
         }
         @variant group-has-[:focus-visible]/field-label:checked {
-            border-color: var(--ui-radio-group-item-focus-border, var(--color-primary));
+            border-color: var(--ui-item-focus-border, var(--color-primary));
         }
     }
 
@@ -912,15 +1025,15 @@
         opacity: 1;
     }
     .ui-command-body {
-        background-color: var(--ui-command-bg, var(--color-popover));
-        color: var(--ui-command-fg, var(--color-popover-foreground));
+        background-color: var(--ui-bg, var(--color-popover));
+        color: var(--ui-fg, var(--color-popover-foreground));
         @apply rounded-ui-xl p-1;
     }
     .ui-command-input {
-        @apply w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50;
+        @apply w-full outline-hidden disabled:cursor-not-allowed disabled:opacity-50;
     }
     .ui-command-item {
-        @apply relative flex w-full cursor-default items-center gap-2 rounded-ui-sm px-2 py-1.5 text-left text-sm outline-hidden select-none in-[.ui-dialog-content-variant-default]:rounded-ui-lg [&_svg:not([class*='size-'])]:size-4 disabled:pointer-events-none disabled:opacity-50;
+        @apply relative flex w-full cursor-default items-center gap-2 rounded-ui-sm px-2 py-1.5 text-left outline-hidden select-none in-[.ui-dialog-content-variant-default]:rounded-ui-lg disabled:pointer-events-none disabled:opacity-50;
     }
     .ui-command-item:is(:hover, :focus, [aria-selected='true']),
     .ui-command-list:not(:has(:focus, [aria-selected='true']))
@@ -928,129 +1041,130 @@
     .ui-command-list:not(:has(:focus, [aria-selected='true']))
         .ui-command-group:first-child
         .ui-command-item:not(:disabled):first-of-type {
-        background-color: var(--ui-command-item-focus-bg, var(--color-muted));
-        color: var(--ui-command-item-focus-fg, var(--color-foreground));
+        background-color: var(--ui-item-focus-bg, var(--color-muted));
+        color: var(--ui-item-focus-fg, var(--color-foreground));
     }
     .ui-command-list:has(.ui-command-item:hover) .ui-command-item:not(:hover):not(:focus) {
-        background: var(--ui-command-item-focus-bg, transparent);
+        background: var(--ui-item-focus-bg, transparent);
     }
-    .ui-context-menu-content {
-        --tw-ring-color: var(
-            --ui-context-menu-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        background-color: var(--ui-context-menu-content-bg, var(--color-popover));
-        color: var(--ui-context-menu-content-fg, var(--color-popover-foreground));
-        @apply min-w-36 rounded-ui-lg p-1 shadow-md ring-1 duration-100;
+    .ui-context-menu-content,
+    .ui-dropdown-menu-content,
+    .ui-hover-card-content,
+    .ui-menubar-content,
+    .ui-popover-content {
+        @apply shadow-md;
     }
-    .ui-context-menu-checkbox-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-8 pl-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4;
+    .ui-context-menu-content,
+    .ui-dropdown-menu-content,
+    .ui-menubar-content {
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+    }
+    .ui-context-menu-content,
+    .ui-context-menu-sub-content,
+    .ui-menubar-content {
+        @apply min-w-36;
+    }
+    .ui-context-menu-content,
+    .ui-context-menu-sub-content,
+    .ui-dropdown-menu-content,
+    .ui-dropdown-menu-sub-content,
+    .ui-menubar-content,
+    .ui-menubar-sub-content {
+        @apply rounded-ui-lg p-1 duration-100;
+    }
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item {
+        @apply gap-1.5 rounded-ui-md py-1 data-inset:pl-7;
+    }
+    .ui-context-menu-checkbox-item,
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-dropdown-menu-radio-item {
+        @apply pr-8 pl-1.5;
+    }
+    .ui-context-menu-checkbox-item,
+    .ui-dropdown-menu-checkbox-item,
+    .ui-menubar-checkbox-item {
         @variant focus {
-            background-color: var(--ui-context-menu-checkbox-item-focus-bg, var(--color-accent));
-            color: var(--ui-context-menu-checkbox-item-focus-fg, var(--color-accent-foreground));
+            background-color: var(--ui-checkbox-item-focus-bg, var(--color-accent));
+            color: var(--ui-checkbox-item-focus-fg, var(--color-accent-foreground));
         }
     }
-    .ui-context-menu-radio-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-8 pl-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4;
+    .ui-context-menu-radio-item,
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-radio-item {
         @variant focus {
-            background-color: var(--ui-context-menu-radio-item-focus-bg, var(--color-accent));
-            color: var(--ui-context-menu-radio-item-focus-fg, var(--color-accent-foreground));
+            background-color: var(--ui-radio-item-focus-bg, var(--color-accent));
+            color: var(--ui-radio-item-focus-fg, var(--color-accent-foreground));
         }
+    }
+    .ui-context-menu-shortcut,
+    .ui-dropdown-menu-shortcut,
+    .ui-menubar-shortcut {
+        @apply tracking-widest;
+        color: var(--ui-shortcut-fg, var(--color-muted-foreground));
+    }
+    .ui-context-menu-shortcut,
+    .ui-dropdown-menu-shortcut {
+        @apply ml-auto;
     }
     .ui-context-menu-shortcut {
-        color: var(--ui-context-menu-shortcut-fg, var(--color-muted-foreground));
-        @apply ml-auto text-xs tracking-widest;
         @variant group-focus/context-menu-item {
-            color: var(--ui-context-menu-shortcut-focus-fg, var(--color-accent-foreground));
+            color: var(--ui-shortcut-focus-fg, var(--color-accent-foreground));
         }
     }
-    .ui-context-menu-sub-content {
-        background-color: var(--ui-context-menu-sub-content-bg, var(--color-popover));
-        color: var(--ui-context-menu-sub-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-context-menu-sub-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply min-w-36 rounded-ui-lg p-1 shadow-lg ring-1 duration-100;
+    .ui-context-menu-sub-content,
+    .ui-dropdown-menu-sub-content,
+    .ui-menubar-sub-content {
+        @apply shadow-lg;
+        background-color: var(--ui-sub-panel-bg, var(--color-popover));
+        color: var(--ui-sub-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-sub-panel-ring, var(--ui-foreground-10));
     }
     .ui-dialog-content-variant-default {
-        background-color: var(--ui-dialog-content-bg, var(--color-popover));
-        color: var(--ui-dialog-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-dialog-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply grid max-w-[calc(100%-2rem)] gap-4 rounded-ui-xl p-4 text-sm ring-1 duration-100 sm:max-w-sm;
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
+        @apply grid max-w-[calc(100%-2rem)] gap-4 rounded-ui-xl p-4 duration-100 sm:max-w-sm;
     }
     .ui-dialog-header {
         @apply gap-2;
     }
-    .ui-dialog-footer {
-        background-color: var(
-            --ui-dialog-footer-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
-        @apply -mx-4 -mb-4 rounded-b-ui-xl border-t p-4;
-    }
     .ui-dialog-title {
-        @apply text-base leading-none font-medium;
-    }
-    .ui-dialog-description {
-        color: var(--ui-dialog-description-fg, var(--color-muted-foreground));
-        @apply text-sm *:[a]:underline *:[a]:underline-offset-3;
-        @variant *:[a]:hover {
-            color: var(--ui-dialog-description-hover-fg, var(--color-foreground));
-        }
+        @apply leading-none;
     }
     .ui-drawer-content {
-        background-color: var(--ui-drawer-content-bg, var(--color-popover));
-        color: var(--ui-drawer-content-fg, var(--color-popover-foreground));
-        @apply flex h-auto flex-col text-sm data-[side=bottom]:rounded-t-ui-xl data-[side=bottom]:border-t data-[side=left]:rounded-r-ui-xl data-[side=left]:border-r data-[side=right]:rounded-l-ui-xl data-[side=right]:border-l data-[side=top]:rounded-b-ui-xl data-[side=top]:border-b;
+        @apply h-auto data-[side=bottom]:rounded-t-ui-xl data-[side=left]:rounded-r-ui-xl data-[side=right]:rounded-l-ui-xl data-[side=top]:rounded-b-ui-xl;
     }
-    .ui-dropdown-menu-content {
-        --tw-ring-color: var(
-            --ui-dropdown-menu-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        background-color: var(--ui-dropdown-menu-content-bg, var(--color-popover));
-        color: var(--ui-dropdown-menu-content-fg, var(--color-popover-foreground));
-        @apply min-w-32 rounded-ui-lg p-1 shadow-md ring-1 duration-100;
+    .ui-dropdown-menu-content,
+    .ui-menubar-sub-content {
+        @apply min-w-32;
     }
-    .ui-dropdown-menu-checkbox-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-8 pl-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4;
-        @variant focus {
-            background-color: var(--ui-dropdown-menu-checkbox-item-focus-bg, var(--color-accent));
-            color: var(--ui-dropdown-menu-checkbox-item-focus-fg, var(--color-accent-foreground));
-        }
+    .ui-dropdown-menu-checkbox-item,
+    .ui-menubar-checkbox-item {
         @variant focus:** {
-            color: var(--ui-dropdown-menu-checkbox-item-focus-fg, var(--color-accent-foreground));
+            color: var(--ui-checkbox-item-focus-fg, var(--color-accent-foreground));
         }
     }
-    .ui-dropdown-menu-radio-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-8 pl-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4;
-        @variant focus {
-            background-color: var(--ui-dropdown-menu-radio-item-focus-bg, var(--color-accent));
-            color: var(--ui-dropdown-menu-radio-item-focus-fg, var(--color-accent-foreground));
-        }
+    .ui-dropdown-menu-radio-item,
+    .ui-menubar-radio-item {
         @variant focus:** {
-            color: var(--ui-dropdown-menu-radio-item-focus-fg, var(--color-accent-foreground));
+            color: var(--ui-radio-item-focus-fg, var(--color-accent-foreground));
         }
     }
     .ui-dropdown-menu-shortcut {
-        color: var(--ui-dropdown-menu-shortcut-fg, var(--color-muted-foreground));
-        @apply ml-auto text-xs tracking-widest;
         @variant group-focus/dropdown-menu-item {
-            color: var(--ui-dropdown-menu-shortcut-focus-fg, var(--color-accent-foreground));
+            color: var(--ui-shortcut-focus-fg, var(--color-accent-foreground));
         }
     }
     .ui-dropdown-menu-sub-content {
-        --tw-ring-color: var(
-            --ui-dropdown-menu-sub-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        background-color: var(--ui-dropdown-menu-sub-content-bg, var(--color-popover));
-        color: var(--ui-dropdown-menu-sub-content-fg, var(--color-popover-foreground));
-        @apply min-w-[96px] rounded-ui-lg p-1 shadow-lg ring-1 duration-100;
+        @apply min-w-[96px];
     }
     .ui-empty {
         @apply gap-4 rounded-ui-xl border-dashed p-6;
@@ -1071,27 +1185,27 @@
         @apply mb-2;
     }
     .ui-empty-media.ui-empty-media-variant-default {
-        background-color: var(--ui-empty-media-bg, transparent);
+        background-color: var(--ui-media-bg, transparent);
     }
     .ui-empty-media.ui-empty-media-variant-icon {
-        background-color: var(--ui-empty-media-bg, var(--color-muted));
-        color: var(--ui-empty-media-fg, var(--color-foreground));
+        background-color: var(--ui-media-bg, var(--color-muted));
+        color: var(--ui-media-fg, var(--color-foreground));
         @apply flex size-8 shrink-0 items-center justify-center rounded-ui-lg [&_svg:not([class*='size-'])]:size-4;
     }
     .ui-empty-title {
-        @apply text-sm font-medium tracking-tight;
+        @apply tracking-tight;
     }
     .ui-empty-description {
         @apply text-sm/relaxed;
     }
     .ui-empty-content {
-        @apply gap-2.5 text-sm;
+        @apply gap-2.5;
     }
     .ui-field-set {
         @apply gap-4 has-[>.ui-checkbox-group]:gap-3 has-[>.ui-radio-group]:gap-3;
     }
     .ui-field-legend {
-        @apply mb-1.5 font-medium [&.ui-field-legend-variant-label]:text-sm [&.ui-field-legend-variant-legend]:text-base;
+        @apply mb-1.5 [&.ui-field-legend-variant-label]:text-sm [&.ui-field-legend-variant-legend]:text-base;
     }
     .ui-field-group {
         @apply gap-5 [.ui-checkbox-group]:gap-3 *:[.ui-field-group]:gap-4;
@@ -1099,50 +1213,44 @@
     .ui-field {
         @apply gap-2;
         @variant data-[invalid=true] {
-            color: var(--ui-field-fg, var(--color-destructive));
+            color: var(--ui-fg, var(--color-destructive));
         }
     }
     .ui-field-label {
         @apply gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>.ui-field]:rounded-ui-lg has-[>.ui-field]:border has-[>.ui-field]:has-[:focus-visible]:ring-3 *:[.ui-field]:p-2.5;
         @variant has-checked {
             background-color: var(
-                --ui-field-label-checked-bg,
+                --ui-label-checked-bg,
                 color-mix(in oklab, var(--color-primary) 5%, transparent)
             );
             border-color: var(
-                --ui-field-label-checked-border,
+                --ui-label-checked-border,
                 color-mix(in oklab, var(--color-primary) 30%, transparent)
             );
         }
         @variant ui-dark:has-checked {
             border-color: var(
-                --ui-field-label-checked-border,
+                --ui-label-checked-border,
                 color-mix(in oklab, var(--color-primary) 20%, transparent)
             );
             background-color: var(
-                --ui-field-label-checked-bg,
+                --ui-label-checked-bg,
                 color-mix(in oklab, var(--color-primary) 10%, transparent)
             );
         }
         @variant has-[>.ui-field]:not-has-[:disabled,[data-disabled]]:hover {
-            background-color: var(
-                --ui-field-label-disabled-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-muted-50));
         }
         @variant has-[>.ui-field]:has-[:focus-visible] {
-            border-color: var(--ui-field-label-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-field-label-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
     }
     .ui-field-description {
-        color: var(--ui-field-description-fg, var(--color-muted-foreground));
-        @apply text-left text-sm [.ui-field-legend-variant-legend+&]:-mt-1.5 last:mt-0 nth-last-2:-mt-1 [&>a]:underline [&>a]:underline-offset-4;
+        color: var(--ui-description-fg, var(--color-muted-foreground));
+        @apply text-left [.ui-field-legend-variant-legend+&]:-mt-1.5 last:mt-0 nth-last-2:-mt-1 [&>a]:underline [&>a]:underline-offset-4;
         @variant [&>a:hover] {
-            color: var(--ui-field-description-hover-fg, var(--color-primary));
+            color: var(--ui-description-hover-fg, var(--color-primary));
         }
     }
     .ui-field-description:nth-last-child(2):has(+ :is(.ui-select-field, .ui-input-otp-field)) {
@@ -1153,86 +1261,63 @@
         flex-direction: column;
     }
     .ui-field-error {
-        color: var(--ui-field-error-fg, var(--color-destructive));
-        @apply text-sm;
+        color: var(--ui-error-fg, var(--color-destructive));
+    }
+    .ui-hover-card-content,
+    .ui-popover-content {
+        @apply rounded-ui-lg p-2.5 duration-100;
     }
     .ui-hover-card-content {
-        --tw-ring-color: var(
-            --ui-hover-card-content-hover-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        background-color: var(--ui-hover-card-content-hover-bg, var(--color-popover));
-        color: var(--ui-hover-card-content-hover-fg, var(--color-popover-foreground));
-        @apply w-64 rounded-ui-lg p-2.5 text-sm shadow-md ring-1 duration-100;
+        --tw-ring-color: var(--ui-panel-hover-ring, var(--ui-foreground-10));
+        background-color: var(--ui-panel-hover-bg, var(--color-popover));
+        color: var(--ui-panel-hover-fg, var(--color-popover-foreground));
+        @apply w-64;
     }
-    .ui-input {
-        border-color: var(--ui-input-border, var(--color-input));
-        background-color: var(--ui-input-bg, transparent);
-        @apply h-8 rounded-ui-lg border px-2.5 py-1 text-base transition-colors file:h-6 file:text-sm file:font-medium focus-visible:ring-3 aria-invalid:ring-3 md:text-sm;
+    .ui-input,
+    .ui-native-select-control,
+    .ui-textarea {
+        border-color: var(--ui-border, var(--color-input));
+        background-color: var(--ui-bg, transparent);
         @variant ui-dark {
-            background-color: var(
-                --ui-input-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-bg, var(--ui-input-30));
         }
-        @variant focus-visible {
-            border-color: var(--ui-input-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-input-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-        }
-        @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-input-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-input-invalid-border, var(--color-destructive));
-        }
-        @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-input-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-input-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
-        }
+    }
+    .ui-input,
+    .ui-native-select-control,
+    .ui-select-control,
+    .ui-textarea {
+        @apply rounded-ui-lg border;
+    }
+    .ui-input,
+    .ui-textarea {
         @variant disabled {
-            background-color: var(
-                --ui-input-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
+            background-color: var(--ui-bg, var(--ui-input-50));
         }
         @variant ui-dark:disabled {
-            background-color: var(
-                --ui-input-disabled-bg,
-                color-mix(in oklab, var(--color-input) 80%, transparent)
-            );
+            background-color: var(--ui-disabled-bg, var(--ui-input-80));
         }
+    }
+    .ui-input {
+        @apply h-8 px-2.5 py-1 text-base file:h-6 file:text-sm file:font-medium md:text-sm;
     }
     .ui-input-otp-body {
         @apply gap-2;
     }
     .ui-item {
-        @apply rounded-ui-lg border text-sm;
+        @apply rounded-ui-lg border;
     }
     a.ui-item:hover {
-        background-color: var(--ui-item-hover-bg, var(--color-muted));
+        background-color: var(--ui-hover-bg, var(--color-muted));
     }
     .ui-item.ui-item-variant-default {
-        border-color: var(--ui-item-border, transparent);
+        border-color: var(--ui-border, transparent);
     }
     .ui-item.ui-item-variant-outline {
-        border-color: var(--ui-item-border, var(--color-border));
+        border-color: var(--ui-border, var(--color-border));
     }
     .ui-item.ui-item-variant-muted {
-        background-color: var(
-            --ui-item-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
-        border-color: var(--ui-item-border, transparent);
+        background-color: var(--ui-bg, var(--ui-muted-50));
+        border-color: var(--ui-border, transparent);
     }
     .ui-item[data-size='default'] {
         @apply gap-2.5 px-3 py-2.5;
@@ -1247,7 +1332,7 @@
         @apply gap-2 group-has-[.ui-item-description]/item:translate-y-0.5 group-has-[.ui-item-description]/item:self-start;
     }
     .ui-item-media.ui-item-media-variant-default {
-        background-color: var(--ui-item-media-bg, transparent);
+        background-color: var(--ui-media-bg, transparent);
     }
     .ui-item-media.ui-item-media-variant-icon {
         @apply [&_svg:not([class*='size-'])]:size-4;
@@ -1259,12 +1344,12 @@
         @apply gap-1 group-data-[size=xs]/item:gap-0;
     }
     .ui-item-title {
-        @apply gap-2 text-sm font-medium underline-offset-4;
+        @apply gap-2 underline-offset-4;
         line-height: 1.375;
     }
     .ui-item-description {
-        color: var(--ui-item-description-fg, var(--color-muted-foreground));
-        @apply text-left text-sm leading-normal group-data-[size=xs]/item:text-xs;
+        color: var(--ui-description-fg, var(--color-muted-foreground));
+        @apply text-left leading-normal group-data-[size=xs]/item:text-xs;
     }
     .ui-item-actions {
         @apply gap-2;
@@ -1279,19 +1364,19 @@
         @apply gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2;
     }
     .ui-kbd {
-        background-color: var(--ui-kbd-bg, var(--color-muted));
-        color: var(--ui-kbd-fg, var(--color-muted-foreground));
-        @apply h-5 w-fit min-w-5 gap-1 rounded-ui-sm px-1 font-sans text-xs font-medium [&_svg:not([class*='size-'])]:size-3;
+        background-color: var(--ui-bg, var(--color-muted));
+        color: var(--ui-fg, var(--color-muted-foreground));
+        @apply h-5 w-fit min-w-5 gap-1 rounded-ui-sm px-1 font-sans [&_svg:not([class*='size-'])]:size-3;
         @variant in-[.ui-tooltip-content] {
             background-color: var(
-                --ui-kbd-bg,
+                --ui-bg,
                 color-mix(in oklab, var(--color-background) 20%, transparent)
             );
-            color: var(--ui-kbd-fg, var(--color-background));
+            color: var(--ui-fg, var(--color-background));
         }
         @variant ui-dark:in-[.ui-tooltip-content] {
             background-color: var(
-                --ui-kbd-bg,
+                --ui-bg,
                 color-mix(in oklab, var(--color-background) 10%, transparent)
             );
         }
@@ -1300,7 +1385,7 @@
         @apply gap-1;
     }
     .ui-label {
-        @apply gap-2 text-sm leading-none font-medium group-data-[disabled=true]:opacity-50 peer-disabled:opacity-50;
+        @apply gap-2 leading-none group-data-[disabled=true]:opacity-50 peer-disabled:opacity-50;
     }
     .ui-label.ui-field-label {
         @apply leading-snug;
@@ -1309,13 +1394,6 @@
         @apply h-8 gap-0.5 rounded-ui-lg border p-[3px];
     }
     .ui-menubar-content {
-        background-color: var(--ui-menubar-content-bg, var(--color-popover));
-        color: var(--ui-menubar-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-menubar-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply min-w-36 rounded-ui-lg p-1 shadow-md ring-1 duration-100;
         width: var(--anchor-width);
     }
     :is(.ui-menubar-content, .ui-menubar-sub-content) {
@@ -1323,44 +1401,20 @@
         scrollbar-width: none;
     }
     .ui-menubar-label {
-        color: var(--ui-menubar-label-fg, var(--color-muted-foreground));
-        @apply px-1.5 py-1 text-sm font-medium data-inset:pl-7;
+        color: var(--ui-label-fg, var(--color-muted-foreground));
+        @apply px-1.5 py-1 data-inset:pl-7;
     }
-    .ui-menubar-checkbox-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-1.5 pl-7 text-sm data-inset:pl-7;
-        @variant focus {
-            background-color: var(--ui-menubar-checkbox-item-focus-bg, var(--color-accent));
-            color: var(--ui-menubar-checkbox-item-focus-fg, var(--color-accent-foreground));
-        }
-        @variant focus:** {
-            color: var(--ui-menubar-checkbox-item-focus-fg, var(--color-accent-foreground));
-        }
+    .ui-menubar-checkbox-item,
+    .ui-menubar-radio-item {
+        @apply pr-1.5 pl-7;
     }
     .ui-menubar-radio-item {
-        @apply gap-1.5 rounded-ui-md py-1 pr-1.5 pl-7 text-sm ui-disabled:opacity-50 data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4;
-        @variant focus {
-            background-color: var(--ui-menubar-radio-item-focus-bg, var(--color-accent));
-            color: var(--ui-menubar-radio-item-focus-fg, var(--color-accent-foreground));
-        }
-        @variant focus:** {
-            color: var(--ui-menubar-radio-item-focus-fg, var(--color-accent-foreground));
-        }
+        @apply ui-disabled:opacity-50;
     }
     .ui-menubar-shortcut {
-        color: var(--ui-menubar-shortcut-fg, var(--color-muted-foreground));
-        @apply text-xs tracking-widest;
         @variant group-focus/menubar-item {
-            color: var(--ui-menubar-shortcut-focus-fg, var(--color-accent-foreground));
+            color: var(--ui-shortcut-focus-fg, var(--color-accent-foreground));
         }
-    }
-    .ui-menubar-sub-content {
-        background-color: var(--ui-menubar-sub-content-bg, var(--color-popover));
-        color: var(--ui-menubar-sub-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-menubar-sub-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply min-w-32 rounded-ui-lg p-1 shadow-lg ring-1 duration-100;
     }
     .ui-navigation-menu {
         @apply max-w-max;
@@ -1369,42 +1423,33 @@
         @apply gap-0;
     }
     .ui-navigation-menu-link {
-        @apply flex items-center gap-2 rounded-ui-lg p-2 text-sm transition-all outline-none focus-visible:ring-3 focus-visible:outline-1 in-[.ui-navigation-menu-content]:rounded-ui-md [&_svg:not([class*='size-'])]:size-4;
+        @apply flex items-center gap-2 rounded-ui-lg p-2 transition-all outline-none focus-visible:outline-1 in-[.ui-navigation-menu-content]:rounded-ui-md;
         @variant aria-selected:focus {
-            background-color: var(--ui-navigation-menu-link-focus-bg, var(--color-muted));
+            background-color: var(--ui-link-focus-bg, var(--color-muted));
         }
         @variant aria-selected:hover {
-            background-color: var(--ui-navigation-menu-link-hover-bg, var(--color-muted));
+            background-color: var(--ui-link-hover-bg, var(--color-muted));
         }
         @variant aria-selected {
-            background-color: var(
-                --ui-navigation-menu-link-selected-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-muted-50));
         }
         @variant focus-visible {
-            --tw-ring-color: var(
-                --ui-navigation-menu-link-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
         @variant hover {
-            background-color: var(--ui-navigation-menu-link-hover-bg, var(--color-muted));
+            background-color: var(--ui-link-hover-bg, var(--color-muted));
         }
         @variant focus {
-            background-color: var(--ui-navigation-menu-link-focus-bg, var(--color-muted));
+            background-color: var(--ui-link-focus-bg, var(--color-muted));
         }
     }
     .ui-navigation-menu-menu [data-ui-trigger] > :focus {
-        background-color: var(--ui-navigation-menu-menu-focus-bg, var(--color-muted));
+        background-color: var(--ui-part-bg, var(--color-muted));
     }
     .ui-navigation-menu-menu [data-ui-trigger] > [aria-expanded='true'] {
-        background-color: var(
-            --ui-navigation-menu-menu-expanded-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
+        background-color: var(--ui-part-bg, var(--ui-muted-50));
         @variant hover {
-            background-color: var(--ui-navigation-menu-menu-hover-bg, var(--color-muted));
+            background-color: var(--ui-part-bg, var(--color-muted));
         }
     }
     .ui-navigation-menu-menu [data-ui-trigger] > [aria-expanded] > svg:last-child {
@@ -1414,152 +1459,86 @@
         rotate: 180deg;
     }
     .ui-native-select-control {
-        border-color: var(--ui-native-select-border, var(--color-input));
-        background-color: var(--ui-native-select-bg, transparent);
-        @apply h-8 w-full min-w-0 appearance-none rounded-ui-lg border py-1 pr-8 pl-2.5 text-sm transition-colors select-none focus-visible:ring-3 aria-invalid:ring-3 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-ui-md),10px)] data-[size=sm]:py-0.5;
+        @apply h-8 w-full min-w-0 appearance-none py-1 pr-8 pl-2.5 select-none data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-ui-md),10px)] data-[size=sm]:py-0.5;
         @variant placeholder {
-            color: var(--ui-native-select-placeholder-fg, var(--color-muted-foreground));
+            color: var(--ui-placeholder-fg, var(--color-muted-foreground));
         }
         @variant selection {
-            background-color: var(--ui-native-select-selection-bg, var(--color-primary));
-            color: var(--ui-native-select-selection-fg, var(--color-primary-foreground));
-        }
-        @variant ui-dark {
-            background-color: var(
-                --ui-native-select-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-selection-bg, var(--color-primary));
+            color: var(--ui-selection-fg, var(--color-primary-foreground));
         }
         @variant ui-dark:hover {
-            background-color: var(
-                --ui-native-select-hover-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
-        }
-        @variant focus-visible {
-            border-color: var(--ui-native-select-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-native-select-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-        }
-        @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-native-select-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-native-select-invalid-border, var(--color-destructive));
-        }
-        @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-native-select-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-native-select-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-input-50));
         }
     }
     .ui-pagination-content {
         @apply gap-0.5;
     }
     .ui-pagination-ellipsis {
-        @apply size-8 items-center justify-center [&_svg:not([class*='size-'])]:size-4;
+        @apply size-8 items-center justify-center;
     }
     .ui-popover-content {
-        background-color: var(--ui-popover-content-bg, var(--color-popover));
-        color: var(--ui-popover-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-popover-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-        @apply flex flex-col gap-2.5 rounded-ui-lg p-2.5 text-sm shadow-md ring-1 duration-100;
-        overflow: visible;
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
+        @apply flex flex-col gap-2.5;
     }
     .ui-progress-track {
-        background-color: var(--ui-progress-track, var(--color-muted));
+        background-color: var(--ui-track, var(--color-muted));
         @apply h-1 rounded-full;
-    }
-    .ui-progress-label {
-        @apply text-sm font-medium;
     }
     .ui-radio-group {
         @apply grid gap-2;
     }
     .ui-select-control {
-        color: var(--ui-select-trigger-fg, inherit);
-        border-color: var(--ui-select-trigger-border, var(--color-input));
-        background-color: var(--ui-select-trigger-bg, transparent);
-        @apply gap-1.5 rounded-ui-lg border py-2 pr-2 pl-2.5 text-sm transition-colors select-none focus-visible:ring-3 aria-invalid:ring-3 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-ui-md),10px)] *:[.ui-select-value]:flex *:[.ui-select-value]:gap-1.5 [&_svg:not([class*='size-'])]:size-4;
+        color: var(--ui-trigger-fg, inherit);
+        border-color: var(--ui-trigger-border, var(--color-input));
+        background-color: var(--ui-trigger-bg, transparent);
+        @apply gap-1.5 py-2 pr-2 pl-2.5 select-none data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-ui-md),10px)] *:[.ui-select-value]:flex *:[.ui-select-value]:gap-1.5 text-sm [&_svg:not([class*='size-'])]:size-4;
         @variant data-placeholder {
-            color: var(--ui-select-trigger-placeholder-fg, var(--color-muted-foreground));
+            color: var(--ui-trigger-placeholder-fg, var(--color-muted-foreground));
         }
         @variant ui-dark {
-            background-color: var(
-                --ui-select-trigger-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-trigger-bg, var(--ui-input-30));
         }
         @variant ui-dark:hover {
-            background-color: var(
-                --ui-select-trigger-hover-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
+            background-color: var(--ui-trigger-hover-bg, var(--ui-input-50));
         }
         @variant focus-visible {
-            border-color: var(--ui-select-trigger-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-select-trigger-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-trigger-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-trigger-focus-ring, var(--ui-ring-50));
         }
         @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-select-trigger-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-select-trigger-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-trigger-invalid-ring, var(--ui-destructive-20));
+            border-color: var(--ui-trigger-invalid-border, var(--color-destructive));
         }
         @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-select-trigger-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-select-trigger-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-trigger-invalid-ring, var(--ui-destructive-40));
+            border-color: var(--ui-trigger-invalid-border, var(--ui-destructive-50));
         }
     }
     .ui-select-control {
         font-weight: 400;
     }
     .ui-select-control:is(:hover, [aria-expanded='true']) {
-        background-color: var(--ui-select-trigger-hover-bg, transparent);
+        background-color: var(--ui-trigger-hover-bg, transparent);
         @variant ui-dark {
-            background-color: var(
-                --ui-select-trigger-hover-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
+            background-color: var(--ui-trigger-hover-bg, var(--ui-input-50));
         }
     }
     .ui-select-value {
         @apply flex flex-1 text-left;
     }
     .ui-separator {
-        background-color: var(--ui-separator-bg, var(--color-border));
+        background-color: var(--ui-bg, var(--color-border));
         @apply shrink-0;
     }
     .ui-sheet-content {
-        overflow: visible;
         max-height: none;
-        background-color: var(--ui-sheet-content-bg, var(--color-popover));
-        color: var(--ui-sheet-content-fg, var(--color-popover-foreground));
-        @apply fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
+        @apply fixed z-50 gap-4 bg-clip-padding shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
     }
     .ui-sidebar-inset {
-        background-color: var(--ui-sidebar-inset-bg, var(--color-background));
+        background-color: var(--ui-inset-bg, var(--color-background));
         @apply md:peer-[.ui-sidebar-variant-inset]:m-2 md:peer-[.ui-sidebar-variant-inset]:ml-0 md:peer-[.ui-sidebar-variant-inset]:rounded-ui-xl md:peer-[.ui-sidebar-variant-inset]:shadow-sm md:peer-[.ui-sidebar-variant-inset]:peer-data-[state=collapsed]:ml-2;
     }
     .ui-sidebar-header {
@@ -1579,50 +1558,44 @@
     }
     .ui-sidebar-group-label {
         color: var(
-            --ui-sidebar-group-label-fg,
+            --ui-part-fg,
             color-mix(in oklab, var(--color-sidebar-foreground) 70%, transparent)
         );
-        --tw-ring-color: var(--ui-sidebar-group-label-ring, var(--color-sidebar-ring));
-        @apply h-8 rounded-ui-md px-2 text-xs font-medium transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4;
+        --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-ring));
+        @apply h-8 rounded-ui-md px-2 transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4;
     }
     .ui-sidebar-menu-button {
-        --tw-ring-color: var(--ui-sidebar-menu-button-ring, var(--color-sidebar-ring));
-        @apply gap-2 rounded-ui-md p-2 text-left text-sm transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2 focus-visible:ring-2 aria-selected:font-medium;
+        --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-ring));
+        @apply gap-2 rounded-ui-md p-2 text-left transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2 focus-visible:ring-2 aria-selected:font-medium;
         @variant hover {
-            background-color: var(--ui-sidebar-menu-button-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-button-hover-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
         }
         @variant active {
-            background-color: var(--ui-sidebar-menu-button-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-button-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-button-bg, var(--color-sidebar-accent));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
         @variant aria-selected {
-            background-color: var(
-                --ui-sidebar-menu-button-selected-bg,
-                var(--color-sidebar-accent)
-            );
-            color: var(
-                --ui-sidebar-menu-button-selected-fg,
-                var(--color-sidebar-accent-foreground)
-            );
+            background-color: var(--ui-part-bg, var(--color-sidebar-accent));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
         @variant ui-open:hover {
-            background-color: var(--ui-sidebar-menu-button-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-button-hover-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-menu-button.ui-sidebar-menu-button-variant-default {
         @variant hover {
-            background-color: var(--ui-sidebar-menu-button-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-button-hover-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-menu-button.ui-sidebar-menu-button-variant-outline {
-        background-color: var(--ui-sidebar-menu-button-bg, var(--color-background));
+        background-color: var(--ui-menu-button-bg, var(--color-background));
         @apply shadow-[inset_0_0_0_1px_var(--sidebar-border,var(--color-sidebar-border))] hover:shadow-[inset_0_0_0_1px_var(--sidebar-accent,var(--color-sidebar-accent))];
         @variant hover {
-            background-color: var(--ui-sidebar-menu-button-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-button-hover-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-button-hover-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-menu-button[data-size='default'] {
@@ -1635,107 +1608,68 @@
         @apply h-12 text-sm group-data-[collapsible=icon]:p-0;
     }
     .ui-skeleton {
-        background-color: var(--ui-skeleton-bg, var(--color-muted));
+        background-color: var(--ui-bg, var(--color-muted));
         @apply rounded-ui-md;
     }
     .ui-slider-body {
         @apply data-[orientation=vertical]:min-h-40;
     }
     .ui-slider-track {
-        background-color: var(--ui-slider-track-bg, var(--color-muted));
+        background-color: var(--ui-track, var(--color-muted));
         @apply rounded-full data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1;
     }
     .ui-slider-range {
-        background-color: var(--ui-slider-range-bg, var(--color-primary));
+        background-color: var(--ui-fill, var(--color-primary));
     }
     .ui-slider-thumb {
-        border-color: var(--ui-slider-thumb-border, var(--color-ring));
-        --tw-ring-color: var(
-            --ui-slider-thumb-ring,
-            color-mix(in oklab, var(--color-ring) 50%, transparent)
-        );
-        background-color: var(--ui-slider-thumb-bg, var(--color-white));
+        border-color: var(--ui-thumb-border, var(--color-ring));
+        --tw-ring-color: var(--ui-thumb-ring, var(--ui-ring-50));
+        background-color: var(--ui-thumb, var(--color-white));
         @apply relative size-3 rounded-full border transition-[color,box-shadow] after:absolute after:-inset-2 hover:ring-3 active:ring-3;
     }
     .ui-toast {
         @apply rounded-ui-2xl;
     }
     .ui-switch {
-        border-color: var(--ui-switch-border, transparent);
-        @apply shrink-0 rounded-full border focus-visible:ring-3 aria-invalid:ring-3 group-has-[:focus-visible]/field-label:ring-0 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px];
+        border-color: var(--ui-border, transparent);
+        @apply shrink-0 rounded-full border data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px];
         @variant has-checked {
-            background-color: var(
-                --ui-switch-track-on,
-                var(--ui-status-fill, var(--color-primary))
-            );
+            background-color: var(--ui-track-on, var(--ui-status-fill, var(--color-primary)));
         }
         @variant not-has-checked {
-            background-color: var(--ui-switch-track-off, var(--color-input));
-        }
-        @variant focus-visible {
-            border-color: var(--ui-switch-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-switch-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-        }
-        @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-switch-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-switch-invalid-border, var(--color-destructive));
-        }
-        @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-switch-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-switch-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
+            background-color: var(--ui-track-off, var(--color-input));
         }
         @variant ui-dark:not-has-checked {
-            background-color: var(
-                --ui-switch-track-off,
-                color-mix(in oklab, var(--color-input) 80%, transparent)
-            );
+            background-color: var(--ui-track-off, var(--ui-input-80));
         }
         @variant group-has-[:focus-visible]/field-label {
-            border-color: var(--ui-switch-focus-border, transparent);
+            border-color: var(--ui-focus-border, transparent);
         }
     }
     .ui-switch {
         @apply has-disabled:cursor-not-allowed has-disabled:opacity-50 has-focus-visible:ring-3;
         @variant has-focus-visible {
-            border-color: var(--ui-switch-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-switch-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-switch > input {
         @apply absolute inset-0 z-10 m-0 h-full w-full cursor-pointer opacity-0;
     }
     .ui-switch:has(> input:checked) > .ui-switch-thumb {
-        background-color: var(
-            --ui-switch-thumb-on,
-            var(--ui-status-on-fill, var(--color-background))
-        );
+        background-color: var(--ui-thumb-on, var(--ui-status-on-fill, var(--color-background)));
         @variant ui-dark {
             background-color: var(
-                --ui-switch-thumb-on,
+                --ui-thumb-on,
                 var(--ui-status-on-fill, var(--color-primary-foreground))
             );
         }
     }
     .ui-switch-thumb {
-        background-color: var(--ui-switch-thumb-off, var(--color-background));
+        background-color: var(--ui-thumb-off, var(--color-background));
         @apply pointer-events-none block rounded-full transition-transform ring-0 group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-has-checked/switch:translate-x-[calc(100%-2px)];
         @variant ui-dark {
-            background-color: var(--ui-switch-thumb-off, var(--color-foreground));
+            background-color: var(--ui-thumb-off, var(--color-foreground));
         }
     }
     .ui-checkbox:disabled {
@@ -1746,38 +1680,35 @@
     }
     .ui-tabs-tab {
         @variant aria-selected {
-            background-color: var(--ui-tabs-tab-selected-bg, var(--color-background));
-            color: var(--ui-tabs-tab-selected-fg, var(--color-foreground));
+            background-color: var(--ui-tab-selected-bg, var(--color-background));
+            color: var(--ui-tab-selected-fg, var(--color-foreground));
         }
         @variant ui-dark:aria-selected {
-            border-color: var(--ui-tabs-tab-selected-border, var(--color-input));
-            background-color: var(
-                --ui-tabs-tab-selected-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
-            color: var(--ui-tabs-tab-selected-fg, var(--color-foreground));
+            border-color: var(--ui-tab-selected-border, var(--color-input));
+            background-color: var(--ui-tab-selected-bg, var(--ui-input-30));
+            color: var(--ui-tab-selected-fg, var(--color-foreground));
         }
         @apply after:absolute after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-[.ui-tabs-list-variant-line]/tabs-list:aria-selected:after:opacity-100;
         @variant after {
-            background-color: var(--ui-tabs-tab-bg, var(--color-foreground));
+            background-color: var(--ui-tab-bg, var(--color-foreground));
         }
     }
     .ui-tabs-list.ui-tabs-list-variant-default .ui-tabs-tab[aria-selected='true'] {
         @apply shadow-sm;
     }
     .ui-tabs-list.ui-tabs-list-variant-line .ui-tabs-tab {
-        background-color: var(--ui-tabs-tab-bg, transparent);
+        background-color: var(--ui-tab-bg, transparent);
         @apply shadow-none;
         @variant aria-selected {
-            background-color: var(--ui-tabs-tab-selected-bg, transparent);
+            background-color: var(--ui-tab-selected-bg, transparent);
         }
         @variant ui-dark:aria-selected {
-            border-color: var(--ui-tabs-tab-selected-border, transparent);
-            background-color: var(--ui-tabs-tab-selected-bg, transparent);
+            border-color: var(--ui-tab-selected-border, transparent);
+            background-color: var(--ui-tab-selected-bg, transparent);
         }
     }
     .ui-table-element {
-        @apply w-full caption-bottom text-sm;
+        @apply w-full caption-bottom;
     }
     .ui-table-container {
         @apply relative w-full overflow-x-auto;
@@ -1789,27 +1720,21 @@
         @apply [&_tr:last-child]:border-0;
     }
     .ui-table-footer {
-        background-color: var(
-            --ui-table-footer-bg,
-            color-mix(in oklab, var(--color-muted) 50%, transparent)
-        );
-        @apply border-t font-medium [&>tr]:last:border-b-0;
+        background-color: var(--ui-footer-bg, var(--ui-muted-50));
+        @apply border-t [&>tr]:last:border-b-0;
     }
     .ui-table-row {
-        @apply border-b transition-colors;
+        @apply border-b;
         @variant hover {
-            background-color: var(
-                --ui-table-row-hover-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-muted-50));
         }
         @variant data-[state=selected] {
-            background-color: var(--ui-table-row-bg, var(--color-muted));
+            background-color: var(--ui-part-bg, var(--color-muted));
         }
     }
     .ui-table-head {
-        color: var(--ui-table-head-fg, var(--color-foreground));
-        @apply h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+        color: var(--ui-part-fg, var(--color-foreground));
+        @apply h-10 px-2 text-left align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
     }
     .ui-table-cell {
         @apply p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
@@ -1821,8 +1746,8 @@
         padding-right: 0;
     }
     .ui-table-caption {
-        color: var(--ui-table-caption-fg, var(--color-muted-foreground));
-        @apply mt-4 text-sm;
+        color: var(--ui-part-fg, var(--color-muted-foreground));
+        @apply mt-4;
     }
     .ui-tabs {
         @apply gap-2;
@@ -1830,106 +1755,38 @@
     .ui-tabs-list {
         @apply rounded-ui-lg p-[3px] group-data-[orientation=horizontal]/tabs:h-8 [&.ui-tabs-list-variant-line]:rounded-none;
     }
-    .ui-tabs-content {
-        @apply text-sm;
-    }
     .ui-textarea {
-        border-color: var(--ui-textarea-border, var(--color-input));
-        background-color: var(--ui-textarea-bg, transparent);
-        @apply rounded-ui-lg border px-2.5 py-2 text-base transition-colors focus-visible:ring-3 aria-invalid:ring-3 md:text-sm;
-        @variant ui-dark {
-            background-color: var(
-                --ui-textarea-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
-        }
-        @variant focus-visible {
-            border-color: var(--ui-textarea-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-textarea-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-        }
-        @variant aria-invalid {
-            --tw-ring-color: var(
-                --ui-textarea-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-textarea-invalid-border, var(--color-destructive));
-        }
-        @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-textarea-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
-            border-color: var(
-                --ui-textarea-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
-        }
-        @variant disabled {
-            background-color: var(
-                --ui-textarea-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
-        }
-        @variant ui-dark:disabled {
-            background-color: var(
-                --ui-textarea-disabled-bg,
-                color-mix(in oklab, var(--color-input) 80%, transparent)
-            );
-        }
+        @apply px-2.5 py-2 text-base md:text-sm;
     }
     .ui-toggle-group {
         @apply rounded-ui-lg data-[size=sm]:rounded-[min(var(--radius-ui-md),10px)];
     }
     .ui-tooltip-content {
-        @apply inline-flex items-center gap-1.5 rounded-ui-md px-3 py-1.5 text-xs has-[.ui-kbd]:pr-1.5 **:[.ui-kbd]:relative **:[.ui-kbd]:isolate **:[.ui-kbd]:z-50 **:[.ui-kbd]:rounded-ui-sm;
+        @apply inline-flex items-center gap-1.5 rounded-ui-md px-3 py-1.5 has-[.ui-kbd]:pr-1.5 **:[.ui-kbd]:relative **:[.ui-kbd]:isolate **:[.ui-kbd]:z-50 **:[.ui-kbd]:rounded-ui-sm;
     }
     .ui-input-group {
         @apply relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto;
-        border-color: var(--ui-input-group-border, var(--color-input));
-        @apply h-8 rounded-ui-lg border transition-colors in-[.ui-combobox-content]:focus-within:ring-0 has-disabled:opacity-50 has-[.ui-input-group-control:focus-visible]:ring-3 has-[[aria-invalid=true]]:ring-3 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5;
-        @variant ui-dark {
-            background-color: var(
-                --ui-input-group-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
-        }
+        border-color: var(--ui-border, var(--color-input));
+        @apply h-8 rounded-ui-lg border in-[.ui-combobox-content]:focus-within:ring-0 has-disabled:opacity-50 has-[.ui-input-group-control:focus-visible]:ring-3 has-[[aria-invalid=true]]:ring-3 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5;
         @variant has-[.ui-input-group-control:focus-visible] {
-            border-color: var(--ui-input-group-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-input-group-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
         @variant has-[[aria-invalid=true]] {
-            --tw-ring-color: var(
-                --ui-input-group-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-input-group-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-20));
+            border-color: var(--ui-invalid-border, var(--color-destructive));
         }
         @variant ui-dark:has-[[aria-invalid=true]] {
-            --tw-ring-color: var(
-                --ui-input-group-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            --tw-ring-color: var(--ui-invalid-ring, var(--ui-destructive-40));
         }
         @variant has-disabled {
-            background-color: var(
-                --ui-input-group-disabled-bg,
-                color-mix(in oklab, var(--color-input) 50%, transparent)
-            );
+            background-color: var(--ui-disabled-bg, var(--ui-input-50));
         }
         @variant ui-dark:has-disabled {
-            background-color: var(
-                --ui-input-group-disabled-bg,
-                color-mix(in oklab, var(--color-input) 80%, transparent)
-            );
+            background-color: var(--ui-disabled-bg, var(--ui-input-80));
         }
         @variant in-[.ui-combobox-content]:focus-within {
-            border-color: var(--ui-input-group-focus-border, inherit);
+            border-color: var(--ui-focus-border, inherit);
         }
     }
     .ui-input-group:has(> [data-ui-overlay] > [data-ui-trigger] > [data-align='inline-end'])
@@ -1942,8 +1799,8 @@
     }
     .ui-input-group-addon {
         @apply flex cursor-text items-center justify-center select-none;
-        color: var(--ui-input-group-addon-fg, var(--color-muted-foreground));
-        @apply h-auto gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius-ui)-5px)] [&>svg:not([class*='size-'])]:size-4;
+        color: var(--ui-part-fg, var(--color-muted-foreground));
+        @apply h-auto gap-2 py-1.5 group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius-ui)-5px)] [&>svg:not([class*='size-'])]:size-4;
     }
     .ui-input-group-addon[data-align='inline-start'] {
         @apply order-first;
@@ -1963,7 +1820,7 @@
     }
     .ui-input-group-button {
         @apply flex items-center shadow-none;
-        @apply gap-2 text-sm;
+        @apply gap-2;
     }
     .ui-input-group-button[data-size='xs'] {
         @apply h-6 gap-1 rounded-[calc(var(--radius-ui)-3px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5;
@@ -1976,178 +1833,148 @@
     }
     .ui-input-group-text {
         @apply flex items-center [&_svg]:pointer-events-none;
-        color: var(--ui-input-group-text-fg, var(--color-muted-foreground));
-        @apply gap-2 text-sm [&_svg:not([class*='size-'])]:size-4;
+        color: var(--ui-part-fg, var(--color-muted-foreground));
+        @apply gap-2;
+    }
+    .ui-input-group-input,
+    .ui-input-group-textarea {
+        @variant ui-dark:disabled {
+            background-color: var(--ui-part-bg, transparent);
+        }
     }
     .ui-input-group-input {
-        background-color: var(--ui-input-group-input-bg, transparent);
+        background-color: var(--ui-input-bg, transparent);
         @apply flex-1 rounded-none border-0 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0;
         @variant disabled {
-            background-color: var(--ui-input-group-input-bg, transparent);
+            background-color: var(--ui-input-bg, transparent);
         }
         @variant ui-dark {
-            background-color: var(--ui-input-group-input-bg, transparent);
-        }
-        @variant ui-dark:disabled {
-            background-color: var(--ui-input-group-input-disabled-bg, transparent);
+            background-color: var(--ui-input-bg, transparent);
         }
     }
     .ui-input-group-textarea {
         @apply flex-1 resize-none;
-        background-color: var(--ui-input-group-textarea-bg, transparent);
+        background-color: var(--ui-textarea-bg, transparent);
         @apply rounded-none border-0 py-2 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0;
         @variant disabled {
-            background-color: var(--ui-input-group-textarea-bg, transparent);
+            background-color: var(--ui-textarea-bg, transparent);
         }
         @variant ui-dark {
-            background-color: var(--ui-input-group-textarea-bg, transparent);
-        }
-        @variant ui-dark:disabled {
-            background-color: var(--ui-input-group-textarea-disabled-bg, transparent);
+            background-color: var(--ui-textarea-bg, transparent);
         }
     }
     .ui-bubble {
         @apply gap-1 data-[align=end]:self-end max-w-[80%] [&.ui-bubble-variant-ghost]:max-w-full group-data-[align=end]/message:self-end;
     }
     .ui-bubble-content {
-        border-color: var(--ui-bubble-content-border, transparent);
-        @apply rounded-ui-xl border px-3 py-2 text-sm leading-relaxed [button,a]:outline-none [button,a]:focus-visible:ring-3 group-data-[align=end]/bubble:self-end;
+        border-color: var(--ui-content-border, transparent);
+        @apply rounded-ui-xl border px-3 py-2 leading-relaxed [button,a]:outline-none [button,a]:focus-visible:ring-3 group-data-[align=end]/bubble:self-end;
         @variant [button,a]:focus-visible {
-            border-color: var(--ui-bubble-content-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-bubble-content-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
     }
     .ui-bubble.ui-bubble-variant-default {
         @variant *:[.ui-bubble-content] {
-            background-color: var(--ui-bubble-bg, var(--color-primary));
-            color: var(--ui-bubble-fg, var(--color-primary-foreground));
+            background-color: var(--ui-bg, var(--color-primary));
+            color: var(--ui-fg, var(--color-primary-foreground));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
             background-color: var(
-                --ui-bubble-hover-bg,
+                --ui-hover-bg,
                 color-mix(in oklab, var(--color-primary) 80%, transparent)
             );
         }
     }
     .ui-bubble.ui-bubble-variant-secondary {
         @variant *:[.ui-bubble-content] {
-            background-color: var(--ui-bubble-bg, var(--color-secondary));
-            color: var(--ui-bubble-fg, var(--color-secondary-foreground));
+            background-color: var(--ui-bg, var(--color-secondary));
+            color: var(--ui-fg, var(--color-secondary-foreground));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
             background-color: var(
-                --ui-bubble-hover-bg,
+                --ui-hover-bg,
                 color-mix(in oklch, var(--color-secondary), var(--color-foreground) 5%)
             );
         }
     }
     .ui-bubble.ui-bubble-variant-muted {
         @variant *:[.ui-bubble-content] {
-            background-color: var(--ui-bubble-bg, var(--color-muted));
+            background-color: var(--ui-bg, var(--color-muted));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
             background-color: var(
-                --ui-bubble-hover-bg,
+                --ui-hover-bg,
                 color-mix(in oklch, var(--color-muted), var(--color-foreground) 5%)
             );
         }
     }
     .ui-bubble.ui-bubble-variant-tinted {
         @variant *:[.ui-bubble-content] {
-            background-color: var(
-                --ui-bubble-bg,
-                oklch(from var(--color-primary) 0.93 calc(c * 0.4) h)
-            );
-            color: var(--ui-bubble-fg, var(--color-foreground));
+            background-color: var(--ui-bg, oklch(from var(--color-primary) 0.93 calc(c * 0.4) h));
+            color: var(--ui-fg, var(--color-foreground));
         }
         @variant ui-dark:*:[.ui-bubble-content] {
-            background-color: var(
-                --ui-bubble-bg,
-                oklch(from var(--color-primary) 0.3 calc(c * 0.4) h)
-            );
+            background-color: var(--ui-bg, oklch(from var(--color-primary) 0.3 calc(c * 0.4) h));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
             background-color: var(
-                --ui-bubble-hover-bg,
+                --ui-hover-bg,
                 oklch(from var(--color-primary) 0.88 calc(c * 0.5) h)
             );
         }
         @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
             background-color: var(
-                --ui-bubble-hover-bg,
+                --ui-hover-bg,
                 oklch(from var(--color-primary) 0.35 calc(c * 0.5) h)
             );
         }
     }
     .ui-bubble.ui-bubble-variant-outline {
         @variant *:[.ui-bubble-content] {
-            background-color: var(--ui-bubble-bg, var(--color-background));
-            border-color: var(--ui-bubble-border, var(--color-border));
+            background-color: var(--ui-bg, var(--color-background));
+            border-color: var(--ui-border, var(--color-border));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(--ui-bubble-hover-bg, var(--color-muted));
-            color: var(--ui-bubble-hover-fg, var(--color-foreground));
+            background-color: var(--ui-hover-bg, var(--color-muted));
+            color: var(--ui-hover-fg, var(--color-foreground));
         }
         @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(
-                --ui-bubble-hover-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-input-30));
         }
     }
     .ui-bubble.ui-bubble-variant-ghost {
         @apply *:[.ui-bubble-content]:rounded-none *:[.ui-bubble-content]:p-0 border-none;
         @variant *:[.ui-bubble-content] {
-            background-color: var(--ui-bubble-bg, transparent);
+            background-color: var(--ui-bg, transparent);
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(--ui-bubble-hover-bg, var(--color-muted));
-            color: var(--ui-bubble-hover-fg, var(--color-foreground));
+            background-color: var(--ui-hover-bg, var(--color-muted));
+            color: var(--ui-hover-fg, var(--color-foreground));
         }
         @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(
-                --ui-bubble-hover-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-muted-50));
         }
     }
     .ui-bubble.ui-bubble-variant-destructive {
         @variant *:[.ui-bubble-content] {
-            background-color: var(
-                --ui-bubble-bg,
-                color-mix(in oklab, var(--color-destructive) 10%, transparent)
-            );
-            color: var(--ui-bubble-fg, var(--color-destructive));
+            background-color: var(--ui-bg, var(--ui-destructive-10));
+            color: var(--ui-fg, var(--color-destructive));
         }
         @variant ui-dark:*:[.ui-bubble-content] {
-            background-color: var(
-                --ui-bubble-bg,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            background-color: var(--ui-bg, var(--ui-destructive-20));
         }
         @variant [&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(
-                --ui-bubble-hover-bg,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-destructive-20));
         }
         @variant ui-dark:[&>.ui-bubble-content:is(button,a):hover] {
-            background-color: var(
-                --ui-bubble-hover-bg,
-                color-mix(in oklab, var(--color-destructive) 30%, transparent)
-            );
+            background-color: var(--ui-hover-bg, var(--ui-destructive-30));
         }
     }
     .ui-attachment {
         @apply rounded-ui-xl w-fit focus-within:ring-1;
         @variant focus-within {
-            --tw-ring-color: var(
-                --ui-attachment-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-attachment[data-orientation='horizontal'] {
@@ -2168,74 +1995,59 @@
     .ui-attachment-content {
         @apply leading-tight group-data-[orientation=vertical]/attachment:px-1;
     }
-    .ui-attachment-name {
-        @apply font-medium;
-    }
     .ui-attachment-description {
-        @apply mt-0.5 text-xs;
+        @apply mt-0.5;
     }
     .ui-attachment-actions {
         @apply group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:right-3 relative z-20 group-data-[orientation=vertical]/attachment:gap-1;
     }
     .ui-marker {
-        color: var(--ui-marker-fg, var(--color-muted-foreground));
-        @apply gap-2 text-sm [a]:underline-offset-3 [a]:underline [&_svg:not([class*='size-'])]:size-4 min-h-4 text-left;
+        color: var(--ui-fg, var(--color-muted-foreground));
+        @apply gap-2 [a]:underline-offset-3 [a]:underline min-h-4 text-left;
         @variant [a]:hover {
-            color: var(--ui-marker-hover-fg, var(--color-foreground));
+            color: var(--ui-hover-fg, var(--color-foreground));
         }
     }
     .ui-marker.ui-marker-variant-separator {
         @apply before:h-px before:min-w-0 before:flex-1 after:h-px after:min-w-0 after:flex-1 before:mr-1 after:ml-1;
         @variant before {
-            background-color: var(--ui-marker-line, var(--color-border));
+            background-color: var(--ui-line, var(--color-border));
         }
         @variant after {
-            background-color: var(--ui-marker-line, var(--color-border));
+            background-color: var(--ui-line, var(--color-border));
         }
     }
     .ui-marker.ui-marker-variant-border {
-        border-color: var(--ui-marker-border, var(--color-border));
+        border-color: var(--ui-border, var(--color-border));
         @apply border-b pb-2;
     }
     .ui-code-block {
-        @apply rounded-ui-lg text-sm data-[size=sm]:text-xs has-[>.ui-code-block-content:focus-visible]:ring-3;
+        @apply rounded-ui-lg data-[size=sm]:text-xs has-[>.ui-code-block-content:focus-visible]:ring-3;
         @variant has-[>.ui-code-block-content:focus-visible] {
-            --tw-ring-color: var(
-                --ui-code-block-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-code-block.ui-code-block-variant-default {
-        border-color: var(--ui-code-block-border, var(--color-input));
-        color: var(--ui-code-block-fg, var(--color-foreground));
+        border-color: var(--ui-border, var(--color-input));
+        color: var(--ui-fg, var(--color-foreground));
         @apply border;
         @variant ui-dark {
-            background-color: var(
-                --ui-code-block-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-bg, var(--ui-input-30));
         }
         @variant has-[>.ui-code-block-content:focus-visible] {
-            border-color: var(--ui-code-block-focus-border, var(--color-ring));
+            border-color: var(--ui-focus-border, var(--color-ring));
         }
     }
     .ui-code-block.ui-code-block-variant-destructive {
-        border-color: var(
-            --ui-code-block-border,
-            color-mix(in oklab, var(--color-destructive) 30%, transparent)
-        );
-        color: var(--ui-code-block-fg, var(--color-destructive));
+        border-color: var(--ui-border, var(--ui-destructive-30));
+        color: var(--ui-fg, var(--color-destructive));
         @apply border;
         @variant ui-dark {
-            border-color: var(
-                --ui-code-block-border,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            border-color: var(--ui-border, var(--ui-destructive-40));
         }
     }
     .ui-message {
-        @apply text-sm gap-2;
+        @apply gap-2;
     }
     .ui-message-avatar {
         @apply min-w-8 group-has-[.ui-message-footer]/message:-translate-y-8;
@@ -2244,8 +2056,8 @@
         @apply gap-2.5 group-data-[align=end]/message:*:self-end;
     }
     .ui-message-footer {
-        color: var(--ui-message-footer-fg, var(--color-muted-foreground));
-        @apply text-xs font-medium px-3 group-has-[.ui-bubble-variant-ghost]/message:px-0;
+        color: var(--ui-footer-fg, var(--color-muted-foreground));
+        @apply px-3 group-has-[.ui-bubble-variant-ghost]/message:px-0;
     }
 }
 @layer components {
@@ -2255,7 +2067,7 @@
         display: none;
     }
     dialog[data-ui-panel]::backdrop {
-        background: var(--ui-dialog-backdrop-bg, #0000001a);
+        background: var(--ui-backdrop-bg, #0000001a);
         backdrop-filter: blur(4px);
     }
     .ui-dialog-content-variant-default,
@@ -2287,35 +2099,23 @@
         width: calc(100vw - 2rem);
     }
     .ui-menu-item {
-        color: var(--ui-menu-item-fg, inherit);
+        color: var(--ui-item-fg, inherit);
         font-weight: 400;
         justify-content: flex-start;
         @apply relative flex w-full cursor-default items-center gap-1.5 rounded-ui-md px-1.5 py-1 text-sm outline-none select-none data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0;
         @variant focus {
-            background-color: var(
-                --ui-menu-item-focus-bg,
-                var(--ui-menu-item-hover-bg, var(--color-accent))
-            );
-            color: var(
-                --ui-menu-item-focus-fg,
-                var(--ui-menu-item-hover-fg, var(--color-accent-foreground))
-            );
+            background-color: var(--ui-item-focus-bg, var(--ui-item-hover-bg, var(--color-accent)));
+            color: var(--ui-item-focus-fg, var(--ui-item-hover-fg, var(--color-accent-foreground)));
         }
         @variant [&.ui-menu-item-variant-destructive] {
-            color: var(--ui-menu-item-fg, var(--color-destructive));
+            color: var(--ui-item-fg, var(--color-destructive));
         }
         @variant [&.ui-menu-item-variant-destructive]:focus {
-            background-color: var(
-                --ui-menu-item-focus-bg,
-                color-mix(in oklab, var(--color-destructive) 10%, transparent)
-            );
-            color: var(--ui-menu-item-focus-fg, var(--color-destructive));
+            background-color: var(--ui-item-focus-bg, var(--ui-destructive-10));
+            color: var(--ui-item-focus-fg, var(--color-destructive));
         }
         @variant ui-dark:[&.ui-menu-item-variant-destructive]:focus {
-            background-color: var(
-                --ui-menu-item-focus-bg,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            background-color: var(--ui-item-focus-bg, var(--ui-destructive-20));
         }
     }
     [data-ui-submenu] {
@@ -2325,16 +2125,13 @@
         white-space: normal;
     }
     .ui-menu-item:not(.ui-menu-item-variant-destructive):focus * {
-        color: var(
-            --ui-menu-item-focus-fg,
-            var(--ui-menu-item-hover-fg, var(--color-accent-foreground))
-        );
+        color: var(--ui-item-focus-fg, var(--ui-item-hover-fg, var(--color-accent-foreground)));
     }
     .ui-menu-item.ui-menu-item-variant-destructive > svg {
-        color: var(--ui-menu-item-fg, var(--color-destructive));
+        color: var(--ui-item-fg, var(--color-destructive));
     }
     .ui-menu-label {
-        color: var(--ui-menu-label-fg, var(--color-muted-foreground));
+        color: var(--ui-label-fg, var(--color-muted-foreground));
         @apply px-1.5 py-1 text-xs font-medium data-inset:pl-7;
     }
     .ui-dropdown-menu-checkbox-item,
@@ -2350,10 +2147,10 @@
         display: contents;
     }
     .ui-dropdown-menu-checkbox-item:has(:focus) {
-        background: var(--ui-dropdown-menu-checkbox-item-focus-bg, var(--color-accent));
+        background: var(--ui-checkbox-item-focus-bg, var(--color-accent));
     }
     .ui-dropdown-menu-radio-item:has(:focus) {
-        background: var(--ui-dropdown-menu-radio-item-focus-bg, var(--color-accent));
+        background: var(--ui-radio-item-focus-bg, var(--color-accent));
     }
     .ui-dropdown-menu-checkbox-item > input,
     .ui-dropdown-menu-radio-item > input {
@@ -2377,12 +2174,12 @@
         @apply right-auto left-1.5;
     }
     .ui-dropdown-menu-checkbox-item:has(:focus) {
-        background-color: var(--ui-dropdown-menu-checkbox-item-focus-bg, var(--color-accent));
-        color: var(--ui-dropdown-menu-checkbox-item-focus-fg, var(--color-accent-foreground));
+        background-color: var(--ui-checkbox-item-focus-bg, var(--color-accent));
+        color: var(--ui-checkbox-item-focus-fg, var(--color-accent-foreground));
     }
     .ui-dropdown-menu-radio-item:has(:focus) {
-        background-color: var(--ui-dropdown-menu-radio-item-focus-bg, var(--color-accent));
-        color: var(--ui-dropdown-menu-radio-item-focus-fg, var(--color-accent-foreground));
+        background-color: var(--ui-radio-item-focus-bg, var(--color-accent));
+        color: var(--ui-radio-item-focus-fg, var(--color-accent-foreground));
     }
     .ui-dropdown-menu-checkbox-item:has(:disabled),
     .ui-dropdown-menu-radio-item:has(:disabled) {
@@ -2417,13 +2214,13 @@
         position: relative;
     }
     .ui-calendar-body {
-        background-color: var(--ui-calendar-bg, var(--color-background));
+        background-color: var(--ui-bg, var(--color-background));
         @apply relative w-fit;
         @variant in-[.ui-card-content] {
-            background-color: var(--ui-calendar-bg, transparent);
+            background-color: var(--ui-bg, transparent);
         }
         @variant in-[.ui-popover-content] {
-            background-color: var(--ui-calendar-bg, transparent);
+            background-color: var(--ui-bg, transparent);
         }
         max-width: 100%;
     }
@@ -2458,30 +2255,30 @@
         @apply relative inline-flex items-center;
     }
     .ui-calendar-dropdowns select {
-        background-color: var(--ui-calendar-dropdowns-bg, transparent);
+        background-color: var(--ui-dropdowns-bg, transparent);
         @apply h-7 cursor-pointer appearance-none rounded-ui-md border-0 ps-1 pe-5 text-sm font-medium outline-none focus-visible:ring-2 disabled:cursor-default;
         @variant hover {
-            background-color: var(--ui-calendar-dropdowns-hover-bg, var(--color-accent));
+            background-color: var(--ui-part-bg, var(--color-accent));
         }
         @variant focus-visible {
-            --tw-ring-color: var(--ui-calendar-dropdowns-focus-ring, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--color-ring));
         }
         field-sizing: content;
     }
     .ui-calendar-dropdowns option {
-        background-color: var(--ui-calendar-dropdowns-bg, var(--color-popover));
-        color: var(--ui-calendar-dropdowns-fg, var(--color-popover-foreground));
+        background-color: var(--ui-dropdowns-bg, var(--color-popover));
+        color: var(--ui-dropdowns-fg, var(--color-popover-foreground));
     }
     .ui-calendar-dropdowns svg {
-        color: var(--ui-calendar-dropdowns-fg, var(--color-muted-foreground));
+        color: var(--ui-dropdowns-fg, var(--color-muted-foreground));
         @apply pointer-events-none absolute end-1 size-3.5;
     }
     .ui-calendar-grid [data-disabled='true'] {
-        color: var(--ui-calendar-grid-disabled-fg, var(--color-muted-foreground));
+        color: var(--ui-grid-disabled-fg, var(--color-muted-foreground));
         @apply opacity-50;
     }
     .ui-calendar-grid [data-disabled='true'] [data-calendar-day]:disabled {
-        color: var(--ui-calendar-grid-disabled-fg, inherit);
+        color: var(--ui-grid-disabled-fg, inherit);
     }
     .ui-calendar-grid [data-hidden='true'] {
         visibility: hidden;
@@ -2496,7 +2293,7 @@
         @apply mt-2;
     }
     .ui-calendar-grid th {
-        color: var(--ui-calendar-grid-fg, var(--color-muted-foreground));
+        color: var(--ui-grid-fg, var(--color-muted-foreground));
         @apply flex-1 rounded-ui-md text-[0.8rem] font-normal select-none;
     }
     .ui-calendar-grid td {
@@ -2505,15 +2302,15 @@
     .ui-calendar-grid [data-calendar-day] {
         @apply relative isolate z-10 flex aspect-square size-auto w-full min-w-7 flex-col gap-1 border-0 leading-none font-normal rounded-ui-lg data-[range-middle=true]:rounded-none;
         @variant data-[selected-single=true] {
-            background-color: var(--ui-calendar-grid-bg, var(--color-primary));
-            color: var(--ui-calendar-grid-fg, var(--color-primary-foreground));
+            background-color: var(--ui-grid-bg, var(--color-primary));
+            color: var(--ui-grid-fg, var(--color-primary-foreground));
         }
         @variant data-[range-middle=true] {
-            background-color: var(--ui-calendar-grid-bg, var(--color-muted));
-            color: var(--ui-calendar-grid-fg, var(--color-foreground));
+            background-color: var(--ui-grid-bg, var(--color-muted));
+            color: var(--ui-grid-fg, var(--color-foreground));
         }
         @variant ui-dark:hover {
-            color: var(--ui-calendar-grid-hover-fg, var(--color-foreground));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
         min-width: var(--cell-size);
     }
@@ -2524,24 +2321,24 @@
         width: 100%;
     }
     .ui-calendar-grid [data-outside='true'] {
-        color: var(--ui-calendar-grid-fg, var(--color-muted-foreground));
+        color: var(--ui-grid-fg, var(--color-muted-foreground));
     }
     .ui-calendar-grid [data-today='true'] {
-        background-color: var(--ui-calendar-grid-bg, var(--color-muted));
-        color: var(--ui-calendar-grid-fg, var(--color-foreground));
+        background-color: var(--ui-grid-bg, var(--color-muted));
+        color: var(--ui-grid-fg, var(--color-foreground));
         @apply rounded-ui-md aria-selected:rounded-none;
     }
     .ui-calendar-grid [data-range='middle'] {
-        background-color: var(--ui-calendar-grid-bg, var(--color-muted));
+        background-color: var(--ui-grid-bg, var(--color-muted));
         @apply rounded-none;
     }
     .ui-calendar-grid :is([data-range='start'], [data-range='end']) {
-        background-color: var(--ui-calendar-grid-bg, var(--color-muted));
+        background-color: var(--ui-grid-bg, var(--color-muted));
         @apply isolate z-0;
     }
     .ui-calendar-grid :is([data-range='start'], [data-range='end'])::after {
         content: '';
-        background-color: var(--ui-calendar-grid-after-bg, var(--color-muted));
+        background-color: var(--ui-part-bg, var(--color-muted));
         @apply absolute inset-y-0 w-4;
     }
     .ui-calendar-grid [data-range='start']::after {
@@ -2573,14 +2370,14 @@
         position: relative;
         width: 100%;
         height: 0.25rem;
-        background: var(--ui-slider-track-bg, var(--color-muted));
+        background: var(--ui-track, var(--color-muted));
         border-radius: 999px;
         overflow: hidden;
     }
     .ui-slider-range {
         position: absolute;
         height: 100%;
-        background: var(--ui-slider-range-bg, var(--color-primary));
+        background: var(--ui-fill, var(--color-primary));
     }
     .ui-slider-thumb {
         appearance: none;
@@ -2589,8 +2386,8 @@
         width: 0.75rem;
         height: 0.75rem;
         border-radius: 50%;
-        border: 1px solid var(--ui-slider-thumb-border, var(--color-ring));
-        background: var(--ui-slider-thumb-bg, white);
+        border: 1px solid var(--ui-thumb-border, var(--color-ring));
+        background: var(--ui-thumb, white);
         padding: 0;
         margin: 0;
         cursor: grab;
@@ -2609,7 +2406,7 @@
     .ui-slider-thumb:is(:hover, :active) {
         outline: 0;
         box-shadow: var(
-            --ui-slider-thumb-hover-shadow,
+            --ui-thumb-hover-shadow,
             0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
         );
     }
@@ -2661,12 +2458,12 @@
         max-width: 100%;
         min-width: 0;
         max-height: none;
-        color: var(--ui-sidebar-content-fg, var(--color-sidebar-foreground));
-        background: var(--ui-sidebar-content-bg, var(--color-sidebar));
+        color: var(--ui-content-fg, var(--color-sidebar-foreground));
+        background: var(--ui-content-bg, var(--color-sidebar));
         padding: 0;
         gap: 0;
         border: 0;
-        border-right: 1px solid var(--ui-sidebar-content-border, var(--color-sidebar-border));
+        border-right: 1px solid var(--ui-content-border, var(--color-sidebar-border));
         overflow: visible;
     }
     .ui-sidebar[data-mobile='false']:not([data-collapsible='none']) > .ui-sidebar-content {
@@ -2688,7 +2485,7 @@
         flex-direction: column;
         width: 100%;
         height: 100%;
-        background: var(--ui-sidebar-inner-bg, var(--color-sidebar));
+        background: var(--ui-part-bg, var(--color-sidebar));
     }
     .ui-sidebar-body {
         display: flex;
@@ -2704,7 +2501,7 @@
     .ui-sidebar[data-side='right'] > .ui-sidebar-content {
         inset: 0 0 0 auto;
         border-right: 0;
-        border-left: 1px solid var(--ui-sidebar-content-border, var(--color-sidebar-border));
+        border-left: 1px solid var(--ui-content-border, var(--color-sidebar-border));
     }
     .ui-sidebar[data-collapsible='none'] > .ui-sidebar-gap {
         display: none;
@@ -2720,17 +2517,17 @@
     .ui-sidebar-menu-link {
         @apply flex h-8 w-full items-center gap-2 rounded-ui-md p-2 text-left text-sm outline-none focus-visible:ring-2 [&_svg]:size-4 [&_svg]:shrink-0;
         @variant hover {
-            background-color: var(--ui-sidebar-menu-link-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-link-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-link-hover-bg, var(--color-sidebar-accent));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
         @variant focus-visible {
-            --tw-ring-color: var(--ui-sidebar-menu-link-focus-ring, var(--color-sidebar-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-ring));
         }
     }
     .ui-sidebar-inset {
         flex: 1;
         min-width: 0;
-        background: var(--ui-sidebar-inset-bg, var(--color-background));
+        background: var(--ui-inset-bg, var(--color-background));
     }
     .ui-sidebar[data-mobile='false']:not([data-collapsible='none']):is(
             .ui-sidebar-variant-floating,
@@ -2739,15 +2536,15 @@
         > .ui-sidebar-content {
         padding: 0.5rem;
         border: 0;
-        background: var(--ui-sidebar-content-bg, transparent);
+        background: var(--ui-content-bg, transparent);
     }
     .ui-sidebar[data-mobile='false'].ui-sidebar-variant-floating:not([data-collapsible='none'])
         .ui-sidebar-inner {
-        --tw-ring-color: var(--ui-sidebar-inner-ring, var(--color-sidebar-border));
+        --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-border));
         @apply rounded-ui-lg ring-1 shadow-sm;
     }
     .ui-sidebar.ui-sidebar-variant-inset {
-        background: var(--ui-sidebar-bg, var(--color-sidebar));
+        background: var(--ui-bg, var(--color-sidebar));
     }
     .ui-sidebar[data-mobile='false'].ui-sidebar-variant-inset > .ui-sidebar-inset {
         @apply m-2 ml-0 rounded-ui-xl shadow-sm;
@@ -2793,13 +2590,13 @@
         gap: 0.5rem;
     }
     .ui-sidebar-menu-link[aria-current='page'] {
-        background: var(--ui-sidebar-menu-link-bg, var(--color-sidebar-accent));
-        color: var(--ui-sidebar-menu-link-fg, var(--color-sidebar-accent-foreground));
+        background: var(--ui-part-bg, var(--color-sidebar-accent));
+        color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         font-weight: 500;
     }
     .ui-sidebar-menu-button[data-active='true'] {
-        background: var(--ui-sidebar-menu-button-active-bg, var(--color-sidebar-accent));
-        color: var(--ui-sidebar-menu-button-active-fg, var(--color-sidebar-accent-foreground));
+        background: var(--ui-part-bg, var(--color-sidebar-accent));
+        color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         font-weight: 500;
     }
     .ui-sidebar[data-mobile='false'][data-state='collapsed'][data-collapsible='icon']
@@ -2820,7 +2617,7 @@
         border-radius: 0;
         font-size: 0.875rem;
         line-height: 1.25rem;
-        box-shadow: var(--ui-sidebar-content-shadow, var(--shadow-lg));
+        box-shadow: var(--ui-part-shadow, var(--shadow-lg));
     }
     .ui-sidebar[data-mobile='true'][data-side='right'] > .ui-sidebar-content {
         inset: 0 0 0 auto;
@@ -2866,37 +2663,37 @@
 
 @layer components {
     .ui-toggle-control {
-        border-color: var(--ui-toggle-control-border, transparent);
+        border-color: var(--ui-control-border, transparent);
         @apply inline-flex items-center justify-center whitespace-nowrap gap-1 rounded-ui-lg border text-sm font-medium transition-all;
         @variant hover {
-            background-color: var(--ui-toggle-control-hover-bg, var(--color-muted));
-            color: var(--ui-toggle-control-hover-fg, var(--color-foreground));
+            background-color: var(--ui-control-hover-bg, var(--color-muted));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-toggle.ui-toggle-variant-default > span {
-        background-color: var(--ui-toggle-bg, transparent);
+        background-color: var(--ui-bg, transparent);
         @variant hover {
-            background-color: var(--ui-toggle-hover-bg, var(--color-muted));
+            background-color: var(--ui-hover-bg, var(--color-muted));
         }
     }
     .ui-toggle-group-item.ui-toggle-group-item-variant-default > span {
-        background-color: var(--ui-toggle-group-item-bg, transparent);
+        background-color: var(--ui-item-bg, transparent);
         @variant hover {
-            background-color: var(--ui-toggle-group-item-hover-bg, var(--color-muted));
+            background-color: var(--ui-item-hover-bg, var(--color-muted));
         }
     }
     .ui-toggle.ui-toggle-variant-outline > span {
-        border-color: var(--ui-toggle-border, var(--color-input));
-        background-color: var(--ui-toggle-bg, transparent);
+        border-color: var(--ui-border, var(--color-input));
+        background-color: var(--ui-bg, transparent);
         @variant hover {
-            background-color: var(--ui-toggle-hover-bg, var(--color-muted));
+            background-color: var(--ui-hover-bg, var(--color-muted));
         }
     }
     .ui-toggle-group-item.ui-toggle-group-item-variant-outline > span {
-        border-color: var(--ui-toggle-group-item-border, var(--color-input));
-        background-color: var(--ui-toggle-group-item-bg, transparent);
+        border-color: var(--ui-item-border, var(--color-input));
+        background-color: var(--ui-item-bg, transparent);
         @variant hover {
-            background-color: var(--ui-toggle-group-item-hover-bg, var(--color-muted));
+            background-color: var(--ui-item-hover-bg, var(--color-muted));
         }
     }
     :is(.ui-toggle, .ui-toggle-group-item)[data-size='default'] > span {
@@ -2912,24 +2709,24 @@
         @apply h-9 min-w-9 px-2.5;
     }
     .ui-toggle:has(:checked) > span {
-        background: var(--ui-toggle-checked-bg, var(--color-muted));
+        background: var(--ui-checked-bg, var(--color-muted));
     }
     .ui-toggle-group-item:has(:checked) > span {
-        background: var(--ui-toggle-group-item-checked-bg, var(--color-muted));
+        background: var(--ui-item-checked-bg, var(--color-muted));
     }
     .ui-toggle:has(:focus-visible) > span {
         outline: 0;
-        border-color: var(--ui-toggle-focus-border, var(--color-ring));
+        border-color: var(--ui-focus-border, var(--color-ring));
         box-shadow: var(
-            --ui-toggle-focus-shadow,
+            --ui-focus-shadow,
             0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
         );
     }
     .ui-toggle-group-item:has(:focus-visible) > span {
         outline: 0;
-        border-color: var(--ui-toggle-group-item-focus-border, var(--color-ring));
+        border-color: var(--ui-item-focus-border, var(--color-ring));
         box-shadow: var(
-            --ui-toggle-group-item-focus-shadow,
+            --ui-part-shadow,
             0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
         );
     }
@@ -2978,15 +2775,12 @@
         width: fit-content;
     }
     .ui-tabs-tab {
-        border-color: var(--ui-tabs-tab-border, transparent);
+        border-color: var(--ui-part-border, transparent);
         @apply inline-flex items-center justify-center gap-1.5 rounded-ui-md border px-1.5 py-0.5 text-sm font-medium disabled:opacity-50 disabled:pointer-events-none focus-visible:ring-3 focus-visible:outline-1;
         @variant focus-visible {
-            border-color: var(--ui-tabs-tab-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-tabs-tab-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
-            outline-color: var(--ui-tabs-tab-focus-outline, var(--color-ring));
+            border-color: var(--ui-tab-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-tab-focus-ring, var(--ui-ring-50));
+            outline-color: var(--ui-tab-focus-outline, var(--color-ring));
         }
     }
     .ui-tabs-content {
@@ -2999,39 +2793,29 @@
         @apply min-w-36 rounded-ui-lg border-0 shadow-md ring-1;
         padding: 0;
     }
-    .ui-select-content {
-        background-color: var(--ui-select-panel-bg, var(--color-popover));
-        color: var(--ui-select-panel-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-select-panel-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
-    }
+    .ui-select-content,
     .ui-combobox-content {
-        background-color: var(--ui-combobox-content-bg, var(--color-popover));
-        color: var(--ui-combobox-content-fg, var(--color-popover-foreground));
-        --tw-ring-color: var(
-            --ui-combobox-content-ring,
-            color-mix(in oklab, var(--color-foreground) 10%, transparent)
-        );
+        background-color: var(--ui-panel-bg, var(--color-popover));
+        color: var(--ui-panel-fg, var(--color-popover-foreground));
+        --tw-ring-color: var(--ui-panel-ring, var(--ui-foreground-10));
     }
     .ui-select-group {
         padding: 0.25rem;
         scroll-margin-block: 0.25rem;
     }
     .ui-select-separator {
-        background-color: var(--ui-select-separator-bg, var(--color-border));
+        background-color: var(--ui-separator-bg, var(--color-border));
         @apply -mx-1 my-1 h-px pointer-events-none;
     }
     :where(.ui-select-option[aria-selected='true']) {
-        background-color: var(--ui-select-option-selected-bg, transparent);
-        color: var(--ui-select-option-selected-fg, inherit);
+        background-color: var(--ui-option-selected-bg, transparent);
+        color: var(--ui-option-selected-fg, inherit);
     }
     .ui-select-option {
         @apply relative gap-1.5 rounded-ui-md py-1 pr-8 pl-1.5 text-sm;
     }
     .ui-select-control[data-placeholder] {
-        color: var(--ui-select-trigger-placeholder-fg, var(--color-muted-foreground));
+        color: var(--ui-trigger-placeholder-fg, var(--color-muted-foreground));
     }
     .ui-select-option > .ui-option-text {
         display: flex;
@@ -3059,27 +2843,21 @@
     }
     .ui-select-option:is(:hover, :focus),
     .ui-select-option:is(:hover, :focus) * {
-        color: var(--ui-select-option-focus-fg, var(--color-accent-foreground));
+        color: var(--ui-option-focus-fg, var(--color-accent-foreground));
     }
     .ui-combobox-content .ui-select-option[data-highlighted] {
-        background: var(--ui-select-option-highlighted-bg, var(--color-accent));
+        background: var(--ui-option-highlighted-bg, var(--color-accent));
     }
     .ui-combobox-content .ui-select-option[data-highlighted],
     .ui-combobox-content .ui-select-option[data-highlighted] * {
-        color: var(--ui-select-option-highlighted-fg, var(--color-accent-foreground));
+        color: var(--ui-option-highlighted-fg, var(--color-accent-foreground));
     }
     .ui-combobox-content {
         --ui-list-max-height: 15.75rem;
     }
     .ui-combobox-content > .ui-combobox-control {
-        border-color: var(
-            --ui-combobox-control-border,
-            color-mix(in oklab, var(--color-input) 30%, transparent)
-        );
-        background-color: var(
-            --ui-combobox-control-bg,
-            color-mix(in oklab, var(--color-input) 30%, transparent)
-        );
+        border-color: var(--ui-control-border, var(--ui-input-30));
+        background-color: var(--ui-part-bg, var(--ui-input-30));
         @apply m-1 mb-0 h-8 shrink-0 shadow-none;
         width: auto;
     }
@@ -3100,8 +2878,8 @@
         @apply -mx-1 my-1 h-px;
     }
     .ui-combobox-chip {
-        background-color: var(--ui-combobox-chip-bg, var(--color-muted));
-        color: var(--ui-combobox-chip-fg, var(--color-foreground));
+        background-color: var(--ui-part-bg, var(--color-muted));
+        color: var(--ui-part-fg, var(--color-foreground));
         @apply flex h-[21px] w-fit items-center justify-center gap-1 rounded-ui-sm px-1.5 text-xs font-medium whitespace-nowrap has-[.ui-combobox-chip-remove]:pr-0;
     }
     .ui-combobox-chip-remove {
@@ -3124,34 +2902,22 @@
         letter-spacing: normal;
     }
     .ui-input-otp-slot {
-        border-color: var(--ui-input-otp-slot-border, var(--color-input));
-        background-color: var(--ui-input-otp-slot-bg, transparent);
+        border-color: var(--ui-part-border, var(--color-input));
+        background-color: var(--ui-slot-bg, transparent);
         @apply text-center text-sm transition-colors focus-visible:ring-3 focus-visible:outline-none;
         @variant ui-dark {
-            background-color: var(
-                --ui-input-otp-slot-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-slot-bg, var(--ui-input-30));
         }
         @variant focus-visible {
-            border-color: var(--ui-input-otp-slot-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-input-otp-slot-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
         @variant aria-invalid {
-            border-color: var(--ui-input-otp-slot-invalid-border, var(--color-destructive));
-            --tw-ring-color: var(
-                --ui-input-otp-slot-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-slot-invalid-ring, var(--ui-destructive-20));
         }
         @variant ui-dark:aria-invalid {
-            --tw-ring-color: var(
-                --ui-input-otp-slot-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            --tw-ring-color: var(--ui-slot-invalid-ring, var(--ui-destructive-40));
         }
         position: relative;
         width: 2rem;
@@ -3161,7 +2927,7 @@
         border-width: 1px 1px 1px 0;
         margin-left: 0;
         border-radius: 0;
-        caret-color: var(--ui-input-otp-slot-caret, transparent);
+        caret-color: var(--ui-part-caret, transparent);
     }
     .ui-input-otp-cell {
         position: relative;
@@ -3181,15 +2947,15 @@
         left: 50%;
         width: 1px;
         height: 1rem;
-        background: var(--ui-input-otp-caret-bg, var(--color-foreground));
+        background: var(--ui-part-bg, var(--color-foreground));
         animation: ui-otp-caret 1s ease-out infinite;
     }
     .ui-input-otp-cell:focus-within:has(input:placeholder-shown) .ui-input-otp-caret {
         display: block;
     }
     .ui-input-otp-slot::selection {
-        background: var(--ui-input-otp-slot-bg, transparent);
-        color: var(--ui-input-otp-slot-fg, inherit);
+        background: var(--ui-slot-bg, transparent);
+        color: var(--ui-part-fg, inherit);
     }
     .ui-input-otp-slot:focus {
         z-index: 1;
@@ -3203,17 +2969,11 @@
     .ui-input-otp-group {
         @apply flex items-center rounded-ui-lg has-aria-invalid:ring-3;
         @variant has-aria-invalid {
-            --tw-ring-color: var(
-                --ui-input-otp-group-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 20%, transparent)
-            );
-            border-color: var(--ui-input-otp-group-invalid-border, var(--color-destructive));
+            --tw-ring-color: var(--ui-group-invalid-ring, var(--ui-destructive-20));
+            border-color: var(--ui-part-border, var(--color-destructive));
         }
         @variant ui-dark:has-aria-invalid {
-            --tw-ring-color: var(
-                --ui-input-otp-group-invalid-ring,
-                color-mix(in oklab, var(--color-destructive) 40%, transparent)
-            );
+            --tw-ring-color: var(--ui-group-invalid-ring, var(--ui-destructive-40));
         }
     }
     .ui-input-otp-slot[data-start='true'] {
@@ -3250,9 +3010,9 @@
         position: relative;
     }
     .ui-avatar-badge {
-        background-color: var(--ui-avatar-badge-bg, var(--color-primary));
-        color: var(--ui-avatar-badge-fg, var(--color-primary-foreground));
-        --tw-ring-color: var(--ui-avatar-badge-ring, var(--color-background));
+        background-color: var(--ui-part-bg, var(--color-primary));
+        color: var(--ui-part-fg, var(--color-primary-foreground));
+        --tw-ring-color: var(--ui-part-ring, var(--color-background));
         @apply absolute bottom-0 right-0 z-10 inline-flex size-2.5 items-center justify-center rounded-full ring-2 bg-blend-color select-none;
     }
     .ui-avatar[data-size='sm'] .ui-avatar-badge {
@@ -3271,9 +3031,9 @@
         height: 0.5rem;
     }
     .ui-avatar-group-count {
-        background-color: var(--ui-avatar-group-count-bg, var(--color-muted));
-        color: var(--ui-avatar-group-count-fg, var(--color-muted-foreground));
-        --tw-ring-color: var(--ui-avatar-group-count-ring, var(--color-background));
+        background-color: var(--ui-part-bg, var(--color-muted));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
+        --tw-ring-color: var(--ui-group-count-ring, var(--color-background));
         @apply relative flex size-8 shrink-0 items-center justify-center rounded-full text-sm ring-2;
     }
     .ui-avatar-group:has([data-size='lg']) .ui-avatar-group-count {
@@ -3315,7 +3075,7 @@
         width: 6rem;
         height: 0.25rem;
         border-radius: 999px;
-        background: var(--ui-drawer-handle-after-bg, var(--color-muted));
+        background: var(--ui-part-bg, var(--color-muted));
     }
     .ui-drawer-handle:active {
         cursor: grabbing;
@@ -3358,16 +3118,25 @@
     .ui-marker-content {
         @apply group-[.ui-marker-variant-separator]/marker:flex-none group-[.ui-marker-variant-separator]/marker:text-center *:[a]:underline *:[a]:underline-offset-3;
         @variant *:[a]:hover {
-            color: var(--ui-marker-content-hover-fg, var(--color-foreground));
+            color: var(--ui-content-hover-fg, var(--color-foreground));
         }
     }
     .ui-bubble-group {
         @apply gap-2;
     }
+    .ui-bubble-reactions,
+    .ui-field-title,
+    .ui-field-separator,
+    .ui-sidebar-group-content,
+    .ui-code-block-title,
+    .ui-progress-value,
+    .ui-trace-line {
+        @apply text-sm;
+    }
     .ui-bubble-reactions {
-        --tw-ring-color: var(--ui-bubble-reactions-ring, var(--color-card));
-        background-color: var(--ui-bubble-reactions-bg, var(--color-muted));
-        @apply rounded-full ring-3 shrink-0 gap-1 px-1.5 py-0.5 has-[button]:p-0 text-sm;
+        --tw-ring-color: var(--ui-part-ring, var(--color-card));
+        background-color: var(--ui-part-bg, var(--color-muted));
+        @apply rounded-full ring-3 shrink-0 gap-1 px-1.5 py-0.5 has-[button]:p-0;
     }
     .ui-attachment-group {
         @apply gap-3 scroll-px-1 py-1;
@@ -3375,12 +3144,18 @@
     .ui-message-group {
         @apply gap-2;
     }
+    .ui-message-header,
+    .ui-field-title,
+    .ui-sidebar-menu-badge,
+    .ui-code-block-title {
+        @apply font-medium;
+    }
     .ui-message-header {
-        color: var(--ui-message-header-fg, var(--color-muted-foreground));
-        @apply text-xs font-medium px-3 group-has-[.ui-bubble-variant-ghost]/message:px-0;
+        color: var(--ui-header-fg, var(--color-muted-foreground));
+        @apply text-xs px-3 group-has-[.ui-bubble-variant-ghost]/message:px-0;
     }
     .ui-field-title {
-        @apply gap-2 text-sm font-medium group-data-[disabled=true]/field:opacity-50;
+        @apply gap-2 group-data-[disabled=true]/field:opacity-50;
     }
     .ui-field[data-orientation='horizontal']:has(> .ui-field-content)
         > :is(.ui-checkbox, .ui-radio-group-item) {
@@ -3393,109 +3168,102 @@
         }
     }
     .ui-field-separator {
-        @apply -my-2 h-5 text-sm group-[.ui-field-group-variant-outline]/field-group:-mb-2;
+        @apply -my-2 h-5 group-[.ui-field-group-variant-outline]/field-group:-mb-2;
     }
     .ui-field-separator-content {
-        color: var(--ui-field-separator-content-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply px-2;
     }
     .ui-item-separator {
         @apply my-2;
     }
     .ui-button-group-separator {
-        background-color: var(--ui-button-group-separator-bg, var(--color-input));
+        background-color: var(--ui-separator-bg, var(--color-input));
     }
     .ui-alert-dialog-media {
-        background-color: var(--ui-alert-dialog-media-bg, var(--color-muted));
+        background-color: var(--ui-media-bg, var(--color-muted));
         @apply mb-2 inline-flex size-10 items-center justify-center rounded-ui-md sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-6;
     }
-    .ui-sidebar-group-content {
-        @apply text-sm;
-    }
     .ui-sidebar-menu-sub {
-        border-color: var(--ui-sidebar-menu-sub-border, var(--color-sidebar-border));
+        border-color: var(--ui-part-border, var(--color-sidebar-border));
         @apply mx-3.5 translate-x-px gap-1 border-l px-2.5 py-0.5 group-data-[collapsible=icon]:hidden;
     }
     .ui-sidebar-menu-sub-button {
-        color: var(--ui-sidebar-menu-sub-button-fg, var(--color-sidebar-foreground));
-        --tw-ring-color: var(--ui-sidebar-menu-sub-button-ring, var(--color-sidebar-ring));
+        color: var(--ui-menu-sub-button-fg, var(--color-sidebar-foreground));
+        --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-ring));
         @apply h-7 gap-2 rounded-ui-md px-2 focus-visible:ring-2 data-[size=md]:text-sm data-[size=sm]:text-xs [&>svg]:size-4;
         @variant hover {
-            background-color: var(
-                --ui-sidebar-menu-sub-button-hover-bg,
-                var(--color-sidebar-accent)
-            );
-            color: var(
-                --ui-sidebar-menu-sub-button-hover-fg,
-                var(--color-sidebar-accent-foreground)
-            );
+            background-color: var(--ui-part-bg, var(--color-sidebar-accent));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
         @variant active {
-            background-color: var(--ui-sidebar-menu-sub-button-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-sub-button-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
         }
         @variant [&>svg] {
-            color: var(--ui-sidebar-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
+            color: var(--ui-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
         }
         @variant ui-active {
-            background-color: var(--ui-sidebar-menu-sub-button-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-menu-sub-button-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-sub-button-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-menu-badge {
-        color: var(--ui-sidebar-menu-badge-fg, var(--color-sidebar-foreground));
-        @apply pointer-events-none absolute right-1 flex h-5 min-w-5 rounded-ui-md px-1 text-xs font-medium peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1;
+        color: var(--ui-part-fg, var(--color-sidebar-foreground));
+        @apply pointer-events-none absolute right-1 flex h-5 min-w-5 rounded-ui-md px-1 text-xs peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1;
         @variant peer-hover/menu-button {
-            color: var(--ui-sidebar-menu-badge-hover-fg, var(--color-sidebar-accent-foreground));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
         @variant peer-data-active/menu-button {
-            color: var(--ui-sidebar-menu-badge-active-fg, var(--color-sidebar-accent-foreground));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
     }
+    .ui-sidebar-menu-action,
+    .ui-sidebar-group-action {
+        @apply absolute w-5 rounded-ui-md p-0 focus-visible:ring-2 [&>svg]:size-4;
+        color: var(--ui-part-fg, var(--color-sidebar-foreground));
+        --tw-ring-color: var(--ui-part-ring, var(--color-sidebar-ring));
+    }
     .ui-sidebar-menu-action {
-        color: var(--ui-sidebar-menu-action-fg, var(--color-sidebar-foreground));
-        --tw-ring-color: var(--ui-sidebar-menu-action-ring, var(--color-sidebar-ring));
-        @apply absolute top-1.5 right-1 aspect-square w-5 rounded-ui-md p-0 peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 focus-visible:ring-2 [&>svg]:size-4;
+        @apply top-1.5 right-1 aspect-square peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1;
         @variant hover {
-            background-color: var(--ui-sidebar-menu-action-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-menu-action-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-part-bg, var(--color-sidebar-accent));
+            color: var(--ui-menu-action-hover-fg, var(--color-sidebar-accent-foreground));
         }
         @variant peer-hover/menu-button {
-            color: var(--ui-sidebar-menu-action-hover-fg, var(--color-sidebar-accent-foreground));
+            color: var(--ui-menu-action-hover-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-group-action {
-        color: var(--ui-sidebar-group-action-fg, var(--color-sidebar-foreground));
-        --tw-ring-color: var(--ui-sidebar-group-action-ring, var(--color-sidebar-ring));
-        @apply absolute top-3.5 right-3 w-5 rounded-ui-md p-0 focus-visible:ring-2 [&>svg]:size-4;
+        @apply top-3.5 right-3;
         @variant hover {
-            background-color: var(--ui-sidebar-group-action-hover-bg, var(--color-sidebar-accent));
-            color: var(--ui-sidebar-group-action-hover-fg, var(--color-sidebar-accent-foreground));
+            background-color: var(--ui-part-bg, var(--color-sidebar-accent));
+            color: var(--ui-part-fg, var(--color-sidebar-accent-foreground));
         }
     }
     .ui-sidebar-separator {
-        background-color: var(--ui-sidebar-separator-bg, var(--color-sidebar-border));
+        background-color: var(--ui-separator-bg, var(--color-sidebar-border));
         @apply mx-2;
     }
     .ui-sidebar-input {
-        background-color: var(--ui-sidebar-input-bg, var(--color-background));
+        background-color: var(--ui-input-bg, var(--color-background));
         @apply h-8 w-full shadow-none;
     }
     .ui-message-scroller-content {
         @apply gap-6;
     }
     .ui-code-block-header {
-        color: var(--ui-code-block-header-fg, var(--color-muted-foreground));
+        color: var(--ui-header-fg, var(--color-muted-foreground));
         @apply gap-2 px-3 pt-3 group-data-[size=sm]/code-block:px-2.5 group-data-[size=sm]/code-block:pt-2.5;
         @variant group-[.ui-code-block-variant-destructive]/code-block {
-            color: var(--ui-code-block-header-fg, var(--color-destructive));
+            color: var(--ui-header-fg, var(--color-destructive));
         }
     }
     .ui-code-block-title {
-        color: var(--ui-code-block-title-fg, var(--color-foreground));
-        @apply font-sans text-sm font-medium *:[svg]:me-1.5 [&_svg:not([class*='size-'])]:size-3.5 group-data-[size=sm]/code-block:text-xs;
+        color: var(--ui-title-fg, var(--color-foreground));
+        @apply font-sans *:[svg]:me-1.5 [&_svg:not([class*='size-'])]:size-3.5 group-data-[size=sm]/code-block:text-xs;
         @variant group-[.ui-code-block-variant-destructive]/code-block {
-            color: var(--ui-code-block-title-fg, var(--color-destructive));
+            color: var(--ui-title-fg, var(--color-destructive));
         }
     }
     .ui-code-block-actions {
@@ -3503,42 +3271,39 @@
         @apply [.ui-code-block>&]:absolute [.ui-code-block>&]:z-10 [.ui-code-block>&]:opacity-0 [.ui-code-block>&]:transition-opacity [.ui-code-block>&]:group-focus-within/code-block:opacity-100 [.ui-code-block>&]:group-hover/code-block:opacity-100 [.ui-code-block>&]:pointer-coarse:opacity-100;
         @apply -my-1 -me-1.5 gap-1 [.ui-code-block>&]:m-0 [.ui-code-block>&]:top-2 [.ui-code-block>&]:end-2 group-data-[size=sm]/code-block:[.ui-code-block>&]:top-1.5 group-data-[size=sm]/code-block:[.ui-code-block>&]:end-1.5 [.ui-code-block>&]:*:[button]:ring-1;
         @variant [.ui-code-block>&]:*:[button] {
-            background-color: var(--ui-code-block-actions-bg, var(--color-background));
-            --tw-ring-color: var(
-                --ui-code-block-actions-ring,
-                color-mix(in oklab, var(--color-foreground) 10%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--color-background));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-foreground-10));
         }
     }
     .ui-code-block-footer {
-        color: var(--ui-code-block-footer-fg, var(--color-muted-foreground));
+        color: var(--ui-footer-fg, var(--color-muted-foreground));
         @apply gap-2 px-3 pb-3 group-data-[size=sm]/code-block:px-2.5 group-data-[size=sm]/code-block:pb-2.5;
     }
     .ui-code-block-line {
         @apply -mx-3 px-3 in-data-numbered:gap-x-3 before:min-w-6 before:text-end after:start-1 group-data-[size=sm]/code-block:-mx-2.5 group-data-[size=sm]/code-block:px-2.5;
         @variant before {
-            color: var(--ui-code-block-line-fg, var(--color-muted-foreground));
+            color: var(--ui-line-fg, var(--color-muted-foreground));
         }
         @variant after {
-            color: var(--ui-code-block-line-fg, var(--color-muted-foreground));
+            color: var(--ui-line-fg, var(--color-muted-foreground));
         }
     }
     .ui-progress-value {
-        color: var(--ui-progress-value-fg, var(--color-muted-foreground));
-        @apply ml-auto text-sm tabular-nums;
+        color: var(--ui-value-fg, var(--color-muted-foreground));
+        @apply ml-auto tabular-nums;
     }
 
     .ui-avatar {
         overflow: visible;
     }
     .ui-avatar-group > .ui-avatar {
-        box-shadow: var(--ui-avatar-shadow, 0 0 0 2px var(--color-background));
+        box-shadow: var(--ui-shadow, 0 0 0 2px var(--color-background));
     }
     .ui-marker {
         display: flex;
         width: 100%;
         align-items: center;
-        background: var(--ui-marker-bg, transparent);
+        background: var(--ui-bg, transparent);
         border-radius: 0;
     }
     .ui-marker.ui-marker-variant-separator::before,
@@ -3613,26 +3378,20 @@
     .ui-trace > [data-ui-overlay] > [data-ui-trigger] > :has(> .ui-trace-line) {
         @apply flex w-fit max-w-full min-w-0 rounded-ui-md text-left outline-none focus-visible:ring-3;
         @variant focus-visible {
-            --tw-ring-color: var(
-                --ui-trace-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
     }
     .ui-trace-collapsible-button {
         @apply flex w-fit max-w-full min-w-0 rounded-ui-md text-left outline-none focus-visible:ring-3;
         @variant focus-visible {
-            --tw-ring-color: var(
-                --ui-trace-collapsible-button-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
     }
     .ui-trace-line {
-        color: var(--ui-trace-line-fg, var(--color-muted-foreground));
-        @apply flex w-fit max-w-full min-w-0 items-center gap-2 text-sm transition-colors in-[a,button]:cursor-pointer;
+        color: var(--ui-line-fg, var(--color-muted-foreground));
+        @apply flex w-fit max-w-full min-w-0 items-center gap-2 transition-colors in-[a,button]:cursor-pointer;
         @variant in-[a:hover,button:hover] {
-            color: var(--ui-trace-line-hover-fg, var(--color-foreground));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-trace-line[data-status='pending'] {
@@ -3649,23 +3408,23 @@
     }
     .ui-trace-description {
         color: var(
-            --ui-trace-description-fg,
+            --ui-description-fg,
             color-mix(in oklab, var(--color-muted-foreground) 70%, transparent)
         );
         @apply shrink-0 tabular-nums;
     }
     .ui-trace-collapsible-button {
-        color: var(--ui-trace-collapsible-button-fg, var(--color-muted-foreground));
+        color: var(--ui-collapsible-button-fg, var(--color-muted-foreground));
         @apply cursor-pointer items-center gap-1 transition-colors;
         @variant hover {
-            color: var(--ui-trace-collapsible-button-hover-fg, var(--color-foreground));
+            color: var(--ui-part-fg, var(--color-foreground));
         }
     }
     .ui-trace-line[data-status='error'] {
-        color: var(--ui-trace-line-fg, var(--color-destructive));
+        color: var(--ui-line-fg, var(--color-destructive));
     }
     .ui-trace-collapsible-button:has([data-status='error']) {
-        color: var(--ui-trace-collapsible-button-fg, var(--color-destructive));
+        color: var(--ui-collapsible-button-fg, var(--color-destructive));
     }
     .ui-trace-collapsible-button > .ui-trace-icon:last-child {
         @apply transition-transform;
@@ -3677,7 +3436,7 @@
         @apply min-w-0 overflow-hidden;
     }
     .ui-trace-collapsible-content-inner {
-        color: var(--ui-trace-collapsible-content-inner-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply mt-2 mb-1 ml-[calc(--spacing(2)-1px)] min-w-0 border-l pr-1 pl-4 leading-relaxed wrap-break-word;
     }
     .ui-field-separator {
@@ -3689,7 +3448,7 @@
         display: block;
         width: fit-content;
         margin-inline: auto;
-        background: var(--ui-field-separator-content-bg, var(--color-background));
+        background: var(--ui-separator-content-bg, var(--color-background));
     }
     .ui-sidebar-group,
     .ui-sidebar-menu-item {
@@ -3769,7 +3528,7 @@
     }
     .ui-message-scroller-button {
         inset-inline-start: 50%;
-        background: var(--ui-message-scroller-button-bg, transparent);
+        background: var(--ui-button-bg, transparent);
     }
     .ui-message-scroller-button[data-direction='start'] {
         top: 1rem;
@@ -3783,21 +3542,15 @@
     .ui-combobox-multiple {
         @apply h-auto min-h-8 flex-wrap gap-1 px-2.5 py-1 has-[.ui-combobox-chip]:px-1 focus-within:ring-3;
         @variant focus-within {
-            border-color: var(--ui-combobox-multiple-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-combobox-multiple-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
     }
     .ui-combobox-multiple:has(:disabled) {
-        background-color: var(--ui-combobox-multiple-disabled-bg, transparent);
+        background-color: var(--ui-multiple-disabled-bg, transparent);
         @apply opacity-100;
         @variant ui-dark {
-            background-color: var(
-                --ui-combobox-multiple-disabled-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-multiple-disabled-bg, var(--ui-input-30));
         }
     }
     .ui-combobox-multiple [data-ui-trigger] > input {
@@ -3808,10 +3561,7 @@
     }
     .ui-combobox-multiple:has([aria-invalid='true']) {
         @variant ui-dark {
-            border-color: var(
-                --ui-combobox-multiple-invalid-border,
-                color-mix(in oklab, var(--color-destructive) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--ui-destructive-50));
         }
     }
 }
@@ -3824,15 +3574,15 @@
         line-height: 1rem;
     }
     .ui-command-group {
-        color: var(--ui-command-group-fg, var(--color-foreground));
+        color: var(--ui-part-fg, var(--color-foreground));
         @apply overflow-hidden p-1;
     }
     .ui-command-group-heading {
-        color: var(--ui-command-group-heading-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply px-2 py-1.5 text-xs font-medium;
     }
     .ui-command-separator {
-        background-color: var(--ui-command-separator-bg, var(--color-border));
+        background-color: var(--ui-separator-bg, var(--color-border));
         @apply h-px;
     }
     .ui-option-shortcut {
@@ -3853,7 +3603,7 @@
     }
     .ui-questionnaire-progress {
         display: block;
-        color: var(--ui-questionnaire-progress-fg, var(--color-muted-foreground));
+        color: var(--ui-progress-fg, var(--color-muted-foreground));
         @apply min-h-[1lh] w-fit min-w-[14ch] text-xs font-medium tabular-nums;
     }
     .ui-questionnaire-item {
@@ -3863,7 +3613,7 @@
         @apply text-base leading-snug font-medium [&:not(:has(~.ui-questionnaire-description))]:mb-4;
     }
     .ui-questionnaire-description {
-        color: var(--ui-questionnaire-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
         @apply text-sm;
     }
     .ui-questionnaire-description:empty {
@@ -3872,38 +3622,36 @@
     .ui-questionnaire-choices {
         @apply grid min-w-0 gap-2;
     }
+    .ui-questionnaire-choice,
+    .ui-questionnaire-input {
+        @apply min-h-11 min-w-0 rounded-ui-lg border;
+        border-color: var(--ui-part-border, var(--color-input));
+    }
     .ui-questionnaire-choice {
-        border-color: var(--ui-questionnaire-choice-border, var(--color-input));
-        background-color: var(--ui-questionnaire-choice-bg, transparent);
-        @apply relative flex min-h-11 min-w-0 cursor-pointer items-start gap-2.5 rounded-ui-lg border px-3 py-2.5 text-start text-sm transition-colors select-none has-[:focus-visible]:ring-3;
+        background-color: var(--ui-choice-bg, transparent);
+        @apply relative flex cursor-pointer items-start gap-2.5 px-3 py-2.5 text-start text-sm transition-colors select-none has-[:focus-visible]:ring-3;
         @variant hover {
-            background-color: var(
-                --ui-questionnaire-choice-hover-bg,
-                color-mix(in oklab, var(--color-muted) 50%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-muted-50));
         }
         @variant ui-dark {
             background-color: var(
-                --ui-questionnaire-choice-bg,
+                --ui-choice-bg,
                 color-mix(in oklab, var(--color-input) 20%, transparent)
             );
         }
         @variant has-[:checked] {
             border-color: var(
-                --ui-questionnaire-choice-checked-border,
+                --ui-part-border,
                 color-mix(in oklab, var(--color-primary) 40%, transparent)
             );
-            background-color: var(--ui-questionnaire-choice-checked-bg, var(--color-muted));
+            background-color: var(--ui-part-bg, var(--color-muted));
         }
         @variant has-[:focus-visible] {
-            border-color: var(--ui-questionnaire-choice-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-questionnaire-choice-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
         @variant has-[input[aria-invalid=true]] {
-            border-color: var(--ui-questionnaire-choice-invalid-border, var(--color-destructive));
+            border-color: var(--ui-part-border, var(--color-destructive));
         }
     }
     .ui-questionnaire-choice[data-disabled] {
@@ -3916,13 +3664,10 @@
         opacity: 0;
     }
     .ui-questionnaire-choice-indicator {
-        border-color: var(--ui-questionnaire-choice-indicator-border, var(--color-input));
+        border-color: var(--ui-part-border, var(--color-input));
         @apply pointer-events-none relative translate-y-[1.8px] flex size-4 shrink-0 items-center justify-center rounded-[4px] border;
         @variant ui-dark {
-            background-color: var(
-                --ui-questionnaire-choice-indicator-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-part-bg, var(--ui-input-30));
         }
     }
     .ui-questionnaire-choice-indicator > * {
@@ -3936,15 +3681,12 @@
         @apply rounded-full;
     }
     .ui-questionnaire-choice-input:checked + span {
-        border-color: var(--ui-questionnaire-choice-input-checked-border, var(--color-primary));
-        background-color: var(--ui-questionnaire-choice-input-checked-bg, var(--color-primary));
-        color: var(--ui-questionnaire-choice-input-checked-fg, var(--color-primary-foreground));
+        border-color: var(--ui-part-border, var(--color-primary));
+        background-color: var(--ui-choice-input-checked-bg, var(--color-primary));
+        color: var(--ui-part-fg, var(--color-primary-foreground));
     }
     .ui-questionnaire-choice-input[type='radio']:checked + span > span {
-        background-color: var(
-            --ui-questionnaire-choice-input-checked-bg,
-            var(--color-primary-foreground)
-        );
+        background-color: var(--ui-choice-input-checked-bg, var(--color-primary-foreground));
         @apply block size-2 rounded-full;
     }
     .ui-questionnaire-choice-input[type='checkbox']:checked + span > svg {
@@ -3955,41 +3697,34 @@
         overflow-wrap: anywhere;
     }
     .ui-questionnaire-choice-description {
-        color: var(--ui-questionnaire-choice-description-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
     }
     .ui-questionnaire-shortcut {
-        border-color: var(--ui-questionnaire-shortcut-border, var(--color-input));
-        background-color: var(--ui-questionnaire-shortcut-bg, var(--color-background));
-        color: var(--ui-questionnaire-shortcut-fg, var(--color-muted-foreground));
+        border-color: var(--ui-part-border, var(--color-input));
+        background-color: var(--ui-part-bg, var(--color-background));
+        color: var(--ui-shortcut-fg, var(--color-muted-foreground));
         @apply pointer-events-none ms-auto mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-ui-md border font-mono text-[0.625rem] leading-none font-medium;
     }
     .ui-questionnaire-input {
-        color: var(--ui-questionnaire-input-fg, inherit);
-        border-color: var(--ui-questionnaire-input-border, var(--color-input));
-        background-color: var(--ui-questionnaire-input-bg, transparent);
-        @apply h-8 min-h-11 w-full min-w-0 rounded-ui-lg border px-2.5 py-1 text-base outline-none focus-visible:ring-3 disabled:opacity-50 sm:min-h-0 md:text-sm;
+        color: var(--ui-part-fg, inherit);
+        background-color: var(--ui-input-bg, transparent);
+        @apply h-8 w-full px-2.5 py-1 text-base outline-none focus-visible:ring-3 disabled:opacity-50 sm:min-h-0 md:text-sm;
         @variant placeholder {
-            color: var(--ui-questionnaire-input-placeholder-fg, var(--color-muted-foreground));
+            color: var(--ui-part-fg, var(--color-muted-foreground));
         }
         @variant focus-visible {
-            border-color: var(--ui-questionnaire-input-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-questionnaire-input-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-part-border, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--ui-ring-50));
         }
         @variant aria-invalid {
-            border-color: var(--ui-questionnaire-input-invalid-border, var(--color-destructive));
+            border-color: var(--ui-part-border, var(--color-destructive));
         }
         @variant ui-dark {
-            background-color: var(
-                --ui-questionnaire-input-bg,
-                color-mix(in oklab, var(--color-input) 30%, transparent)
-            );
+            background-color: var(--ui-input-bg, var(--ui-input-30));
         }
     }
     .ui-questionnaire-error {
-        color: var(--ui-questionnaire-error-fg, var(--color-destructive));
+        color: var(--ui-error-fg, var(--color-destructive));
         @apply mt-2 text-sm;
     }
     .ui-questionnaire-actions {
@@ -4028,6 +3763,6 @@
         padding-right: 0.375rem;
     }
     .ui-bubble.ui-bubble-variant-outline > .ui-bubble-content {
-        border-color: var(--ui-bubble-content-border, var(--color-border));
+        border-color: var(--ui-content-border, var(--color-border));
     }
 }

@@ -38,7 +38,7 @@ composer require esoboy/ui
 
 自行打包 Livewire 的项目将 `@uiScript` 放在应用的 JS 入口之前，沿用项目的 `@livewireScriptConfig` 和 `Livewire.start()`。从旧版升级时，将 `@include('ui::assets')` 替换为 `@uiScript`，添加上面的 CSS 导入并重新构建应用。
 
-两个脚本默认通过 Laravel 路由提供。页面首次渲染 `<x-ui::editor>` 时，组件会自动加载 `editor.js`。同页多个实例和 Livewire 后续挂载共享该脚本。需要将脚本交给静态服务器托管时执行以下命令。
+页面首次渲染 `<x-ui::editor>` 时自动加载 Tiptap 成品的 `editor.css` 和 `editor.js`。同页多个实例和 Livewire 后续挂载共享这两个资源。只读 `<x-ui::rich-text>` 的样式已包含在应用导入的组件 CSS 中。资源默认通过 Laravel 路由提供，交给静态服务器托管时执行以下命令。
 
 ```sh
 php artisan vendor:publish --tag=ui-assets --force
@@ -46,7 +46,7 @@ php artisan vendor:publish --tag=ui-assets --force
 
 静态副本位于 `public/vendor/esoboy/ui/`。升级后，过期副本会自动切换到当前包的路由，再次发布即可更新静态文件。
 
-从 `v1.0.3` 升级到 `v1.0.4` 时，原先通过 `color` 设置的自定义颜色需要移到组件的 `class`。例如，描边按钮可以用 `class="[--ui-button-border:var(--color-violet-600)]"` 设置边框色。依赖旧 DOM 选择器的样式可按[迁移对照](docs/component-color-design.md)更新。
+从 `v1.0.3` 升级到 `v1.0.4` 时，原先通过 `color` 设置的自定义颜色需要移到组件的 `class`。例如，描边按钮可以用 `class="[--ui-border:var(--color-violet-600)]"` 设置边框色。依赖旧 DOM 选择器的样式可按[迁移对照](docs/component-color-design.md)更新。
 
 从 `v1.0.2` 或更早版本升级到 `v1.0.3` 时，将 `<x-ui::image-preview>` 改为 `<x-ui::media-preview type="image">`，保留原来的 `src` 和 `alt`，并将 `<x-slot:trigger>` 的内容移入默认插槽。[媒体预览示例](docs/components.md#media-preview)
 
@@ -61,7 +61,7 @@ php artisan vendor:publish --tag=ui-assets --force
 ```blade
 <x-ui::button variant="outline" status="info">查看详情</x-ui::button>
 <x-ui::badge variant="secondary" status="neutral">草稿</x-ui::badge>
-<x-ui::progress :value="65" aria-label="完成度" class="[--ui-progress-fill:var(--color-success)]" />
+<x-ui::progress :value="65" aria-label="完成度" class="[--ui-fill:var(--color-success)]" />
 ```
 
 灰色沿用次要按钮的配色。`accent` 继续作为主题强调色，`error` 与 `destructive` 可分别定制。主题变量和新旧选择器的对照见[组件样式接口](docs/component-color-design.md)。

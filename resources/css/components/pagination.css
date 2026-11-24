@@ -6,7 +6,7 @@
         @apply flex items-center gap-2 text-sm;
     }
     .ui-pagination-jump > span {
-        color: var(--ui-pagination-jump-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply whitespace-nowrap;
     }
     .ui-pagination-jump > .ui-input-group {

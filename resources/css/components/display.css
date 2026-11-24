@@ -10,25 +10,23 @@
         line-height: 1.25;
     }
     .ui-card-description {
-        color: var(--ui-card-description-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
     .ui-statistic-description {
-        color: var(--ui-statistic-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
     .ui-badge.ui-badge-variant-outline {
-        background: var(--ui-badge-bg, transparent);
-        color: var(--ui-badge-fg, var(--ui-status-ink, inherit));
-        border-color: var(--ui-badge-border, var(--ui-status-ink, var(--color-border)));
+        background: var(--ui-bg, transparent);
+        color: var(--ui-fg, var(--ui-status-ink, inherit));
     }
     .ui-badge.ui-badge-variant-secondary {
-        background: var(--ui-badge-bg, var(--ui-status-soft-bg, var(--color-secondary)));
-        color: var(--ui-badge-fg, var(--ui-status-ink, inherit));
+        background: var(--ui-bg, var(--ui-status-soft-bg, var(--color-secondary)));
+        color: var(--ui-fg, var(--ui-status-ink, inherit));
     }
     .ui-badge.ui-badge-variant-destructive {
-        background: var(--ui-badge-bg, var(--ui-status-soft-bg, var(--color-destructive)));
-        color: var(--ui-badge-fg, var(--ui-status-ink, white));
+        background: var(--ui-bg, var(--ui-status-soft-bg, var(--color-destructive)));
+        color: var(--ui-fg, var(--ui-status-ink, white));
     }
     .ui-avatar-pending {
         position: absolute;
@@ -39,14 +37,11 @@
         display: flex;
         gap: 0.5rem;
     }
-    .ui-breadcrumb-page {
-        color: var(--ui-breadcrumb-page-fg, var(--color-foreground));
-    }
     .ui-statistic {
         @apply grid min-w-0 content-start gap-1;
     }
     .ui-statistic-value {
-        color: var(--ui-statistic-value-fg, var(--color-foreground));
+        color: var(--ui-value-fg, var(--color-foreground));
         @apply flex flex-wrap items-baseline gap-x-1.5 leading-tight;
         overflow-wrap: anywhere;
         font-size: 2rem;
@@ -55,7 +50,7 @@
         font-variant-numeric: tabular-nums;
     }
     .ui-statistic-label {
-        color: var(--ui-statistic-label-fg, var(--color-muted-foreground));
+        color: var(--ui-label-fg, var(--color-muted-foreground));
         font-size: 0.875rem;
     }
     :is(.ui-statistic-prefix, .ui-statistic-suffix) {
@@ -65,8 +60,8 @@
         @apply mt-1 flex items-center gap-1.5 text-xs;
     }
     .ui-description-list {
-        background-color: var(--ui-description-list-bg, var(--color-card));
-        color: var(--ui-description-list-fg, var(--color-card-foreground));
+        background-color: var(--ui-bg, var(--color-card));
+        color: var(--ui-fg, var(--color-card-foreground));
         @apply grid overflow-hidden rounded-ui-xl border text-sm;
         grid-template-columns: minmax(6rem, 1fr) minmax(0, 3fr);
     }
@@ -79,10 +74,10 @@
     }
     .ui-description-list-term {
         background-color: var(
-            --ui-description-list-term-bg,
+            --ui-part-bg,
             color-mix(in oklab, var(--color-muted) 40%, transparent)
         );
-        color: var(--ui-description-list-term-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply font-medium;
     }
     .ui-timeline {
@@ -96,33 +91,33 @@
     }
     .ui-timeline-item::before {
         content: '';
-        border-color: var(--ui-timeline-item-before-border, var(--color-muted-foreground));
-        background-color: var(--ui-timeline-item-before-bg, var(--color-background));
+        border-color: var(--ui-item-before-border, var(--color-muted-foreground));
+        background-color: var(--ui-item-before-bg, var(--color-background));
         @apply absolute start-0 top-1.5 size-2.5 rounded-full border-2;
     }
     .ui-timeline-item:not(:last-child)::after {
         content: '';
-        background-color: var(--ui-timeline-item-after-bg, var(--color-border));
+        background-color: var(--ui-item-after-bg, var(--color-border));
         @apply absolute start-[4.5px] top-4 -bottom-1.5 w-px;
     }
     .ui-timeline-item[aria-current]::before {
-        border-color: var(--ui-timeline-item-before-border, var(--color-primary));
-        background-color: var(--ui-timeline-item-before-bg, var(--color-primary));
+        border-color: var(--ui-item-before-border, var(--color-primary));
+        background-color: var(--ui-item-before-bg, var(--color-primary));
         --tw-ring-color: var(
-            --ui-timeline-item-before-ring,
+            --ui-part-ring,
             color-mix(in oklab, var(--color-primary) 10%, transparent)
         );
         @apply ring-3;
     }
     .ui-timeline-time {
-        color: var(--ui-timeline-time-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply text-xs leading-5 tabular-nums;
     }
     .ui-timeline-title {
         @apply text-sm font-medium leading-5;
     }
     .ui-timeline-content {
-        color: var(--ui-timeline-content-fg, var(--color-muted-foreground));
+        color: var(--ui-content-fg, var(--color-muted-foreground));
         @apply text-sm leading-relaxed;
         overflow-wrap: anywhere;
     }
@@ -133,36 +128,36 @@
         @apply relative flex min-w-0 flex-1 flex-col items-start gap-2;
     }
     .ui-steps-indicator {
-        background-color: var(--ui-steps-indicator-bg, var(--color-background));
-        color: var(--ui-steps-indicator-fg, var(--color-muted-foreground));
+        background-color: var(--ui-indicator-bg, var(--color-background));
+        color: var(--ui-indicator-fg, var(--color-muted-foreground));
         @apply inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium tabular-nums;
     }
     [data-state='current'] > .ui-steps-indicator {
-        border-color: var(--ui-steps-indicator-border, var(--color-primary));
-        background-color: var(--ui-steps-indicator-bg, var(--color-primary));
-        color: var(--ui-steps-indicator-fg, var(--color-primary-foreground));
+        border-color: var(--ui-indicator-border, var(--color-primary));
+        background-color: var(--ui-indicator-bg, var(--color-primary));
+        color: var(--ui-indicator-fg, var(--color-primary-foreground));
         --tw-ring-color: var(
-            --ui-steps-indicator-ring,
+            --ui-part-ring,
             color-mix(in oklab, var(--color-primary) 15%, transparent)
         );
         @apply ring-3;
     }
     [data-state='complete'] > .ui-steps-indicator {
-        border-color: var(--ui-steps-indicator-border, var(--color-primary));
-        background-color: var(--ui-steps-indicator-bg, var(--color-primary));
-        color: var(--ui-steps-indicator-fg, var(--color-primary-foreground));
+        border-color: var(--ui-indicator-border, var(--color-primary));
+        background-color: var(--ui-indicator-bg, var(--color-primary));
+        color: var(--ui-indicator-fg, var(--color-primary-foreground));
     }
     [data-state='error'] > .ui-steps-indicator {
-        border-color: var(--ui-steps-indicator-error-border, var(--color-destructive));
-        color: var(--ui-steps-indicator-error-fg, var(--color-destructive));
+        border-color: var(--ui-part-border, var(--color-destructive));
+        color: var(--ui-part-fg, var(--color-destructive));
     }
     .ui-steps-item:not(:last-child)::after {
         content: '';
-        background-color: var(--ui-steps-item-after-bg, var(--color-border));
+        background-color: var(--ui-item-after-bg, var(--color-border));
         @apply absolute top-3.5 end-0 start-9 h-px;
     }
     .ui-steps-item[data-state='complete']::after {
-        background-color: var(--ui-steps-item-after-bg, var(--color-primary));
+        background-color: var(--ui-item-after-bg, var(--color-primary));
     }
     .ui-steps-label {
         @apply grid min-w-0 gap-1;
@@ -172,10 +167,10 @@
         @apply text-sm font-medium leading-5;
     }
     [data-state='upcoming'] > .ui-steps-label {
-        color: var(--ui-steps-label-fg, var(--color-muted-foreground));
+        color: var(--ui-label-fg, var(--color-muted-foreground));
     }
     .ui-steps-description {
-        color: var(--ui-steps-description-fg, var(--color-muted-foreground));
+        color: var(--ui-description-fg, var(--color-muted-foreground));
     }
     .ui-steps-description {
         @apply text-xs leading-5;
@@ -197,7 +192,7 @@
             @apply grid-cols-1;
         }
         .ui-description-list > dt {
-            background-color: var(--ui-description-list-bg, transparent);
+            background-color: var(--ui-bg, transparent);
             @apply pb-0 text-xs;
         }
         .ui-description-list > dd {
@@ -222,7 +217,7 @@
         line-height: 1.65;
     }
     .ui-text-link {
-        color: var(--ui-text-link-fg, var(--color-primary));
+        color: var(--ui-link-fg, var(--color-primary));
         text-decoration: underline;
         text-underline-offset: 4px;
     }

@@ -22,6 +22,7 @@
         @foreach (['neutral', 'info', 'success', 'warning', 'error'] as $status)
             <x-ui::button id="solid-{{ $status }}" :status="$status">Action</x-ui::button>
             <x-ui::button id="outline-{{ $status }}" variant="outline" :status="$status">Action</x-ui::button>
+            <x-ui::badge id="badge-{{ $status }}" :status="$status">Label</x-ui::badge>
             <x-ui::badge id="soft-{{ $status }}" variant="secondary" :status="$status">Label</x-ui::badge>
             <x-ui::switch id="switch-{{ $status }}" checked :status="$status" aria-label="Enabled" />
         @endforeach
@@ -37,24 +38,33 @@
         </x-ui::toast>
         <x-ui::switch id="plain-switch" aria-label="Off" />
         <x-ui::switch id="info-switch-off" status="info" aria-label="Off" />
-        <x-ui::badge id="outer-badge" status="warning" class="[--ui-badge-fg:#142536]">
+        <x-ui::badge id="outer-badge" status="warning" class="[--ui-fg:#142536]">
             <x-ui::badge id="inner-badge">Label</x-ui::badge>
         </x-ui::badge>
-        <x-ui::button id="custom-outline" variant="outline" status="info" class="[--ui-button-border:#123456]">Action</x-ui::button>
-        <x-ui::progress :value="32" aria-label="Progress" class="[--ui-progress-track:#ededed] [--ui-progress-fill:#234567]" />
+        <x-ui::button id="custom-outline" variant="outline" status="info" class="[--ui-border:#123456]">Action</x-ui::button>
+        <x-ui::checkbox id="invalid-focus" invalid class="[--color-ring:#216953]" aria-label="Invalid choice" />
+        <x-ui::button-group>
+            <x-ui::button id="grouped-small" size="sm">First</x-ui::button>
+            <x-ui::button size="sm">Last</x-ui::button>
+        </x-ui::button-group>
+        <x-ui::avatar class="[--ui-part-bg:#111111] [&_.ui-avatar-badge]:[--ui-part-bg:#245647]">
+            <x-ui::avatar.fallback id="avatar-fallback">A</x-ui::avatar.fallback>
+            <x-ui::avatar.badge id="avatar-badge">✓</x-ui::avatar.badge>
+        </x-ui::avatar>
+        <x-ui::progress :value="32" aria-label="Progress" class="[--ui-track:#ededed] [--ui-fill:#234567]" />
         <x-ui::select id="theme-select" :options="[['value' => 'one', 'label' => 'One']]" initial-value="one"
-            class="w-48 [--ui-select-trigger-bg:#efdedb] [--ui-select-trigger-fg:#365462] [--ui-select-panel-bg:#eff1fc] [--ui-select-option-selected-fg:#563412]" />
-        <x-ui::date-picker id="theme-picker" class="w-48 [--ui-date-picker-trigger-bg:#ecedef] [--ui-date-picker-panel-bg:#daf1ef]" />
+            class="w-48 [--ui-trigger-bg:#efdedb] [--ui-trigger-fg:#365462] [--ui-panel-bg:#eff1fc] [--ui-option-selected-fg:#563412]" />
+        <x-ui::date-picker id="theme-picker" class="w-48 [--ui-trigger-bg:#ecedef] [--ui-panel-bg:#daf1ef]" />
         <x-ui::password-input id="theme-password" placeholder="Password"
-            class="[--ui-password-input-value-fg:#213548] [--ui-password-input-placeholder-fg:#567c98]" />
-        <x-ui::dropdown-menu class="[--ui-dropdown-menu-item-fg:#502434] [--ui-dropdown-menu-item-hover-bg:#f2ebce] [--ui-dropdown-menu-item-hover-fg:#594312]">
+            class="[--ui-value-fg:#213548] [--ui-placeholder-fg:#567c98]" />
+        <x-ui::dropdown-menu class="[--ui-item-fg:#502434] [--ui-item-hover-bg:#f2ebce] [--ui-item-hover-fg:#594312]">
             <x-ui::dropdown-menu.trigger><x-ui::button id="theme-menu-trigger">Menu</x-ui::button></x-ui::dropdown-menu.trigger>
             <x-ui::dropdown-menu.content><x-ui::dropdown-menu.item id="theme-menu-item">Item</x-ui::dropdown-menu.item></x-ui::dropdown-menu.content>
         </x-ui::dropdown-menu>
-        <x-ui::transfer :options="[['value' => 'one', 'label' => 'One']]" class="[--ui-transfer-panel-bg:#eff6fb]" />
-        <x-ui::tags-input :initial-value="['One']" class="[--ui-tags-input-tag-bg:#efeabc]" />
+        <x-ui::transfer :options="[['value' => 'one', 'label' => 'One']]" class="[--ui-panel-bg:#eff6fb]" />
+        <x-ui::tags-input :initial-value="['One']" class="[--ui-tag-bg:#efeabc]" />
         <x-ui::signature id="theme-signature" :initial-value="[[['x' => 0.25, 'y' => 0.5], ['x' => 0.75, 'y' => 0.5]]]"
-            class="[--ui-signature-ink:#24795c]" />
+            class="[--ui-ink:#24795c]" />
     @elseif(request()->boolean('alignment'))
         @php($choices = array_map(fn ($i) => ['value' => $i, 'label' => 'Choice '.$i], range(1, 24)))
         <main class="mx-auto grid w-72 gap-12 py-[25vh]">

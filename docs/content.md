@@ -4,7 +4,7 @@
 
 Editor 使用 Tiptap v3（锁定 3.34.0）和 React 封装为 `<esoboy-editor>` Web Component。HTML 与 Markdown 都进入同一个所见即所得编辑区。RichText 在服务端解析、清理，再由 Blade 输出 HTML，不加载编辑器。
 
-两端共用 `resources/content/schema.json` 定义的节点、标记、属性和安全样式。正文样式随 `resources/css/ui.css` 提供。输入支持 HTML 和 Markdown 字符串。React / Tiptap 管理每个 `<esoboy-editor>` 元素内的工具栏、菜单和文档。编辑器界面的 CSS 限定在该元素内。外部 toolbar、默认 slot、加载状态及业务动作由调用方 Blade / Livewire 管理。
+两端共用 `resources/content/schema.json` 定义的内容格式和同一份正文排版源码。`resources/css/ui.css` 提供只读 RichText 的样式。编辑器的正文、工具栏、菜单和选区样式由 Tiptap 入口构建为独立的 `editor.css`。两个样式入口都使用 `components` 层。输入支持 HTML 和 Markdown。外部 toolbar、默认 slot、加载状态及业务动作由调用方 Blade / Livewire 管理。
 
 升级时，如果自动化测试或业务脚本曾用 `editor.shadowRoot.querySelector(...)` 访问工具栏或编辑区，请改用 `editor.querySelector(...)`。
 
@@ -85,9 +85,9 @@ Markdown 允许内嵌 HTML。仅当 Markdown 再解析后完全恢复支持的�
 
 Editor 和 RichText 保留 `src`、标题和尺寸，并统一设置延迟加载、全屏、引用来源和沙箱权限。其他输入属性及 iframe 内联文档会被清理。通用播放器以隔离来源运行，YouTube 和爱奇艺的官方 HTTPS 播放器可使用各自的来源。HTML 和 Markdown 都可保存和重新载入嵌入。
 
-## 单文件加载与多个实例
+## 资源加载与多个实例
 
-包内的 `resources/dist/editor.js` 包含编辑器的 Alpine 绑定、React、Tiptap 及其扩展。Blade 的 `@assets` 在页面首次使用 Editor 时引入一次脚本。默认由 Laravel 路由提供文件，URL 带有内容哈希，升级后自动使用当前版本。每个 Web Component 拥有自己的 React root、Tiptap 实例、选区、菜单和事件，销毁时释放实例。
+包内的 `resources/dist/editor.js` 包含 Alpine 绑定、React、Tiptap 及其扩展。Blade 的 `@assets` 在页面首次使用 Editor 时加载一次 `editor.css` 和 `editor.js`。默认由 Laravel 路由提供文件，URL 带有内容哈希，升级后自动使用当前版本。每个 Web Component 拥有自己的 React root、Tiptap 实例、选区、菜单和事件，销毁时释放实例。
 
 需要由静态服务器托管组件资源时，可手动执行以下命令。
 
@@ -95,7 +95,7 @@ Editor 和 RichText 保留 `src`、标题和尺寸，并统一设置延迟加载
 php artisan vendor:publish --tag=ui-assets --force
 ```
 
-命令将 `ui.js` 和 `editor.js` 复制到 `public/vendor/esoboy/ui/`。当副本与包内文件一致时，Editor 使用该静态资源的 URL。升级后若副本过期，Editor 会从包内加载新版本，再次发布即可恢复静态托管。
+命令将 `ui.js`、`editor.js`、`editor.css` 复制到 `public/vendor/esoboy/ui/`。当副本与包内文件一致时，Editor 使用该静态资源的 URL。升级后若副本过期，Editor 会从包内加载新版本，再次发布即可恢复静态托管。
 
 ## 媒体选择
 

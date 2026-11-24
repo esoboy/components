@@ -1,3 +1,93 @@
+:where(.ui-editor) {
+    --ui-editor-action-menu-bg: initial;
+    --ui-editor-actions-border: initial;
+    --ui-editor-bg: initial;
+    --ui-editor-border: initial;
+    --ui-editor-button-bg: initial;
+    --ui-editor-button-expanded-bg: initial;
+    --ui-editor-color-tool-focus-outline: initial;
+    --ui-editor-color-tool-hover-bg: initial;
+    --ui-editor-column-resize-handle-bg: initial;
+    --ui-editor-control-focus-outline: initial;
+    --ui-editor-control-hover-bg: initial;
+    --ui-editor-custom-size-fg: initial;
+    --ui-editor-dialog-backdrop-bg: initial;
+    --ui-editor-dialog-bg: initial;
+    --ui-editor-dialog-border: initial;
+    --ui-editor-dialog-fg: initial;
+    --ui-editor-dialog-shadow: initial;
+    --ui-editor-drag-handle-bg: initial;
+    --ui-editor-drag-handle-fg: initial;
+    --ui-editor-embed-caption-fg: initial;
+    --ui-editor-error-fg: initial;
+    --ui-editor-fg: initial;
+    --ui-editor-field-bg: initial;
+    --ui-editor-field-border: initial;
+    --ui-editor-field-fg: initial;
+    --ui-editor-find-navigation-fg: initial;
+    --ui-editor-floating-toolbar-bg: initial;
+    --ui-editor-floating-toolbar-border: initial;
+    --ui-editor-floating-toolbar-shadow: initial;
+    --ui-editor-footer-border: initial;
+    --ui-editor-footer-control-bg: initial;
+    --ui-editor-footer-fg: initial;
+    --ui-editor-gap-cursor-border: initial;
+    --ui-editor-line: initial;
+    --ui-editor-media-sources-bg: initial;
+    --ui-editor-media-sources-fg: initial;
+    --ui-editor-media-sources-hover-border: initial;
+    --ui-editor-muted: initial;
+    --ui-editor-outline-description-fg: initial;
+    --ui-editor-outline-item-bg: initial;
+    --ui-editor-outline-panel-border: initial;
+    --ui-editor-outline-panel-fg: initial;
+    --ui-editor-panel: initial;
+    --ui-editor-panel-heading-fg: initial;
+    --ui-editor-paper: initial;
+    --ui-editor-placeholder-fg: initial;
+    --ui-editor-popover-bg: initial;
+    --ui-editor-popover-border: initial;
+    --ui-editor-popover-shadow: initial;
+    --ui-editor-primary-bg: initial;
+    --ui-editor-primary-border: initial;
+    --ui-editor-primary-fg: initial;
+    --ui-editor-resize-handle-bg: initial;
+    --ui-editor-resize-handle-shadow: initial;
+    --ui-editor-search-result-bg: initial;
+    --ui-editor-search-result-current-bg: initial;
+    --ui-editor-search-result-current-fg: initial;
+    --ui-editor-search-result-fg: initial;
+    --ui-editor-selected: initial;
+    --ui-editor-selected-cell-bg: initial;
+    --ui-editor-selected-node-outline: initial;
+    --ui-editor-selection: initial;
+    --ui-editor-selection-bg: initial;
+    --ui-editor-separator-bg: initial;
+    --ui-editor-shadow: initial;
+    --ui-editor-size-hint-fg: initial;
+    --ui-editor-source-back-fg: initial;
+    --ui-editor-source-input-bg: initial;
+    --ui-editor-source-input-fg: initial;
+    --ui-editor-source-mode-label-fg: initial;
+    --ui-editor-surface-bg: initial;
+    --ui-editor-surface-border: initial;
+    --ui-editor-surface-focus-border: initial;
+    --ui-editor-swatch-bg: initial;
+    --ui-editor-table-grid-bg: initial;
+    --ui-editor-table-grid-border: initial;
+    --ui-editor-tool-active-ink: initial;
+    --ui-editor-tool-active-wash: initial;
+    --ui-editor-toolbar-active-bg: initial;
+    --ui-editor-toolbar-active-fg: initial;
+    --ui-editor-toolbar-bg: initial;
+    --ui-editor-toolbar-border: initial;
+    --ui-editor-toolbar-group-border: initial;
+    --ui-editor-toolbar-row-border: initial;
+    --ui-editor-toolbar-row-fg: initial;
+    --ui-editor-wash: initial;
+    color: var(--ui-editor-fg, inherit);
+}
+
 @keyframes ui-editor-caret-blink {
     to {
         visibility: hidden;
@@ -29,6 +119,17 @@ esoboy-editor {
 
     .document [contenteditable='false'] {
         white-space: normal;
+    }
+    .document .tableWrapper {
+        overflow-x: auto;
+        margin-block: 1rem;
+    }
+    .document a[data-type='file'].ProseMirror-selectednode {
+        border-color: var(--ui-file-focus-border, var(--selection, #8675bd));
+        background: var(
+            --ui-file-focus-bg,
+            color-mix(in srgb, var(--color-muted, #f4f4f5) 60%, var(--color-background, white))
+        );
     }
     .document .is-editor-empty:first-child::before {
         content: attr(data-placeholder);

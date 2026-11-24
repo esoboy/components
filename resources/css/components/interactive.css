@@ -11,47 +11,37 @@
         border: 0;
     }
     .ui-slider-body {
-        width: 100%;
         height: 1.25rem;
-        accent-color: var(--ui-slider-accent, var(--color-primary));
+        accent-color: var(--ui-accent, var(--color-primary));
         cursor: pointer;
     }
     .ui-color-picker-field {
         @apply relative inline-flex w-18 min-w-18 align-middle;
     }
     .ui-color-picker-control {
-        border-color: var(--ui-color-picker-border, var(--color-input));
-        background-color: var(--ui-color-picker-bg, var(--color-background));
+        border-color: var(--ui-border, var(--color-input));
+        background-color: var(--ui-bg, var(--color-background));
         @apply h-8 w-full cursor-pointer appearance-none rounded-ui-lg border py-1.5 ps-1.5 pe-8 outline-none transition-colors focus-visible:ring-3 disabled:cursor-not-allowed;
         @variant hover {
-            background-color: var(--ui-color-picker-hover-bg, var(--color-muted));
+            background-color: var(--ui-hover-bg, var(--color-muted));
         }
         @variant focus-visible {
-            border-color: var(--ui-color-picker-focus-border, var(--color-ring));
-            --tw-ring-color: var(
-                --ui-color-picker-focus-ring,
-                color-mix(in oklab, var(--color-ring) 50%, transparent)
-            );
+            border-color: var(--ui-focus-border, var(--color-ring));
+            --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         }
         @variant aria-invalid {
-            border-color: var(--ui-color-picker-invalid-border, var(--color-destructive));
+            border-color: var(--ui-invalid-border, var(--color-destructive));
         }
     }
     .ui-color-picker-control::-webkit-color-swatch-wrapper {
         padding: 0;
     }
     .ui-color-picker-control::-webkit-color-swatch {
-        border-color: var(
-            --ui-color-picker-border,
-            color-mix(in oklab, var(--color-black) 15%, transparent)
-        );
+        border-color: var(--ui-border, color-mix(in oklab, var(--color-black) 15%, transparent));
         @apply rounded-ui-sm border;
     }
     .ui-color-picker-control::-moz-color-swatch {
-        border-color: var(
-            --ui-color-picker-border,
-            color-mix(in oklab, var(--color-black) 15%, transparent)
-        );
+        border-color: var(--ui-border, color-mix(in oklab, var(--color-black) 15%, transparent));
         @apply rounded-ui-sm border;
     }
     .ui-color-picker-field:has(:disabled) {
@@ -69,17 +59,17 @@
         cursor: pointer;
     }
     .ui-toggle:has(:checked) > span {
-        background: var(--ui-toggle-checked-bg, var(--color-accent));
+        background: var(--ui-checked-bg, var(--color-accent));
     }
     .ui-toggle-group-item:has(:checked) > span {
-        background: var(--ui-toggle-group-item-checked-bg, var(--color-accent));
+        background: var(--ui-item-checked-bg, var(--color-accent));
     }
     .ui-toggle:has(:focus-visible) > span {
-        outline: 2px solid var(--ui-toggle-focus-outline, var(--color-ring));
+        outline: 2px solid var(--ui-focus-outline, var(--color-ring));
         outline-offset: 2px;
     }
     .ui-toggle-group-item:has(:focus-visible) > span {
-        outline: 2px solid var(--ui-toggle-group-item-focus-outline, var(--color-ring));
+        outline: 2px solid var(--ui-part-outline, var(--color-ring));
         outline-offset: 2px;
     }
     .ui-toggle:has(:disabled),
@@ -96,33 +86,29 @@
     .ui-rating label {
         position: relative;
         cursor: pointer;
-        color: var(--ui-rating-fg, var(--color-muted-foreground));
+        color: var(--ui-fg, var(--color-muted-foreground));
         @apply inline-flex size-8 items-center justify-center rounded-ui-lg transition-colors has-disabled:pointer-events-none has-disabled:opacity-50;
         @variant hover {
-            background-color: var(--ui-rating-hover-bg, var(--color-muted));
+            background-color: var(--ui-hover-bg, var(--color-muted));
         }
     }
     .ui-rating label:is(:has(:checked), :has(~ label :checked)) .ui-rating-star {
-        color: var(--ui-rating-star-checked-fg, var(--color-primary));
+        color: var(--ui-part-fg, var(--color-primary));
     }
     .ui-rating label:is(:has(:checked), :has(~ label :checked)) svg {
         fill: currentColor;
     }
     .ui-rating label:has(:focus-visible) {
-        --tw-ring-color: var(
-            --ui-rating-focus-ring,
-            color-mix(in oklab, var(--color-ring) 50%, transparent)
-        );
+        --tw-ring-color: var(--ui-focus-ring, var(--ui-ring-50));
         @apply outline-none ring-3;
     }
     .ui-accordion-item:not(:last-child) {
-        border-bottom: 1px solid var(--ui-accordion-item-border, var(--color-border));
+        border-bottom: 1px solid var(--ui-item-border, var(--color-border));
     }
     .ui-accordion-summary {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        cursor: pointer;
         padding: 1rem 0;
         font-size: 0.875rem;
         font-weight: 500;
@@ -172,23 +158,23 @@
         overscroll-behavior-y: contain;
     }
     .ui-icon-select-pagination {
-        border-color: var(--ui-icon-select-pagination-border, var(--color-border));
-        color: var(--ui-icon-select-pagination-fg, var(--color-muted-foreground));
+        border-color: var(--ui-part-border, var(--color-border));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply flex shrink-0 items-center justify-between gap-2 border-t px-1 pt-1 text-xs tabular-nums;
     }
     .ui-scroll-area:not([data-overflow]) > .ui-scroll-area-scrollbar {
         display: none;
     }
     .ui-scroll-area-scrollbar[data-orientation='vertical'] {
-        border-left-color: var(--ui-scroll-area-scrollbar-border, transparent);
+        border-left-color: var(--ui-scrollbar-border, transparent);
         @apply absolute inset-y-0 right-0 flex h-full w-2.5 touch-none border-l p-px select-none;
     }
     .ui-scroll-area-scrollbar[data-orientation='horizontal'] {
-        border-top-color: var(--ui-scroll-area-scrollbar-border, transparent);
+        border-top-color: var(--ui-scrollbar-border, transparent);
         @apply absolute inset-x-0 bottom-0 flex h-2.5 flex-col touch-none border-t p-px select-none;
     }
     .ui-scroll-area-thumb {
-        background-color: var(--ui-scroll-area-thumb-bg, var(--color-border));
+        background-color: var(--ui-thumb, var(--color-border));
         @apply relative h-full w-full rounded-full;
     }
     .ui-tags-input-body {
@@ -214,20 +200,20 @@
         grid-column: 2;
     }
     .ui-node-selector > span {
-        border-color: var(--ui-node-selector-border, var(--color-input));
+        border-color: var(--ui-part-border, var(--color-input));
         @apply grid size-4 place-items-center rounded-ui-sm border;
     }
     .ui-node-selector[role='radio'] > span {
         @apply rounded-full;
     }
     .ui-node-selector[aria-checked='true'] > span {
-        border-color: var(--ui-node-selector-checked-border, var(--color-primary));
-        background-color: var(--ui-node-selector-checked-bg, var(--color-primary));
-        color: var(--ui-node-selector-checked-fg, var(--color-primary-foreground));
+        border-color: var(--ui-part-border, var(--color-primary));
+        background-color: var(--ui-part-bg, var(--color-primary));
+        color: var(--ui-part-fg, var(--color-primary-foreground));
     }
     .ui-node-selector[role='radio'][aria-checked='true'] > span::before {
         content: '';
-        background-color: var(--ui-node-selector-indicator, currentColor);
+        background-color: var(--ui-part-bg, currentColor);
         @apply size-1.5 rounded-full;
     }
     .ui-node-selector svg {
@@ -240,16 +226,16 @@
         @apply truncate;
     }
     .ui-tree-action > svg {
-        color: var(--ui-tree-action-icon, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply size-4 shrink-0;
     }
     .ui-tree-action[aria-pressed='true'] {
-        background-color: var(--ui-tree-action-selected-bg, var(--color-accent));
-        color: var(--ui-tree-action-selected-fg, var(--color-accent-foreground));
+        background-color: var(--ui-part-bg, var(--color-accent));
+        color: var(--ui-part-fg, var(--color-accent-foreground));
     }
     .ui-cascader-column .ui-tree-action[aria-expanded='true'] {
-        background-color: var(--ui-cascader-column-expanded-bg, var(--color-accent));
-        color: var(--ui-cascader-column-expanded-fg, var(--color-accent-foreground));
+        background-color: var(--ui-part-bg, var(--color-accent));
+        color: var(--ui-part-fg, var(--color-accent-foreground));
     }
     .ui-transfer-columns {
         display: grid;
@@ -285,7 +271,7 @@
         padding: 0.25rem;
     }
     .ui-cascader-column:not(:last-child) {
-        border-inline-end: 1px solid var(--ui-cascader-column-border, var(--color-border));
+        border-inline-end: 1px solid var(--ui-part-border, var(--color-border));
     }
     .ui-picker-control {
         @apply relative inline-flex max-w-full items-center;
@@ -297,20 +283,20 @@
         @apply truncate;
     }
     .ui-picker-trigger svg {
-        color: var(--ui-picker-trigger-icon, var(--color-muted-foreground));
+        color: var(--ui-trigger-icon, var(--color-muted-foreground));
         @apply size-4 shrink-0;
     }
     .ui-picker-trigger svg:last-child {
         @apply ms-auto size-3.5;
     }
     .ui-picker-trigger[data-placeholder] {
-        color: var(--ui-picker-trigger-placeholder-fg, var(--color-muted-foreground));
+        color: var(--ui-trigger-placeholder-fg, var(--color-muted-foreground));
     }
     .ui-picker-control[data-clearable] .ui-picker-trigger {
         @apply pe-9;
     }
     .ui-picker-clear {
-        color: var(--ui-picker-clear-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply absolute end-1;
     }
     .ui-time-popup {
@@ -327,27 +313,27 @@
         @apply flex shrink-0 items-center justify-center gap-1 px-3 py-2;
     }
     .ui-time-segment {
-        border-color: var(--ui-time-segment-border, var(--color-input));
-        color: var(--ui-time-segment-fg, var(--color-muted-foreground));
+        border-color: var(--ui-part-border, var(--color-input));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply flex min-w-14 cursor-pointer flex-col items-center rounded-ui-lg border px-2 py-1 text-xs font-medium outline-none focus-visible:ring-2 disabled:cursor-default disabled:opacity-50;
         @variant enabled:hover {
-            border-color: var(--ui-time-segment-hover-border, var(--color-ring));
-            background-color: var(--ui-time-segment-hover-bg, var(--color-muted));
+            border-color: var(--ui-part-border, var(--color-ring));
+            background-color: var(--ui-part-bg, var(--color-muted));
         }
         @variant focus-visible {
-            --tw-ring-color: var(--ui-time-segment-focus-ring, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--color-ring));
         }
     }
     .ui-time-segment[aria-expanded='true'] {
-        background-color: var(--ui-time-segment-expanded-bg, var(--color-accent));
-        color: var(--ui-time-segment-expanded-fg, var(--color-accent-foreground));
+        background-color: var(--ui-part-bg, var(--color-accent));
+        color: var(--ui-part-fg, var(--color-accent-foreground));
     }
     .ui-time-digits {
-        color: var(--ui-time-digits-fg, var(--color-foreground));
+        color: var(--ui-part-fg, var(--color-foreground));
         @apply text-2xl leading-7 font-semibold tracking-tight tabular-nums;
     }
     .ui-time-colon {
-        color: var(--ui-time-colon-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply self-start pt-1 text-lg leading-7;
     }
     .ui-time-unit {
@@ -366,14 +352,14 @@
         height: var(--ui-time-cell);
         @apply cursor-pointer rounded-ui-md text-sm font-medium tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-default disabled:opacity-50;
         @variant hover {
-            background-color: var(--ui-time-picker-grid-hover-bg, var(--color-accent));
+            background-color: var(--ui-part-bg, var(--color-accent));
         }
         @variant focus-visible {
-            --tw-ring-color: var(--ui-time-picker-grid-focus-ring, var(--color-ring));
+            --tw-ring-color: var(--ui-part-ring, var(--color-ring));
         }
         @variant aria-selected {
-            background-color: var(--ui-time-picker-grid-selected-bg, var(--color-primary));
-            color: var(--ui-time-picker-grid-selected-fg, var(--color-primary-foreground));
+            background-color: var(--ui-part-bg, var(--color-primary));
+            color: var(--ui-part-fg, var(--color-primary-foreground));
         }
     }
     @media (pointer: coarse) {
@@ -382,7 +368,7 @@
         }
     }
     .ui-time-hint {
-        color: var(--ui-time-hint-fg, var(--color-muted-foreground));
+        color: var(--ui-part-fg, var(--color-muted-foreground));
         @apply px-3 pb-2 text-xs;
     }
     .ui-picker-extra {
