@@ -92,6 +92,17 @@ new class extends Component {
         <x-ui::select id="last-select" placeholder="Pick last" />
     </x-ui::button-group>
     <x-ui::toggle-group id="single-toggle" :spacing="0"><x-ui::toggle-group.item>Single</x-ui::toggle-group.item></x-ui::toggle-group>
+    <x-ui::toggle-group type="multiple" dir="rtl" style="--item-checked-bg:#224466">
+        <x-ui::toggle-group.item>First filter</x-ui::toggle-group.item>
+        <x-ui::toggle-group type="multiple"><x-ui::toggle-group.item>Nested filter</x-ui::toggle-group.item></x-ui::toggle-group>
+        <x-ui::toggle-group.item disabled>Disabled filter</x-ui::toggle-group.item>
+        <x-ui::toggle-group.item>Last filter</x-ui::toggle-group.item>
+    </x-ui::toggle-group>
+    <x-ui::accordion id="native-accordion">
+        <x-ui::accordion.item><x-ui::accordion.summary>Shipping <span data-state="open">info</span></x-ui::accordion.summary><x-ui::accordion.content>Shipping details</x-ui::accordion.content></x-ui::accordion.item>
+        <x-ui::accordion.item disabled><x-ui::accordion.summary>Unavailable</x-ui::accordion.summary><x-ui::accordion.content>Unavailable details</x-ui::accordion.content></x-ui::accordion.item>
+        <x-ui::accordion.item><x-ui::accordion.summary>Returns</x-ui::accordion.summary><x-ui::accordion.content>Returns details</x-ui::accordion.content></x-ui::accordion.item>
+    </x-ui::accordion>
     <x-ui::field orientation="horizontal"><x-ui::field.description id="horizontal-description">Description</x-ui::field.description></x-ui::field>
     <div style="--spacing:8px"><x-ui::progress class="themed-progress" :value="25" /></div>
 

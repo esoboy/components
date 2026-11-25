@@ -54,14 +54,22 @@ new class extends Component {
     @endif
     <form id="external"></form>
     <x-ui::editor id="external-editor" form="external" name="body" initial-value="First" input-type="markdown" output-type="markdown" />
-    <x-ui::cropper form="external" name="crop" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" />
-    <x-ui::signature form="external" name="signature" />
+    @php($drawingImage = 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><path fill="red" d="M0 0h20v20H0z"/><path fill="blue" d="M20 0h20v20H20z"/></svg>'))
+    <form id="external-drawings"></form>
+    <div x-data style="width:240px">
+        <x-ui::cropper id="export-crop" x-ref="crop" form="external-drawings" name="crop" :src="$drawingImage"
+            :initial-value="['x' => 0, 'y' => 0, 'width' => .5, 'height' => 1]" :readonly="$locked" />
+        <x-ui::signature id="export-signature" x-ref="signature" form="external-drawings" name="signature" :readonly="$locked" />
+        <button id="read-drawings" type="button" x-on:click="$el.textContent = [(await $refs.crop.getResult()).type, (await $refs.signature.getResult())?.type].join(',')">Read drawings</button>
+    </div>
     <x-ui::rating form="external" name="score" :initial-value="4" :readonly="$locked" />
     <x-ui::select form="external" name="team" :initial-value="0" :options="[['value' => 0, 'label' => 'Zero']]" />
     <x-ui::combobox form="external" name="members" multiple :initial-value="['a']" :options="[['value' => 'a', 'label' => 'Alpha']]" />
-    <x-ui::questionnaire id="readonly-survey" readonly :item="$item"
+    <form id="readonly-survey">
+    <x-ui::questionnaire id="survey-fields" readonly :item="$item"
         :items="[['name' => 'single', 'prompt' => 'One', 'choices' => [['value' => 'a', 'label' => 'Alpha']]], ['name' => 'multi', 'prompt' => 'Two', 'multiple' => true, 'choices' => [['value' => 'b', 'label' => 'Beta']], 'input' => ['label' => 'Other']]]"
         :initial-value="['single' => ['choices' => ['a']], 'multi' => ['choices' => ['b'], 'text' => 'Other answer']]" />
+    </form>
     <button id="next-item" type="button" wire:click="$set('item', 'multi')">Second question</button>
     <div style="position:fixed;left:140px;top:100px">
         <x-ui::dropdown-menu>

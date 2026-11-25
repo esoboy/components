@@ -7,25 +7,60 @@ function canFocus(node) {
     )
 }
 
-export function enabled(root, selector) {
-    return [...root.querySelectorAll(selector)].filter(canFocus)
+export function enabled(root, selector, owner) {
+    return [...root.querySelectorAll(selector)].filter(
+        (node) => (!owner || node.closest(owner) === root) && canFocus(node),
+    )
+}
+
+export function setActiveOption(list, input, option) {
+    const previous = list.querySelector('[role="option"][data-highlighted]')
+    if (previous !== option) {
+        previous?.removeAttribute('data-highlighted')
+        option?.setAttribute('data-highlighted', '')
+    }
+    if (option?.id) input?.setAttribute('aria-activedescendant', option.id)
+    else input?.removeAttribute('aria-activedescendant')
+}
+
+export function adjacentItem(items, active, forward) {
+    const index = items.indexOf(active)
+    return forward ? (items[index + 1] ?? items[0]) : (items[index - 1] ?? items.at(-1))
 }
 
 export function moveFocus(event, nodes, vertical = true, origin = document.activeElement) {
-    const current = nodes.indexOf(origin)
-    const last = nodes.length - 1
-    const next = {
-        [vertical ? 'ArrowDown' : 'ArrowRight']: current === last ? 0 : current + 1,
-        [vertical ? 'ArrowUp' : 'ArrowLeft']: current <= 0 ? last : current - 1,
-        Home: 0,
-        End: last,
-    }[event.key]
-    const target = nodes[next]
+    const [backward, forward] = vertical
+        ? ['ArrowUp', 'ArrowDown']
+        : getComputedStyle(event.currentTarget).direction === 'rtl'
+          ? ['ArrowRight', 'ArrowLeft']
+          : ['ArrowLeft', 'ArrowRight']
+    let target
+    if (event.key === 'Home') target = nodes[0]
+    else if (event.key === 'End') target = nodes.at(-1)
+    else if (event.key === forward || event.key === backward)
+        target = adjacentItem(nodes, origin, event.key === forward)
     if (target) {
         event.preventDefault()
         target.focus()
     }
     return target
+}
+
+export function moveGroupFocus(event, group, selector) {
+    const root = event.currentTarget
+    if (
+        event.defaultPrevented ||
+        !(event.key.startsWith('Arrow') || event.key === 'Home' || event.key === 'End') ||
+        !event.target.matches(selector) ||
+        event.target.closest(group) !== root
+    )
+        return
+    return moveFocus(
+        event,
+        enabled(root, selector, group),
+        (root.ariaOrientation ?? root.dataset.orientation) === 'vertical',
+        event.target,
+    )
 }
 
 export function options(selector = '[role="option"],[role="menuitem"]') {
@@ -81,16 +116,17 @@ export function navigatePopupList(event) {
         !['ArrowDown', 'ArrowUp', 'Escape'].includes(event.key)
     )
         return
-    const items = enabled(panel, '[role="option"],[role^="menuitem"],button').filter(
-        (item) => item.closest('[data-ui-panel]') === panel,
-    )
-    if (moveFocus(event, items)) event.stopPropagation()
+    if (event.key === 'Tab') return this.close()
     if (event.key === 'ArrowLeft' && this.$root.hasAttribute('data-ui-submenu')) {
         event.preventDefault()
         event.stopPropagation()
-        this.close(true)
+        return this.close(true)
     }
-    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && event.key !== ' ') {
+    const typeahead =
+        event.key.length === 1 && !event.ctrlKey && !event.metaKey && event.key !== ' '
+    if (!typeahead && !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
+    const items = enabled(panel, '[role="option"],[role^="menuitem"],button', '[data-ui-panel]')
+    if (typeahead) {
         const index = items.indexOf(document.activeElement)
         const rotated = [...items.slice(index + 1), ...items.slice(0, index + 1)]
         rotated
@@ -101,6 +137,5 @@ export function navigatePopupList(event) {
                     .startsWith(event.key.toLowerCase()),
             )
             ?.focus()
-    }
-    if (event.key === 'Tab') this.close()
+    } else if (moveFocus(event, items)) event.stopPropagation()
 }

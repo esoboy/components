@@ -21,7 +21,7 @@ it('ships complete English and Chinese catalogs with matching placeholders', fun
     }
 })->with(['ui', 'editor', 'errors']);
 
-it('renders public components and their accessible names in the app locale', function (string $locale, string $breadcrumb, string $more, string $carousel, string $month, string $embed, string $error) {
+it('renders public components and their accessible names in the app locale', function (string $locale, string $breadcrumb, string $more, string $carousel, string $month, string $error) {
     app()->setLocale($locale);
     $html = Blade::render(<<<'BLADE'
         <x-ui::breadcrumb><x-ui::breadcrumb.ellipsis /></x-ui::breadcrumb>
@@ -35,13 +35,12 @@ it('renders public components and their accessible names in the app locale', fun
         ->and($dom->querySelector('.ui-breadcrumb-ellipsis')->textContent)->toContain($more)
         ->and($dom->querySelector('.ui-carousel')->getAttribute('aria-roledescription'))->toBe($carousel)
         ->and($dom->querySelector('[role="grid"]')->getAttribute('aria-label'))->toBe($month)
-        ->and($dom->querySelector('iframe')->getAttribute('title'))->toBe($embed)
         ->and($dom->querySelector('esoboy-editor')->getAttribute('aria-label'))->toBe('Acme draft')
         ->and($dom->querySelector('esoboy-editor')->hasAttribute('data-messages'))->toBeFalse()
         ->and(fn () => Icons::content('absent-test-icon'))->toThrow(InvalidArgumentException::class, $error);
 })->with([
-    ['en', 'Breadcrumb', 'More', 'carousel', 'November 2026', 'Embedded content', 'Unknown Lucide icon: absent-test-icon.'],
-    ['cn', '面包屑导航', '更多', '轮播', '2026年11月', '嵌入内容', '未知的 Lucide 图标：absent-test-icon。'],
+    ['en', 'Breadcrumb', 'More', 'carousel', 'November 2026', 'Unknown Lucide icon: absent-test-icon.'],
+    ['cn', '面包屑导航', '更多', '轮播', '2026年11月', '未知的 Lucide 图标：absent-test-icon。'],
 ]);
 
 it('uses the calendar locale for month captions when it differs from the application', function (string $appLocale, string $calendarLocale, string $caption) {

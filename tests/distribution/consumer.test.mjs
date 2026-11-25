@@ -20,6 +20,203 @@ async function openProbe(t, query = '', options = {}) {
     return page
 }
 
+test('number buttons stop on a valid native step and submit the Livewire value', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    const form = page.locator('#step-form')
+    const input = form.getByRole('spinbutton')
+    const increase = form.getByRole('button').last()
+    for (const expected of ['3', '6', '9']) {
+        await increase.click()
+        assert.equal(await input.inputValue(), expected)
+    }
+    assert.equal(await increase.isDisabled(), true)
+    await form.locator('output', { hasText: /^9$/ }).waitFor()
+    assert.equal(
+        await form.evaluate((el) => el.checkValidity() && new FormData(el).get('quantity')),
+        '9',
+    )
+    await input.fill('8')
+    await increase.click()
+    assert.equal(await input.inputValue(), '9')
+    await form.getByRole('button').first().click()
+    assert.equal(await input.inputValue(), '6')
+    await form.locator('output', { hasText: /^6$/ }).waitFor()
+    assert.deepEqual(errors, [])
+})
+
+test('OTP typing and paste advance from the position actually filled', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const slots = page.locator('[data-otp-index]')
+    await slots.nth(3).press('7')
+    assert.equal(await slots.first().inputValue(), '7')
+    assert.equal(await slots.nth(1).evaluate((el) => el === document.activeElement), true)
+    await slots.nth(4).focus()
+    await slots.nth(4).evaluate((el) => {
+        const clipboardData = new DataTransfer()
+        clipboardData.setData('text', '89')
+        el.dispatchEvent(
+            new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData }),
+        )
+    })
+    await page.locator('#saved-code', { hasText: /^789$/ }).waitFor()
+    assert.equal(await slots.nth(3).evaluate((el) => el === document.activeElement), true)
+})
+
+test('Command retains search focus and chooses from the matching Livewire results', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const command = page.locator('#actions')
+    const input = command.getByRole('combobox')
+    const reader = command.getByRole('option', { name: 'Reader' })
+    const editor = command.getByRole('option', { name: 'Editor' })
+    await input.focus()
+    assert.equal(await input.getAttribute('aria-activedescendant'), await reader.getAttribute('id'))
+    await input.press('ArrowDown')
+    assert.equal(await input.getAttribute('aria-activedescendant'), await editor.getAttribute('id'))
+    assert.equal(await input.evaluate((el) => el === document.activeElement), true)
+    await input.pressSequentially('Read')
+    await input.press('Enter')
+    await page.locator('#chosen-action', { hasText: /^read$/ }).waitFor()
+    assert.equal(await reader.getAttribute('aria-selected'), 'true')
+    await input.fill('nobody')
+    await reader.waitFor({ state: 'detached' })
+    assert.equal(await input.getAttribute('aria-activedescendant'), null)
+    await input.press('Enter')
+    await input.fill('Editor')
+    await editor.waitFor()
+    await input.press('Enter')
+    await page.locator('#chosen-action', { hasText: /^edit$/ }).waitFor()
+})
+
+test('Avatar restores the fallback when Livewire removes a loaded image', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const avatar = page.locator('#photo')
+    const fallback = avatar.getByText('AB')
+    const toggle = page.getByRole('button', { name: 'Toggle photo' })
+    await avatar.scrollIntoViewIfNeeded()
+    await avatar.locator('img[data-loaded]').waitFor()
+    assert.equal(await fallback.isVisible(), false)
+    await toggle.click()
+    await avatar.locator('img').waitFor({ state: 'detached' })
+    assert.equal(await fallback.isVisible(), true)
+    await toggle.click()
+    await avatar.locator('img[data-loaded]').waitFor()
+    assert.equal(await fallback.isVisible(), false)
+    await avatar.locator('img').evaluate((img) => {
+        img.src = 'data:image/png,broken'
+    })
+    await fallback.waitFor()
+})
+
+test('toasts keep native Tab order, restore F6 focus and measure once per layout', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const before = page.locator('#before-notices')
+    const after = page.locator('#after-notices')
+    const region = page.locator('#notices')
+    const last = region.getByRole('button', { name: 'Dismiss Last' })
+    const focused = (el) => el === document.activeElement
+    await before.focus()
+    for (let i = 0; i < 4; i++) await page.keyboard.press('Tab')
+    assert.equal(await last.evaluate(focused), true)
+    await page.keyboard.press('Tab')
+    assert.equal(await after.evaluate(focused), true)
+    await after.press('F6')
+    assert.equal(await region.evaluate(focused), true)
+    await page.keyboard.press('Shift+Tab')
+    assert.equal(await after.evaluate(focused), true)
+    await before.press('F6')
+    await last.focus()
+    await page.keyboard.press('Tab')
+    assert.equal(await before.evaluate(focused), true)
+    await last.focus()
+    await page.keyboard.press('Tab')
+    assert.equal(await after.evaluate(focused), true)
+    const positions = await region.evaluate(async (el) => {
+        const frame = () => new Promise(requestAnimationFrame)
+        await frame()
+        let count = 0
+        const record = () => count++
+        el.addEventListener('ui-toast-position', record, true)
+        window.dispatchEvent(new Event('resize'))
+        await frame()
+        el.removeEventListener('ui-toast-position', record, true)
+        return count
+    })
+    assert.equal(positions, 2)
+})
+
+test('neighboring separators report and adjust their current panel sizes', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const first = page.getByRole('separator', { name: 'First split' })
+    const second = page.getByRole('separator', { name: 'Second split' })
+    const middle = page.locator('#split .ui-resizable-panel').nth(1)
+    const width = () => middle.evaluate((el) => el.getBoundingClientRect().width)
+    await first.press('End')
+    assert.equal(await second.getAttribute('aria-valuenow'), '17')
+    const before = await width()
+    await second.press('ArrowLeft')
+    assert.ok((await width()) < before)
+    assert.equal(await second.getAttribute('aria-valuenow'), '12')
+    await first.press('Home')
+    assert.equal(await first.getAttribute('aria-valuenow'), '10')
+    const handle = await second.boundingBox()
+    const x = handle.x + handle.width / 2
+    const y = handle.y + handle.height / 2
+    const beforeDrag = await width()
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x + 24, y)
+    await page.mouse.up()
+    const afterDrag = await width()
+    assert.ok(afterDrag > beforeDrag)
+    await page.mouse.move(x - 24, y)
+    assert.equal(await width(), afterDrag)
+})
+
+test('Select stays inside a narrow viewport and the radio dot uses its foreground', async (t) => {
+    const page = await openProbe(t, '?controls=1', { viewport: { width: 360, height: 740 } })
+    const paint = await page.locator('#custom-radio').evaluate((el) => ({
+        dot: getComputedStyle(el, '::before').backgroundColor,
+        foreground: getComputedStyle(el).color,
+        fill: getComputedStyle(el).backgroundColor,
+    }))
+    assert.equal(paint.dot, paint.foreground)
+    assert.notEqual(paint.dot, paint.fill)
+    const trigger = page.locator('#full-select')
+    await trigger.click()
+    const panel = page.locator('.ui-select-content:popover-open')
+    await panel.waitFor()
+    await page.waitForFunction(
+        () =>
+            document
+                .querySelector('.ui-select-content:popover-open')
+                ?.style.getPropertyValue('--anchor-width') === '360px',
+    )
+    const bounds = await panel.boundingBox()
+    assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 360)
+})
+
+test('bold in the editor and the sidebar shortcut act independently', async (t) => {
+    const page = await openProbe(t, '?controls=1')
+    const sidebar = page.locator('#editor-sidebar')
+    const editor = sidebar.locator('esoboy-editor')
+    await page.waitForFunction(() => document.querySelector('esoboy-editor')?.editor?.isInitialized)
+    await editor.evaluate((el) => {
+        el.editor.commands.focus()
+        el.editor.commands.setTextSelection({ from: 1, to: 4 })
+    })
+    await page.waitForFunction(() => document.activeElement.isContentEditable)
+    await page.keyboard.press('Control+b')
+    assert.equal(await editor.evaluate((el) => el.editor.isActive('bold')), true)
+    assert.equal(await sidebar.getAttribute('data-state'), 'expanded')
+    const trigger = sidebar.getByRole('button', { name: 'Toggle sidebar' })
+    await trigger.press('Control+Shift+B')
+    assert.equal(await sidebar.getAttribute('data-state'), 'expanded')
+    await trigger.press('Control+b')
+    await page.locator('#editor-sidebar[data-state="collapsed"]').waitFor()
+})
+
 test('panel widths and time option heights increase with size on a touch screen', async (t) => {
     const page = await openProbe(t, '?sizes=1', { hasTouch: true })
     await page.addStyleTag({ content: 'dialog { transition: none !important }' })
@@ -284,6 +481,30 @@ test('a replaced dialog trigger opens and receives focus on close', async (t) =>
     assert.equal(await replacement.getAttribute('aria-expanded'), 'false')
 })
 
+test('dialog buttons preserve native arrow keys and activate with Enter and Space', async (t) => {
+    const page = await openProbe(t, '?state=1')
+    const trigger = page.locator('#trigger-0')
+    const dialog = page.locator('#state-dialog dialog')
+    await trigger.focus()
+    for (const key of ['ArrowDown', 'ArrowUp']) {
+        const allowed = await trigger.evaluate(
+            (button, key) =>
+                button.dispatchEvent(
+                    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+                ),
+            key,
+        )
+        assert.ok(allowed, key)
+        assert.equal(await dialog.evaluate((el) => el.open), false)
+    }
+    for (const key of ['Enter', 'Space']) {
+        await trigger.press(key)
+        await page.locator('#state-dialog dialog:modal').waitFor()
+        await page.keyboard.press('Escape')
+        await dialog.waitFor({ state: 'hidden' })
+    }
+})
+
 test('a media preview pauses playback and adopts its replacement trigger and source', async (t) => {
     const page = await openProbe(t, '?state=1')
     const preview = page.locator('#state-preview')
@@ -368,20 +589,114 @@ test('external form ownership includes custom inputs, readonly ratings and choic
     const page = await openProbe(t, '?state=1')
     await page.waitForFunction(
         () =>
-            document.querySelector('input[name="body"]:enabled') &&
+            document.querySelector('esoboy-editor[name="body"]:enabled') &&
             document.getElementById('external-editor')?.editor,
     )
     const form = page.locator('#external')
     const entries = await form.evaluate((el) => Object.fromEntries(new FormData(el)))
     assert.equal(entries.body, 'First')
-    assert.equal(entries.signature, '[]')
-    assert.equal(JSON.parse(entries.crop).width, 0.8)
     assert.equal(entries.score, '4')
     assert.equal(entries.team, '0')
     assert.equal(entries['members[]'], 'a')
     await page.locator('#lock').click()
     await page.waitForFunction(() => document.querySelector('[name="score"]').disabled)
     assert.deepEqual(await form.evaluate((el) => new FormData(el).getAll('score')), ['4'])
+})
+
+test('drawings export completed edits as PNGs on demand without model events or requests', async (t) => {
+    const page = await openProbe(t, '?state=1')
+    const crop = page.locator('#export-crop')
+    const signature = page.locator('#export-signature')
+    await page.waitForLoadState('networkidle')
+    const requests = []
+    page.on('request', (request) => {
+        if (request.method() === 'POST') requests.push(request.url())
+    })
+    await page.evaluate(() => {
+        window.drawingEvents = []
+        for (const host of document.querySelectorAll('#export-crop, #export-signature')) {
+            for (const type of ['input', 'change', 'value-changed'])
+                host.addEventListener(type, () => window.drawingEvents.push(type))
+        }
+    })
+
+    const readImage = (host) =>
+        host.evaluate(async (element) => {
+            const blob = await element.getResult()
+            if (blob === null) return null
+            const upload = new FormData()
+            upload.append('image', blob, 'result.png')
+            const file = upload.get('image')
+            const bitmap = await createImageBitmap(file)
+            const { width, height } = bitmap
+            const ctx = new OffscreenCanvas(width, height).getContext('2d')
+            ctx.drawImage(bitmap, 0, 0)
+            bitmap.close()
+            const pixels = ctx.getImageData(0, 0, width, height).data
+            return {
+                type: file.type,
+                width,
+                height,
+                corner: Array.from(pixels.slice(0, 4)),
+                hasInk: pixels.some((channel, i) => i % 4 === 3 && channel > 0),
+            }
+        })
+    const red = { type: 'image/png', width: 20, height: 20, corner: [255, 0, 0, 255], hasInk: true }
+    const blue = { ...red, corner: [0, 0, 255, 255] }
+    assert.deepEqual(await readImage(crop), red)
+    assert.equal(await readImage(signature), null)
+
+    const surface = crop.locator('[data-ui-crop-surface]')
+    await surface.scrollIntoViewIfNeeded()
+    const box = await surface.boundingBox()
+    await page.mouse.move(box.x + box.width / 4, box.y + box.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.8, box.y + box.height / 2)
+    assert.deepEqual(await readImage(crop), red)
+    await page.mouse.up()
+    assert.deepEqual(await readImage(crop), blue)
+    await page.mouse.move(box.x + box.width * 0.05, box.y + box.height * 0.2)
+    await page.mouse.down()
+    await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.7)
+    await page.mouse.up()
+    assert.deepEqual(await readImage(crop), { ...red, width: 10, height: 10 })
+
+    const canvas = signature.locator('canvas')
+    await canvas.scrollIntoViewIfNeeded()
+    const pad = await canvas.boundingBox()
+    await page.mouse.move(pad.x + 20, pad.y + 20)
+    await page.mouse.down()
+    await page.mouse.move(pad.x + 80, pad.y + 60, { steps: 4 })
+    assert.equal(await readImage(signature), null)
+    await page.mouse.up()
+    assert.deepEqual(await readImage(signature), {
+        type: 'image/png',
+        ...(await canvas.evaluate((el) => ({ width: el.width, height: el.height }))),
+        corner: [0, 0, 0, 0],
+        hasInk: true,
+    })
+    await page.locator('#read-drawings').click()
+    await page.waitForFunction(
+        () => document.getElementById('read-drawings').textContent === 'image/png,image/png',
+    )
+
+    await signature.getByRole('button').click()
+    assert.equal(await readImage(signature), null)
+    const form = page.locator('#external-drawings')
+    assert.deepEqual(await form.evaluate((el) => [...new FormData(el).keys()]), [])
+    await form.evaluate(async (el) => {
+        el.addEventListener('reset', (event) => event.preventDefault(), { once: true })
+        el.reset()
+        await window.Alpine.nextTick()
+    })
+    assert.deepEqual(await readImage(crop), { ...red, width: 10, height: 10 })
+    await form.evaluate((el) => el.reset())
+    await page.waitForFunction(
+        () => document.querySelector('#export-crop [data-ui-crop-frame]').style.left === '0%',
+    )
+    assert.deepEqual(await readImage(crop), red)
+    assert.deepEqual(await page.evaluate(() => window.drawingEvents), [])
+    assert.deepEqual(requests, [])
 })
 
 test('a readonly questionnaire submits the same answers on each question', async (t) => {
@@ -540,6 +855,108 @@ test('combobox aligns the selected option to either trigger and handles an empty
         const empty = await panel.boundingBox()
         assert.ok(Math.abs(empty.y - box.y - box.height - 6) <= 1, id)
         await input.press('Escape')
+        await panel.waitFor({ state: 'hidden' })
+    }
+})
+
+test('checkbox states paint with their own background, border and foreground', async (t) => {
+    const page = await openProbe(t, '?popupStyles=1')
+    const checkbox = page.locator('#checkbox-colors')
+    await checkbox.evaluate((el) => {
+        el.style.cssText = `transition: none;
+            --checked-bg: #123456; --checked-border: #567890; --checked-fg: #fedcba;
+            --indeterminate-bg: #321456; --indeterminate-border: #765890; --indeterminate-fg: #defabc`
+    })
+    for (const dark of [false, true]) {
+        await page.evaluate((dark) => document.documentElement.classList.toggle('dark', dark), dark)
+        for (const [checked, mixed] of [
+            [true, false],
+            [false, true],
+            [true, true],
+        ]) {
+            const paint = await checkbox.evaluate(
+                (el, [checked, mixed]) => {
+                    el.checked = checked
+                    el.indeterminate = mixed
+                    const style = getComputedStyle(el)
+                    return [
+                        style.backgroundColor,
+                        style.borderTopColor,
+                        style.color,
+                        getComputedStyle(el, '::before').backgroundColor,
+                    ]
+                },
+                [checked, mixed],
+            )
+            const [background, border, foreground] = mixed
+                ? ['rgb(50, 20, 86)', 'rgb(118, 88, 144)', 'rgb(222, 250, 188)']
+                : ['rgb(18, 52, 86)', 'rgb(86, 120, 144)', 'rgb(254, 220, 186)']
+            assert.deepEqual(paint, [background, border, foreground, foreground])
+        }
+    }
+})
+
+test('a full-width combobox fits the viewport and accepts a host width limit', async (t) => {
+    const page = await openProbe(t, '?popupStyles=1', { viewport: { width: 360, height: 740 } })
+    const trigger = page.locator('#width-choice')
+    await page.addStyleTag({
+        content:
+            '#width-choice { width: 100vw } .ui-combobox-content { animation: none !important }',
+    })
+    await trigger.click()
+    const panel = page.locator('.ui-combobox-content:popover-open')
+    const waitForWidth = (width) =>
+        page.waitForFunction(
+            (width) =>
+                document
+                    .querySelector('.ui-combobox-content:popover-open')
+                    ?.style.getPropertyValue('--anchor-width') === width,
+            width,
+        )
+    await waitForWidth('360px')
+    const box = await panel.boundingBox()
+    assert.ok(box.x >= 0 && box.x + box.width <= 360)
+    await page.addStyleTag({ content: '#width-choice { width: 180px }' })
+    await waitForWidth('180px')
+    assert.equal((await panel.boundingBox()).width, 180)
+    await panel.evaluate((el) => el.style.setProperty('--available-width', '150px'))
+    assert.equal((await panel.boundingBox()).width, 150)
+})
+
+test('popup motion uses its anchor or the composite control’s centered origin', async (t) => {
+    const page = await openProbe(t, '?popupStyles=1')
+    const panel = page.locator('[data-ui-panel]:popover-open')
+    for (const id of [
+        'origin-button',
+        'width-choice',
+        'width-icon',
+        'cascade-choice',
+        'tree-choice',
+    ]) {
+        await page.locator('#' + id).click()
+        await panel.waitFor()
+        const anchored = ['origin-button', 'width-choice'].includes(id)
+        const { actual, expected, maxWidth } = await panel.evaluate((el, anchored) => {
+            const style = getComputedStyle(el)
+            const expected = anchored
+                ? ['--origin-x', '--origin-y'].map((key) =>
+                      parseFloat(el.style.getPropertyValue(key)),
+                  )
+                : [parseFloat(style.width) / 2, parseFloat(style.height) / 2]
+            return {
+                actual: style.transformOrigin.split(' ').map(parseFloat),
+                expected,
+                maxWidth: style.maxWidth,
+            }
+        }, anchored)
+        assert.ok(
+            actual.every((value, axis) => Math.abs(value - expected[axis]) < 0.1),
+            id,
+        )
+        if (id === 'width-icon') assert.equal(maxWidth, 'none')
+        await panel.evaluate((el) => el.style.setProperty('--transform-origin', '9px 17px'))
+        assert.equal(await panel.evaluate((el) => getComputedStyle(el).transformOrigin), '9px 17px')
+        await page.keyboard.press('Escape')
         await panel.waitFor({ state: 'hidden' })
     }
 })
@@ -867,7 +1284,7 @@ test('editor reset requests the initial output format and respects the controlle
     await page.locator('#first-editor [contenteditable="true"]').fill('Edited')
     await page.locator('#documents').evaluate((form) => {
         form.addEventListener('value-changed', (event) => {
-            const input = event.target.querySelector('esoboy-editor')
+            const input = event.target.closest('esoboy-editor')
             form.dataset[input.id === 'first-editor' ? 'resetBody' : 'resetControlled'] =
                 event.detail.value
         })
@@ -952,6 +1369,26 @@ test('menu arrows skip disabled items and typeahead moves focus', async (t) => {
     await page.locator('#menu-trigger').press('ArrowDown')
     const action = () => page.evaluate(() => document.activeElement.textContent.trim())
     assert.equal(await action(), 'Archive')
+    const scans = await page
+        .getByRole('menu')
+        .filter({ hasText: 'Archive' })
+        .evaluate((panel) => {
+            let reads = 0
+            const query = panel.querySelectorAll
+            panel.querySelectorAll = function (selector) {
+                reads++
+                return query.call(this, selector)
+            }
+            try {
+                document.activeElement.dispatchEvent(
+                    new KeyboardEvent('keydown', { key: 'Shift', bubbles: true }),
+                )
+                return reads
+            } finally {
+                delete panel.querySelectorAll
+            }
+        })
+    assert.equal(scans, 0)
     await page.keyboard.press('ArrowDown')
     assert.equal(await action(), 'Rename')
     await page.keyboard.press('a')
@@ -1199,10 +1636,14 @@ test('a trace and its nested disclosure toggle independently', async (t) => {
     await page.locator('#toggle-trace').click()
     await trace.waitFor()
     assert.equal(await nested.isVisible(), false)
+    await nested.evaluate((el) => (el.style.height = '53px'))
     await page.locator('#toggle-nested').press('Enter')
     await nested.waitFor()
+    assert.equal(await nested.evaluate((el) => el.offsetHeight), 53)
     await page.locator('#toggle-nested').press('Enter')
     await nested.waitFor({ state: 'hidden' })
+    await page.locator('#toggle-nested').press('ArrowDown')
+    assert.equal(await nested.isVisible(), false)
     assert.equal(await trace.isVisible(), true)
     await page.locator('#toggle-trace').click()
     await trace.waitFor({ state: 'hidden' })
@@ -1428,28 +1869,31 @@ test('sidebar buttons and links expose their tooltips only when collapsed on des
     assert.deepEqual(await states(), ['true', 'true'])
 })
 
-test('crop dragging previews the frame and commits its form value on release', async (t) => {
+test('crop dragging previews the frame and commits the exported image on release', async (t) => {
     const page = await openProbe(t, '?state=1')
-    const surface = page.locator('[data-ui-crop-surface]')
+    const crop = page.locator('#export-crop')
+    const surface = crop.locator('[data-ui-crop-surface]')
     const frame = surface.locator('[data-ui-crop-frame]')
-    const value = () =>
-        page
-            .locator('input[type="hidden"][name="crop"]')
-            .evaluate((input) => JSON.parse(input.value))
+    const image = () =>
+        crop.evaluate(async (el) =>
+            Array.from(new Uint8Array(await (await el.getResult()).arrayBuffer())),
+        )
     await surface.evaluate((el) => Object.assign(el.style, { width: '200px', height: '120px' }))
     await surface.scrollIntoViewIfNeeded()
-    const before = await value(),
-        box = await surface.boundingBox()
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    const before = await frame.boundingBox()
+    const original = await image()
+    const x = before.x + before.width / 2
+    const y = before.y + before.height / 2
+    await page.mouse.move(x, y)
     await page.mouse.down()
-    await page.mouse.move(box.x + box.width * 0.55, box.y + box.height / 2)
-    const preview = await frame.evaluate((el) => parseFloat(el.style.left) / 100)
-    assert.ok(preview > before.x)
-    assert.deepEqual(await value(), before)
+    await page.mouse.move(x + 24, y)
+    const preview = await frame.boundingBox()
+    assert.ok(preview.x > before.x)
+    assert.equal(preview.width, before.width)
+    assert.deepEqual(await image(), original)
     await page.mouse.up()
-    const committed = await value()
-    assert.ok(Math.abs(committed.x - preview) < 0.001)
-    assert.equal(committed.width, before.width)
+    assert.deepEqual(await frame.boundingBox(), preview)
+    assert.notDeepEqual(await image(), original)
 })
 
 test('the first editor undo returns to the loaded document and redo restores the edit', async (t) => {
@@ -1622,6 +2066,23 @@ test('Slider uses native step values for its thumbs, model and submitted values'
 
 test('Tabs activates an available panel after removal and keeps it when the first tab returns', async (t) => {
     const page = await openProbe(t, '?forms=1')
+    const scans = await page.locator('#changing-tabs').evaluate(async (root) => {
+        const panel = root.querySelector('[role="tabpanel"]')
+        const query = root.querySelectorAll
+        let count = 0
+        root.querySelectorAll = function (selector) {
+            if (selector.includes('[role="tab"]')) count++
+            return query.call(this, selector)
+        }
+        const output = panel.appendChild(document.createElement('output'))
+        for (let i = 0; i < 3; i++) {
+            output.textContent = String(i)
+            await new Promise(requestAnimationFrame)
+        }
+        delete root.querySelectorAll
+        return count
+    })
+    assert.equal(scans, 0)
     const toggle = page.getByRole('button', { name: 'Toggle first tab' })
     await toggle.click()
     await page.getByRole('tabpanel', { name: 'Second tab' }).waitFor()
@@ -1637,6 +2098,77 @@ test('Tabs activates an available panel after removal and keeps it when the firs
     })
     await page.getByRole('tabpanel', { name: 'First tab' }).waitFor()
     assert.equal(await page.getByRole('tab', { name: 'First tab' }).getAttribute('tabindex'), '0')
+})
+
+test('nested tabs use their own orientation and activate the Livewire model only on selection', async (t) => {
+    const page = await openProbe(t, '?forms=1')
+    const list = page.locator('#changing-tabs > [role="tablist"]')
+    const inner = page.locator('#inner-tabs > [role="tablist"]')
+    const first = page.getByRole('tab', { name: 'First tab' })
+    const second = page.getByRole('tab', { name: 'Second tab' })
+    const isFocused = (el) => el === document.activeElement
+
+    assert.equal(await list.evaluate((el) => getComputedStyle(el).flexDirection), 'column')
+    assert.equal(await inner.getAttribute('aria-orientation'), 'horizontal')
+    assert.equal(await inner.evaluate((el) => getComputedStyle(el).flexDirection), 'row')
+    await page.getByRole('tab', { name: 'Inner first' }).press('ArrowLeft')
+    await page.getByRole('tabpanel', { name: 'Inner second' }).waitFor()
+    assert.equal(await first.getAttribute('aria-selected'), 'true')
+
+    await first.press('ArrowDown')
+    assert.equal(await second.evaluate(isFocused), true)
+    assert.equal(await first.getAttribute('aria-selected'), 'true')
+    assert.equal(await second.getAttribute('tabindex'), '0')
+    await second.press('Enter')
+    await page.locator('#active-tab', { hasText: /^b$/ }).waitFor()
+    const previousList = await list.elementHandle()
+    await page.getByRole('button', { name: 'Rotate tabs' }).click()
+    await page.locator('#changing-tabs > [aria-orientation="horizontal"]').waitFor()
+    assert.equal(await previousList.evaluate((el) => el.isConnected), false)
+    await second.press('ArrowLeft')
+    assert.equal(await first.evaluate(isFocused), true)
+    await first.press('Space')
+    await page.locator('#active-tab', { hasText: /^a$/ }).waitFor()
+})
+
+test('accordion uses native tab order and disclosure while preserving caller content', async (t) => {
+    const page = await openProbe(t, '?interactions=1')
+    const items = page.locator('#native-accordion details')
+    const shipping = items.first().locator('summary')
+    const returns = items.last().locator('summary')
+    assert.equal(await shipping.getByText('info').isVisible(), true)
+    await shipping.press('Enter')
+    assert.equal(await items.first().evaluate((el) => el.open), true)
+    await shipping.press('ArrowDown')
+    assert.equal(await shipping.evaluate((el) => el === document.activeElement), true)
+    await page.keyboard.press('Tab')
+    assert.equal(await returns.evaluate((el) => el === document.activeElement), true)
+    await returns.press('Space')
+    assert.deepEqual(await items.evaluateAll((nodes) => nodes.map((el) => el.open)), [
+        false,
+        false,
+        true,
+    ])
+})
+
+test('toggle group arrows follow its direction and skip nested and disabled inputs', async (t) => {
+    const page = await openProbe(t, '?interactions=1')
+    const first = page.getByRole('checkbox', { name: 'First filter' })
+    const last = page.getByRole('checkbox', { name: 'Last filter' })
+    await first.press('ArrowLeft')
+    assert.equal(await last.evaluate((el) => el === document.activeElement), true)
+    assert.equal(await last.isChecked(), false)
+    await last.press('Space')
+    assert.equal(await last.isChecked(), true)
+    await page.waitForFunction(() => {
+        const span = document.activeElement.nextElementSibling
+        return span && getComputedStyle(span).backgroundColor === 'rgb(34, 68, 102)'
+    })
+    await last.press('ArrowLeft')
+    assert.equal(await first.evaluate((el) => el === document.activeElement), true)
+    const nested = page.getByRole('checkbox', { name: 'Nested filter' })
+    await nested.press('Home')
+    assert.equal(await nested.evaluate((el) => el === document.activeElement), true)
 })
 
 test('Questionnaire accepts its shortcut letter as the first character of a freeform answer', async (t) => {
@@ -1658,4 +2190,140 @@ test('Questionnaire accepts its shortcut letter as the first character of a free
     await input.pressSequentially('apple')
     assert.equal(await input.inputValue(), 'apple')
     assert.equal(await page.getByRole('radio', { name: 'Option A A' }).isChecked(), false)
+})
+
+test('parent morphs preserve keyed fields, change binding modes and update native form owners', async (t) => {
+    const page = await openProbe(t, '?contracts=1')
+    const errors = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    const row = page.locator('#row-one')
+    await row.fill('7')
+    await row.evaluate((input) => {
+        window.editedRow = input
+    })
+    await page.locator('#reverse').click()
+    await page.waitForFunction(() => document.querySelector('input[id^="row-"]').id === 'row-two')
+    assert.equal(await row.inputValue(), '7')
+    assert.ok(await row.evaluate((input) => input === window.editedRow))
+    await page.locator('#switch').click()
+    await page.waitForFunction(() => document.querySelector('#moving').value === '8')
+    await page.locator('#owned[aria-label="New label"]').waitFor()
+    assert.deepEqual(
+        await page.evaluate(() => [
+            ...new FormData(document.querySelector('#before')),
+            ...new FormData(document.querySelector('#after')),
+        ]),
+        [['next', 'b']],
+    )
+    await page
+        .getByRole('button', { name: 'Alpha', exact: true })
+        .and(page.locator('#source'))
+        .waitFor()
+    await page.locator('#update-first').click()
+    await page.waitForFunction(() => Livewire.first().first === 13)
+    assert.equal(await page.locator('#moving').inputValue(), '8')
+    await page.locator('#update-second').click()
+    await page.waitForFunction(() => document.querySelector('#moving').value === '15')
+    assert.deepEqual(errors, [])
+})
+
+test('native groups, deferred nullable table selection and loading states use the parent form', async (t) => {
+    const page = await openProbe(t, '?contracts=1')
+    assert.ok(await page.locator('#radio input[value=a]').isChecked())
+    assert.ok(await page.locator('#toggles input[value=a]').isChecked())
+    await page.locator('#radio input[value=b]').check()
+    await page.locator('#toggles label').last().click()
+    await page.waitForFunction(
+        () => document.querySelector('#group-values').textContent === 'b|a,b',
+    )
+    await page.waitForLoadState('networkidle')
+    let requests = 0
+    page.on('request', (request) => {
+        if (request.method() === 'POST') requests++
+    })
+    const header = page.locator('#nullable thead input[type=checkbox]')
+    await header.check()
+    assert.deepEqual(await page.evaluate(() => Livewire.first().selection), ['one'])
+    assert.equal(requests, 0)
+    assert.equal(await page.locator('#save').evaluate((button) => button.form.id), 'outer')
+    const hold = Promise.withResolvers()
+    await page.route(
+        '**/update',
+        async (route) => {
+            await hold.promise
+            await route.continue()
+        },
+        { times: 1 },
+    )
+    try {
+        await page.locator('#save').click()
+        await page.waitForFunction(() => document.querySelector('#loading').matches(':disabled'))
+    } finally {
+        hold.resolve()
+    }
+    await page.waitForFunction(() => !document.querySelector('#loading').matches(':disabled'))
+})
+
+test('the table header respects numeric values, off-page selection and blur commits', async (t) => {
+    const page = await openProbe(t, '?contracts=1')
+    const header = page.locator('#numeric-table thead input')
+    await header.check()
+    assert.deepEqual(await page.evaluate(() => Livewire.first().numericSelection), [9])
+    await header.press('Tab')
+    await page.locator('#numeric-selection', { hasText: /^\[9,1,2\]$/ }).waitFor()
+    await header.uncheck()
+    await header.press('Tab')
+    await page.locator('#numeric-selection', { hasText: /^\[9\]$/ }).waitFor()
+})
+
+test('rebinding an editor detaches the old model with and without a public key', async (t) => {
+    const page = await openProbe(t, '?contracts=1')
+    await page.locator('#enable-editors').click()
+    await page.waitForFunction(() =>
+        ['moving-editor', 'keyed-editor'].every(
+            (id) => document.getElementById(id)?.editor?.isInitialized,
+        ),
+    )
+    await page.locator('#switch').click()
+    await page.waitForFunction(() =>
+        ['moving-editor', 'keyed-editor'].every(
+            (id) => document.getElementById(id)?.value === 'Second',
+        ),
+    )
+    assert.equal(await page.locator('#keyed-editor').getAttribute('wire:key'), 'keyed-draft')
+    for (const id of ['moving-editor', 'keyed-editor']) {
+        await page.locator('#' + id + ' [contenteditable=true]').fill(id)
+        await page.waitForFunction((text) => Livewire.first().newDraft === text, id)
+        assert.equal(await page.evaluate(() => Livewire.first().oldDraft), 'First')
+    }
+})
+
+test('the standalone Tiptap element edits, submits and resets without the component-library runtime', async (t) => {
+    const page = await openProbe(t, '?editors=1')
+    const [js, css] = await page.evaluate(() => [
+        document.querySelector('script[src*="editor.js"]').src,
+        document.querySelector('link[href*="editor.css"]').href,
+    ])
+    await page.route('**/standalone-editor-test', (route) =>
+        route.fulfill({
+            contentType: 'text/html',
+            body:
+                '<link rel="stylesheet" href="' +
+                css +
+                '"><script defer src="' +
+                js +
+                '"></script><form id="post"></form><esoboy-editor form="post" name="body" initial-value="**First**" input-type="markdown" output-type="html"></esoboy-editor>',
+        }),
+    )
+    await page.goto(new URL('/standalone-editor-test', page.url()).href)
+    const input = page.locator('esoboy-editor [contenteditable=true]')
+    await input.waitFor()
+    assert.ok(await page.evaluate(() => !window.Alpine && !window.Livewire))
+    await input.fill('Second')
+    const body = () => page.locator('#post').evaluate((form) => new FormData(form).get('body'))
+    const edited = await page.locator('esoboy-editor').evaluate((editor) => editor.getHTML())
+    assert.match(edited, /Second/)
+    assert.equal(await body(), edited)
+    await page.locator('#post').evaluate((form) => form.reset())
+    assert.equal(await body(), '<p><strong>First</strong></p>')
 })

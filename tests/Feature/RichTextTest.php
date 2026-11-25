@@ -66,10 +66,10 @@ it('preserves visual size presets independently from file metadata', function (s
 it('renders each stored visual and attachment metadata through the Blade rich text entry', function () {
     $content = '<div data-type="mediaRow"><img src="/one.jpg" width="160"><video src="/two.mp4" width="180" controls></video></div><a data-type="file" href="/guide.pdf" data-name="指南.pdf" data-ext="pdf" data-size="2560" title="&lt;阅读&gt;">指南.pdf</a><a href="/page">正文链接</a>';
     $html = Blade::render('<x-ui::rich-text :value="$content" />', compact('content'));
-    expect($html)->not->toContain('data-type="mediaRow"')->toContain('src="/one.jpg"', 'src="/two.mp4"', 'width="160"', 'width="180"', 'download="指南.pdf"', '<span>&lt;阅读&gt;</span>', '<span>指南.pdf · 2.5 KB</span>', '>正文链接</a>');
+    expect($html)->not->toContain('data-type="mediaRow"')->toContain('src="/one.jpg"', 'src="/two.mp4"', 'width="160"', 'width="180"', 'title="&lt;阅读&gt;"', '>指南.pdf</a>', '>正文链接</a>')->not->toContain('<span>', '2.5 KB');
 });
 
-it('retains third-party frames with normalized playback attributes in both formats', function (string $type) {
+it('retains third-party frames without adding presentation attributes in both formats', function (string $type) {
     $content = '<iframe src="//open.iqiyi.com/developer/player_js/coopPlayerIndex.html?vid=example&amp;tvId=12" title="湖畔短片" width="720" height="405" sandbox="allow-forms" srcdoc="inline" onload="ignored"></iframe>'
         ."\n\n".'<iframe src="https://www.youtube.com/embed/M7lc1UVf-VE" width="100%" height="-20"></iframe>'
         ."\n\n".'<iframe src="https://video.example/player"></iframe>';
@@ -82,10 +82,15 @@ it('retains third-party frames with normalized playback attributes in both forma
         ->and($iqiyi->getAttribute('width'))->toBe('720')
         ->and($iqiyi->getAttribute('height'))->toBe('405')
         ->and($iqiyi->getAttribute('sandbox'))->toContain('allow-same-origin')
-        ->and($iqiyi->hasAttribute('allowfullscreen'))->toBeTrue();
-    expect($frames->item(1)->getAttribute('width'))->toBe('640')
-        ->and($frames->item(1)->getAttribute('height'))->toBe('360')
-        ->and($frames->item(1)->getAttribute('title'))->toBe('Embedded content')
+        ->and($iqiyi->hasAttribute('allowfullscreen'))->toBeFalse();
+    expect($frames->item(1)->getAttribute('width'))->toBe('100%')
+        ->and($frames->item(1)->getAttribute('height'))->toBe('-20')
+        ->and($frames->item(1)->getAttribute('title'))->toBeNull()
         ->and($frames->item(2)->getAttribute('sandbox'))->toBe('allow-scripts allow-presentation')
         ->and($html)->not->toContain('allow-forms', 'srcdoc', 'onload');
 })->with(['html', 'markdown']);
+
+it('renders slot content through the same rich text pipeline', function () {
+    expect(Blade::render('<x-ui::rich-text>**一段文字**</x-ui::rich-text>'))->toContain('<strong>一段文字</strong>')
+        ->and(Blade::render('<x-ui::rich-text><p><em>原有内容</em></p></x-ui::rich-text>'))->toContain('<p><em>原有内容</em></p>');
+});

@@ -7,9 +7,9 @@ export function registerStep(Alpine) {
         function bind(button) {
             const initiallyDisabled = button.hasAttribute('disabled')
             return Alpine.bind(button, {
-                ':disabled'() {
-                    return initiallyDisabled || (disabledWhen ? evaluate(disabledWhen) : false)
-                },
+                ...(disabledWhen && {
+                    ':disabled': () => initiallyDisabled || evaluate(disabledWhen),
+                }),
                 '@click'(event) {
                     if (button.matches(':disabled,[aria-disabled="true"]')) return
                     event.preventDefault()

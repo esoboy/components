@@ -1,11 +1,13 @@
-import { moveFocus } from '../behaviors/keyboard.js'
+import { moveGroupFocus } from '../behaviors/keyboard.js'
 
 export function choiceGroup() {
     return {
         navigate(event) {
-            if (!event.target.matches('input')) return
-            const nodes = [...this.$root.querySelectorAll('input:not(:disabled)')]
-            const target = moveFocus(event, nodes, this.$root.dataset.orientation === 'vertical')
+            const target = moveGroupFocus(
+                event,
+                '.ui-toggle-group',
+                '.ui-toggle-group-item > input',
+            )
             if (target?.type === 'radio') target.click()
         },
     }

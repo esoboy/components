@@ -1,5 +1,5 @@
 .ui-popover-content {
-    @apply text-body p-2.5 duration-100 origin-(--transform-origin) z-50 w-72 font-normal overflow-visible
+    @apply text-body p-2.5 duration-100 z-50 w-72 font-normal overflow-visible
         flex flex-col gap-2.5;
 }
 .ui-popover-header {

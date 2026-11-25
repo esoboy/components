@@ -21,7 +21,7 @@
     content: '';
     width: calc(var(--radio-size, 1rem) / 2);
     height: calc(var(--radio-size, 1rem) / 2);
-    background: var(--part-bg, var(--color-primary-foreground));
+    background: currentColor;
     border-radius: 50%;
 }
 @media (forced-colors: active) {

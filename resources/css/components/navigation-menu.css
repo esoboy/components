@@ -137,3 +137,6 @@
 .ui-navigation-menu-positioner[data-ending] .ui-navigation-menu-content {
     opacity: 0;
 }
+.ui-navigation-menu-popup[data-instant] {
+    @apply transition-[opacity,scale,translate,transform];
+}

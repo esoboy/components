@@ -22,3 +22,9 @@
     gap: 0.5rem;
     margin-top: 1rem;
 }
+.ui-tour-content[data-target-positioned] {
+    @apply m-0;
+}
+.ui-tour-highlight {
+    @apply outline-2 outline-solid outline-ring;
+}

@@ -2,8 +2,12 @@
     --multiple-disabled-bg: initial;
 }
 .ui-combobox-content {
-    @apply origin-(--transform-origin) w-(--anchor-width) max-w-(--available-width) min-w-36 p-0
-        [--list-max-height:15.75rem];
+    --list-max-height: 15.75rem;
+    --combobox-max-width: var(--available-width, calc(100vw - 1rem));
+    width: var(--anchor-width);
+    min-width: min(var(--anchor-width), var(--combobox-max-width));
+    max-width: var(--combobox-max-width);
+    padding: 0;
 }
 .ui-combobox-chip {
     @apply has-disabled:cursor-not-allowed has-disabled:opacity-50 has-disabled:pointer-events-none

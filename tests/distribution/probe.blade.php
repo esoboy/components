@@ -79,12 +79,12 @@ new class extends Component {
     @endif
     <button id="start-questions" wire:click="$set('questionItem', 'second')">Show questions</button>
     @if ($questionItem !== null)
-        <div id="controlled-questions">
+        <div id="controlled-questions"><form>
             <x-ui::questionnaire id="survey" :item="$questionItem" initial-item="first"
                 :items="[['name' => 'first', 'prompt' => 'First question'], ['name' => 'second', 'prompt' => 'Second question']]" />
             <output id="requested-item">{{ $requestedItem }}</output>
-            <button id="accept-item" wire:click="$set('acceptItem', true)" aria-pressed="{{ $acceptItem ? 'true' : 'false' }}">Accept navigation</button>
-        </div>
+            <button type="button" id="accept-item" wire:click="$set('acceptItem', true)" aria-pressed="{{ $acceptItem ? 'true' : 'false' }}">Accept navigation</button>
+        </form></div>
     @endif
     <x-ui::dropdown-menu>
         <x-ui::dropdown-menu.trigger><x-ui::button id="menu-trigger">Actions</x-ui::button></x-ui::dropdown-menu.trigger>

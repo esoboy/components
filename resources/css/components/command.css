@@ -11,17 +11,9 @@
 .ui-command-input {
     @apply text-body w-full outline-hidden disabled:cursor-not-allowed disabled:opacity-50;
 }
-.ui-command-item:is(:hover, :focus, [aria-selected='true']),
-.ui-command-list:not(:has(:focus, [aria-selected='true']))
-    > .ui-command-item:not(:disabled):first-of-type,
-.ui-command-list:not(:has(:focus, [aria-selected='true']))
-    .ui-command-group:first-child
-    .ui-command-item:not(:disabled):first-of-type {
+.ui-command-item:is([data-highlighted], :focus-visible) {
     background-color: var(--item-focus-bg, var(--color-muted));
     color: var(--item-focus-fg, var(--color-foreground));
-}
-.ui-command-list:has(.ui-command-item:hover) .ui-command-item:not(:hover):not(:focus) {
-    background: var(--item-focus-bg, transparent);
 }
 .ui-command-group {
     @apply overflow-hidden p-1 text-[color:var(--part-fg,var(--color-foreground))];

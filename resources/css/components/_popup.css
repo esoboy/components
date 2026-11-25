@@ -19,8 +19,11 @@
     --enter-x: 0px;
     --enter-y: 0px;
     opacity: 0;
-    transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
+    transform-origin: var(--transform-origin, var(--origin-x, 50%) var(--origin-y, 50%));
     transition: outline-width var(--motion-duration) ease;
+}
+.ui-popup-centered {
+    transform-origin: var(--transform-origin, center);
 }
 .ui-list-popup {
     overflow: clip;

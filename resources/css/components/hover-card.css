@@ -4,7 +4,7 @@
     --panel-hover-ring: initial;
 }
 .ui-hover-card-content {
-    @apply text-body p-2.5 duration-100 origin-(--transform-origin) z-50 font-normal
+    @apply text-body p-2.5 duration-100 z-50 font-normal
         ring-[color:var(--panel-hover-ring,var(--foreground-10))]
         bg-[color:var(--panel-hover-bg,var(--color-popover))]
         text-[color:var(--panel-hover-fg,var(--color-popover-foreground))] w-64;

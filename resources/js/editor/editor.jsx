@@ -17,7 +17,6 @@ import { TableTools } from './table'
 import { LinkPopover } from './text-tools'
 import { EmbedDialog, EmbedTools } from './iframe'
 import { Toolbar, ToolbarGroup } from './tiptap-ui/primitives'
-import { editor as editorControl } from './host.js'
 import './style.css'
 
 const bubbleOptions = {
@@ -129,6 +128,10 @@ function EditorApp({ host, container }) {
             host.serialize = serializer(instance)
             host.replace(host._value, host._sourceType, { addToHistory: false })
             host.syncState()
+            host.initialOutput ??= host.value
+            host.internals.setFormValue(host.value)
+            if (!host.hasAttribute('value') && host._value !== host.value)
+                host.emit('input', host.value)
             host.dispatchEvent(
                 new CustomEvent('editor-ready', {
                     bubbles: true,
@@ -139,12 +142,21 @@ function EditorApp({ host, container }) {
             repaint((n) => n + 1)
         },
         onUpdate() {
-            host._value = host.value
+            const value = host.value
+            host._value = value
+            host.dirty = true
+            if (host.hasAttribute('value'))
+                host.replace(host.getAttribute('value'), undefined, { addToHistory: false })
+            else {
+                host.internals.setFormValue(value)
+                host.emit('input', value)
+            }
+            host.emit('value-changed', value)
             host.dispatchEvent(
                 new CustomEvent('editor-change', {
                     bubbles: true,
                     composed: true,
-                    detail: { value: host._value },
+                    detail: { value },
                 }),
             )
         },
@@ -171,18 +183,10 @@ function EditorApp({ host, container }) {
             refresh()
             setSource((draft) => (draft === null ? null : sourceText(host.editor)))
         }
-        // Reset also discards unfinished markup that never changed the public form value.
-        const form = host.closest('form')
-        const resetDraft = (event) =>
-            queueMicrotask(() => {
-                if (!event.defaultPrevented && host.editor) replaced()
-            })
-        form?.addEventListener('reset', resetDraft)
         host.addEventListener('editor-error', notify)
         host.addEventListener('editor-state', refresh)
         host.addEventListener('editor-document-replaced', replaced)
         return () => {
-            form?.removeEventListener('reset', resetDraft)
             host.removeEventListener('editor-error', notify)
             host.removeEventListener('editor-state', refresh)
             host.removeEventListener('editor-document-replaced', replaced)
@@ -416,7 +420,10 @@ function EditorApp({ host, container }) {
 }
 
 class EsoboyEditor extends HTMLElement {
+    static formAssociated = true
     static observedAttributes = [
+        'value',
+        'input-type',
         'readonly',
         'disabled',
         'output-type',
@@ -427,18 +434,37 @@ class EsoboyEditor extends HTMLElement {
     ]
     constructor() {
         super()
-        this._value = ''
+        this.internals = this.attachInternals()
+        this._value = undefined
         this.getMessage = translator('')
         this.editor = null
         this.mediaSession = new AbortController()
     }
     connectedCallback() {
         if (this.root) return
+        // A binding can set the property before the browser upgrades this element.
+        if (Object.hasOwn(this, 'value')) {
+            const value = this.value
+            delete this.value
+            this.value = value
+        }
+        this.initialSource ??=
+            this.getAttribute('value') ?? this.getAttribute('initial-value') ?? this._value ?? ''
+        this._value ??= this.initialSource
         const container = document.createElement('div')
         container.className = 'editor'
         container.setAttribute('x-ignore', '')
         // Submitting an editor dialog must not submit the surrounding application form.
         container.addEventListener('submit', (event) => event.stopPropagation())
+        for (const type of ['input', 'change'])
+            container.addEventListener(type, (event) => event.stopPropagation())
+        this.onEditorFocusOut ??= (event) => {
+            if (this.contains(event.relatedTarget)) return
+            if (this.dirty) this.emit('change', this.value)
+            this.dirty = false
+            this.dispatchEvent(new Event('blur'))
+        }
+        this.addEventListener('focusout', this.onEditorFocusOut)
         this.replaceChildren(container)
         this.root = createRoot(container)
         this.container = container
@@ -462,6 +488,7 @@ class EsoboyEditor extends HTMLElement {
     disconnectedCallback() {
         queueMicrotask(() => {
             if (this.isConnected) return
+            this.removeEventListener('focusout', this.onEditorFocusOut)
             this.resetMedia()
             this._value = this.value
             this._sourceType = this.getAttribute('output-type') ?? 'html'
@@ -472,7 +499,12 @@ class EsoboyEditor extends HTMLElement {
     attributeChangedCallback(name, previous, value) {
         if (previous === value || !this.root) return
         if (name === 'lang' || name === 'data-messages') this.refreshLanguage()
-        else this.syncState()
+        else if (name === 'value' || (name === 'input-type' && this.hasAttribute('value'))) {
+            this.replace(this.getAttribute('value') ?? '', undefined, { addToHistory: false })
+        } else {
+            this.syncState()
+            if (this.editor) this.internals.setFormValue(this.value)
+        }
     }
     resetMedia() {
         this.mediaSession.abort()
@@ -480,7 +512,7 @@ class EsoboyEditor extends HTMLElement {
     }
     syncState() {
         if (!this.editor) return
-        const disabled = this.hasAttribute('disabled'),
+        const disabled = this.formDisabled || this.hasAttribute('disabled'),
             readonly = this.hasAttribute('readonly')
         if (disabled || readonly) this.resetMedia()
         this.editor.setEditable(!disabled && !readonly, false)
@@ -494,7 +526,31 @@ class EsoboyEditor extends HTMLElement {
             : this._value
     }
     set value(value) {
-        this.replace(value)
+        value ??= ''
+        if (this._value !== value || (this.editor && this.value !== value))
+            this.replace(value, undefined, { addToHistory: false })
+    }
+    emit(type, value) {
+        const detail = type === 'value-changed' ? { value } : value
+        this.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }))
+    }
+    formDisabledCallback(disabled) {
+        this.formDisabled = disabled
+        this.syncState()
+    }
+    formResetCallback() {
+        if (!this.editor) return
+        if (this.hasAttribute('value')) {
+            this.emit('value-changed', this.initialOutput)
+            this.dispatchEvent(new CustomEvent('editor-document-replaced'))
+        } else {
+            this.replace(this.initialSource, undefined, { addToHistory: false })
+            this.emit('input', this.value)
+            this.emit('change', this.value)
+            this.dispatchEvent(new Event('blur'))
+            this.emit('value-changed', this.value)
+        }
+        this.dirty = false
     }
     replace(value, type = this.getAttribute('input-type') ?? 'auto', { addToHistory = true } = {}) {
         if (typeof value !== 'string') throw new TypeError(this.getMessage('contentTypeError'))
@@ -504,6 +560,7 @@ class EsoboyEditor extends HTMLElement {
             try {
                 this.resetMedia()
                 setContent(this.editor, value, type, this.getMessage, addToHistory)
+                this.internals.setFormValue(this.value)
                 this.dispatchEvent(new CustomEvent('editor-document-replaced'))
             } catch (error) {
                 this.dispatchEvent(
@@ -532,8 +589,5 @@ class EsoboyEditor extends HTMLElement {
 }
 
 if (!customElements.get('esoboy-editor')) {
-    const register = () => window.Alpine.data('uiEditor', editorControl)
-    if (window.Alpine) register()
-    else document.addEventListener('alpine:init', register, { once: true })
     customElements.define('esoboy-editor', EsoboyEditor)
 }

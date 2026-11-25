@@ -1,6 +1,6 @@
 import { clamp } from './clamp.js'
 import { enabled, navigatePopupList } from './keyboard.js'
-import { bindSlotControl, observeChildren, slotControl } from './slot.js'
+import { bindSlotControl, observeChildren, owned, slotControl } from './slot.js'
 
 const modals = new Set()
 const popovers = new Map()
@@ -33,12 +33,6 @@ function unlockScroll(panel) {
     if (!modals.delete(panel) || modals.size) return
     document.documentElement.style.overflow = previousOverflow
 }
-function owned(root, selector) {
-    return [...root.querySelectorAll(selector)].find(
-        (element) => element.closest('[data-ui-overlay]') === root,
-    )
-}
-
 function afterExit(panel, callback) {
     panel.dataset.ending = ''
     Promise.allSettled(panel.getAnimations().map((animation) => animation.finished)).then(callback)
@@ -554,15 +548,14 @@ export function registerTrigger(Alpine) {
 function bindTrigger(Alpine, element, control, operation, evaluate) {
     const panelRole = () => evaluate('panel?.role')
     if (operation === 'navigation') {
-        const value = element.dataset.uiNavigationValue
-        const scope = { navigationValue: value }
+        const scope = { navigationValue: element.dataset.uiNavigationValue }
+        const panelId = () => evaluate('opened ? panel?.id : null')
+        const active = () => evaluate('opened && active === navigationValue', { scope })
         return Alpine.bind(control, {
-            ':aria-controls': () => evaluate('opened ? panel?.id : null'),
-            ':popovertarget': () => evaluate('opened ? panel?.id : null'),
-            ':aria-expanded': () =>
-                String(evaluate('opened && active === navigationValue', { scope })),
-            ':data-panel-open': () =>
-                evaluate('opened && active === navigationValue', { scope }) ? '' : null,
+            ':aria-controls': panelId,
+            ':popovertarget': panelId,
+            ':aria-expanded': () => String(active()),
+            ':data-panel-open': () => (active() ? '' : null),
             '@pointerenter': (event) => {
                 if (event.pointerType !== 'touch') evaluate('schedule(navigationValue)', { scope })
             },
@@ -583,6 +576,8 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
         })
     }
     let pointerHandled = false
+    const isClose = operation === 'close'
+    const disabled = () => control.matches(':disabled,[aria-disabled="true"]')
     if (!['open', 'close', 'toggle', 'contextmenu'].includes(operation))
         throw new Error(JSON.parse(element.dataset.uiErrors).operation)
     const bindings = {
@@ -595,7 +590,7 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
                 operation !== 'toggle' ||
                 event.button !== 0 ||
                 event.pointerType !== 'mouse' ||
-                control.matches(':disabled,[aria-disabled="true"]') ||
+                disabled() ||
                 panelRole() !== 'listbox'
             )
                 return
@@ -609,26 +604,26 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
                 return
             }
             pointerHandled = false
-            if (control.matches(':disabled,[aria-disabled="true"]')) return
+            if (disabled()) return
             event.preventDefault()
             const pointerMenu = event.detail > 0 && ['menu', 'listbox'].includes(panelRole())
-            evaluate(`${operation}(${operation === 'close' ? 'true' : pointerMenu ? 'false' : ''})`)
+            evaluate(`${operation}(${isClose ? 'true' : pointerMenu ? 'false' : ''})`)
         },
         ':aria-controls'() {
             evaluate('opened')
-            return operation === 'close' ? null : evaluate('panel?.id')
+            return isClose ? null : evaluate('panel?.id')
         },
         ':aria-haspopup'() {
             const role = panelRole()
-            return operation === 'close'
+            return isClose
                 ? null
                 : ['menu', 'listbox', 'dialog', 'alertdialog'].includes(role)
                   ? role
                   : control.getAttribute('aria-haspopup')
         },
         ':aria-expanded'() {
-            return operation === 'close' ||
-                evaluate("$root.hasAttribute('data-ui-static-expanded')")
+            return isClose ||
+                element.closest('[data-ui-overlay]')?.hasAttribute('data-ui-static-expanded')
                 ? null
                 : String(evaluate('opened'))
         },
@@ -636,20 +631,17 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
             return evaluate('opened') ? '' : null
         },
         '@keydown'(event) {
-            if (
-                operation !== 'close' &&
-                element.closest('[data-ui-submenu]') &&
-                event.key === 'ArrowRight'
-            ) {
+            if (!isClose && element.closest('[data-ui-submenu]') && event.key === 'ArrowRight') {
                 event.preventDefault()
                 event.stopPropagation()
                 evaluate('open()')
                 return
             }
             if (
-                operation === 'close' ||
+                isClose ||
                 !['ArrowDown', 'ArrowUp'].includes(event.key) ||
-                control.matches(':disabled,[aria-disabled="true"]')
+                evaluate('panel')?.hasAttribute('data-ui-disclosure-panel') ||
+                disabled()
             )
                 return
             event.preventDefault()
@@ -663,16 +655,23 @@ function bindTrigger(Alpine, element, control, operation, evaluate) {
     }
     if (element.hasAttribute('data-ui-media-trigger'))
         return bindMediaTrigger(Alpine, control, bindings, evaluate)
+    if (
+        element.matches(
+            '.ui-dialog-trigger, .ui-alert-dialog-trigger, .ui-sheet-trigger, .ui-drawer-trigger',
+        )
+    )
+        delete bindings['@keydown']
     const unbind = Alpine.bind(control, bindings)
     queueMicrotask(() => {
+        if (!element.isConnected || !control.isConnected) return
         const panel = evaluate('panel')
-        if (operation !== 'close' && panel?.id) control.setAttribute('aria-controls', panel.id)
+        if (!isClose && panel?.id) control.setAttribute('aria-controls', panel.id)
     })
     return unbind
 }
 
 function bindMediaTrigger(Alpine, control, bindings, evaluate) {
-    bindings[':aria-controls'] = () => evaluate("$id('ui-dialog')")
+    bindings[':aria-controls'] = () => evaluate('panel?.id')
     if (!control.matches('button, a[href], input, select, textarea, summary')) {
         if (!control.hasAttribute('role')) bindings.role = 'button'
         if (!control.hasAttribute('tabindex')) bindings.tabindex = '0'

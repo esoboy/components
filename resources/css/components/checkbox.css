@@ -1,4 +1,5 @@
 :where(.ui-checkbox) {
+    --checkbox-surface: var(--bg, transparent);
     --checked-border: initial;
     --indeterminate-bg: initial;
     --indeterminate-border: initial;
@@ -7,8 +8,16 @@
 .ui-checkbox {
     @apply outline-none relative shrink-0 transition-colors flex size-4 items-center justify-center border
         rounded-[4px] appearance-none place-content-center
-        [background:var(--bg,transparent)]
+        [background:var(--checkbox-surface)]
         cursor-pointer border-[color:var(--border,var(--color-input))];
+    @variant ui-dark {
+        --checkbox-surface: var(--bg, var(--input-30));
+    }
+    @variant indeterminate {
+        background: var(--indeterminate-bg, var(--checkbox-surface));
+        border-color: var(--indeterminate-border, var(--border, var(--color-input)));
+        color: var(--indeterminate-fg, inherit);
+    }
     @variant aria-invalid {
         @apply ring-3 border-[color:var(--invalid-border,var(--color-destructive))]
             ring-[color:var(--invalid-ring,var(--destructive-20))];
@@ -21,17 +30,6 @@
     }
     @variant group-has-disabled/field {
         @apply opacity-50;
-    }
-    @variant ui-dark {
-        background-color: var(--bg, var(--input-30));
-    }
-    @variant checked {
-        background-color: var(--checked-bg, var(--color-primary));
-        color: var(--checked-fg, var(--color-primary-foreground));
-        border-color: var(--checked-border, var(--color-primary));
-    }
-    @variant ui-dark:checked {
-        background-color: var(--checked-bg, var(--color-primary));
     }
     @variant aria-invalid:aria-checked {
         border-color: var(--invalid-border, var(--color-primary));
@@ -52,15 +50,15 @@
     }
 }
 .ui-checkbox:checked:not(:indeterminate) {
-    background: var(--indeterminate-bg, var(--color-primary));
-    border-color: var(--indeterminate-border, var(--color-primary));
-    color: var(--indeterminate-fg, var(--color-primary-foreground));
+    background: var(--checked-bg, var(--color-primary));
+    border-color: var(--checked-border, var(--color-primary));
+    color: var(--checked-fg, var(--color-primary-foreground));
 }
 .ui-checkbox:is(:checked, :indeterminate)::before {
     content: '';
     width: 100%;
     height: 100%;
-    background: var(--indeterminate-bg, currentColor);
+    background: currentColor;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m20 6-11 11-5-5'/%3E%3C/svg%3E")
         center / contain no-repeat;
 }

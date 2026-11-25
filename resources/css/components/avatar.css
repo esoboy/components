@@ -3,7 +3,7 @@
     --avatar-shadow: initial;
     border-color: var(--border, var(--color-border));
 }
-.ui-avatar-pending {
+.ui-avatar-image:not([data-loaded]) {
     position: absolute;
     inset: 0;
     opacity: 0;
@@ -23,6 +23,9 @@
     @apply flex group-data-[size=sm]/avatar:text-caption items-center justify-center size-full text-body
         bg-[color:var(--part-bg,var(--color-muted))]
         text-[color:var(--part-fg,var(--color-muted-foreground))] rounded-full;
+}
+.ui-avatar:has(.ui-avatar-image[data-loaded]) .ui-avatar-fallback {
+    display: none;
 }
 .ui-avatar-group {
     @apply *:[.ui-avatar]:ring-2 -space-x-2 flex;

@@ -1,15 +1,16 @@
+import { enabled } from '../behaviors/keyboard.js'
+import { focusInPlace } from '../behaviors/overlay.js'
+
 const toastState = new WeakMap()
 
 export function toaster(limit = 3) {
-    let hovering = false
-    let focused = false
-    let windowActive = true
     let previousFocus = null
     let observer,
-        resize,
         queued = false
     return {
         expanded: false,
+        hovering: false,
+        focused: false,
 
         get items() {
             return [...this.$root.querySelectorAll('.ui-toast')].filter(
@@ -17,31 +18,24 @@ export function toaster(limit = 3) {
             )
         },
         shortcut(event) {
-            if (event.key !== 'F6' || event.target === this.$root || !this.items.length) return
+            if (this.$root.contains(document.activeElement) || !this.items.length) return
             event.preventDefault()
             previousFocus = document.activeElement
-            this.$root.focus({ preventScroll: true })
+            focusInPlace(this.$root)
         },
         navigate(event) {
-            if (event.key !== 'Tab') return
+            if (!previousFocus?.isConnected) return
             const controls = [
                 this.$root,
-                ...this.$root.querySelectorAll(
-                    'button,a[href],input,select,textarea,[tabindex="0"]',
-                ),
-            ].filter(
-                (e) =>
-                    !e.closest('[inert],[data-ending]') &&
-                    !e.matches(':disabled') &&
-                    e.getClientRects().length,
-            )
+                ...enabled(this.$root, 'button,a[href],input,select,textarea,[tabindex="0"]'),
+            ].filter((e) => !e.closest('[data-ending]'))
             const index = controls.indexOf(event.target)
             if (
                 (event.shiftKey && index <= 1) ||
                 (!event.shiftKey && index === controls.length - 1)
             ) {
                 event.preventDefault()
-                previousFocus?.focus({ preventScroll: true })
+                focusInPlace(previousFocus)
             }
         },
         closing(event) {
@@ -55,31 +49,22 @@ export function toaster(limit = 3) {
                     this.items.find((e) => all.indexOf(e) > index) ??
                     this.items.at(-1) ??
                     previousFocus
-                next?.focus({ preventScroll: true })
+                focusInPlace(next)
             }
             this.schedule()
         },
-        windowFocus(value, event) {
-            if (event.target !== window) return
-            windowActive = value
-            this.expand()
-        },
         init() {
-            resize = () => this.schedule()
-            observer = new MutationObserver(resize)
+            const layout = () => this.schedule()
+            observer = new MutationObserver(layout)
             observer.observe(this.$root, { childList: true, subtree: true, characterData: true })
-            window.addEventListener('resize', resize)
-            this.$nextTick(resize)
+            this.$nextTick(layout)
         },
         schedule() {
             if (queued) return
             queued = true
             requestAnimationFrame(() => {
                 queued = false
-                if (this.$root.isConnected) {
-                    this.expand()
-                    this.measure()
-                }
+                if (this.$root.isConnected) this.expand()
             })
         },
         measure() {
@@ -108,33 +93,29 @@ export function toaster(limit = 3) {
                 offset += heights[index]
             })
         },
-        hover(value) {
-            hovering = value
-            this.expand()
-        },
-        focus(event) {
-            if (event.type === 'focusin') focused = event.target.matches(':focus-visible')
-            else if (!this.$root.contains(event.relatedTarget)) focused = false
+        leave(next) {
+            if (this.$root.contains(next)) return
+            previousFocus = null
+            this.focused = false
             this.expand()
         },
         expand() {
-            const value = hovering || focused
-            if (
-                !value &&
-                [...this.$root.querySelectorAll('.ui-toast[data-ending]')].some(
-                    (e) => e.style.display !== 'none',
-                )
-            )
-                return
-            this.expanded = value
+            this.expanded =
+                this.hovering ||
+                this.focused ||
+                (this.expanded &&
+                    [...this.$root.querySelectorAll('.ui-toast[data-ending]')].some(
+                        (e) => e.style.display !== 'none',
+                    ))
             this.measure()
             this.$root.dispatchEvent(
-                new CustomEvent('ui-toast-pause', { detail: value || !windowActive }),
+                new CustomEvent('ui-toast-pause', {
+                    detail: this.expanded || !document.hasFocus(),
+                }),
             )
         },
         destroy() {
             observer?.disconnect()
-            window.removeEventListener('resize', resize)
         },
     }
 }
@@ -224,11 +205,11 @@ export function toast(duration = 5000) {
             this.opened = false
             const attempt = ++closing
             this.$root.dataset.ending = ''
-            this.$root.dispatchEvent(new CustomEvent('ui-toast-layout', { bubbles: true }))
+            this.$dispatch('ui-toast-layout')
             Promise.allSettled(this.$root.getAnimations().map((a) => a.finished)).then(() => {
                 if (attempt !== closing || !this.$root.isConnected) return
                 this.visible = false
-                this.$root.dispatchEvent(new CustomEvent('ui-toast-dismissed', { bubbles: true }))
+                this.$dispatch('ui-toast-dismissed')
             })
         },
         startSwipe(event) {

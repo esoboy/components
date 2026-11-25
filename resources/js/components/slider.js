@@ -2,7 +2,6 @@ import { control } from '../behaviors/control.js'
 
 export function slider() {
     let min, max, step, orientation, inverted, range
-    const thumbAttributes = new WeakMap()
     let active = null,
         dragSource
     const snap = (number) => {
@@ -34,28 +33,17 @@ export function slider() {
                 this.signal('input')
             }
         },
-        syncThumb(input, index) {
-            // Internal handles live for the mount, while their native attributes follow Blade.
-            const { thumb, id, label } = this.config
-            const attributes = {
-                ...thumb,
-                id: id && index ? id + '-' + index : id,
-                'aria-label': thumb['aria-label'] ?? label.replace('{n}', index + 1),
-            }
-            for (const name of thumbAttributes.get(input) ?? [])
-                if (!(name in attributes)) input.removeAttribute(name)
-            for (const [name, value] of Object.entries(attributes)) {
-                if (value == null || value === false) input.removeAttribute(name)
-                else input.setAttribute(name, value === true ? name : value)
-            }
-            thumbAttributes.set(input, Object.keys(attributes))
-        },
         offset(index, center = false) {
             const fraction = (this.positions[index] - min) / (max - min)
             return `calc(${fraction * 100}% + ${(center ? 0.5 : 0) - fraction} * var(--slider-thumb-size))`
         },
         change(index, number) {
-            if (this.config.disabled || this.config.readonly) return
+            if (
+                this.config.disabled ||
+                this.config.readonly ||
+                this.$root.querySelector('input[type=range]')?.matches(':disabled')
+            )
+                return
             const next = snap(number)
             this.positions[index] = Math.max(
                 this.positions[index - 1] ?? min,
@@ -81,7 +69,13 @@ export function slider() {
             return min + (inverted ? 1 - fraction : fraction) * (max - min)
         },
         start(event) {
-            if (event.button !== 0 || this.config.disabled || this.config.readonly) return
+            if (
+                event.button !== 0 ||
+                this.config.disabled ||
+                this.config.readonly ||
+                this.$root.querySelector('input[type=range]')?.matches(':disabled')
+            )
+                return
             event.preventDefault()
             const value = this.coordinate(event)
             active = event.target.dataset.sliderIndex

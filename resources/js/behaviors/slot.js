@@ -4,6 +4,12 @@ export function observeChildren(root, update, attributeFilter) {
     return () => observer.disconnect()
 }
 
+export function owned(root, selector, owner = '[data-ui-overlay]') {
+    for (const element of root?.querySelectorAll(selector) ?? []) {
+        if (element.closest(owner) === root) return element
+    }
+}
+
 export function slotControl(element) {
     let control = element?.firstElementChild
     if (

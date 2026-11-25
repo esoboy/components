@@ -1,3 +1,6 @@
+.ui-icon-select-content {
+    max-width: var(--available-width, none);
+}
 .ui-icon-select-pagination {
     @apply border-[color:var(--part-border,var(--color-border))]
         text-[color:var(--part-fg,var(--color-muted-foreground))] flex shrink-0 items-center

@@ -8,6 +8,8 @@ new class extends Component {
     public ?string $saved = null;
     public array $options = [['value' => 'a', 'label' => 'Alpha'], ['value' => 'b', 'label' => 'Beta']];
     public bool $firstTab = true;
+    public bool $verticalTabs = true;
+    public string $tab = 'a';
     public int $amount = 10;
 
     public function save(): void
@@ -57,15 +59,29 @@ new class extends Component {
         <x-ui::slider id="decimal-slider" name="fraction" orientation="vertical" inverted :min="-0.2" :max="0.35" :step="0.1" :initial-value="0.1" />
         <x-ui::slider id="multi-slider" name="span" :max="10" :step="4" :initial-value="[3, 9]" />
     </form>
-    <x-ui::tabs id="changing-tabs">
-        <x-ui::tabs.list>
+    <x-ui::tabs id="changing-tabs" wire:model.live="tab" :orientation="$verticalTabs ? 'vertical' : 'horizontal'">
+        <x-ui::tabs.list wire:key="tabs-list-{{ (int) $verticalTabs }}">
             @if ($firstTab)<x-ui::tabs.tab value="a">First tab</x-ui::tabs.tab>@endif
             <x-ui::tabs.tab value="b">Second tab</x-ui::tabs.tab>
         </x-ui::tabs.list>
-        @if ($firstTab)<x-ui::tabs.content value="a">First panel</x-ui::tabs.content>@endif
+        @if ($firstTab)
+            <x-ui::tabs.content value="a">
+                <x-ui::tabs id="inner-tabs" dir="rtl">
+                    <x-ui::tabs.list variant="line" activate-on-focus>
+                        <x-ui::tabs.tab value="a">Inner first</x-ui::tabs.tab>
+                        <x-ui::tabs.tab value="disabled" disabled>Unavailable</x-ui::tabs.tab>
+                        <x-ui::tabs.tab value="b">Inner second</x-ui::tabs.tab>
+                    </x-ui::tabs.list>
+                    <x-ui::tabs.content value="a">Inner first panel</x-ui::tabs.content>
+                    <x-ui::tabs.content value="b">Inner second panel</x-ui::tabs.content>
+                </x-ui::tabs>
+            </x-ui::tabs.content>
+        @endif
         <x-ui::tabs.content value="b">Second panel</x-ui::tabs.content>
     </x-ui::tabs>
     <button type="button" wire:click="$toggle('firstTab')">Toggle first tab</button>
+    <button type="button" wire:click="$toggle('verticalTabs')">Rotate tabs</button>
+    <output id="active-tab">{{ $tab }}</output>
     <x-ui::questionnaire id="survey" shortcuts="letters" :items="[['name' => 'answer', 'prompt' => 'Answer',
         'choices' => [['value' => 'a', 'label' => 'Option A']], 'input' => ['label' => 'Free text']]]" />
 </main>

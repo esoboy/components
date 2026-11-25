@@ -1,6 +1,6 @@
 .ui-tooltip-content {
     @apply text-caption min-w-0 [background:var(--panel-bg,var(--color-foreground))]
-        text-[color:var(--panel-fg,var(--color-background))] origin-(--transform-origin) z-50 max-w-xs
+        text-[color:var(--panel-fg,var(--color-background))] z-50 max-w-xs
         w-fit font-normal [border-width:0] overflow-visible [box-shadow:none] [outline:none] inline-flex
         items-center gap-1.5 rounded-md px-3 py-1.5 [--motion-duration:150ms];
     @variant has-[.ui-kbd] {

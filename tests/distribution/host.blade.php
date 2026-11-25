@@ -13,8 +13,12 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
+    @elseif(request()->boolean('contracts'))
+        <livewire:contract-probe />
     @elseif(request()->boolean('forms'))
         <livewire:form-probe />
+    @elseif(request()->boolean('controls'))
+        <livewire:controls-probe />
     @elseif(request()->boolean('interactions'))
         <livewire:interaction-probe />
     @elseif(request()->boolean('composition'))
@@ -89,6 +93,17 @@
             <x-ui::combobox id="popup-search" :options="$choices" :initial-value="24" align-item-with-trigger search-in-popup />
             <x-ui::combobox id="multi-search" :options="$choices" :initial-value="[2, 18]" align-item-with-trigger multiple />
         </main>
+    @elseif(request()->boolean('popupStyles'))
+        @php($choices = [['value' => 'one', 'label' => 'One']])
+        <x-ui::checkbox id="checkbox-colors" />
+        <x-ui::popover>
+            <x-ui::popover.trigger><button type="button" id="origin-button">Open details</button></x-ui::popover.trigger>
+            <x-ui::popover.content align="start">Details</x-ui::popover.content>
+        </x-ui::popover>
+        <x-ui::combobox id="width-choice" :options="$choices" search-in-popup />
+        <x-ui::icon-select id="width-icon" search-in-popup />
+        <x-ui::cascader id="cascade-choice" :nodes="$choices" />
+        <x-ui::tree-select id="tree-choice" :nodes="$choices" />
     @else
         <livewire:package-probe />
         <section id="slot-isolation">

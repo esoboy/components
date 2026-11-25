@@ -8,52 +8,40 @@
     display: inline-flex;
     cursor: pointer;
 }
-.ui-toggle:has(:disabled) {
+:is(.ui-toggle, .ui-toggle-group-item):has(> input:disabled) {
     opacity: 0.5;
     pointer-events: none;
 }
 .ui-toggle-control {
-    @apply disabled:opacity-50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0
-        focus-visible:ring-[3px] outline-none border-[color:var(--control-border,transparent)]
+    @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-none
+        bg-[color:var(--bg,transparent)] border-[color:var(--control-border,transparent)]
         inline-flex items-center justify-center whitespace-nowrap gap-1 rounded-lg border text-body
         font-medium transition-all;
     @variant hover {
-        background-color: var(--control-hover-bg, var(--color-muted));
+        background-color: var(--hover-bg, var(--color-muted));
         color: var(--part-fg, var(--color-foreground));
     }
 }
-.ui-toggle.ui-toggle-variant-default > span {
-    background-color: var(--bg, transparent);
-    @variant hover {
-        background-color: var(--hover-bg, var(--color-muted));
-    }
-}
-.ui-toggle.ui-toggle-variant-outline > span {
+.ui-toggle-control-variant-outline {
     border-color: var(--border, var(--color-input));
-    background-color: var(--bg, transparent);
-    @variant hover {
-        background-color: var(--hover-bg, var(--color-muted));
-    }
 }
-.ui-toggle:has(:checked) > span {
+input:checked + .ui-toggle-control {
     background: var(--checked-bg, var(--color-muted));
 }
-.ui-toggle:has(:focus-visible) > span {
-    outline-offset: 2px;
-    outline: 0;
+input:focus-visible + .ui-toggle-control {
     border-color: var(--focus-border, var(--color-ring));
     box-shadow: var(
         --focus-shadow,
         0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
     );
 }
-:is(.ui-toggle, .ui-toggle-group-item)[data-size='default'] > span {
+.ui-toggle-control[data-size='default'] {
     @apply h-8 min-w-8 px-2.5;
 }
-:is(.ui-toggle, .ui-toggle-group-item)[data-size='sm'] > span {
+.ui-toggle-control[data-size='sm'] {
     @apply h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-(length:--text-compact)
         [&_svg:not([class*='size-'])]:size-3.5 [line-height:1.5];
 }
-:is(.ui-toggle, .ui-toggle-group-item)[data-size='lg'] > span {
+.ui-toggle-control[data-size='lg'] {
     @apply h-9 min-w-9 px-2.5;
 }

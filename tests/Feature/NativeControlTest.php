@@ -7,18 +7,18 @@ use Illuminate\View\ViewException;
 
 it('renders simple controls without child snapshots and leaves slot actions on the caller', function (string $name) {
     $html = Blade::render('<x-ui::'.$name.' id="native" wire:model.live="field"><button wire:click="save">Save</button></x-ui::'.$name.'>');
-    expect($html)->toContain('wire:model.live="field"', 'wire:click="save"', 'data-ui-control=')
+    expect($html)->toContain($name === 'number-input' ? 'wire:model.live.number="field"' : 'wire:model.live="field"', 'wire:click="save"')
         ->not->toContain('wire:snapshot=', 'wire:id=', 'x-for=', 'x-html=', 'x-text=');
-})->with(['number-input', 'slider', 'input-otp', 'editor', 'signature']);
+})->with(['number-input', 'slider', 'input-otp', 'editor']);
 
-it('applies native number input attributes to the field and keeps the binding on its container', function () {
+it('applies native attributes and the numeric binding to the number field', function () {
     $html = Blade::render(<<<'BLADE'
         <x-ui::number-input id="quantity" name="units" required placeholder="Units" form="invoice" invalid
             aria-describedby="unit-help" autocomplete="off" wire:model.live="quantity" class="compact" />
         BLADE);
     $root = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelector('.ui-number-input');
     $input = $root->querySelector('input[type="number"]');
-    expect($root->querySelector('.ui-number-input-body')->getAttribute('wire:model.live'))->toBe('quantity')
+    expect($input->getAttribute('wire:model.live.number'))->toBe('quantity')
         ->and($root->classList->contains('compact'))->toBeTrue()
         ->and($input->getAttribute('id'))->toBe('quantity')
         ->and($input->getAttribute('aria-invalid'))->toBe('true')
@@ -61,7 +61,18 @@ it('enables pasted image uploads by default and accepts a per-editor opt-out', f
 it('rejects ambiguous value sources for simple controls', function (string $name) {
     expect(fn () => Blade::render('<x-ui::'.$name.' id="native" wire:model="field" :value="null" />'))->toThrow(ViewException::class);
     expect(fn () => Blade::render('<x-ui::'.$name.' id="native" :value="null" :initial-value="null" />'))->toThrow(ViewException::class);
-})->with(['number-input', 'slider', 'input-otp', 'editor', 'signature']);
+})->with(['number-input', 'slider', 'input-otp', 'editor']);
+
+it('renders drawings as local editors with a public element and caller-owned slot', function (string $name, string $props) {
+    $html = Blade::render('<x-ui::'.$name.' '.$props.' id="drawing" x-ref="drawing" wire:key="draft" form="invoice"
+        wire:model.live="field" x-model="field" :value="[]" name="field"><button wire:click="save">Save</button></x-ui::'.$name.'>');
+    $root = HTMLDocument::createFromString($html, LIBXML_NOERROR)->getElementById('drawing');
+    expect($root->classList->contains('ui-'.$name))->toBeTrue()
+        ->and($root->getAttribute('x-ref'))->toBe('drawing')
+        ->and($root->getAttribute('wire:key'))->toBe('draft')
+        ->and($root->querySelector('button[wire\\:click]')->parentNode->isSameNode($root))->toBeTrue()
+        ->and($html)->not->toContain('wire:model', 'x-model', 'data-ui-control', 'type="hidden"', 'value-changed');
+})->with([['cropper', 'src="/image.jpg"'], ['signature', '']]);
 
 it('validates native control inputs at the Blade boundary', function (string $template) {
     expect(fn () => Blade::render($template))->toThrow(ViewException::class);
@@ -78,16 +89,15 @@ it('validates native control inputs at the Blade boundary', function (string $te
     '<x-ui::input-otp id="invalid" :length="4" :separator-after="4" />',
     '<x-ui::editor id="invalid" :value="[]" />',
     '<x-ui::editor id="invalid" output-type="json" />',
-    '<x-ui::cropper id="invalid" src="/image.jpg" :value="[\'x\' => INF, \'y\' => 0, \'width\' => .5, \'height\' => .5]" />',
-    '<x-ui::cropper id="invalid" src="/image.jpg" :value="[]" />',
-    '<x-ui::signature id="invalid" :value="[[[\'x\' => 2, \'y\' => .2]]]" />',
-    '<x-ui::signature id="invalid" :value="[[]]" />',
-    '<x-ui::signature id="invalid" :value="array_fill(0, 201, [[\'x\' => .2, \'y\' => .2]])" />',
-    '<x-ui::signature id="invalid" :value="[array_fill(0, 4097, [\'x\' => .2, \'y\' => .2])]" />',
+    '<x-ui::cropper id="invalid" src="/image.jpg" :initial-value="[\'x\' => INF, \'y\' => 0, \'width\' => .5, \'height\' => .5]" />',
+    '<x-ui::cropper id="invalid" src="/image.jpg" :initial-value="[]" />',
+    '<x-ui::signature id="invalid" :initial-value="[[[\'x\' => 2, \'y\' => .2]]]" />',
+    '<x-ui::signature id="invalid" :initial-value="[[]]" />',
+    '<x-ui::signature id="invalid" :initial-value="array_fill(0, 201, [[\'x\' => .2, \'y\' => .2]])" />',
+    '<x-ui::signature id="invalid" :initial-value="[array_fill(0, 4097, [\'x\' => .2, \'y\' => .2])]" />',
 ]);
 
 it('normalizes crop coordinates at the render boundary', function () {
     expect(DrawingValue::crop(['x' => .9, 'y' => .9, 'width' => .5, 'height' => .5]))
         ->toBe(['x' => .5, 'y' => .5, 'width' => .5, 'height' => .5]);
-    expect(Blade::render('<x-ui::cropper id="crop" src="/image.jpg" wire:model="crop" />'))->not->toContain('wire:snapshot=');
 });

@@ -1,27 +1,54 @@
-import { enabled, moveFocus } from '../behaviors/keyboard.js'
+import { moveGroupFocus } from '../behaviors/keyboard.js'
 import { observeChildren } from '../behaviors/slot.js'
 
-export function tabs(initial = null, orientation = 'horizontal') {
-    let disconnect
+export function tabs() {
+    let owner, disconnect
     return {
-        active: initial === null ? null : String(initial),
+        get active() {
+            return owner?.value ?? null
+        },
+        set active(value) {
+            if (owner && owner.value !== value) owner.value = value
+        },
+        focused: null,
         init() {
-            const reconcile = () => {
-                const values = [...this.$root.querySelectorAll('[role="tab"]:enabled')]
-                    .filter((tab) => tab.closest('.ui-tabs') === this.$root)
-                    .map((tab) => tab.dataset.value)
+            owner = this.$wire
+            const root = this.$root
+            const reconcile = (records) => {
+                if (
+                    records?.every(
+                        ({ target }) => target.closest('.ui-tabs, [role="tabpanel"]') !== root,
+                    )
+                )
+                    return
+                const tabs = [...root.querySelectorAll('[role="tab"]')].filter(
+                    (tab) => tab.closest('.ui-tabs') === root,
+                )
+                const panels = new Map(
+                    [...root.querySelectorAll('[role="tabpanel"]')]
+                        .filter((panel) => panel.closest('.ui-tabs') === root)
+                        .map((panel) => [panel.dataset.value, panel]),
+                )
+                for (const tab of tabs) {
+                    const panel = panels.get(tab.dataset.value)
+                    if (panel) {
+                        tab.setAttribute('aria-controls', panel.id)
+                        panel.setAttribute('aria-labelledby', tab.id)
+                    }
+                }
+                const values = tabs.filter((tab) => !tab.disabled).map((tab) => tab.dataset.value)
                 if (!values.includes(this.active)) this.active = values[0] ?? null
+                if (!values.includes(this.focused)) this.focused = null
             }
             reconcile()
-            disconnect = observeChildren(this.$root, reconcile, ['disabled', 'data-value'])
+            disconnect = observeChildren(root, reconcile, ['disabled', 'data-value', 'id'])
         },
         destroy() {
             disconnect()
         },
-        navigate(event) {
-            const nodes = enabled(event.currentTarget, '[role="tab"]')
-            const target = moveFocus(event, nodes, orientation === 'vertical')
-            if (target) this.active = target.dataset.value
+        navigate(event, activateOnFocus) {
+            const tab = moveGroupFocus(event, '[role="tablist"]', '[role="tab"]')
+            if (tab && activateOnFocus) this.active = tab.dataset.value
         },
     }
 }

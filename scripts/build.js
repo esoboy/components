@@ -49,9 +49,12 @@ for (const [name, entry, budget] of [
     const stylesheet = files.get('editor.css')
     if (!file || (name === 'editor' && !stylesheet) || files.size !== (name === 'editor' ? 2 : 1))
         throw new Error(`Unexpected output for ${name}.`)
-    const contents = Buffer.from(
-        (await minify(file.text, { ecma: 2022, module: true, compress: { passes: 2 } })).code,
-    )
+    const minified = await minify(file.text, {
+        ecma: 2022,
+        module: true,
+        compress: { passes: 2, hoist_vars: name === 'ui' },
+    })
+    const contents = Buffer.from(minified.code)
     const gzip = gzipSync(contents).length
     if (gzip > budget) throw new Error(`${name}: ${gzip} / ${budget} gzip bytes.`)
     const imports = Object.values(result.metafile.outputs).flatMap((output) => output.imports)

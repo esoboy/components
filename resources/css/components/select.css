@@ -18,8 +18,13 @@
     color: var(--option-focus-fg, var(--color-accent-foreground));
 }
 .ui-select-content {
-    @apply origin-(--transform-origin) w-(--anchor-width) data-[align-trigger=true]:animate-none isolate
-        z-50 max-w-none min-w-36 p-0;
+    --select-max-width: var(--available-width, calc(100vw - 1rem));
+    width: var(--anchor-width);
+    min-width: min(max(9rem, var(--anchor-width)), var(--select-max-width));
+    max-width: var(--select-max-width);
+    isolation: isolate;
+    z-index: 50;
+    padding: 0;
 }
 .ui-select-option {
     @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 outline-hidden cursor-default

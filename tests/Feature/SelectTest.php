@@ -30,7 +30,7 @@ it('rejects disabled and readonly changes', function (string $state) {
 
 it('renders through the only public naming convention', function () {
     $html = Blade::render('<x-ui::select id="test" :initial-value="0" :options="[[\'value\' => 0, \'label\' => \'Zero\']]" />');
-    expect($html)->toContain('Zero')->toContain('id="test"')->toContain('aria-selected="true"');
+    expect($html)->toContain('Zero')->toContain('id="test"')->toContain('aria-selected="true"')->toContain('data-align-trigger="true"');
 });
 
 it('distinguishes explicit empty values and rejects conflicting sources', function () {
@@ -59,8 +59,8 @@ it('treats a null option as clearing a single selection and preserves empty stri
 it('validates popup placement on the public component', function () {
     expect(fn () => Blade::render('<x-ui::select id="invalid-side" side="diagonal" />'))->toThrow(ViewException::class);
     expect(fn () => Blade::render('<x-ui::select id="invalid-align" align="middle" />'))->toThrow(ViewException::class);
-    expect(Blade::render('<x-ui::select id="valid-placement" side="inline-start" align="end" :align-item-with-trigger="false" />'))
-        ->toContain('data-preferred-side="inline-start"')->toContain('data-align="end"');
+    expect(Blade::render('<x-ui::select id="valid-placement" classic side="inline-start" align="end" />'))
+        ->toContain('data-align-trigger="false"')->toContain('data-preferred-side="inline-start"')->toContain('data-align="end"');
 });
 
 it('renders structured option descriptions as escaped Blade text fragments', function () {

@@ -115,6 +115,23 @@ test('registration is explicit and reusable without importing a second runtime',
     assert.equal(directives.size, 2)
 })
 
+test('the standalone editor, rich-text renderer and drawing controls keep their public boundaries', () => {
+    const read = (name) => readFileSync(resolve(root, name), 'utf8')
+    for (const file of files(resolve(root, 'resources/js/editor')).filter((file) =>
+        /\.(jsx?|tsx?)$/.test(file),
+    )) {
+        assert.doesNotMatch(readFileSync(file, 'utf8'), /\b(?:Alpine|Livewire|\$wire)\b/, file)
+    }
+    const richText = read('resources/views/components/rich-text/index.blade.php')
+    assert.doesNotMatch(richText, /@assets|wire:|x-data|<script\b|esoboy-editor/)
+    for (const component of ['cropper', 'signature']) {
+        assert.doesNotMatch(
+            read('resources/js/components/' + component + '.js'),
+            /\$wire|value-changed|wire:model/,
+        )
+    }
+})
+
 test('browser adapters do not generate templates or perform application requests', () => {
     for (const file of files(resolve(root, 'resources/js'))) {
         const source = readFileSync(file, 'utf8')
@@ -124,7 +141,7 @@ test('browser adapters do not generate templates or perform application requests
         }
         assert.doesNotMatch(
             source,
-            /innerHTML|outerHTML|insertAdjacentHTML|createElement|document\.write|\bfetch\s*\(|XMLHttpRequest/,
+            /innerHTML|outerHTML|insertAdjacentHTML|replaceChildren|new\s+Option\s*\(|createElement|document\.write|\bfetch\s*\(|XMLHttpRequest/,
             file,
         )
         assert.doesNotMatch(source, /import\s*\(/, file)

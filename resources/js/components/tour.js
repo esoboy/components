@@ -1,65 +1,75 @@
 import { dialog } from '../behaviors/overlay.js'
 
-export function tour(initial = false) {
-    const base = dialog(initial)
-    let highlighted = null
-    let oldOutline = ''
+export function tour() {
+    const base = dialog(false)
+    let owner,
+        highlighted = null
     const destroyDialog = base.destroy
-    return Object.assign(base, {
-        index: 0,
+    return Object.defineProperties(
+        base,
+        Object.getOwnPropertyDescriptors({
+            get opened() {
+                return !!owner?.value
+            },
+            set opened(value) {
+                owner.value = value
+            },
+            get index() {
+                return owner?.index
+            },
 
-        init() {
-            this.$watch('opened', (value) => {
-                this.sync(value)
-                if (value) this.$nextTick(() => this.position())
-                else this.clearHighlight()
-            })
-            this.$nextTick(() => {
-                this.sync(this.opened)
-                this.position()
-            })
-        },
-        step(direction) {
-            const count = this.$root.querySelectorAll('.ui-tour-step').length
-            const next = this.index + direction
-            if (next >= count) {
-                this.close()
-                return
-            }
-            this.index = Math.max(0, next)
-            this.$nextTick(() => this.position())
-        },
-        position() {
-            if (!this.opened || !this.panel) return
-            this.clearHighlight()
-            const step = this.$root.querySelector(`.ui-tour-step[data-index="${this.index}"]`)
-            let target
-            try {
-                target = document.querySelector(step?.dataset.target)
-            } catch {
-                return
-            }
-            if (!target) return
-            highlighted = target
-            oldOutline = target.style.outline
-            target.style.outline = '2px solid var(--color-ring)'
-            const rect = target.getBoundingClientRect()
-            const height = this.panel.offsetHeight
-            Object.assign(this.panel.style, {
-                margin: '0',
-                left: `${Math.max(8, Math.min(rect.left, innerWidth - this.panel.offsetWidth - 8))}px`,
-                top: `${Math.max(8, Math.min(rect.bottom + 8, innerHeight - height - 8))}px`,
-            })
-        },
-        clearHighlight() {
-            if (highlighted) {
-                highlighted.style.outline = oldOutline
-                highlighted = null
-            }
-        },
-        destroy() {
-            this.clearHighlight()
-            destroyDialog.call(this)
-        },
-    })
+            init() {
+                owner = this.$wire
+                this.$watch('index', () => this.$nextTick(() => this.position()))
+                this.$watch('opened', (value) => {
+                    this.sync(value)
+                    if (value) this.$nextTick(() => this.position())
+                    else this.clearHighlight()
+                })
+                this.$nextTick(() => {
+                    this.sync(this.opened)
+                    this.position()
+                })
+            },
+            step(direction) {
+                return owner.advance(direction)
+            },
+            position() {
+                if (!this.opened || !this.panel) return
+                this.clearHighlight()
+                const step = this.$root.querySelector(`.ui-tour-step[data-index="${this.index}"]`)
+                let target
+                try {
+                    target = document.querySelector(step?.dataset.target)
+                } catch {
+                    return
+                }
+                if (!target) return
+                highlighted = target
+                target.classList.add('ui-tour-highlight')
+                const rect = target.getBoundingClientRect()
+                const height = this.panel.offsetHeight
+                this.panel.setAttribute('data-target-positioned', '')
+                Object.assign(this.panel.style, {
+                    left: `${Math.max(8, Math.min(rect.left, innerWidth - this.panel.offsetWidth - 8))}px`,
+                    top: `${Math.max(8, Math.min(rect.bottom + 8, innerHeight - height - 8))}px`,
+                })
+            },
+            clearHighlight() {
+                if (this.panel?.hasAttribute('data-target-positioned')) {
+                    this.panel.removeAttribute('data-target-positioned')
+                    this.panel.style.removeProperty('left')
+                    this.panel.style.removeProperty('top')
+                }
+                if (highlighted) {
+                    highlighted.classList.remove('ui-tour-highlight')
+                    highlighted = null
+                }
+            },
+            destroy() {
+                this.clearHighlight()
+                destroyDialog.call(this)
+            },
+        }),
+    )
 }

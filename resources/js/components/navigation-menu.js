@@ -73,7 +73,7 @@ export function navigationMenu(openDelay = 150, closeDelay = 150) {
                 this.popup.style.height = `${size.height}px`
                 if (this.panel.hasAttribute('data-instant')) {
                     getComputedStyle(this.popup).width
-                    this.popup.style.removeProperty('transition-property')
+                    this.popup.removeAttribute('data-instant')
                 }
                 base.position.call(this)
             },
@@ -104,7 +104,7 @@ export function navigationMenu(openDelay = 150, closeDelay = 150) {
                 this.panel.toggleAttribute('data-switching', switching)
                 if (!switching) {
                     this.panel.dataset.instant = ''
-                    this.popup.style.transitionProperty = 'opacity, scale, translate, transform'
+                    this.popup.setAttribute('data-instant', '')
                     this.popup.style.width = ''
                     this.popup.style.height = ''
                     base.open.call(this, false)

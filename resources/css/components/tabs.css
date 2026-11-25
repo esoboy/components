@@ -14,19 +14,12 @@
     @apply transition-all [&_svg]:pointer-events-none [&_svg]:shrink-0
         text-[color:var(--tab-fg,color-mix(in_oklab,var(--color-foreground)_60%,transparent))]
         aria-disabled:opacity-50 aria-disabled:pointer-events-none flex-1
-        group-data-[orientation=vertical]/tabs:justify-start
-        group-data-[orientation=vertical]/tabs:w-full h-[calc(100%-1px)] relative whitespace-nowrap
+        h-[calc(100%-1px)] relative whitespace-nowrap
         after:absolute after:opacity-0 after:transition-opacity
-        group-data-[orientation=horizontal]/tabs:after:inset-x-0
-        group-data-[orientation=horizontal]/tabs:after:bottom-[-5px]
-        group-data-[orientation=horizontal]/tabs:after:h-0.5
-        group-data-[orientation=vertical]/tabs:after:inset-y-0
-        group-data-[orientation=vertical]/tabs:after:-right-1
-        group-data-[orientation=vertical]/tabs:after:w-0.5
-        group-[.ui-tabs-list-variant-line]/tabs-list:aria-selected:after:opacity-100
         border-[color:var(--part-border,transparent)] inline-flex items-center justify-center gap-1.5
         rounded-md border px-1.5 py-0.5 text-body font-medium disabled:opacity-50
-        disabled:pointer-events-none focus-visible:ring-3 focus-visible:outline-1;
+        disabled:pointer-events-none focus-visible:ring-3 focus-visible:outline-1
+        [&_svg:not([class*='size-'])]:size-4 has-data-[icon=inline-end]:pe-1 has-data-[icon=inline-start]:ps-1;
     @variant ui-dark:hover {
         color: var(--tab-hover-fg, var(--color-foreground));
     }
@@ -59,15 +52,28 @@
 }
 .ui-tabs-list {
     @apply text-[color:var(--list-fg,var(--color-muted-foreground))]
-        group-data-[orientation=vertical]/tabs:flex-col group-data-[orientation=vertical]/tabs:h-fit
-        inline-flex items-center justify-center w-fit rounded-lg p-[3px]
-        group-data-[orientation=horizontal]/tabs:h-[var(--tab-list-height,--spacing(8))] [&.ui-tabs-list-variant-line]:rounded-none;
+        inline-flex items-center justify-center w-fit rounded-lg p-[3px];
+}
+.ui-tabs-list[aria-orientation='horizontal'] {
+    @apply h-[var(--tab-list-height,--spacing(8))];
+}
+.ui-tabs-list[aria-orientation='horizontal'] .ui-tabs-tab::after {
+    @apply inset-x-0 bottom-[-5px] h-0.5;
+}
+.ui-tabs-list[aria-orientation='vertical'] {
+    @apply h-fit flex-col;
+}
+.ui-tabs-list[aria-orientation='vertical'] .ui-tabs-tab {
+    @apply w-full justify-start;
+}
+.ui-tabs-list[aria-orientation='vertical'] .ui-tabs-tab::after {
+    @apply inset-y-0 -end-1 w-0.5;
 }
 .ui-tabs-list.ui-tabs-list-variant-default {
     background-color: var(--list-bg, var(--color-muted));
 }
 .ui-tabs-list.ui-tabs-list-variant-line {
-    @apply gap-1 bg-[color:var(--list-bg,transparent)];
+    @apply gap-1 rounded-none bg-[color:var(--list-bg,transparent)];
 }
 .ui-tabs-content {
     @apply text-body flex-1 outline-none pt-0 min-w-0;
@@ -79,6 +85,9 @@
     @apply bg-[color:var(--tab-bg,transparent)] shadow-none;
     @variant aria-selected {
         background-color: var(--tab-selected-bg, transparent);
+    }
+    @variant aria-selected:after {
+        @apply opacity-100;
     }
     @variant ui-dark:aria-selected {
         border-color: var(--tab-selected-border, transparent);

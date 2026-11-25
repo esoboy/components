@@ -1,41 +1,20 @@
 :where(.ui-toggle-group-item) {
     border-color: var(--item-border, var(--color-border));
 }
-.ui-toggle-group-item:has(:disabled) {
-    opacity: 0.5;
-    pointer-events: none;
-}
 .ui-toggle-group {
     @apply flex flex-row items-center w-fit rounded-lg data-[size=sm]:rounded-[min(var(--radius-md),10px)]
         [gap:var(--toggle-spacing,0)];
 }
 .ui-toggle-group-item {
-    @apply focus-visible:z-10 focus:z-10 shrink-0;
+    @apply focus-within:z-10 shrink-0;
 }
-.ui-toggle-group-item.ui-toggle-group-item-variant-default > span {
-    background-color: var(--item-bg, transparent);
-    @variant hover {
-        background-color: var(--item-hover-bg, var(--color-muted));
-    }
-}
-.ui-toggle-group-item.ui-toggle-group-item-variant-outline > span {
-    border-color: var(--item-border, var(--color-input));
-    background-color: var(--item-bg, transparent);
-    @variant hover {
-        background-color: var(--item-hover-bg, var(--color-muted));
-    }
-}
-.ui-toggle-group-item:has(:checked) > span {
-    background: var(--item-checked-bg, var(--color-muted));
-}
-.ui-toggle-group-item:has(:focus-visible) > span {
-    outline-offset: 2px;
-    outline: 0;
-    border-color: var(--item-focus-border, var(--color-ring));
-    box-shadow: var(
-        --part-shadow,
-        0 0 0 3px color-mix(in oklch, var(--color-ring) 50%, transparent)
-    );
+.ui-toggle-group-item > .ui-toggle-control {
+    --bg: var(--item-bg);
+    --border: var(--item-border);
+    --hover-bg: var(--item-hover-bg);
+    --checked-bg: var(--item-checked-bg);
+    --focus-border: var(--item-focus-border);
+    --focus-shadow: var(--part-shadow);
 }
 .ui-toggle-group[data-orientation='vertical'] {
     flex-direction: column;

@@ -1,4 +1,5 @@
 import { control } from '../behaviors/control.js'
+import { clamp } from '../behaviors/clamp.js'
 
 export function otp() {
     return {
@@ -6,23 +7,22 @@ export function otp() {
         get code() {
             return this.value ?? ''
         },
+        get slots() {
+            return this.$root.querySelectorAll('[data-otp-index]')
+        },
         init() {
             this.initControl()
         },
         refresh() {
-            this.$root.querySelectorAll('[data-otp-index]').forEach((input) => {
-                input.value = this.code[Number(input.dataset.otpIndex)] ?? ''
+            this.slots.forEach((input, index) => {
+                input.value = this.code[index] ?? ''
             })
         },
         focus(index) {
-            this.$root
-                .querySelector(
-                    `[data-otp-index="${Math.max(0, Math.min(this.config.length - 1, index))}"]`,
-                )
-                ?.focus()
+            const slots = this.slots
+            slots[clamp(index, 0, slots.length - 1)]?.focus()
         },
         update(value) {
-            if (this.config.disabled || this.config.readonly) return
             this.write(value.slice(0, this.config.length), true)
         },
         insert(value, index) {
@@ -32,17 +32,15 @@ export function otp() {
                 '',
             )
             if (!clean) return
-            this.update(this.code.slice(0, index) + clean + this.code.slice(index + clean.length))
-            this.focus(index + clean.length)
+            const start = Math.min(index, this.code.length)
+            this.update(this.code.slice(0, start) + clean + this.code.slice(start + clean.length))
+            this.focus(start + clean.length)
         },
         input(event, index) {
             if (event.target.value === '')
                 this.update(this.code.slice(0, index) + this.code.slice(index + 1))
             else this.insert(event.target.value, index)
             event.target.value = this.code[index] ?? ''
-        },
-        paste(event, index) {
-            this.insert(event.clipboardData.getData('text'), index)
         },
         key(event, index) {
             const next = {

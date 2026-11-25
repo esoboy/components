@@ -1,5 +1,5 @@
 .ui-context-menu-content {
-    @apply origin-(--transform-origin) z-50 min-w-36;
+    @apply z-50 min-w-36;
 }
 .ui-context-menu-sub-content {
     @apply min-w-36;

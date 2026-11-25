@@ -1,49 +1,46 @@
 import { dialog } from '../behaviors/overlay.js'
 
-export function sidebar(initial = true, collapsible = 'offcanvas') {
-    const modal = dialog(initial)
+export function sidebar(collapsible = 'offcanvas') {
+    const modal = dialog(false)
     let media,
         resize,
-        shortcut,
-        desktopOpen = initial,
+        owner,
+        root,
         changing = false
     return {
-        opened: initial,
+        mobileOpen: false,
+        get opened() {
+            return this.mobile ? this.mobileOpen : !!owner?.value
+        },
+        set opened(value) {
+            if (this.mobile) this.mobileOpen = value
+            else owner.value = value
+        },
         mobile: false,
         returnFocus: null,
         get tooltipsDisabled() {
             return this.mobile || this.opened
         },
         get panel() {
-            return this.$root.querySelector('.ui-sidebar-content')
+            return root?.querySelector('.ui-sidebar-content')
         },
         init() {
+            root = this.$root
+            owner = this.$wire
             media = matchMedia('(max-width: 767px)')
             resize = () => {
                 changing = true
                 modal.destroy.call(this)
                 if (this.panel) this.panel.open = false
                 this.mobile = media.matches && collapsible !== 'none'
-                this.opened = this.mobile ? false : desktopOpen
+                this.mobileOpen = false
                 this.$nextTick(() => {
                     changing = false
                     this.sync()
                 })
             }
-            shortcut = (event) => {
-                if (
-                    (event.ctrlKey || event.metaKey) &&
-                    event.key === 'b' &&
-                    this.$root.contains(document.activeElement)
-                ) {
-                    event.preventDefault()
-                    this.toggle()
-                }
-            }
             media.addEventListener('change', resize)
-            this.$root.addEventListener('keydown', shortcut)
             this.$watch('opened', () => {
-                if (!this.mobile) desktopOpen = this.opened
                 this.sync()
             })
             this.$nextTick(resize)
@@ -71,7 +68,6 @@ export function sidebar(initial = true, collapsible = 'offcanvas') {
         },
         destroy() {
             media?.removeEventListener('change', resize)
-            this.$root.removeEventListener('keydown', shortcut)
             modal.destroy.call(this)
         },
     }

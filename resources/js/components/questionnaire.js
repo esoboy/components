@@ -48,8 +48,7 @@ export function questionnaire() {
             ) {
                 event.preventDefault()
                 if (event.key === 'ArrowLeft') previous?.click()
-                else if (this.$root.querySelector('fieldset')?.dataset.status !== 'unanswered')
-                    action?.click()
+                else action?.click()
             }
         },
     }

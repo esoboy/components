@@ -37,13 +37,13 @@ it('uses paginator URLs inside a host without pagination actions and the named p
     $ordinary = HTMLDocument::createFromString(Livewire::test(EmbeddedPaginationExample::class)->html(), LIBXML_NOERROR);
     expect($ordinary->querySelector('.ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
         ->and($ordinary->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('href'))->toBe('/orders?status=open&ordersPage=4#list')
-        ->and($ordinary->querySelector('[data-page-name]')->getAttribute('x-data'))->toBe('uiPagination(false)');
+        ->and($ordinary->querySelector('input[type=number]')->getAttribute('name'))->toBe('ordersPage');
 
     $live = Livewire::test(LivePaginationExample::class);
     $document = HTMLDocument::createFromString($live->html(), LIBXML_NOERROR);
     expect($document->querySelector('.ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
         ->and($document->querySelector('.ui-data-table .ui-pagination-next')->getAttribute('wire:click'))->toBe("nextPage('ordersPage')")
-        ->and($document->querySelector('[data-page-name]')->getAttribute('x-data'))->toBe('uiPagination(true)');
+        ->and($live->html())->toContain('wire:submit="gotoPage(');
     $live->call('gotoPage', 4, 'ordersPage')->assertSet('paginators.ordersPage', 4);
 });
 
@@ -180,7 +180,7 @@ it('retains static headers on the first empty response and supports actual model
     $html = Blade::render('<x-ui::data-table :rows="$rows" :columns="$columns" />', compact('rows', 'columns'));
     expect(substr_count($html, 'data-column="total" data-align="end"'))->toBe(2);
     expect($html)->toContain('&lt;strong&gt;unsafe&lt;/strong&gt;')->toMatch('/data-column="total"[^>]*>\s*0\s*<\/td>/')
-        ->not->toContain('type="checkbox"');
+        ->not->toContain('type="checkbox"', 'x-data="uiDataTable"');
     expect(Blade::render('<x-ui::data-table.total :value="$rows" /><x-ui::data-table.total :value="0" />', compact('rows')))
         ->toContain('1 record', '0 records');
     $rows = [['uuid' => 'key-1', 'price' => 1]];
@@ -194,13 +194,13 @@ it('uses one current-page window and never mistakes a cursor or simple page slic
     $rows = new LengthAwarePaginator($models, 31, 2, 5, ['path' => '/orders', 'pageName' => 'ordersPage']);
     $markup = '<x-ui::data-table :rows="$rows" :columns="$columns"><x-slot:footer><x-ui::data-table.total /><x-ui::pagination :paginator="$rows" :max-pages="3" jumpable /></x-slot:footer></x-ui::data-table>';
     $html = Blade::render($markup, compact('rows', 'columns'));
-    expect($html)->toContain('31 records', 'href="/orders?ordersPage=4"', 'href="/orders?ordersPage=6"', 'name="pageNumber"')
+    expect($html)->toContain('31 records', 'href="/orders?ordersPage=4"', 'href="/orders?ordersPage=6"', 'name="ordersPage"')
         ->not->toContain('href="/orders?ordersPage=7"');
     $form = Blade::render('<form>'.$markup.'</form>', compact('rows', 'columns'));
-    expect(substr_count($form, '<form'))->toBe(1)->and($form)->toContain('form=""');
+    expect($form)->toContain('<template x-teleport="body">', 'type="submit"')->and(HTMLDocument::createFromString($form, LIBXML_NOERROR)->querySelector('form input[type=number]')->getAttribute('form'))->toEndWith('-form');
     foreach ([new Paginator($models, 1), new CursorPaginator($models, 1, options: ['parameters' => ['id']])] as $rows) {
         $html = Blade::render($markup, compact('rows', 'columns'));
-        expect($html)->toContain('Next')->not->toContain('class="ui-data-table-total"', 'name="pageNumber"');
+        expect($html)->toContain('Next')->not->toContain('class="ui-data-table-total"', 'name="ordersPage"');
     }
 });
 

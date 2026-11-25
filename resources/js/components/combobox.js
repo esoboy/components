@@ -1,4 +1,4 @@
-import { enabled } from '../behaviors/keyboard.js'
+import { adjacentItem, enabled, setActiveOption } from '../behaviors/keyboard.js'
 import { focusInPlace, popover } from '../behaviors/overlay.js'
 
 export function searchInput(panel) {
@@ -9,6 +9,24 @@ export function combobox() {
     let pendingArrow = null
     return Object.assign(popover(), {
         pointingToOption: false,
+        choosing: false,
+        editedQuery: false,
+        finishBrowsing(event, paginated) {
+            this.toggled(event)
+            if (event.target !== this.panel) return
+            if (event.newState === 'open') {
+                this.choosing = false
+            } else {
+                if (
+                    !this.choosing &&
+                    (this.editedQuery ||
+                        this.$wire.searching ||
+                        (paginated && this.$wire.browsePage != null))
+                )
+                    this.$wire.finishSearch()
+                this.editedQuery = false
+            }
+        },
 
         selectedOption(panel) {
             return enabled(panel, '[role="option"][aria-selected="true"]').at(-1)
@@ -32,14 +50,7 @@ export function combobox() {
             if (!this.panel || option?.matches(':disabled,[aria-disabled="true"]')) return
             this.pointingToOption = pointer
             if (!pointer) option?.scrollIntoView({ block: 'nearest' })
-            const previous = this.panel.querySelector('[role="option"][data-highlighted]')
-            if (previous !== option) {
-                previous?.removeAttribute('data-highlighted')
-                option?.setAttribute('data-highlighted', '')
-            }
-            const input = searchInput(this.panel)
-            if (option?.id) input?.setAttribute('aria-activedescendant', option.id)
-            else input?.removeAttribute('aria-activedescendant')
+            setActiveOption(this.panel, searchInput(this.panel), option)
         },
         navigateChips(event) {
             const input = this.$root.querySelector('.ui-combobox-multiple input[role="combobox"]')
@@ -122,26 +133,20 @@ export function combobox() {
             if (!wasOpen && event.key === 'Enter') return
             if (!wasOpen) this.open(false)
             const options = enabled(panel, '[role="option"]')
-            const current = options.findIndex((item) => item.hasAttribute('data-highlighted'))
-            if (event.key === 'Enter' && current === -1) {
+            const current = options.find((item) => item.hasAttribute('data-highlighted'))
+            if (event.key === 'Enter' && !current) {
                 this.close()
                 return
             }
             event.preventDefault()
             event.stopPropagation()
             if (event.key === 'Enter') {
-                options[current].click()
+                current.click()
                 this.close(true)
                 return
             }
-            if (!wasOpen && current !== -1) return
-            const index =
-                event.key === 'ArrowDown'
-                    ? (current + 1) % options.length
-                    : current === -1
-                      ? options.length - 1
-                      : (current - 1 + options.length) % options.length
-            this.highlightOption(options[index] ?? null)
+            if (!wasOpen && current) return
+            this.highlightOption(adjacentItem(options, current, event.key === 'ArrowDown'))
         },
     })
 }

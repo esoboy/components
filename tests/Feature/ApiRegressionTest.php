@@ -12,15 +12,7 @@ it('preserves HTML and entities as editor props without double escaping', functi
     $html = Blade::render('<x-ui::editor id="raw-editor" :value="$value" />', compact('value'));
     $dom = new DOMDocument;
     @$dom->loadHTML($html);
-    foreach ($dom->getElementsByTagName('div') as $element) {
-        if ($element->hasAttribute('data-ui-control')) {
-            $data = json_decode($element->getAttribute('data-ui-control'), true, flags: JSON_THROW_ON_ERROR);
-            expect($data['value'])->toBe($value);
-
-            return;
-        }
-    }
-    test()->fail('Missing native control configuration.');
+    expect($dom->getElementsByTagName('esoboy-editor')->item(0)->getAttribute('value'))->toBe($value);
 });
 
 it('uses native anchors for button and text links and removes disabled destinations', function () {
