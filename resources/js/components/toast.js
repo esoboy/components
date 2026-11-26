@@ -167,6 +167,7 @@ export function toast(duration = 5000) {
                 attributeFilter: ['data-duration'],
             })
             this.resume()
+            if (!this.opened && this.visible) this.finishClose()
             if (viewport && !previous) {
                 this.$root.dataset.starting = ''
                 this.$nextTick(() =>
@@ -203,9 +204,12 @@ export function toast(duration = 5000) {
             if (!this.opened) return
             this.pause()
             this.opened = false
+            this.$dispatch('ui-toast-layout')
+            this.finishClose()
+        },
+        finishClose() {
             const attempt = ++closing
             this.$root.dataset.ending = ''
-            this.$dispatch('ui-toast-layout')
             Promise.allSettled(this.$root.getAnimations().map((a) => a.finished)).then(() => {
                 if (attempt !== closing || !this.$root.isConnected) return
                 this.visible = false

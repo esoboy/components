@@ -3,13 +3,13 @@ export function number() {
         increase: true,
         decrease: true,
         init() {
+            if (this.$root.dataset.mode === 'controlled') return
             const initial = this.$refs.number.defaultValue
             this.onReset = (event) => {
                 if (event.target !== this.$refs.number.form) return
                 queueMicrotask(() => {
                     if (event.defaultPrevented || !this.$root.isConnected) return
-                    const input = this.$refs.number
-                    if (this.$root.dataset.mode !== 'controlled') input.value = initial
+                    this.$refs.number.value = initial
                     this.notify()
                 })
             }
@@ -26,7 +26,7 @@ export function number() {
             probe.stepUp()
             this.increase = !input.matches(':disabled, [readonly]') && probe.value !== input.value
         },
-        typed(event) {
+        checkInput(event) {
             const input = event.target
             if (input !== this.$refs.number) return
             if (
@@ -37,10 +37,6 @@ export function number() {
                 event.stopPropagation()
                 return
             }
-            this.$dispatch('value-changed', {
-                value: input.value === '' ? null : input.valueAsNumber,
-            })
-            if (this.$root.dataset.mode === 'controlled') input.value = input.defaultValue
             this.measure()
         },
         notify() {
@@ -64,7 +60,8 @@ export function number() {
             this.measure()
         },
         destroy() {
-            this.$root.getRootNode().removeEventListener('reset', this.onReset, true)
+            if (this.onReset)
+                this.$root.getRootNode().removeEventListener('reset', this.onReset, true)
         },
     }
 }

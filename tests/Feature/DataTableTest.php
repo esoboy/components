@@ -8,6 +8,7 @@ use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\ViewException;
 use Livewire\Component;
@@ -185,7 +186,7 @@ it('retains static headers on the first empty response and supports actual model
         ->toContain('1 record', '0 records');
     $rows = [['uuid' => 'key-1', 'price' => 1]];
     expect(Blade::render('<x-ui::data-table row-key="uuid" :rows="$rows" :columns="$columns" />', compact('rows', 'columns')))
-        ->toContain('table-row-key-1');
+        ->toMatch('/wire:key="[^"]+-row-key-1"/');
 });
 
 it('uses one current-page window and never mistakes a cursor or simple page slice for the full total', function () {
@@ -196,8 +197,12 @@ it('uses one current-page window and never mistakes a cursor or simple page slic
     $html = Blade::render($markup, compact('rows', 'columns'));
     expect($html)->toContain('31 records', 'href="/orders?ordersPage=4"', 'href="/orders?ordersPage=6"', 'name="ordersPage"')
         ->not->toContain('href="/orders?ordersPage=7"');
-    $form = Blade::render('<form>'.$markup.'</form>', compact('rows', 'columns'));
-    expect($form)->toContain('<template x-teleport="body">', 'type="submit"')->and(HTMLDocument::createFromString($form, LIBXML_NOERROR)->querySelector('form input[type=number]')->getAttribute('form'))->toEndWith('-form');
+    Route::get('/form-with-pages', fn () => Blade::render('<form id="outer">'.$markup.'<input name="after"></form>@stack("ui-forms")', ['rows' => $rows, 'columns' => $columns]));
+    $document = HTMLDocument::createFromString($this->get('/form-with-pages')->assertOk()->getContent(), LIBXML_NOERROR);
+    $jump = $document->querySelector('#outer input[type=number]')->getAttribute('form');
+    expect($document->getElementById($jump)->getAttribute('method'))->toBe('get')
+        ->and($document->querySelector('#outer input[name=after]'))->not->toBeNull()
+        ->and($document->querySelector('#outer form'))->toBeNull();
     foreach ([new Paginator($models, 1), new CursorPaginator($models, 1, options: ['parameters' => ['id']])] as $rows) {
         $html = Blade::render($markup, compact('rows', 'columns'));
         expect($html)->toContain('Next')->not->toContain('class="ui-data-table-total"', 'name="ordersPage"');

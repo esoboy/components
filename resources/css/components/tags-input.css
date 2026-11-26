@@ -19,7 +19,7 @@
 .ui-tags .ui-button {
     @apply size-4 rounded-full [--fg:var(--remove-fg)] [--hover-bg:var(--remove-hover-bg)];
 }
-.ui-tags > .ui-badge {
+.ui-tags [data-tag] > .ui-badge {
     --bg: var(--tag-bg);
     --fg: var(--tag-fg);
     --border: var(--tag-border);
@@ -29,9 +29,9 @@
     --fg: var(--field-fg);
     --border: var(--field-border);
 }
-.ui-tags > .ui-badge[data-size='sm'] .ui-button {
+.ui-tags [data-tag] > .ui-badge[data-size='sm'] .ui-button {
     @apply size-3 [&>svg]:size-2.5;
 }
-.ui-tags > .ui-badge[data-size='lg'] .ui-button {
+.ui-tags [data-tag] > .ui-badge[data-size='lg'] .ui-button {
     @apply size-5 [&>svg]:size-3.5;
 }

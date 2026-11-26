@@ -1,3 +1,7 @@
 @import 'tailwindcss' source(none);
 @import '../../vendor/esoboy/ui/resources/css/ui.css';
 @source '../views';
+
+@theme {
+    --breakpoint-md: 52rem;
+}

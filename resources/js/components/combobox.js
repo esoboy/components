@@ -69,7 +69,7 @@ export function combobox() {
             ) {
                 event.preventDefault()
                 this.highlightOption(null)
-                this.$wire.removeLast()
+                chips.at(-1)?.querySelector('button')?.click()
                 return true
             }
             let destination
@@ -86,11 +86,8 @@ export function combobox() {
                 event.preventDefault()
                 event.stopPropagation()
                 this.highlightOption(null)
-                const index = Math.min(current, chips.length - 2)
-                this.$wire.choose(JSON.parse(chips[current].dataset.value)).then(() => {
-                    const remaining = this.$root.querySelectorAll('.ui-combobox-chip')
-                    focusInPlace(remaining[index] ?? input)
-                })
+                focusInPlace(chips[current + 1] ?? chips[current - 1] ?? input)
+                chips[current].querySelector('button')?.click()
                 return true
             } else if (event.key === previous) destination = current - 1
             else if (event.key === next) destination = current + 1

@@ -147,6 +147,7 @@ export function serializer(editor) {
     const cache = new WeakMap()
     return (type) => {
         if (type === 'html') return editor.getHTML()
+        if (editor.state.doc.eq(editor.schema.topNodeType.createAndFill())) return ''
         const blocks = []
         editor.state.doc.forEach((node) => {
             if (!cache.has(node)) {

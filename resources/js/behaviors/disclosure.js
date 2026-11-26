@@ -1,28 +1,15 @@
 import { owned } from './slot.js'
 
-export function disclosure() {
-    let owner
+export function disclosure(readValue) {
     return {
-        init() {
-            owner = this.$wire
-        },
         get opened() {
-            return !!owner?.value
-        },
-        set opened(open) {
-            owner.value = open
+            return !!readValue()
         },
         get panel() {
             return owned(this.$root, '[data-ui-disclosure-panel]', '[data-ui-disclosure]')
         },
-        open() {
-            this.opened = true
-        },
-        close() {
-            this.opened = false
-        },
         toggle() {
-            this.opened = !this.opened
+            this.$root.querySelector('[data-panel-field]').click()
         },
     }
 }

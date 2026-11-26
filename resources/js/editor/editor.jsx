@@ -101,7 +101,7 @@ function EditorApp({ host, container }) {
                 class: 'ui-rich-content document',
                 role: 'textbox',
                 'aria-multiline': 'true',
-                'aria-label': host.getAttribute('aria-label') ?? host.getMessage('editContent'),
+                ...host.textboxAttributes(),
             }),
             handleClickOn(view, _, node, nodePos, event, direct) {
                 if (!direct || !mediaIcons[node.type.name] || !view.editable) return false
@@ -129,7 +129,6 @@ function EditorApp({ host, container }) {
             host.replace(host._value, host._sourceType, { addToHistory: false })
             host.syncState()
             host.initialOutput ??= host.value
-            host.internals.setFormValue(host.value)
             if (!host.hasAttribute('value') && host._value !== host.value)
                 host.emit('input', host.value)
             host.dispatchEvent(
@@ -148,7 +147,7 @@ function EditorApp({ host, container }) {
             if (host.hasAttribute('value'))
                 host.replace(host.getAttribute('value'), undefined, { addToHistory: false })
             else {
-                host.internals.setFormValue(value)
+                host.syncFormValue()
                 host.emit('input', value)
             }
             host.emit('value-changed', value)
@@ -429,6 +428,11 @@ class EsoboyEditor extends HTMLElement {
         'output-type',
         'toolbar-preset',
         'aria-label',
+        'aria-labelledby',
+        'aria-describedby',
+        'aria-invalid',
+        'aria-errormessage',
+        'required',
         'lang',
         'data-messages',
     ]
@@ -499,16 +503,50 @@ class EsoboyEditor extends HTMLElement {
     attributeChangedCallback(name, previous, value) {
         if (previous === value || !this.root) return
         if (name === 'lang' || name === 'data-messages') this.refreshLanguage()
-        else if (name === 'value' || (name === 'input-type' && this.hasAttribute('value'))) {
+        else if (name === 'output-type' && this.editor) {
+            const before = this.serialize(previous ?? 'html')
+            this.syncFormValue()
+            if (before !== this.value) {
+                if (!this.hasAttribute('value')) {
+                    this.emit('input', this.value)
+                    this.emit('change', this.value)
+                }
+                this.emit('value-changed', this.value)
+            }
+        } else if (name === 'value' || (name === 'input-type' && this.hasAttribute('value'))) {
             this.replace(this.getAttribute('value') ?? '', undefined, { addToHistory: false })
         } else {
             this.syncState()
-            if (this.editor) this.internals.setFormValue(this.value)
         }
     }
     resetMedia() {
         this.mediaSession.abort()
         this.mediaSession = new AbortController()
+    }
+    textboxAttributes() {
+        const attributes = {
+            'aria-label': this.getAttribute('aria-label') ?? this.getMessage('editContent'),
+        }
+        for (const name of [
+            'aria-labelledby',
+            'aria-describedby',
+            'aria-invalid',
+            'aria-errormessage',
+        ]) {
+            if (this.hasAttribute(name)) attributes[name] = this.getAttribute(name)
+        }
+        if (this.hasAttribute('required')) attributes['aria-required'] = 'true'
+        return attributes
+    }
+    syncFormValue() {
+        const missing =
+            this.hasAttribute('required') && this.editor.isEditable && this.editor.isEmpty
+        this.internals.setFormValue(this.value)
+        this.internals.setValidity(
+            missing ? { valueMissing: true } : {},
+            missing ? this.getMessage('requiredContent') : '',
+            this.editor.view.dom,
+        )
     }
     syncState() {
         if (!this.editor) return
@@ -518,6 +556,8 @@ class EsoboyEditor extends HTMLElement {
         this.editor.setEditable(!disabled && !readonly, false)
         this.editor.view.dom.setAttribute('aria-readonly', String(disabled || readonly))
         this.editor.view.dom.setAttribute('aria-disabled', String(disabled))
+        this.editor.view.setProps({ attributes: this.editor.options.editorProps.attributes })
+        this.syncFormValue()
         this.dispatchEvent(new CustomEvent('editor-state'))
     }
     get value() {
@@ -560,7 +600,7 @@ class EsoboyEditor extends HTMLElement {
             try {
                 this.resetMedia()
                 setContent(this.editor, value, type, this.getMessage, addToHistory)
-                this.internals.setFormValue(this.value)
+                this.syncFormValue()
                 this.dispatchEvent(new CustomEvent('editor-document-replaced'))
             } catch (error) {
                 this.dispatchEvent(

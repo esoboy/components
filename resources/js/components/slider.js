@@ -1,37 +1,91 @@
-import { control } from '../behaviors/control.js'
-
 export function slider() {
-    let min, max, step, orientation, inverted, range
+    let min, max, step, orientation, inverted, initial, stopReset
     let active = null,
         dragSource
-    const snap = (number) => {
-        range.value = number
-        return range.valueAsNumber
-    }
     return {
         positions: [],
-        ...control(),
+        get config() {
+            return JSON.parse(this.$root.dataset.uiControl)
+        },
+        get thumbs() {
+            return [...this.$root.querySelectorAll('[data-slider-index]')]
+        },
         init() {
-            // Use the browser's range sanitization, including decimal steps and uneven endpoints.
-            range = this.$root.querySelector('input[type=range]').cloneNode(false)
-            this.initControl()
+            initial = this.config.value
+            const reset = (event) => {
+                if (event.target !== this.thumbs[0]?.form) return
+                queueMicrotask(() => {
+                    if (event.defaultPrevented || !this.$root.isConnected) return
+                    const field = this.$root.querySelector('[data-slider-model]')
+                    if (field) {
+                        field.edit(initial)
+                        field.dispatchEvent(new Event('blur'))
+                    }
+                    this.refresh()
+                    this.$dispatch('value-changed', { value: initial })
+                })
+            }
+            const document = this.$root.getRootNode()
+            document.addEventListener('reset', reset, true)
+            stopReset = () => document.removeEventListener('reset', reset, true)
             this.refresh()
         },
-        refresh() {
-            ;({ min, max, step, orientation, inverted } = this.config)
+        destroy() {
+            stopReset()
+        },
+        refresh(config = this.config) {
+            ;({ min, max, step, orientation, inverted } = config)
             min = Number(min)
             max = Number(max)
             step = Number(step)
-            Object.assign(range, { min, max, step })
-            const values = Array.isArray(this.value) ? this.value : [this.value ?? min]
-            this.positions = values.map(snap).sort((a, b) => a - b)
-            if (
-                this.config.mode !== 'controlled' &&
-                values.some((n, i) => Number(n) !== this.positions[i])
-            ) {
-                this.value = Array.isArray(this.value) ? this.positions : this.positions[0]
-                this.signal('input')
-            }
+            const thumbs = this.thumbs
+            const current = config.model ? this.$wire.$get(config.model) : config.value
+            const values = Array.isArray(current)
+                ? [...current].sort((a, b) => a - b)
+                : [current ?? min]
+            this.positions = thumbs.map((thumb, i) => {
+                if (thumb.dataset.fieldName) {
+                    if (current == null) thumb.removeAttribute('name')
+                    else thumb.name = thumb.dataset.fieldName
+                }
+                if (config.mode === 'controlled' || (config.model && active === null))
+                    thumb.value = values[i]
+                return thumb.valueAsNumber
+            })
+        },
+        signal(thumb, committed = false) {
+            thumb.dispatchEvent(new Event('input', { bubbles: true }))
+            if (committed) thumb.dispatchEvent(new Event('change', { bubbles: true }))
+        },
+        readThumb(index) {
+            const thumbs = this.thumbs
+            const thumb = thumbs[index]
+            const config = this.config
+            const number = Math.max(
+                thumbs[index - 1]?.valueAsNumber ?? min,
+                Math.min(thumbs[index + 1]?.valueAsNumber ?? max, thumb.valueAsNumber),
+            )
+            thumb.value = number
+            const values = thumbs.map((input) => input.valueAsNumber)
+            const field = this.$root.querySelector('[data-slider-model]')
+            if (field) field.edit(Array.isArray(config.value) ? values : number, false)
+            if (thumb.dataset.fieldName && config.mode !== 'controlled')
+                thumb.name = thumb.dataset.fieldName
+            this.$dispatch('value-changed', {
+                value: Array.isArray(config.value) ? values : number,
+            })
+            if (config.mode === 'controlled' && active === null)
+                thumb.value = [config.value].flat().sort((a, b) => a - b)[index]
+            this.positions = thumbs.map((input) => input.valueAsNumber)
+        },
+        commitThumb(type) {
+            this.$root
+                .querySelector('[data-slider-model]')
+                ?.dispatchEvent(
+                    type === 'keydown'
+                        ? new KeyboardEvent(type, { key: 'Enter', bubbles: true })
+                        : new Event(type, { bubbles: true }),
+                )
         },
         offset(index, center = false) {
             const fraction = (this.positions[index] - min) / (max - min)
@@ -44,17 +98,13 @@ export function slider() {
                 this.$root.querySelector('input[type=range]')?.matches(':disabled')
             )
                 return
-            const next = snap(number)
-            this.positions[index] = Math.max(
-                this.positions[index - 1] ?? min,
-                Math.min(this.positions[index + 1] ?? max, next),
-            )
-            const value =
-                this.positions.length === 1 && !Array.isArray(this.value)
-                    ? this.positions[0]
-                    : [...this.positions]
-            if (this.config.mode === 'controlled' && active !== null) return
-            this.write(value)
+            const thumb = this.thumbs[index]
+            thumb.value = number
+            if (this.config.mode === 'controlled' && active !== null) {
+                this.positions[index] = thumb.valueAsNumber
+                return
+            }
+            this.signal(thumb)
         },
         coordinate(event) {
             const box = this.$root.getBoundingClientRect()
@@ -102,7 +152,7 @@ export function slider() {
                 active = null
                 dragSource = null
                 this.change(index, this.positions[index])
-                this.signal('change')
+                this.thumbs[index].dispatchEvent(new Event('change', { bubbles: true }))
                 if (this.$root.hasPointerCapture(event.pointerId))
                     this.$root.releasePointerCapture(event.pointerId)
             }
@@ -126,7 +176,7 @@ export function slider() {
                       ? max
                       : this.positions[index] + delta[event.key] * (inverted ? -1 : 1),
             )
-            this.signal('change')
+            this.thumbs[index].dispatchEvent(new Event('change', { bubbles: true }))
         },
     }
 }

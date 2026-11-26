@@ -1,45 +1,46 @@
 import { dialog } from '../behaviors/overlay.js'
 
-export function sidebar(collapsible = 'offcanvas') {
+export function sidebar(collapsible, internal, readValue) {
     const modal = dialog(false)
-    let media,
-        resize,
-        owner,
+    let resize,
         root,
         changing = false
     return {
-        mobileOpen: false,
         get opened() {
-            return this.mobile ? this.mobileOpen : !!owner?.value
+            return this.mobile && internal ? this.mobileOpen : !!readValue()
         },
         set opened(value) {
-            if (this.mobile) this.mobileOpen = value
-            else owner.value = value
+            if (this.mobile && internal) this.mobileOpen = value
+            else if (value !== this.opened) root.querySelector('[data-panel-field]').click()
         },
         mobile: false,
+        mobileOpen: false,
         returnFocus: null,
         get tooltipsDisabled() {
-            return this.mobile || this.opened
+            return this.mobile || !!readValue()
         },
         get panel() {
             return root?.querySelector('.ui-sidebar-content')
         },
         init() {
             root = this.$root
-            owner = this.$wire
-            media = matchMedia('(max-width: 767px)')
             resize = () => {
+                const mobile =
+                    getComputedStyle(root).getPropertyValue('--ui-sidebar-mobile').trim() === '1' &&
+                    collapsible !== 'none'
+                if (mobile === this.mobile && this.panel?.open === (mobile ? this.opened : true))
+                    return
                 changing = true
                 modal.destroy.call(this)
                 if (this.panel) this.panel.open = false
-                this.mobile = media.matches && collapsible !== 'none'
+                this.mobile = mobile
                 this.mobileOpen = false
                 this.$nextTick(() => {
                     changing = false
                     this.sync()
                 })
             }
-            media.addEventListener('change', resize)
+            window.addEventListener('resize', resize)
             this.$watch('opened', () => {
                 this.sync()
             })
@@ -67,7 +68,7 @@ export function sidebar(collapsible = 'offcanvas') {
             if (this.mobile) modal.backdrop.call(this, event)
         },
         destroy() {
-            media?.removeEventListener('change', resize)
+            window.removeEventListener('resize', resize)
             modal.destroy.call(this)
         },
     }

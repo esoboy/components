@@ -47,6 +47,7 @@ new class extends Component {
         <x-ui::toggle-group.item value="a">A</x-ui::toggle-group.item><x-ui::toggle-group.item value="b">B</x-ui::toggle-group.item>
     </x-ui::toggle-group>
     <output id="group-values">{{ $radio }}|{{ implode(',', $toggles) }}</output>
+    <x-ui::select id="loading-select" wire:loading.class="parent-saving" wire:target="save" />
     <x-ui::number-input id="loading" wire:loading.attr="disabled" wire:target="save" />
     <form id="outer" wire:submit="save">
         <x-ui::questionnaire :items="[['name' => 'answer', 'prompt' => 'Answer', 'choices' => [['value' => 'a', 'label' => 'Yes']]]]" />

@@ -18,7 +18,6 @@ import { messageScroller } from './components/message-scroller.js'
 import { tour } from './components/tour.js'
 import { cropper } from './components/cropper.js'
 import { signature } from './components/signature.js'
-import { nativeSelect } from './components/select.js'
 import { combobox } from './components/combobox.js'
 import { command } from './components/command.js'
 import { drawer } from './components/drawer.js'
@@ -29,6 +28,20 @@ import { sidebar } from './components/sidebar.js'
 import { slider } from './components/slider.js'
 
 const registered = new WeakSet()
+const revealedPasswords = new WeakMap()
+
+function password() {
+    return {
+        revealed: false,
+        init() {
+            this.revealed = revealedPasswords.get(this.$root) ?? false
+        },
+        toggle() {
+            this.revealed = !this.revealed
+            revealedPasswords.set(this.$root, this.revealed)
+        },
+    }
+}
 
 export function registerUi(Alpine) {
     if (registered.has(Alpine)) return
@@ -39,7 +52,6 @@ export function registerUi(Alpine) {
         uiDialog: dialog,
         uiDrawer: drawer,
         uiPopover: popover,
-        uiNativeSelect: nativeSelect,
         uiCombobox: combobox,
         uiCommand: command,
         uiNavigationMenu: navigationMenu,
@@ -63,6 +75,7 @@ export function registerUi(Alpine) {
         uiSlider: slider,
         uiOtp: otp,
         uiNumber: number,
+        uiPassword: password,
         uiSidebar: sidebar,
         uiQuestionnaire: questionnaire,
         uiScrollArea: scrollArea,

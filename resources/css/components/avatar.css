@@ -3,11 +3,6 @@
     --avatar-shadow: initial;
     border-color: var(--border, var(--color-border));
 }
-.ui-avatar-image:not([data-loaded]) {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-}
 .ui-avatar {
     @apply after:absolute after:border after:inset-0 after:mix-blend-darken ui-dark:after:mix-blend-lighten
         flex relative select-none shrink-0 size-8 rounded-full after:rounded-full data-[size=lg]:size-10
@@ -17,7 +12,7 @@
     }
 }
 .ui-avatar-image {
-    @apply aspect-square object-cover size-full rounded-full;
+    @apply absolute inset-0 z-[1] aspect-square object-cover size-full rounded-full data-failed:invisible;
 }
 .ui-avatar-fallback {
     @apply flex group-data-[size=sm]/avatar:text-caption items-center justify-center size-full text-body

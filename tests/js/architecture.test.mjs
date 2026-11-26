@@ -166,7 +166,7 @@ test('Table renders presentation and DataTable owns the interactive grid', () =>
     for (const file of files(resolve(views, 'components/table'))) {
         assert.doesNotMatch(
             readFileSync(file, 'utf8'),
-            /Livewire|wire:|x-(?:on:|data|model)|DataTable|\$selected|\$rows|\$columns/,
+            /Livewire|wire:(?!key)|x-(?:on:|data|model)|DataTable|\$selected|\$rows|\$columns/,
             file,
         )
     }

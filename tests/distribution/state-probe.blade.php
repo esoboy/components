@@ -49,6 +49,7 @@ new class extends Component {
     @if ($icon !== null)
         <form id="icon-form">
             <x-ui::icon-select name="icon" wire:model.live="icon" auto-highlight aria-label="Icon" />
+            <button type="button" wire:click="$refresh">Retry</button>
             <output id="chosen-icon">{{ $icon }}</output>
         </form>
     @endif

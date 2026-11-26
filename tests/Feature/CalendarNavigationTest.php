@@ -9,10 +9,10 @@ use Livewire\Livewire;
 
 it('submits the complete date value through native form fields', function (string $component, array|string $value, bool $range) {
     $html = Blade::render('<x-ui::'.$component.' id="period" name="period" :initial-value="$value" :range="$range" />', compact('value', 'range'));
-    $fields = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelectorAll('input[name]');
+    $fields = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelectorAll('select[name] option[selected]');
     $pairs = [];
     foreach ($fields as $field) {
-        $pairs[] = urlencode($field->getAttribute('name')).'='.urlencode($field->getAttribute('value'));
+        $pairs[] = urlencode($field->parentNode->getAttribute('name')).'='.urlencode($field->getAttribute('value'));
     }
     parse_str(implode('&', $pairs), $submitted);
 
@@ -43,7 +43,7 @@ it('starts a fresh range when its first day is no longer selectable', function (
     $props = ['range' => true, 'name' => 'period', ...$limits];
     $calendar = Livewire::test($component, [...$props, 'initialValue' => [$start]])
         ->call('choose', $day)->assertSet('value', [$day])->assertDispatched('value-changed', value: [$day]);
-    $fields = HTMLDocument::createFromString($calendar->html(), LIBXML_NOERROR)->querySelectorAll('input[name="period[]"]');
+    $fields = HTMLDocument::createFromString($calendar->html(), LIBXML_NOERROR)->querySelectorAll('select[name="period[]"] option[value="'.$day.'"]');
     expect($fields->length)->toBe(1)->and($fields->item(0)->getAttribute('value'))->toBe($day);
     $calendar->call('choose', $day)->assertSet('value', [$day, $day]);
 

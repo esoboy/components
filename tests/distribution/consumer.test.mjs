@@ -704,7 +704,7 @@ test('a readonly questionnaire submits the same answers on each question', async
     const answers = () =>
         page.locator('#readonly-survey').evaluate((form) => {
             const data = new FormData(form)
-            return [data.getAll('single'), data.getAll('multi')]
+            return [data.getAll('single'), data.getAll('multi[]')]
         })
     const expected = [['a'], ['b', 'Other answer']]
     assert.deepEqual(await answers(), expected)
@@ -785,12 +785,16 @@ test('selecting an icon updates the bound parent and the form with its name', as
     await input.fill('ZOOM-OU')
     const retry = form.getByRole('option', { name: 'zoom-out', exact: true })
     await retry.waitFor()
+    const failed = page.waitForEvent('requestfailed', {
+        predicate: (request) => update(new URL(request.url())),
+    })
     await page.route(update, (route) => route.abort(), { times: 1 })
     await retry.click()
-    await page.waitForFunction(
-        () => new FormData(document.getElementById('icon-form')).get('icon') === 'star',
-    )
-    assert.equal(await input.inputValue(), 'star')
+    await failed
+    assert.equal(await page.locator('#chosen-icon').textContent(), 'star')
+    await form.getByRole('button', { name: 'Retry' }).click()
+    await page.waitForFunction(() => document.querySelector('#chosen-icon').value === 'zoom-out')
+    assert.equal(await form.evaluate((el) => new FormData(el).get('icon')), 'zoom-out')
 })
 
 test('side menus and their submenus stay inside a narrow viewport', async (t) => {
@@ -1065,9 +1069,11 @@ test('a changed date limit moves only an out-of-bounds month and preserves the s
     await calendar.getByRole('button', { name: 'Next month' }).click()
     for (const date of ['2027-07-12', '2027-07-15']) {
         await calendar.getByRole('button', { name: date }).click()
-        await page.locator(`#booking-dates input[name="period[]"][value="${date}"]`).waitFor({
-            state: 'attached',
-        })
+        await page
+            .locator(`#booking-dates select[name="period[]"] option[value="${date}"]`)
+            .waitFor({
+                state: 'attached',
+            })
     }
     await page.locator('#limit-july').click()
     await page.waitForFunction(
@@ -1091,11 +1097,20 @@ test('tightening the date limit between clicks starts a new submitted range', as
     const calendar = page.locator('#booking')
     await calendar.getByRole('button', { name: 'Next month' }).click()
     await calendar.getByRole('button', { name: '2027-07-12' }).click()
-    await page.locator('#booking-dates input[value="2027-07-12"]').waitFor({ state: 'attached' })
+    await page.waitForFunction(
+        () =>
+            new FormData(document.querySelector('#booking-dates')).get('period[]') === '2027-07-12',
+    )
     await page.locator('#limit-september').click()
     for (const [index, date] of ['2027-09-15', '2027-09-18'].entries()) {
         await calendar.getByRole('button', { name: date }).click()
-        await page.locator(`#booking-dates input[value="${date}"]`).waitFor({ state: 'attached' })
+        await page.waitForFunction(
+            (chosen) =>
+                new FormData(document.querySelector('#booking-dates'))
+                    .getAll('period[]')
+                    .includes(chosen),
+            date,
+        )
         const submitted = await page
             .locator('#booking-dates')
             .evaluate((form) => new FormData(form).getAll('period[]'))
@@ -1624,7 +1639,7 @@ test('time segments focus the selected option and save a new minute', async (t) 
     await page.waitForFunction(() => document.activeElement?.textContent.trim() === '15')
     await page.getByRole('option', { name: '20', exact: true }).click()
     await page.waitForFunction(
-        () => document.querySelector('input[name="probe-time"]').value === '09:20',
+        () => document.querySelector('select[name="probe-time"]').value === '09:20',
     )
 })
 
@@ -1948,9 +1963,9 @@ for (const [binding, id, submit] of [
         )
         try {
             await page.locator(id).click()
-            const pending = page.waitForRequest('**/update')
+            const pending = binding === 'wire:model' ? null : page.waitForRequest('**/update')
             await page.getByRole('option', { name: 'Beta' }).click()
-            await pending
+            if (pending) await pending
             if (native) {
                 await page.route('**/ui-form-result?*', (route) => route.fulfill({ body: 'Saved' }))
                 const posted = page.waitForRequest(
@@ -2013,7 +2028,7 @@ test('Select preserves typed multiple selection order, controlled ownership and 
     await page.keyboard.press('Escape')
     await page.locator('#controlled-role').click()
     await page.getByRole('option', { name: 'Beta' }).click()
-    assert.equal(await page.locator('#requested').getAttribute('data-requested'), '"b"')
+    await page.locator('#requested[data-requested=\'"b"\']').waitFor({ state: 'attached' })
     assert.equal(await form.evaluate((el) => new FormData(el).get('controlled')), 'a')
     await form.evaluate((el) => {
         el.addEventListener('reset', (event) => event.preventDefault(), { once: true })
@@ -2035,7 +2050,7 @@ test('Select preserves typed multiple selection order, controlled ownership and 
 
 test('Slider uses native step values for its thumbs, model and submitted values', async (t) => {
     const page = await openProbe(t, '?forms=1')
-    await page.waitForFunction(() => window.Livewire.first().amount === 8)
+    assert.equal(await page.evaluate(() => window.Livewire.first().amount), 10)
     for (const [id, name, expected] of [
         ['ui-amount', 'amount', '8'],
         ['decimal-slider', 'fraction', '0.3'],
@@ -2258,10 +2273,18 @@ test('native groups, deferred nullable table selection and loading states use th
     try {
         await page.locator('#save').click()
         await page.waitForFunction(() => document.querySelector('#loading').matches(':disabled'))
+        assert.equal(
+            await page.locator('#loading-select').evaluate((el) => !!el.closest('.parent-saving')),
+            true,
+        )
     } finally {
         hold.resolve()
     }
     await page.waitForFunction(() => !document.querySelector('#loading').matches(':disabled'))
+    assert.equal(
+        await page.locator('#loading-select').evaluate((el) => !!el.closest('.parent-saving')),
+        false,
+    )
 })
 
 test('the table header respects numeric values, off-page selection and blur commits', async (t) => {
@@ -2326,4 +2349,940 @@ test('the standalone Tiptap element edits, submits and resets without the compon
     assert.equal(await body(), edited)
     await page.locator('#post').evaluate((form) => form.reset())
     assert.equal(await body(), '<p><strong>First</strong></p>')
+})
+
+test('conditional siblings keep their Livewire instances and table settings keep distinct identities', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const original = page.locator('.original [wire\\:id]').first()
+    const id = await original.getAttribute('wire:id')
+    await original.getByRole('textbox').fill('edited')
+    await original.getByRole('textbox').press('Enter')
+    await original.getByText('edited', { exact: true }).waitFor()
+    const settings = page.locator('.ui-data-table-column-settings')
+    const ids = () =>
+        settings.evaluateAll((elements) => elements.map((el) => el.getAttribute('wire:id')))
+    const before = await ids()
+    assert.equal(new Set(before).size, 2)
+    await page.locator('#insert').click()
+    await page.locator('.inserted').waitFor()
+    assert.equal(await original.getAttribute('wire:id'), id)
+    assert.match(await original.textContent(), /original/)
+    assert.match(await original.textContent(), /edited/)
+    assert.doesNotMatch(await page.locator('.inserted').textContent(), /edited/)
+    assert.match(await page.locator('.inserted').textContent(), /new/)
+    assert.deepEqual(await ids(), before)
+})
+
+test('controlled tabs and selects ask the parent once and preserve its decision', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const beta = page.getByRole('tab', { name: 'Beta' })
+    assert.equal(await beta.getAttribute('aria-selected'), 'true')
+    assert.equal(await page.locator('#custom-tab').getAttribute('aria-controls'), 'custom-panel')
+    assert.equal(await page.locator('#custom-panel').getAttribute('aria-labelledby'), 'custom-tab')
+    await page.locator('#custom-tab').click()
+    await page.locator('#change-count', { hasText: /^1$/ }).waitFor()
+    assert.equal(await beta.getAttribute('aria-selected'), 'true')
+    await page.locator('#listened').click()
+    await page.getByRole('option', { name: 'Option A' }).click()
+    await page.locator('#change-count', { hasText: /^2$/ }).waitFor()
+    assert.match(await page.locator('#listened').textContent(), /Option B/)
+})
+
+test('a controlled number submits only the value accepted by its Livewire parent', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const form = page.locator('#proposed-quantity')
+    const input = form.getByRole('spinbutton')
+    const submitted = () => form.evaluate((el) => new FormData(el).get('quantity'))
+    assert.equal(await submitted(), '5')
+    await input.fill('7')
+    assert.equal(await submitted(), '5')
+    await form.locator('output', { hasText: /^1$/ }).waitFor()
+    assert.equal(await input.inputValue(), '5')
+    await input.fill('8')
+    await page.waitForFunction(
+        () => new FormData(document.querySelector('#proposed-quantity')).get('quantity') === '8',
+    )
+    const invalid = page.waitForResponse((response) => {
+        const request = response.request()
+        return (
+            request.method() === 'POST' &&
+            request
+                .postDataJSON()
+                ?.components?.some(({ calls }) => calls.some(({ method }) => method === 'propose'))
+        )
+    })
+    await input.fill('40')
+    await invalid
+    assert.equal(await submitted(), '8')
+    assert.equal(await form.locator('output').textContent(), '2')
+})
+
+test('numeric tab values and the selected count for boolean table keys survive hydration', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const selected = page.locator('#numeric-tabs').getByRole('tab', { name: 'Two' })
+    assert.equal(await selected.getAttribute('aria-selected'), 'true')
+    assert.equal(await selected.getAttribute('tabindex'), '0')
+    assert.equal(
+        await page.locator('#numeric-tabs').getByRole('tabpanel').textContent(),
+        'Panel two',
+    )
+    const table = page.locator('#boolean-rows')
+    await table.locator('tbody input[type=checkbox]').first().check()
+    await table
+        .getByRole('status')
+        .filter({ hasText: /^1 selected$/ })
+        .waitFor()
+    await table.locator('thead input[type=checkbox]').check()
+    await table
+        .getByRole('status')
+        .filter({ hasText: /^2 selected$/ })
+        .waitFor()
+})
+
+test('a Laravel GET receives all questionnaire choices and the first unblurred text', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    await page.getByRole('checkbox', { name: 'Pick A' }).check()
+    await page.getByRole('checkbox', { name: 'Pick B' }).check()
+    await page.getByRole('textbox', { name: 'Free text' }).fill('First answer')
+    await page.locator('#survey').evaluate((form) => form.requestSubmit())
+    await page.locator('#submitted').waitFor()
+    assert.deepEqual(JSON.parse(await page.locator('#submitted').textContent()), {
+        picks: ['a', 'b'],
+        note: 'First answer',
+    })
+})
+
+test('shrinking the OTP and resetting an external tags field update the submitted values', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const digits = page.locator('#digits [data-otp-index]')
+    await digits.first().fill('123456')
+    await page.locator('#shorten').click()
+    await page.waitForFunction(
+        () => document.querySelectorAll('#digits [data-otp-index]').length === 4,
+    )
+    assert.equal(
+        await page.locator('#digits').evaluate((form) => new FormData(form).get('otp')),
+        '1234',
+    )
+    const tag = page.getByPlaceholder('Add a tag')
+    await tag.fill('second')
+    await tag.press('Enter')
+    await page.waitForFunction(
+        () => new FormData(document.querySelector('#external-reset')).getAll('tags[]').length === 2,
+    )
+    await page.locator('#external-reset').evaluate((form) => form.reset())
+    await page.waitForFunction(
+        () => new FormData(document.querySelector('#external-reset')).getAll('tags[]').length === 1,
+    )
+    assert.equal(await tag.evaluate((el) => el.required), false)
+})
+
+test('keyed passwords and an exiting toast retain the correct browser state when reordered', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1', { reducedMotion: 'no-preference' })
+    await page
+        .locator('#password-a')
+        .locator('xpath=ancestor::div[contains(@class,"ui-password-input")]')
+        .getByRole('button')
+        .click()
+    await page.evaluate(() => {
+        window.dismissedNotices = []
+        document.addEventListener('ui-toast-dismissed', (event) =>
+            window.dismissedNotices.push(event.target.id),
+        )
+    })
+    await page.addStyleTag({ content: '#notice-a { transition-duration: 1s !important; }' })
+    await page.locator('#notice-a').getByRole('button').click()
+    await page.locator('#reverse-fields').click()
+    await page.waitForFunction(
+        () => document.querySelector('.ui-password-input input').id === 'password-b',
+    )
+    assert.equal(await page.locator('#password-a').getAttribute('type'), 'text')
+    assert.equal(await page.locator('#password-b').getAttribute('type'), 'password')
+    await page.locator('#notice-a').waitFor({ state: 'hidden' })
+    assert.equal(await page.locator('#notice-b').isVisible(), true)
+    assert.deepEqual(await page.evaluate(() => window.dismissedNotices), ['notice-a'])
+})
+
+test('the empty Markdown editor participates in native validity and uses the supplied textbox labels', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    const textbox = page.getByRole('textbox', { name: 'Article' })
+    await textbox.waitFor()
+    const form = page.locator('#editor-check')
+    assert.deepEqual(
+        await form.evaluate((el) => [new FormData(el).get('draft'), el.checkValidity()]),
+        ['', false],
+    )
+    assert.equal(await textbox.getAttribute('aria-describedby'), 'draft-help')
+    await textbox.fill('Copy')
+    assert.deepEqual(
+        await form.evaluate((el) => [new FormData(el).get('draft'), el.checkValidity()]),
+        ['Copy', true],
+    )
+})
+
+test('plain Blade pagination and a successful avatar image work with JavaScript disabled', async (t) => {
+    const browser = await chromium.launch()
+    t.after(() => browser.close())
+    const page = await browser.newPage({ javaScriptEnabled: false })
+    const base = process.env.UI_TEST_URL ?? 'http://127.0.0.1:18744'
+    await page.goto(new URL('/ui-package-test?composition=1', base).href)
+    const nav = page.locator('#ordinary-pages')
+    await nav.getByRole('spinbutton').fill('3')
+    await nav.getByRole('button', { name: 'Go', exact: true }).click()
+    await page.waitForURL((url) => url.searchParams.get('ordinary') === '3')
+    assert.equal(new URL(page.url()).searchParams.get('filter'), 'open')
+    await page.goto(new URL('/ui-package-test?controls=1', base).href)
+    assert.equal(
+        await page
+            .locator('#photo img')
+            .evaluate(
+                (image) =>
+                    image.complete &&
+                    image.naturalWidth > 0 &&
+                    getComputedStyle(image).opacity === '1',
+            ),
+        true,
+    )
+})
+
+test('Sidebar follows the consumer Tailwind md breakpoint for its layout and native dialog', async (t) => {
+    const page = await openProbe(t, '?composition=1', { viewport: { width: 800, height: 800 } })
+    const root = page.locator('#probe-sidebar')
+    await page.waitForFunction(
+        () => document.querySelector('#probe-sidebar').dataset.mobile === 'true',
+    )
+    assert.equal(
+        await root.locator('.ui-sidebar-gap').evaluate((el) => getComputedStyle(el).display),
+        'none',
+    )
+    await page.setViewportSize({ width: 850, height: 800 })
+    await page.waitForFunction(
+        () => document.querySelector('#probe-sidebar').dataset.mobile === 'false',
+    )
+    assert.equal(
+        await root.locator('dialog').evaluate((el) => el.open && !el.matches(':modal')),
+        true,
+    )
+})
+
+test('a controlled multi-select proposes removal of its accepted selection', async (t) => {
+    const page = await openProbe(t, '?bindingChecks=1')
+    await page.locator('#accepted-roles').click()
+    await page
+        .locator('.ui-select-content:popover-open')
+        .getByRole('option', { name: 'Alpha' })
+        .click()
+    await page.waitForFunction(() => document.querySelector('#roles-value').textContent === '[]')
+})
+
+for (const control of [
+    'calendar',
+    'date-picker',
+    'datetime-picker',
+    'time-picker',
+    'combobox',
+    'cascader',
+    'tree',
+    'tree-select',
+    'command',
+    'transfer',
+    'tags-input',
+    'mentions',
+    'rating',
+    'questionnaire',
+    'tabs',
+    'collapsible',
+    'trace',
+    'tour',
+    'sidebar',
+    'columns',
+]) {
+    test(`${control} publishes its native model before an immediate save`, async (t) => {
+        const page = await openProbe(t, '?bindingMatrix=' + control)
+        const form = page.locator('#matrix-form')
+        if (
+            [
+                'date-picker',
+                'datetime-picker',
+                'time-picker',
+                'combobox',
+                'tree-select',
+                'cascader',
+            ].includes(control)
+        )
+            await page.locator('#matrix-input').click()
+        if (control === 'time-picker')
+            await page.locator('.ui-time-segment[data-value=hour]').click()
+        if (control === 'columns') await page.locator('.ui-table-columns-trigger').click()
+        if (control === 'tags-input') await page.locator('#matrix-input').fill('tag')
+        await page.waitForLoadState('networkidle')
+        const delay = Promise.withResolvers()
+        await page.route(
+            '**/update',
+            async (route) => {
+                await delay.promise
+                await route.continue()
+            },
+            { times: 1 },
+        )
+        let expected
+        let entries = []
+        try {
+            const option = page.getByRole('option', { name: 'Beta', exact: true })
+            if (['calendar', 'date-picker', 'datetime-picker'].includes(control)) {
+                const day = page.locator('[data-calendar-day]:visible:not(:disabled)').nth(8)
+                const date = await day.getAttribute('aria-label')
+                expected = control === 'datetime-picker' ? date + 'T00:00' : date
+                await day.click()
+            } else if (control === 'time-picker') {
+                expected = '09:00'
+                await page.locator('[data-time-grid=hour] button', { hasText: /^09$/ }).click()
+            } else if (['tree', 'tree-select', 'cascader'].includes(control)) {
+                expected = 'b'
+                await page.locator('[data-node-action]', { hasText: 'Beta' }).click()
+            } else if (control === 'transfer') {
+                expected = ['b']
+                await page.locator('.ui-transfer-item', { hasText: 'Beta' }).click()
+            } else if (control === 'tags-input') {
+                expected = ['tag']
+                await page.locator('#matrix-input').press('Enter')
+            } else if (control === 'rating') {
+                expected = 3
+                await form.locator('.ui-rating-item, .ui-rating label').nth(2).click()
+            } else if (control === 'questionnaire') {
+                expected = { choice: { choices: ['b'], text: '', status: 'answered' } }
+                entries = [['choice', 'b']]
+                await page.getByLabel('Beta').check()
+            } else if (control === 'tabs') {
+                expected = 'b'
+                await page.getByRole('tab', { name: 'Beta' }).click()
+            } else if (control === 'columns') {
+                expected = { hidden: ['title'] }
+                await page.locator('[data-key=title] label').click()
+            } else if (['collapsible', 'trace', 'tour', 'sidebar'].includes(control)) {
+                expected = true
+                await page.locator('#toggle').click()
+            } else {
+                expected = control === 'mentions' ? '@b ' : 'b'
+                await option.click()
+            }
+            if (
+                ![
+                    'questionnaire',
+                    'tabs',
+                    'columns',
+                    'sidebar',
+                    'trace',
+                    'tour',
+                    'collapsible',
+                ].includes(control)
+            )
+                entries = Array.isArray(expected)
+                    ? expected.map((value) => ['choice[]', String(value)])
+                    : [['choice', String(expected)]]
+            assert.deepEqual(await page.evaluate(() => Livewire.first().answer), expected)
+            assert.deepEqual(await form.evaluate((el) => [...new FormData(el)]), entries)
+            await form.evaluate((el) => el.requestSubmit())
+        } finally {
+            delay.resolve()
+        }
+        const json = JSON.stringify(expected)
+        await page.waitForFunction(
+            (value) => document.querySelector('#matrix-saved').textContent === value,
+            json,
+        )
+        assert.equal(await page.locator('#matrix-live').textContent(), json)
+    })
+}
+
+for (const control of ['time-picker', 'datetime-picker']) {
+    test(`${control} keeps successive edits to different segments while the response is pending`, async (t) => {
+        const page = await openProbe(t, '?bindingMatrix=' + control)
+        await page.locator('#matrix-input').click()
+        const days = page.locator('[data-calendar-day]:visible:not(:disabled)')
+        const withDate = control === 'datetime-picker'
+        if (withDate) {
+            await days.nth(8).click()
+            await page.locator('.ui-time-segment[data-value=hour]:enabled').waitFor()
+        }
+        await page.locator('.ui-time-segment[data-value=hour]').click()
+        await page.waitForLoadState('networkidle')
+        const hold = Promise.withResolvers()
+        await page.route(
+            '**/update',
+            async (route) => {
+                await hold.promise
+                await route.continue()
+            },
+            { times: 1 },
+        )
+        let expected = '09:37'
+        try {
+            await page.locator('[data-time-grid=hour] button', { hasText: /^09$/ }).click()
+            await page.locator('.ui-time-segment[data-value=minute]').click()
+            await page.locator('[data-time-grid=minute] button', { hasText: /^37$/ }).click()
+            if (withDate) {
+                expected = (await days.nth(10).getAttribute('aria-label')) + 'T' + expected
+                await days.nth(10).click()
+            }
+            assert.equal(await page.evaluate(() => Livewire.first().answer), expected)
+            const form = page.locator('#matrix-form')
+            assert.equal(await form.evaluate((el) => new FormData(el).get('choice')), expected)
+            await form.evaluate((el) => el.requestSubmit())
+        } finally {
+            hold.resolve()
+        }
+        await page.locator('#matrix-saved', { hasText: JSON.stringify(expected) }).waitFor()
+    })
+}
+
+test('all menu radio groups inherit their binding, name and native exclusion', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=menu')
+    for (const menu of ['dropdown-menu', 'context-menu', 'menubar']) {
+        const group = page.locator('#' + menu)
+        const radios = group.locator('input')
+        for (const value of ['b', 'a']) {
+            await group.locator('input[value=' + value + ']').evaluate((el) => el.click())
+            await page.waitForFunction(
+                (v) => JSON.parse(document.querySelector('#matrix-live').textContent) === v,
+                value,
+            )
+            assert.deepEqual(
+                await radios.evaluateAll((items) => items.map((i) => [i.name, i.checked])),
+                [
+                    [menu, value === 'a'],
+                    [menu, value === 'b'],
+                ],
+            )
+            assert.deepEqual(
+                await page
+                    .locator('#matrix-form')
+                    .evaluate((el, key) => new FormData(el).getAll(key), menu),
+                [value],
+            )
+        }
+    }
+})
+
+test('a normalized Select repaints the label, selected option and native form', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=reject')
+    await page.locator('#reject').click()
+    const reply = page.waitForResponse(
+        (r) => r.url().endsWith('/update') && r.request().postData()?.includes('"answer":"b"'),
+    )
+    await page.getByRole('option', { name: 'Beta' }).click()
+    await reply
+    await page.waitForLoadState('networkidle')
+    assert.match(await page.locator('#reject').innerText(), /Alpha/)
+    assert.equal(
+        (await page.locator('[role=option][aria-selected=true]').innerText()).trim(),
+        'Alpha',
+    )
+    assert.equal(
+        await page.locator('#matrix-form').evaluate((el) => new FormData(el).get('choice')),
+        'a',
+    )
+    assert.equal(await page.locator('#matrix-live').textContent(), '"a"')
+})
+
+for (const frozen of [false, true]) {
+    test(`questionnaire text and radio use the ${frozen ? 'accepted controlled' : 'live'} answer`, async (t) => {
+        const page = await openProbe(t, '?bindingMatrix=' + (frozen ? 'frozen' : 'survey-text'))
+        const input = page.getByRole('textbox', { name: 'Comment' })
+        const form = page.locator('#matrix-form')
+        await input.fill('abc')
+        if (frozen) {
+            await page.waitForFunction(
+                () => document.querySelector('.ui-questionnaire-input').value === '',
+            )
+            assert.deepEqual(await form.evaluate((el) => [...new FormData(el)]), [])
+        } else {
+            await page.waitForFunction(
+                () =>
+                    JSON.parse(document.querySelector('#matrix-live').textContent)?.choice?.text ===
+                    'abc',
+            )
+            assert.equal(await input.evaluate((el) => el === document.activeElement), true)
+            assert.deepEqual(await form.evaluate((el) => [...new FormData(el)]), [
+                ['choice', 'abc'],
+            ])
+        }
+        await form.locator('input[type=radio][value=b]').evaluate((el) => el.click())
+        if (frozen) {
+            await page.waitForFunction(
+                () => Number(document.querySelector('#events').textContent) === 2,
+            )
+            assert.equal(await form.locator('input[type=radio]:checked').count(), 0)
+            assert.deepEqual(await form.evaluate((el) => [...new FormData(el)]), [])
+        } else {
+            await page.waitForFunction(
+                () =>
+                    JSON.parse(document.querySelector('#matrix-live').textContent)?.choice
+                        ?.choices[0] === 'b',
+            )
+            assert.deepEqual(await form.evaluate((el) => [...new FormData(el)]), [['choice', 'b']])
+        }
+    })
+}
+
+test('a null slider and descending range preserve source values until edited, including bracket paths', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=slider-contract')
+    const form = page.locator('#matrix-form')
+    assert.match(await page.locator('#bracket').innerText(), /Beta/)
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    assert.deepEqual(await page.evaluate(() => [Livewire.first().answer, Livewire.first().steps]), [
+        null,
+        [8, 2],
+    ])
+    assert.equal(await form.evaluate((el) => new FormData(el).has('empty')), false)
+    await page.locator('#steps').press('ArrowRight')
+    await page.waitForFunction(() => JSON.stringify(Livewire.first().steps) === '[3,8]')
+    await page.locator('#nested').press('ArrowRight')
+    await page.waitForFunction(() => JSON.stringify(Livewire.first().fields.deep.pair) === '[3,8]')
+    await page.locator('#empty').press('ArrowRight')
+    await page.waitForFunction(() => Livewire.first().answer === 2)
+    assert.equal(await form.evaluate((el) => new FormData(el).get('empty')), '2')
+    await form.evaluate((el) => el.reset())
+    await page.waitForFunction(
+        () =>
+            Livewire.first().answer === null && JSON.stringify(Livewire.first().steps) === '[8,2]',
+    )
+})
+
+test('all twelve required controls block empty submission', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=validation')
+    const result = await page.locator('#matrix-form').evaluate((form) => {
+        let submitted = false
+        form.addEventListener(
+            'submit',
+            (event) => {
+                submitted = true
+                event.preventDefault()
+            },
+            { once: true },
+        )
+        form.requestSubmit()
+        return {
+            submitted,
+            names: [...form.elements]
+                .filter((el) => el.willValidate && !el.validity.valid)
+                .map((el) => el.name),
+        }
+    })
+    assert.equal(result.submitted, false)
+    assert.deepEqual(
+        result.names.sort(),
+        [
+            'calendar',
+            'date-picker',
+            'datetime-picker',
+            'time-picker',
+            'combobox',
+            'icon-select',
+            'tree',
+            'tree-select',
+            'cascader',
+            'transfer',
+            'command',
+            'toggle',
+        ].sort(),
+    )
+})
+
+test('a required date range uses both rapid picks and resets to null', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=range-validation')
+    const errors = []
+    page.on('pageerror', (err) => errors.push(err.message))
+    const form = page.locator('#matrix-form')
+    assert.equal(await form.evaluate((el) => el.checkValidity()), false)
+    await page.locator('#entry').click()
+    const days = page.locator('button[data-calendar-day]:visible:not(:disabled)')
+    const dates = [
+        await days.nth(9).getAttribute('aria-label'),
+        await days.nth(12).getAttribute('aria-label'),
+    ]
+    const held = Promise.withResolvers()
+    await page.route(
+        '**/update',
+        async (r) => {
+            await held.promise
+            await r.continue()
+        },
+        { times: 1 },
+    )
+    try {
+        await days.nth(9).click()
+        assert.equal(await form.evaluate((el) => el.checkValidity()), false)
+        await days.nth(12).click()
+        assert.equal(await form.evaluate((el) => el.checkValidity()), true)
+        assert.deepEqual(await form.evaluate((el) => new FormData(el).getAll('days[]')), dates)
+    } finally {
+        held.resolve()
+    }
+    await page.waitForFunction(
+        (v) => document.querySelector('#matrix-live').textContent === JSON.stringify(v),
+        dates,
+    )
+    await form.evaluate((el) => el.reset())
+    await page.waitForFunction(() => document.querySelector('#matrix-live').textContent === 'null')
+    assert.deepEqual(errors, [])
+})
+
+test('removing an earlier tag preserves the focused button itself', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=keys')
+    const original = await page.getByRole('button', { name: 'Remove c' }).elementHandle()
+    await original.focus()
+    await page.getByRole('button', { name: 'Remove a' }).evaluate((el) => el.click())
+    await page.waitForFunction(
+        () => document.querySelector('#matrix-live').textContent === '["b","c"]',
+    )
+    assert.equal(
+        await original.evaluate((el) => el === document.activeElement && el.isConnected),
+        true,
+    )
+})
+
+test('form listeners belong to the host once per native edit', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=listeners')
+    await page.locator('#number').focus()
+    await page.locator('#list').focus()
+    await page.locator('#events', { hasText: /^1$/ }).waitFor()
+    await page.locator('#list').click()
+    await page.getByRole('option', { name: 'Alpha' }).click()
+    await page.locator('#events', { hasText: /^2$/ }).waitFor()
+    await page.waitForLoadState('networkidle')
+    assert.equal(await page.locator('#events').textContent(), '2')
+})
+
+test('the editor synchronizes its serialized model and dynamic textbox error references', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=editor-contract')
+    const editor = page.locator('#editor')
+    const box = editor.locator('[contenteditable=true]')
+    await box.waitFor()
+    const html = await editor.evaluate((el) => el.value)
+    await editor.evaluate((el) => {
+        el.setAttribute('aria-invalid', 'true')
+        el.setAttribute('aria-errormessage', 'error')
+    })
+    assert.equal(await box.getAttribute('aria-invalid'), 'true')
+    assert.equal(await box.getAttribute('aria-errormessage'), 'error')
+    await editor.evaluate((el) => {
+        el.removeAttribute('aria-invalid')
+        el.removeAttribute('aria-errormessage')
+    })
+    assert.equal(await box.getAttribute('aria-invalid'), null)
+    assert.equal(await box.getAttribute('aria-errormessage'), null)
+    await page.locator('#switch').click()
+    await page.waitForFunction(
+        () => JSON.parse(document.querySelector('#matrix-live').textContent) === '**Hello**',
+    )
+    assert.equal(
+        await page.locator('#matrix-form').evaluate((el) => new FormData(el).get('body')),
+        '**Hello**',
+    )
+    await page.locator('#switch').click()
+    await page.waitForFunction(
+        (v) => JSON.parse(document.querySelector('#matrix-live').textContent) === v,
+        html,
+    )
+    assert.equal(await box.textContent(), 'Hello')
+})
+
+test('renderless and deferred table selection update rows and count locally', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=bulk')
+    for (const [id, expected] of [
+        ['#renderless', 1],
+        ['#defer', 2],
+    ]) {
+        const table = page.locator(id)
+        const requests = []
+        const capture = (r) => {
+            if (r.url().endsWith('/update')) requests.push(r)
+        }
+        await page.waitForLoadState('networkidle')
+        page.on('request', capture)
+        await table.locator('thead input').check()
+        await table
+            .getByRole('status', { name: '' })
+            .filter({ hasText: new RegExp('^' + expected + ' selected$') })
+            .waitFor()
+        assert.equal(await table.locator('tbody tr[data-state=selected]').count(), 2)
+        await table.locator('.ui-data-table-selection-toolbar button').click()
+        await table.locator('.ui-data-table-selection-toolbar').waitFor({ state: 'hidden' })
+        assert.equal(await table.locator('tbody tr[data-state=selected]').count(), 0)
+        if (id === '#defer') assert.equal(requests.length, 0)
+        page.off('request', capture)
+    }
+})
+
+test('table settings rebind independently and page size keeps its initial value and instance', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=layout-source')
+    const settings = page.locator('.ui-data-table-column-settings')
+    const first = await settings.getAttribute('wire:id')
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    assert.notEqual(await settings.getAttribute('wire:id'), first)
+    await settings.getByRole('button', { name: 'Columns' }).click()
+    await settings.getByRole('checkbox', { name: 'Title' }).uncheck()
+    await page.waitForFunction(() => Livewire.first().other?.hidden?.includes('title'))
+    assert.deepEqual(await page.evaluate(() => Livewire.first().answer), [])
+    await page.goto(new URL('?bindingMatrix=page-sizes', page.url()).href)
+    const snapshot = () =>
+        page
+            .locator('.ui-data-table-page-size')
+            .evaluateAll((nodes) =>
+                Object.fromEntries(
+                    nodes.map((el) => [
+                        el.getAttribute('wire:key'),
+                        [
+                            el.querySelector('[wire\\:id]').getAttribute('wire:id'),
+                            el.querySelector('.ui-select-value').innerText.trim(),
+                        ],
+                    ]),
+                ),
+            )
+    const initial = await snapshot()
+    assert.deepEqual(
+        Object.values(initial).map((r) => r[1]),
+        ['Alpha', 'Beta'],
+    )
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    assert.deepEqual(await snapshot(), initial)
+})
+
+test('unbound dialogs use native modality and add no child commits on unrelated typing', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=dialogs')
+    assert.equal(await page.locator('[data-ui-dialog-state]').count(), 0)
+    for (const id of ['dialog', 'alert-dialog', 'drawer', 'sheet']) {
+        const popup = page.locator('#' + id)
+        await popup.getByRole('button', { name: 'Open ' + id }).click()
+        await popup.locator('dialog:modal').waitFor()
+        await popup.getByText('Close', { exact: true }).click()
+        await popup.locator('dialog').waitFor({ state: 'hidden' })
+    }
+    const reply = page.waitForResponse((r) => r.url().endsWith('/update'))
+    await page.locator('#unrelated-input').fill('saved')
+    const { components } = (await reply).request().postDataJSON()
+    assert.deepEqual(
+        components.map((c) => JSON.parse(c.snapshot).memo.name),
+        ['selection-matrix'],
+    )
+})
+
+test('a plain Select defers the request while its native field and immediate save have the edited value', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=deferred-select')
+    const form = page.locator('#matrix-form')
+    await page.waitForLoadState('networkidle')
+    const requests = []
+    page.on('request', (r) => {
+        if (r.url().endsWith('/update')) requests.push(r)
+    })
+    await page.locator('#native-select').click()
+    await page.getByRole('option', { name: 'Beta' }).click()
+    assert.equal(await form.evaluate((el) => new FormData(el).get('role')), 'b')
+    assert.equal(await page.evaluate(() => Livewire.first().answer), 'b')
+    assert.equal(await page.locator('#matrix-live').textContent(), 'null')
+    assert.match(await page.locator('#native-select').innerText(), /Beta/)
+    await page.locator('#native-select').click()
+    assert.equal(
+        await page.getByRole('option', { name: 'Beta' }).getAttribute('aria-selected'),
+        'true',
+    )
+    assert.equal(
+        await page.getByRole('option', { name: 'Alpha' }).getAttribute('aria-selected'),
+        'false',
+    )
+    await page.keyboard.press('Escape')
+    assert.equal(requests.length, 0)
+    await form.evaluate((el) => el.requestSubmit())
+    await page.locator('#matrix-saved', { hasText: '"b"' }).waitFor()
+})
+
+test('deferred multiple Select displays typed selections and rich labels in their selected order', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=deferred-rich')
+    const trigger = page.locator('#rich')
+    await page.waitForLoadState('networkidle')
+    const requests = []
+    page.on('request', (request) => {
+        if (request.url().endsWith('/update')) requests.push(request)
+    })
+    await trigger.click()
+    await page.getByRole('option', { name: 'Number Details' }).click()
+    await trigger.locator('.ui-item-description').waitFor({ state: 'visible' })
+    await page.getByRole('option', { name: 'Empty', exact: true }).click()
+    await page.getByRole('option', { name: 'String', exact: true }).click()
+    await page.waitForFunction(
+        () => document.querySelector('#rich').innerText.trim() === 'Number, Empty, String',
+    )
+    assert.equal(requests.length, 0)
+    assert.deepEqual(await page.evaluate(() => Livewire.first().answer), [0, '', '0'])
+    await page.keyboard.press('Escape')
+    await page.locator('#matrix-form').evaluate((form) => form.requestSubmit())
+    await page.locator('#matrix-saved', { hasText: '[0,"","0"]' }).waitFor()
+})
+
+test('a controlled multiple Select proposes one removal and keeps the accepted form until the parent accepts', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=controlled-multiple')
+    const trigger = page.locator('#controlled-multiple')
+    const values = () =>
+        page.locator('#matrix-form').evaluate((form) => new FormData(form).getAll('choice[]'))
+    await trigger.click()
+    await page.getByRole('option', { name: 'Alpha' }).click()
+    await page.locator('#events', { hasText: /^1$/ }).waitFor()
+    assert.deepEqual(await page.evaluate(() => Livewire.first().other), ['b'])
+    assert.deepEqual(await values(), ['a', 'b'])
+    assert.equal(
+        await page.getByRole('option', { name: 'Alpha' }).getAttribute('aria-selected'),
+        'true',
+    )
+    await page.keyboard.press('Escape')
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    await trigger.click()
+    await page.getByRole('option', { name: 'Alpha' }).click()
+    await page.locator('#events', { hasText: /^2$/ }).waitFor()
+    await page.waitForFunction(
+        () =>
+            new FormData(document.querySelector('#matrix-form')).getAll('choice[]').join() === 'b',
+    )
+    assert.deepEqual(await page.evaluate(() => Livewire.first().answer), ['b'])
+})
+
+test('a bound dialog closes after a parent rejects opening and reopens when its owner permits it', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=dialog-decision')
+    const dialog = page.locator('#decision-dialog dialog')
+    const decision = page.waitForResponse((response) => response.url().endsWith('/update'))
+    await page.getByRole('button', { name: 'Open decision' }).click()
+    await decision
+    await dialog.waitFor({ state: 'hidden' })
+    assert.equal(await page.evaluate(() => Livewire.first().answer), false)
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    await page.getByRole('button', { name: 'Owner opens' }).click()
+    await page.locator('#decision-dialog dialog:modal').waitFor()
+    await page.keyboard.press('Escape')
+    await page.waitForFunction(() => Livewire.first().answer === false)
+})
+
+test('rapid typed selections keep both zero types, the empty string and the order in the first save', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=rapid-multiple')
+    await page.locator('#numeric-options').click()
+    const hold = Promise.withResolvers()
+    await page.route(
+        '**/update',
+        async (route) => {
+            await hold.promise
+            await route.continue()
+        },
+        { times: 1 },
+    )
+    try {
+        for (const name of ['Empty', 'Number', 'String'])
+            await page.getByRole('option', { name, exact: true }).click()
+        assert.deepEqual(await page.evaluate(() => Livewire.first().answer), ['', 0, '0'])
+        assert.deepEqual(
+            await page.locator('form').evaluate((el) => new FormData(el).getAll('ids[]')),
+            ['', '0', '0'],
+        )
+        await page.locator('form').evaluate((el) => el.requestSubmit())
+    } finally {
+        hold.resolve()
+    }
+    await page.locator('#matrix-saved', { hasText: '["",0,"0"]' }).waitFor()
+})
+
+test('radio and toggle inputs inherit native loading disabled only during the targeted request', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=loading')
+    const pending = Promise.withResolvers()
+    await page.route(
+        '**/update',
+        async (route) => {
+            await pending.promise
+            await route.continue()
+        },
+        { times: 1 },
+    )
+    const states = () =>
+        page
+            .locator('#rg input,#tg input')
+            .evaluateAll((items) => items.map((i) => i.matches(':disabled')))
+    assert.deepEqual(await states(), [false, true, false, true])
+    try {
+        await page.getByRole('button', { name: 'Save' }).click()
+        await page.waitForFunction(
+            () => document.querySelectorAll('#rg input:disabled,#tg input:disabled').length === 4,
+        )
+    } finally {
+        pending.resolve()
+    }
+    await page.waitForFunction(
+        () => document.querySelectorAll('#rg input:enabled,#tg input:enabled').length === 2,
+    )
+    assert.deepEqual(await states(), [false, true, false, true])
+})
+
+test('OTP live.change commits once on Enter or group blur while live typing commits each digit', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=otp')
+    await page.locator('#completion').press('1')
+    await page.locator('#completion-1').press('2')
+    assert.equal(await page.locator('#matrix-live').textContent(), 'null')
+    const group = page.locator('.ui-input-otp-body').first()
+    await group.evaluate((el) => {
+        window.otpChanges = 0
+        el.querySelector('[x-ref=field]').addEventListener('change', () => window.otpChanges++)
+    })
+    await page.locator('#completion-2').press('Enter')
+    await page.locator('#realtime').focus()
+    await page.locator('#matrix-live', { hasText: '"12"' }).waitFor()
+    assert.equal(await page.evaluate(() => window.otpChanges), 1)
+    await page.locator('#realtime').press('7')
+    await page.locator('#otp-live', { hasText: /^7$/ }).waitFor()
+    await page.locator('#completion-2').focus()
+    await page.locator('#completion-2').evaluate((el) => {
+        const data = new DataTransfer()
+        data.setData('text', '34')
+        el.dispatchEvent(
+            new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: data }),
+        )
+    })
+    await page.locator('#realtime').focus()
+    await page.locator('#matrix-live', { hasText: '"1234"' }).waitFor()
+    assert.equal(await page.evaluate(() => window.otpChanges), 2)
+})
+
+test('the bound mobile sidebar publishes open and Escape, and follows a parent change', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=sidebar', {
+        viewport: { width: 385, height: 760 },
+    })
+    const dialog = page.locator('.ui-sidebar dialog')
+    await page.locator('#toggle').click()
+    await page.locator('.ui-sidebar dialog:modal').waitFor()
+    await page.locator('#matrix-live', { hasText: /^true$/ }).waitFor()
+    await page.keyboard.press('Escape')
+    await page.locator('#matrix-live', { hasText: /^false$/ }).waitFor()
+    await dialog.waitFor({ state: 'hidden' })
+    await page.evaluate(() => Livewire.first().$set('answer', true))
+    await page.locator('.ui-sidebar dialog:modal').waitFor()
+    await page.setViewportSize({ width: 1180, height: 760 })
+    await page.waitForFunction(
+        () => document.querySelector('.ui-sidebar').dataset.mobile === 'false',
+    )
+    assert.equal(await page.locator('.ui-sidebar').getAttribute('data-state'), 'expanded')
+})
+
+test('both disclosure aliases remain open after hydration and a host render', async (t) => {
+    const page = await openProbe(t, '?bindingMatrix=initial-disclosure')
+    await page.locator('#switch').click()
+    await page.locator('#switch-state', { hasText: '1' }).waitFor()
+    for (const label of ['Details', 'Trace']) {
+        assert.equal(
+            await page
+                .getByRole('button', { name: label, exact: true })
+                .getAttribute('aria-expanded'),
+            'true',
+        )
+        await page.getByText(label + ' content', { exact: true }).waitFor()
+    }
 })

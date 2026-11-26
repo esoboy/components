@@ -1,5 +1,43 @@
 export function questionnaire() {
     return {
+        readAnswer(input, type = 'input') {
+            const group = input.closest('[data-question]')
+            const field = this.$root.querySelector('ui-model-field')
+            const text = group.querySelector('input.ui-questionnaire-input')
+            const choices = [...group.querySelectorAll('input[type=radio],input[type=checkbox]')]
+            if (group.hasAttribute('data-exclusive')) {
+                if (input === text && text.value.trim())
+                    choices.forEach((choice) => (choice.checked = false))
+                else if (input !== text && text) text.value = ''
+            }
+            const selected = choices
+                .filter((choice) => choice.checked)
+                .map((choice) => choice.value)
+            const answer = JSON.parse(group.dataset.emptyAnswer)
+            answer.choices = selected
+            answer.text = text?.value ?? ''
+            if (selected.length || answer.text.trim()) answer.status = group.dataset.filledStatus
+            const value = {
+                ...JSON.parse(group.dataset.answers),
+                ...field.value,
+                [group.dataset.question]: answer,
+            }
+            if (input === text)
+                group
+                    .querySelector('[data-answer-model]')
+                    .dispatchEvent(new CustomEvent(type, { bubbles: true, detail: value }))
+            else field.edit(value)
+        },
+        restoreText(event, input) {
+            const group = input.closest('[data-question]')
+            if (
+                event.detail.owner === this.$root.getAttribute('wire:id') &&
+                group.dataset.question === event.detail.name &&
+                input.value === event.detail.proposal
+            ) {
+                input.value = this.$wire.externalValue?.[group.dataset.question]?.text ?? ''
+            }
+        },
         focusItem(invalid = false) {
             this.$nextTick(() => {
                 const item = this.$root.querySelector('fieldset')

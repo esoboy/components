@@ -44,7 +44,7 @@ export function focusInPlace(element) {
 
 export function dialog(initial = false, modal = true) {
     let closing = 0
-    let activePanel, stopObserving, stopMorphing
+    let activePanel, stopObserving, stopMorphing, stateObserver
     function releasePanel() {
         stopObserving?.()
         stopMorphing?.()
@@ -53,14 +53,48 @@ export function dialog(initial = false, modal = true) {
         activePanel = null
     }
     return {
-        opened: initial,
+        localOpen: initial,
+        get opened() {
+            const field = this.$root?.querySelector(':scope > [data-dialog-field]')
+            return field?.dataset.model ? !!this.$wire.$get(field.dataset.model) : this.localOpen
+        },
+        set opened(value) {
+            const field = this.$root?.querySelector(':scope > [data-dialog-field]')
+            if (
+                value === this.opened ||
+                field?.disabled ||
+                this.$root.matches('[disabled],[readonly]')
+            )
+                return
+            if (!field) this.localOpen = value
+            else if (field.dataset.mode !== 'controlled') {
+                field.checked = this.localOpen = value
+                field.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+            this.$dispatch('value-changed', { value })
+        },
         returnFocus: null,
         get panel() {
             return owned(this.$root, '[data-ui-panel]')
         },
         init() {
-            this.$watch('opened', (value) => this.sync(value))
-            this.$nextTick(() => this.sync(this.opened))
+            this.$nextTick(() => {
+                const field = this.$root.querySelector(':scope > [data-dialog-field]')
+                if (field) {
+                    this.localOpen = field.defaultChecked
+                    if (field.dataset.mode === 'controlled') {
+                        stateObserver = new MutationObserver(() => {
+                            this.localOpen = field.defaultChecked
+                        })
+                        stateObserver.observe(field, {
+                            attributes: true,
+                            attributeFilter: ['checked'],
+                        })
+                    }
+                }
+                this.$watch('opened', (value) => this.sync(value))
+                this.sync(this.opened)
+            })
         },
         sync(value) {
             const panel = this.panel
@@ -127,6 +161,7 @@ export function dialog(initial = false, modal = true) {
         },
         destroy() {
             closing++
+            stateObserver?.disconnect()
             if (activePanel?.open) activePanel.close()
             releasePanel()
         },

@@ -9,7 +9,7 @@ it('keeps the rendered list bounded while browsing every packaged icon with a pr
     $catalog = require __DIR__.'/../../resources/icons/catalog.php';
     $html = Blade::render('<x-ui::icon-select name="icon" initial-value="zoom-out" />');
     $closed = HTMLDocument::createFromString($html, LIBXML_NOERROR);
-    expect($closed->querySelector('input[name="icon"]')->getAttribute('value'))->toBe('zoom-out')
+    expect($closed->querySelector('select[name="icon"] option[selected]')->getAttribute('value'))->toBe('zoom-out')
         ->and(trim($closed->querySelector('[role="option"][aria-selected="true"]')->textContent))->toBe('zoom-out')
         ->and($html)->not->toContain('a-arrow-down');
 

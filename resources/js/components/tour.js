@@ -1,6 +1,6 @@
 import { dialog } from '../behaviors/overlay.js'
 
-export function tour() {
+export function tour(readValue) {
     const base = dialog(false)
     let owner,
         highlighted = null
@@ -9,10 +9,10 @@ export function tour() {
         base,
         Object.getOwnPropertyDescriptors({
             get opened() {
-                return !!owner?.value
+                return !!readValue()
             },
             set opened(value) {
-                owner.value = value
+                if (value !== this.opened) this.$root.querySelector('[data-panel-field]').click()
             },
             get index() {
                 return owner?.index
@@ -30,9 +30,6 @@ export function tour() {
                     this.sync(this.opened)
                     this.position()
                 })
-            },
-            step(direction) {
-                return owner.advance(direction)
             },
             position() {
                 if (!this.opened || !this.panel) return

@@ -7,7 +7,7 @@ use Illuminate\View\ViewException;
 
 it('renders simple controls without child snapshots and leaves slot actions on the caller', function (string $name) {
     $html = Blade::render('<x-ui::'.$name.' id="native" wire:model.live="field"><button wire:click="save">Save</button></x-ui::'.$name.'>');
-    expect($html)->toContain($name === 'number-input' ? 'wire:model.live.number="field"' : 'wire:model.live="field"', 'wire:click="save"')
+    expect($html)->toContain(in_array($name, ['number-input', 'slider'], true) ? 'wire:model.number.live="field"' : 'wire:model.live="field"', 'wire:click="save"')
         ->not->toContain('wire:snapshot=', 'wire:id=', 'x-for=', 'x-html=', 'x-text=');
 })->with(['number-input', 'slider', 'input-otp', 'editor']);
 
@@ -18,7 +18,7 @@ it('applies native attributes and the numeric binding to the number field', func
         BLADE);
     $root = HTMLDocument::createFromString($html, LIBXML_NOERROR)->querySelector('.ui-number-input');
     $input = $root->querySelector('input[type="number"]');
-    expect($input->getAttribute('wire:model.live.number'))->toBe('quantity')
+    expect($input->getAttribute('wire:model.number.live'))->toBe('quantity')
         ->and($root->classList->contains('compact'))->toBeTrue()
         ->and($input->getAttribute('id'))->toBe('quantity')
         ->and($input->getAttribute('aria-invalid'))->toBe('true')
@@ -34,7 +34,7 @@ it('assigns multipart ids only when there is an explicit or model-derived base',
         .'<x-ui::'.$component.' '.$props.' name="second" />'
         .'<x-ui::'.$component.' '.$props.' id="named" />');
     $document = HTMLDocument::createFromString($html, LIBXML_NOERROR);
-    $inputs = $document->querySelectorAll('input[type="'.$type.'"]');
+    $inputs = $document->querySelectorAll($component === 'input-otp' ? '[data-otp-index]' : 'input[type="'.$type.'"]');
     expect(array_map(fn ($input) => $input->getAttribute('id'), iterator_to_array($inputs)))
         ->toBe([null, null, null, null, 'named', 'named-1']);
     foreach ([$inputs->item(0), $inputs->item(1)] as $input) {
@@ -42,7 +42,7 @@ it('assigns multipart ids only when there is an explicit or model-derived base',
             ->and($input->getAttribute('aria-describedby'))->toBe('help')
             ->and($input->getAttribute('aria-label'))->not->toBeEmpty();
     }
-    expect($document->querySelector('input[type="hidden"]')->getAttribute('form'))->toBe('settings');
+    expect($document->querySelector('[name="'.($component === 'slider' ? 'first[]' : 'first').'"]')->getAttribute('form'))->toBe('settings');
 
     $bound = Blade::render('<x-ui::'.$component.' wire:model="profile.field" />');
     $field = HTMLDocument::createFromString($bound, LIBXML_NOERROR)->querySelector('input[type="'.$type.'"]');

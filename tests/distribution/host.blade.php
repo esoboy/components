@@ -13,6 +13,12 @@
         <x-ui::editor id="document-one" initial-value="One" />
         <x-ui::editor id="document-two" initial-value="Two" />
         <a href="/ui-package-test" wire:navigate>General components</a>
+    @elseif(request()->has('bindingMatrix'))
+        <livewire:selection-matrix :control="request()->query('bindingMatrix')" />
+    @elseif(request()->boolean('bindingChecks'))
+        <livewire:binding-probe />
+    @elseif(request()->boolean('submittedChecks'))
+        <output id="submitted">{{ json_encode(request()->only(['picks', 'note'])) }}</output>
     @elseif(request()->boolean('contracts'))
         <livewire:contract-probe />
     @elseif(request()->boolean('forms'))
@@ -132,6 +138,7 @@
             </div>
         @endforeach
     @endif
+    @stack('ui-forms')
     @livewireScripts
 </body>
 </html>
